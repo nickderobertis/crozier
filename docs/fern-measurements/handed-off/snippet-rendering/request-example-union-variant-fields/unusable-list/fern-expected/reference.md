@@ -1,6 +1,6 @@
 # Reference
 ## Boards
-<details><summary><code>client.boards.<a href="src/fern/boards/client.py">create_board</a>(...) -> Board</code></summary>
+<details><summary><code>client.boards.<a href="src/fern/boards/client.py#L30-L102">create_board</a>(...) -> Board</code></summary>
 <dl>
 <dd>
 
@@ -91,7 +91,7 @@ client.boards.create_board(
 </dl>
 </details>
 
-<details><summary><code>client.boards.<a href="src/fern/boards/client.py">preview_board</a>(...) -> Board</code></summary>
+<details><summary><code>client.boards.<a href="src/fern/boards/client.py#L104-L176">preview_board</a>(...) -> Board</code></summary>
 <dl>
 <dd>
 

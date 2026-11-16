@@ -1,6 +1,6 @@
 # Reference
 ## alias
-<details><summary><code>client.alias.<a href="src/fern/alias/client.py">username</a>(...) -> User</code></summary>
+<details><summary><code>client.alias.<a href="src/fern/alias/client.py#L27-L56">username</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -73,7 +73,7 @@ client.alias.username(
 </dl>
 </details>
 
-<details><summary><code>client.alias.<a href="src/fern/alias/client.py">alias_val2</a>(...) -> Val</code></summary>
+<details><summary><code>client.alias.<a href="src/fern/alias/client.py#L58-L93">alias_val2</a>(...) -> Val</code></summary>
 <dl>
 <dd>
 
@@ -156,7 +156,7 @@ client.alias.alias_val2(
 </details>
 
 ## me
-<details><summary><code>client.me.<a href="src/fern/me/client.py">get</a>() -> MeGetResponse</code></summary>
+<details><summary><code>client.me.<a href="src/fern/me/client.py#L27-L51">get</a>() -> MeGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -219,7 +219,7 @@ client.me.get()
 </dl>
 </details>
 
-<details><summary><code>client.me.<a href="src/fern/me/client.py">me_vals2</a>(...) -> MeVals2Response</code></summary>
+<details><summary><code>client.me.<a href="src/fern/me/client.py#L53-L88">me_vals2</a>(...) -> MeVals2Response</code></summary>
 <dl>
 <dd>
 
@@ -302,7 +302,7 @@ client.me.me_vals2(
 </details>
 
 ## blobs
-<details><summary><code>client.blobs.<a href="src/fern/blobs/client.py">v1blobs_list</a>(...) -> typing.List[V1BlobsListResponseItem]</code></summary>
+<details><summary><code>client.blobs.<a href="src/fern/blobs/client.py#L32-L61">v1blobs_list</a>(...) -> typing.List[V1BlobsListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -373,7 +373,7 @@ client.blobs.v1blobs_list()
 </dl>
 </details>
 
-<details><summary><code>client.blobs.<a href="src/fern/blobs/client.py">v1blobs_get</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.blobs.<a href="src/fern/blobs/client.py#L63-L83">v1blobs_get</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -435,7 +435,7 @@ client.blobs.v1blobs_get(...)
 </dl>
 </details>
 
-<details><summary><code>client.blobs.<a href="src/fern/blobs/client.py">v1blobs_store</a>(...) -> V1BlobsStoreResponse</code></summary>
+<details><summary><code>client.blobs.<a href="src/fern/blobs/client.py#L85-L119">v1blobs_store</a>(...) -> V1BlobsStoreResponse</code></summary>
 <dl>
 <dd>
 
@@ -517,7 +517,7 @@ client.blobs.v1blobs_store(
 </dl>
 </details>
 
-<details><summary><code>client.blobs.<a href="src/fern/blobs/client.py">v1blobs_delete</a>(...)</code></summary>
+<details><summary><code>client.blobs.<a href="src/fern/blobs/client.py#L121-L149">v1blobs_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -590,7 +590,7 @@ client.blobs.v1blobs_delete(
 </dl>
 </details>
 
-<details><summary><code>client.blobs.<a href="src/fern/blobs/client.py">v2blobs_list</a>(...) -> typing.List[V2BlobsListResponseItem]</code></summary>
+<details><summary><code>client.blobs.<a href="src/fern/blobs/client.py#L151-L180">v2blobs_list</a>(...) -> typing.List[V2BlobsListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -661,7 +661,7 @@ client.blobs.v2blobs_list()
 </dl>
 </details>
 
-<details><summary><code>client.blobs.<a href="src/fern/blobs/client.py">v2blobs_get</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.blobs.<a href="src/fern/blobs/client.py#L182-L202">v2blobs_get</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -723,7 +723,7 @@ client.blobs.v2blobs_get(...)
 </dl>
 </details>
 
-<details><summary><code>client.blobs.<a href="src/fern/blobs/client.py">v2blobs_store</a>(...) -> V2BlobsStoreResponse</code></summary>
+<details><summary><code>client.blobs.<a href="src/fern/blobs/client.py#L204-L238">v2blobs_store</a>(...) -> V2BlobsStoreResponse</code></summary>
 <dl>
 <dd>
 
@@ -805,7 +805,7 @@ client.blobs.v2blobs_store(
 </dl>
 </details>
 
-<details><summary><code>client.blobs.<a href="src/fern/blobs/client.py">v2blobs_delete</a>(...)</code></summary>
+<details><summary><code>client.blobs.<a href="src/fern/blobs/client.py#L240-L268">v2blobs_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -879,7 +879,7 @@ client.blobs.v2blobs_delete(
 </details>
 
 ## users
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get</a>(...) -> User</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L26-L55">get</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -953,7 +953,7 @@ client.users.get(
 </details>
 
 ## sqlite
-<details><summary><code>client.sqlite.<a href="src/fern/sqlite/client.py">execute</a>(...) -> ResultSet</code></summary>
+<details><summary><code>client.sqlite.<a href="src/fern/sqlite/client.py#L32-L62">execute</a>(...) -> ResultSet</code></summary>
 <dl>
 <dd>
 
@@ -1026,7 +1026,7 @@ client.sqlite.execute(
 </dl>
 </details>
 
-<details><summary><code>client.sqlite.<a href="src/fern/sqlite/client.py">batch</a>(...) -> typing.List[ResultSet]</code></summary>
+<details><summary><code>client.sqlite.<a href="src/fern/sqlite/client.py#L64-L103">batch</a>(...) -> typing.List[ResultSet]</code></summary>
 <dl>
 <dd>
 
@@ -1112,7 +1112,7 @@ client.sqlite.batch(
 </details>
 
 ## emails
-<details><summary><code>client.emails.<a href="src/fern/emails/client.py">send</a>(...) -> EmailsSendResponse</code></summary>
+<details><summary><code>client.emails.<a href="src/fern/emails/client.py#L35-L118">send</a>(...) -> EmailsSendResponse</code></summary>
 <dl>
 <dd>
 
@@ -1260,7 +1260,7 @@ client.emails.send(
 </details>
 
 ## Telemetry
-<details><summary><code>client.telemetry.<a href="src/fern/telemetry/client.py">trace_list</a>(...) -> TraceListResponse</code></summary>
+<details><summary><code>client.telemetry.<a href="src/fern/telemetry/client.py#L31-L101">trace_list</a>(...) -> TraceListResponse</code></summary>
 <dl>
 <dd>
 
@@ -1383,7 +1383,7 @@ client.telemetry.trace_list(
 </dl>
 </details>
 
-<details><summary><code>client.telemetry.<a href="src/fern/telemetry/client.py">log_list</a>(...) -> LogListResponse</code></summary>
+<details><summary><code>client.telemetry.<a href="src/fern/telemetry/client.py#L103-L172">log_list</a>(...) -> LogListResponse</code></summary>
 <dl>
 <dd>
 
@@ -1507,7 +1507,7 @@ client.telemetry.log_list(
 </details>
 
 ## vals
-<details><summary><code>client.vals.<a href="src/fern/vals/client.py">val_environment_variables_list</a>(...) -> ValEnvironmentVariablesListResponse</code></summary>
+<details><summary><code>client.vals.<a href="src/fern/vals/client.py#L42-L83">val_environment_variables_list</a>(...) -> ValEnvironmentVariablesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -1598,7 +1598,7 @@ client.vals.val_environment_variables_list(
 </dl>
 </details>
 
-<details><summary><code>client.vals.<a href="src/fern/vals/client.py">val_environment_variables_create</a>(...) -> TEnvironmentVariable</code></summary>
+<details><summary><code>client.vals.<a href="src/fern/vals/client.py#L85-L135">val_environment_variables_create</a>(...) -> TEnvironmentVariable</code></summary>
 <dl>
 <dd>
 
@@ -1697,7 +1697,7 @@ client.vals.val_environment_variables_create(
 </dl>
 </details>
 
-<details><summary><code>client.vals.<a href="src/fern/vals/client.py">val_environment_variables_update</a>(...) -> TEnvironmentVariable</code></summary>
+<details><summary><code>client.vals.<a href="src/fern/vals/client.py#L137-L186">val_environment_variables_update</a>(...) -> TEnvironmentVariable</code></summary>
 <dl>
 <dd>
 
@@ -1796,7 +1796,7 @@ client.vals.val_environment_variables_update(
 </dl>
 </details>
 
-<details><summary><code>client.vals.<a href="src/fern/vals/client.py">val_environment_variables_delete</a>(...)</code></summary>
+<details><summary><code>client.vals.<a href="src/fern/vals/client.py#L188-L221">val_environment_variables_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1878,7 +1878,7 @@ client.vals.val_environment_variables_delete(
 </dl>
 </details>
 
-<details><summary><code>client.vals.<a href="src/fern/vals/client.py">val_environment_variable_groups_list</a>(...) -> ValEnvironmentVariableGroupsListResponse</code></summary>
+<details><summary><code>client.vals.<a href="src/fern/vals/client.py#L223-L264">val_environment_variable_groups_list</a>(...) -> ValEnvironmentVariableGroupsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -1969,7 +1969,7 @@ client.vals.val_environment_variable_groups_list(
 </dl>
 </details>
 
-<details><summary><code>client.vals.<a href="src/fern/vals/client.py">val_environment_variable_groups_attach</a>(...)</code></summary>
+<details><summary><code>client.vals.<a href="src/fern/vals/client.py#L266-L302">val_environment_variable_groups_attach</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2051,7 +2051,7 @@ client.vals.val_environment_variable_groups_attach(
 </dl>
 </details>
 
-<details><summary><code>client.vals.<a href="src/fern/vals/client.py">val_environment_variable_groups_detach</a>(...)</code></summary>
+<details><summary><code>client.vals.<a href="src/fern/vals/client.py#L304-L340">val_environment_variable_groups_detach</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2133,7 +2133,7 @@ client.vals.val_environment_variable_groups_detach(
 </dl>
 </details>
 
-<details><summary><code>client.vals.<a href="src/fern/vals/client.py">vals_get2</a>(...) -> Val</code></summary>
+<details><summary><code>client.vals.<a href="src/fern/vals/client.py#L342-L371">vals_get2</a>(...) -> Val</code></summary>
 <dl>
 <dd>
 
@@ -2206,7 +2206,7 @@ client.vals.vals_get2(
 </dl>
 </details>
 
-<details><summary><code>client.vals.<a href="src/fern/vals/client.py">projects_delete2</a>(...)</code></summary>
+<details><summary><code>client.vals.<a href="src/fern/vals/client.py#L373-L401">projects_delete2</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2279,7 +2279,7 @@ client.vals.projects_delete2(
 </dl>
 </details>
 
-<details><summary><code>client.vals.<a href="src/fern/vals/client.py">vals_list2</a>(...) -> ValsList2Response</code></summary>
+<details><summary><code>client.vals.<a href="src/fern/vals/client.py#L403-L451">vals_list2</a>(...) -> ValsList2Response</code></summary>
 <dl>
 <dd>
 
@@ -2376,7 +2376,7 @@ client.vals.vals_list2(
 </dl>
 </details>
 
-<details><summary><code>client.vals.<a href="src/fern/vals/client.py">vals_create2</a>(...) -> Val</code></summary>
+<details><summary><code>client.vals.<a href="src/fern/vals/client.py#L453-L502">vals_create2</a>(...) -> Val</code></summary>
 <dl>
 <dd>
 
@@ -2476,7 +2476,7 @@ client.vals.vals_create2(
 </dl>
 </details>
 
-<details><summary><code>client.vals.<a href="src/fern/vals/client.py">branches_get2</a>(...) -> Branch</code></summary>
+<details><summary><code>client.vals.<a href="src/fern/vals/client.py#L504-L539">branches_get2</a>(...) -> Branch</code></summary>
 <dl>
 <dd>
 
@@ -2558,7 +2558,7 @@ client.vals.branches_get2(
 </dl>
 </details>
 
-<details><summary><code>client.vals.<a href="src/fern/vals/client.py">branches_delete2</a>(...)</code></summary>
+<details><summary><code>client.vals.<a href="src/fern/vals/client.py#L541-L575">branches_delete2</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2640,7 +2640,7 @@ client.vals.branches_delete2(
 </dl>
 </details>
 
-<details><summary><code>client.vals.<a href="src/fern/vals/client.py">branches_list2</a>(...) -> BranchesList2Response</code></summary>
+<details><summary><code>client.vals.<a href="src/fern/vals/client.py#L577-L616">branches_list2</a>(...) -> BranchesList2Response</code></summary>
 <dl>
 <dd>
 
@@ -2731,7 +2731,7 @@ client.vals.branches_list2(
 </dl>
 </details>
 
-<details><summary><code>client.vals.<a href="src/fern/vals/client.py">branches_create2</a>(...) -> Branch</code></summary>
+<details><summary><code>client.vals.<a href="src/fern/vals/client.py#L618-L663">branches_create2</a>(...) -> Branch</code></summary>
 <dl>
 <dd>
 
@@ -2822,7 +2822,7 @@ client.vals.branches_create2(
 </dl>
 </details>
 
-<details><summary><code>client.vals.<a href="src/fern/vals/client.py">val_files_get2</a>(...) -> ValFilesGet2Response</code></summary>
+<details><summary><code>client.vals.<a href="src/fern/vals/client.py#L665-L736">val_files_get2</a>(...) -> ValFilesGet2Response</code></summary>
 <dl>
 <dd>
 
@@ -2947,7 +2947,7 @@ client.vals.val_files_get2(
 </dl>
 </details>
 
-<details><summary><code>client.vals.<a href="src/fern/vals/client.py">files_create2</a>(...) -> FileRevisionMetadataV2</code></summary>
+<details><summary><code>client.vals.<a href="src/fern/vals/client.py#L738-L794">files_create2</a>(...) -> FileRevisionMetadataV2</code></summary>
 <dl>
 <dd>
 
@@ -3049,7 +3049,7 @@ client.vals.files_create2(
 </dl>
 </details>
 
-<details><summary><code>client.vals.<a href="src/fern/vals/client.py">file_content_update2</a>(...) -> FileRevisionMetadataV2</code></summary>
+<details><summary><code>client.vals.<a href="src/fern/vals/client.py#L796-L862">file_content_update2</a>(...) -> FileRevisionMetadataV2</code></summary>
 <dl>
 <dd>
 
@@ -3171,7 +3171,7 @@ client.vals.file_content_update2(
 </dl>
 </details>
 
-<details><summary><code>client.vals.<a href="src/fern/vals/client.py">files_delete2</a>(...)</code></summary>
+<details><summary><code>client.vals.<a href="src/fern/vals/client.py#L864-L913">files_delete2</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3270,7 +3270,7 @@ client.vals.files_delete2(
 </dl>
 </details>
 
-<details><summary><code>client.vals.<a href="src/fern/vals/client.py">files_content_get2</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.vals.<a href="src/fern/vals/client.py#L915-L988">files_content_get2</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -3409,7 +3409,7 @@ client.vals.files_content_get2(
 </details>
 
 ## Files
-<details><summary><code>client.files.<a href="src/fern/files/client.py">query_val_file_by_id</a>(...) -> FileRevisionMetadataV2</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L26-L57">query_val_file_by_id</a>(...) -> FileRevisionMetadataV2</code></summary>
 <dl>
 <dd>
 
@@ -3483,7 +3483,7 @@ client.files.query_val_file_by_id(
 </details>
 
 ## Orgs
-<details><summary><code>client.orgs.<a href="src/fern/orgs/client.py">list</a>(...) -> OrgsListResponse</code></summary>
+<details><summary><code>client.orgs.<a href="src/fern/orgs/client.py#L27-L62">list</a>(...) -> OrgsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -3565,7 +3565,7 @@ client.orgs.list(
 </dl>
 </details>
 
-<details><summary><code>client.orgs.<a href="src/fern/orgs/client.py">memberships_list</a>(...) -> typing.List[Membership]</code></summary>
+<details><summary><code>client.orgs.<a href="src/fern/orgs/client.py#L64-L95">memberships_list</a>(...) -> typing.List[Membership]</code></summary>
 <dl>
 <dd>
 
@@ -3639,7 +3639,7 @@ client.orgs.memberships_list(
 </details>
 
 ## Connections
-<details><summary><code>client.connections.<a href="src/fern/connections/client.py">post_v3connections_slack_token</a>(...) -> PostV3ConnectionsSlackTokenResponse</code></summary>
+<details><summary><code>client.connections.<a href="src/fern/connections/client.py#L30-L61">post_v3connections_slack_token</a>(...) -> PostV3ConnectionsSlackTokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -3712,7 +3712,7 @@ client.connections.post_v3connections_slack_token(
 </dl>
 </details>
 
-<details><summary><code>client.connections.<a href="src/fern/connections/client.py">post_v3connections_google_docs_token</a>(...) -> PostV3ConnectionsGoogleDocsTokenResponse</code></summary>
+<details><summary><code>client.connections.<a href="src/fern/connections/client.py#L63-L94">post_v3connections_google_docs_token</a>(...) -> PostV3ConnectionsGoogleDocsTokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -3786,7 +3786,7 @@ client.connections.post_v3connections_google_docs_token(
 </details>
 
 ## Val
-<details><summary><code>client.val.<a href="src/fern/val/client.py">get_v3val_viewer</a>(...) -> GetV3ValViewerResponse</code></summary>
+<details><summary><code>client.val.<a href="src/fern/val/client.py#L26-L57">get_v3val_viewer</a>(...) -> GetV3ValViewerResponse</code></summary>
 <dl>
 <dd>
 
@@ -3860,7 +3860,7 @@ client.val.get_v3val_viewer(
 </details>
 
 ## EnvVarGroups
-<details><summary><code>client.env_var_groups.<a href="src/fern/env_var_groups/client.py">environment_variable_groups_list</a>(...) -> EnvironmentVariableGroupsListResponse</code></summary>
+<details><summary><code>client.env_var_groups.<a href="src/fern/env_var_groups/client.py#L31-L76">environment_variable_groups_list</a>(...) -> EnvironmentVariableGroupsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -3950,7 +3950,7 @@ client.env_var_groups.environment_variable_groups_list(
 </dl>
 </details>
 
-<details><summary><code>client.env_var_groups.<a href="src/fern/env_var_groups/client.py">environment_variable_groups_create</a>(...) -> EnvironmentVariableGroupsCreateResponse</code></summary>
+<details><summary><code>client.env_var_groups.<a href="src/fern/env_var_groups/client.py#L78-L113">environment_variable_groups_create</a>(...) -> EnvironmentVariableGroupsCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -4031,7 +4031,7 @@ client.env_var_groups.environment_variable_groups_create(
 </dl>
 </details>
 
-<details><summary><code>client.env_var_groups.<a href="src/fern/env_var_groups/client.py">environment_variable_groups_rename</a>(...)</code></summary>
+<details><summary><code>client.env_var_groups.<a href="src/fern/env_var_groups/client.py#L115-L149">environment_variable_groups_rename</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4113,7 +4113,7 @@ client.env_var_groups.environment_variable_groups_rename(
 </dl>
 </details>
 
-<details><summary><code>client.env_var_groups.<a href="src/fern/env_var_groups/client.py">environment_variable_groups_delete</a>(...)</code></summary>
+<details><summary><code>client.env_var_groups.<a href="src/fern/env_var_groups/client.py#L151-L181">environment_variable_groups_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4186,7 +4186,7 @@ client.env_var_groups.environment_variable_groups_delete(
 </dl>
 </details>
 
-<details><summary><code>client.env_var_groups.<a href="src/fern/env_var_groups/client.py">environment_variable_groups_get</a>(...) -> typing.List[TEnvironmentVariable]</code></summary>
+<details><summary><code>client.env_var_groups.<a href="src/fern/env_var_groups/client.py#L183-L214">environment_variable_groups_get</a>(...) -> typing.List[TEnvironmentVariable]</code></summary>
 <dl>
 <dd>
 
@@ -4259,7 +4259,7 @@ client.env_var_groups.environment_variable_groups_get(
 </dl>
 </details>
 
-<details><summary><code>client.env_var_groups.<a href="src/fern/env_var_groups/client.py">environment_variable_groups_create_variable</a>(...) -> TEnvironmentVariable</code></summary>
+<details><summary><code>client.env_var_groups.<a href="src/fern/env_var_groups/client.py#L216-L266">environment_variable_groups_create_variable</a>(...) -> TEnvironmentVariable</code></summary>
 <dl>
 <dd>
 
@@ -4358,7 +4358,7 @@ client.env_var_groups.environment_variable_groups_create_variable(
 </dl>
 </details>
 
-<details><summary><code>client.env_var_groups.<a href="src/fern/env_var_groups/client.py">environment_variable_groups_upsert_variable</a>(...) -> TEnvironmentVariable</code></summary>
+<details><summary><code>client.env_var_groups.<a href="src/fern/env_var_groups/client.py#L268-L318">environment_variable_groups_upsert_variable</a>(...) -> TEnvironmentVariable</code></summary>
 <dl>
 <dd>
 
@@ -4457,7 +4457,7 @@ client.env_var_groups.environment_variable_groups_upsert_variable(
 </dl>
 </details>
 
-<details><summary><code>client.env_var_groups.<a href="src/fern/env_var_groups/client.py">environment_variable_groups_variable_delete</a>(...)</code></summary>
+<details><summary><code>client.env_var_groups.<a href="src/fern/env_var_groups/client.py#L320-L356">environment_variable_groups_variable_delete</a>(...)</code></summary>
 <dl>
 <dd>
 

@@ -1,6 +1,6 @@
 # Reference
 ## misc
-<details><summary><code>client.misc.<a href="src/fern/misc/client.py">get_state</a>() -> StateResponse</code></summary>
+<details><summary><code>client.misc.<a href="src/fern/misc/client.py#L31-L53">get_state</a>() -> StateResponse</code></summary>
 <dl>
 <dd>
 
@@ -62,7 +62,7 @@ client.misc.get_state()
 </dl>
 </details>
 
-<details><summary><code>client.misc.<a href="src/fern/misc/client.py">get_health</a>() -> typing.Optional[typing.Dict[str, typing.Any]]</code></summary>
+<details><summary><code>client.misc.<a href="src/fern/misc/client.py#L55-L79">get_health</a>() -> typing.Optional[typing.Dict[str, typing.Any]]</code></summary>
 <dl>
 <dd>
 
@@ -124,7 +124,7 @@ client.misc.get_health()
 </dl>
 </details>
 
-<details><summary><code>client.misc.<a href="src/fern/misc/client.py">post_check_addresses</a>(...) -> CheckAddressesResponse</code></summary>
+<details><summary><code>client.misc.<a href="src/fern/misc/client.py#L81-L109">post_check_addresses</a>(...) -> CheckAddressesResponse</code></summary>
 <dl>
 <dd>
 
@@ -199,7 +199,7 @@ client.misc.post_check_addresses(
 </details>
 
 ## consensus
-<details><summary><code>client.consensus.<a href="src/fern/consensus/client.py">get_consensus_network</a>() -> ConsensusNetwork</code></summary>
+<details><summary><code>client.consensus.<a href="src/fern/consensus/client.py#L33-L55">get_consensus_network</a>() -> ConsensusNetwork</code></summary>
 <dl>
 <dd>
 
@@ -261,7 +261,7 @@ client.consensus.get_consensus_network()
 </dl>
 </details>
 
-<details><summary><code>client.consensus.<a href="src/fern/consensus/client.py">get_consensus_tip</a>() -> ChainIndex</code></summary>
+<details><summary><code>client.consensus.<a href="src/fern/consensus/client.py#L57-L77">get_consensus_tip</a>() -> ChainIndex</code></summary>
 <dl>
 <dd>
 
@@ -309,7 +309,7 @@ client.consensus.get_consensus_tip()
 </dl>
 </details>
 
-<details><summary><code>client.consensus.<a href="src/fern/consensus/client.py">get_consensus_tip_state</a>() -> ConsensusState</code></summary>
+<details><summary><code>client.consensus.<a href="src/fern/consensus/client.py#L79-L99">get_consensus_tip_state</a>() -> ConsensusState</code></summary>
 <dl>
 <dd>
 
@@ -357,7 +357,7 @@ client.consensus.get_consensus_tip_state()
 </dl>
 </details>
 
-<details><summary><code>client.consensus.<a href="src/fern/consensus/client.py">get_consensus_checkpoint</a>(...) -> ConsensusCheckpointResponse</code></summary>
+<details><summary><code>client.consensus.<a href="src/fern/consensus/client.py#L101-L130">get_consensus_checkpoint</a>(...) -> ConsensusCheckpointResponse</code></summary>
 <dl>
 <dd>
 
@@ -429,7 +429,7 @@ client.consensus.get_consensus_checkpoint(
 </dl>
 </details>
 
-<details><summary><code>client.consensus.<a href="src/fern/consensus/client.py">get_consensus_block</a>(...) -> Block</code></summary>
+<details><summary><code>client.consensus.<a href="src/fern/consensus/client.py#L132-L159">get_consensus_block</a>(...) -> Block</code></summary>
 <dl>
 <dd>
 
@@ -487,7 +487,7 @@ client.consensus.get_consensus_block(
 </dl>
 </details>
 
-<details><summary><code>client.consensus.<a href="src/fern/consensus/client.py">get_consensus_updates</a>(...) -> ConsensusUpdatesResponse</code></summary>
+<details><summary><code>client.consensus.<a href="src/fern/consensus/client.py#L161-L197">get_consensus_updates</a>(...) -> ConsensusUpdatesResponse</code></summary>
 <dl>
 <dd>
 
@@ -567,7 +567,7 @@ client.consensus.get_consensus_updates(
 </dl>
 </details>
 
-<details><summary><code>client.consensus.<a href="src/fern/consensus/client.py">get_consensus_index_by_height</a>(...) -> ChainIndex</code></summary>
+<details><summary><code>client.consensus.<a href="src/fern/consensus/client.py#L199-L226">get_consensus_index_by_height</a>(...) -> ChainIndex</code></summary>
 <dl>
 <dd>
 
@@ -626,7 +626,7 @@ client.consensus.get_consensus_index_by_height(
 </details>
 
 ## syncer
-<details><summary><code>client.syncer.<a href="src/fern/syncer/client.py">post_syncer_connect</a>(...)</code></summary>
+<details><summary><code>client.syncer.<a href="src/fern/syncer/client.py#L34-L59">post_syncer_connect</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -698,7 +698,7 @@ client.syncer.post_syncer_connect(
 </dl>
 </details>
 
-<details><summary><code>client.syncer.<a href="src/fern/syncer/client.py">get_syncer_peers</a>() -> typing.List[GatewayPeer]</code></summary>
+<details><summary><code>client.syncer.<a href="src/fern/syncer/client.py#L61-L81">get_syncer_peers</a>() -> typing.List[GatewayPeer]</code></summary>
 <dl>
 <dd>
 
@@ -746,7 +746,7 @@ client.syncer.get_syncer_peers()
 </dl>
 </details>
 
-<details><summary><code>client.syncer.<a href="src/fern/syncer/client.py">post_syncer_broadcast_block</a>(...)</code></summary>
+<details><summary><code>client.syncer.<a href="src/fern/syncer/client.py#L83-L158">post_syncer_broadcast_block</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -834,7 +834,7 @@ client.syncer.post_syncer_broadcast_block(
 </details>
 
 ## txpool
-<details><summary><code>client.txpool.<a href="src/fern/txpool/client.py">get_txpool_transactions</a>() -> TxpoolTransactionsResponse</code></summary>
+<details><summary><code>client.txpool.<a href="src/fern/txpool/client.py#L45-L67">get_txpool_transactions</a>() -> TxpoolTransactionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -882,7 +882,7 @@ client.txpool.get_txpool_transactions()
 </dl>
 </details>
 
-<details><summary><code>client.txpool.<a href="src/fern/txpool/client.py">post_txpool_v2transactions_basis</a>(...) -> TxpoolUpdateV2TransactionsResponse</code></summary>
+<details><summary><code>client.txpool.<a href="src/fern/txpool/client.py#L69-L115">post_txpool_v2transactions_basis</a>(...) -> TxpoolUpdateV2TransactionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -977,7 +977,7 @@ client.txpool.post_txpool_v2transactions_basis(
 </dl>
 </details>
 
-<details><summary><code>client.txpool.<a href="src/fern/txpool/client.py">get_txpool_fee</a>() -> Currency</code></summary>
+<details><summary><code>client.txpool.<a href="src/fern/txpool/client.py#L117-L137">get_txpool_fee</a>() -> Currency</code></summary>
 <dl>
 <dd>
 
@@ -1025,7 +1025,7 @@ client.txpool.get_txpool_fee()
 </dl>
 </details>
 
-<details><summary><code>client.txpool.<a href="src/fern/txpool/client.py">post_txpool_parents</a>(...) -> typing.List[Transaction]</code></summary>
+<details><summary><code>client.txpool.<a href="src/fern/txpool/client.py#L139-L214">post_txpool_parents</a>(...) -> typing.List[Transaction]</code></summary>
 <dl>
 <dd>
 
@@ -1097,7 +1097,7 @@ client.txpool.post_txpool_parents(
 </dl>
 </details>
 
-<details><summary><code>client.txpool.<a href="src/fern/txpool/client.py">post_txpool_broadcast</a>(...) -> TxpoolBroadcastResponse</code></summary>
+<details><summary><code>client.txpool.<a href="src/fern/txpool/client.py#L216-L255">post_txpool_broadcast</a>(...) -> TxpoolBroadcastResponse</code></summary>
 <dl>
 <dd>
 
@@ -1183,7 +1183,7 @@ client.txpool.post_txpool_broadcast()
 </dl>
 </details>
 
-<details><summary><code>client.txpool.<a href="src/fern/txpool/client.py">get_txpool_events</a>() -> typing.List[Event]</code></summary>
+<details><summary><code>client.txpool.<a href="src/fern/txpool/client.py#L257-L279">get_txpool_events</a>() -> typing.List[Event]</code></summary>
 <dl>
 <dd>
 
@@ -1246,7 +1246,7 @@ client.txpool.get_txpool_events()
 </details>
 
 ## addresses
-<details><summary><code>client.addresses.<a href="src/fern/addresses/client.py">get_address_balance</a>(...) -> Balance</code></summary>
+<details><summary><code>client.addresses.<a href="src/fern/addresses/client.py#L30-L55">get_address_balance</a>(...) -> Balance</code></summary>
 <dl>
 <dd>
 
@@ -1304,7 +1304,7 @@ client.addresses.get_address_balance(
 </dl>
 </details>
 
-<details><summary><code>client.addresses.<a href="src/fern/addresses/client.py">get_address_events</a>(...) -> typing.List[Event]</code></summary>
+<details><summary><code>client.addresses.<a href="src/fern/addresses/client.py#L57-L99">get_address_events</a>(...) -> typing.List[Event]</code></summary>
 <dl>
 <dd>
 
@@ -1392,7 +1392,7 @@ client.addresses.get_address_events(
 </dl>
 </details>
 
-<details><summary><code>client.addresses.<a href="src/fern/addresses/client.py">get_address_events_unconfirmed</a>(...) -> typing.List[Event]</code></summary>
+<details><summary><code>client.addresses.<a href="src/fern/addresses/client.py#L101-L130">get_address_events_unconfirmed</a>(...) -> typing.List[Event]</code></summary>
 <dl>
 <dd>
 
@@ -1464,7 +1464,7 @@ client.addresses.get_address_events_unconfirmed(
 </dl>
 </details>
 
-<details><summary><code>client.addresses.<a href="src/fern/addresses/client.py">get_address_siacoin_outputs</a>(...) -> AddressSiacoinElementsResponse</code></summary>
+<details><summary><code>client.addresses.<a href="src/fern/addresses/client.py#L132-L176">get_address_siacoin_outputs</a>(...) -> AddressSiacoinElementsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1546,7 +1546,7 @@ client.addresses.get_address_siacoin_outputs(
 </dl>
 </details>
 
-<details><summary><code>client.addresses.<a href="src/fern/addresses/client.py">get_address_siafund_outputs</a>(...) -> AddressSiafundElementsResponse</code></summary>
+<details><summary><code>client.addresses.<a href="src/fern/addresses/client.py#L178-L222">get_address_siafund_outputs</a>(...) -> AddressSiafundElementsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1629,7 +1629,7 @@ client.addresses.get_address_siafund_outputs(
 </details>
 
 ## batch
-<details><summary><code>client.batch.<a href="src/fern/batch/client.py">post_batch_addresses_balance</a>(...) -> Balance</code></summary>
+<details><summary><code>client.batch.<a href="src/fern/batch/client.py#L33-L61">post_batch_addresses_balance</a>(...) -> Balance</code></summary>
 <dl>
 <dd>
 
@@ -1703,7 +1703,7 @@ client.batch.post_batch_addresses_balance(
 </dl>
 </details>
 
-<details><summary><code>client.batch.<a href="src/fern/batch/client.py">post_batch_addresses_events</a>(...) -> typing.List[Event]</code></summary>
+<details><summary><code>client.batch.<a href="src/fern/batch/client.py#L63-L102">post_batch_addresses_events</a>(...) -> typing.List[Event]</code></summary>
 <dl>
 <dd>
 
@@ -1779,7 +1779,7 @@ client.batch.post_batch_addresses_events(
 </dl>
 </details>
 
-<details><summary><code>client.batch.<a href="src/fern/batch/client.py">post_batch_addresses_siacoin_outputs</a>(...) -> AddressSiacoinElementsResponse</code></summary>
+<details><summary><code>client.batch.<a href="src/fern/batch/client.py#L104-L143">post_batch_addresses_siacoin_outputs</a>(...) -> AddressSiacoinElementsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1855,7 +1855,7 @@ client.batch.post_batch_addresses_siacoin_outputs(
 </dl>
 </details>
 
-<details><summary><code>client.batch.<a href="src/fern/batch/client.py">post_batch_addresses_siafund_outputs</a>(...) -> AddressSiafundElementsResponse</code></summary>
+<details><summary><code>client.batch.<a href="src/fern/batch/client.py#L145-L184">post_batch_addresses_siafund_outputs</a>(...) -> AddressSiafundElementsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1932,7 +1932,7 @@ client.batch.post_batch_addresses_siafund_outputs(
 </details>
 
 ## outputs
-<details><summary><code>client.outputs.<a href="src/fern/outputs/client.py">get_siacoin_output</a>(...) -> SiacoinElement</code></summary>
+<details><summary><code>client.outputs.<a href="src/fern/outputs/client.py#L29-L56">get_siacoin_output</a>(...) -> SiacoinElement</code></summary>
 <dl>
 <dd>
 
@@ -1990,7 +1990,7 @@ client.outputs.get_siacoin_output(
 </dl>
 </details>
 
-<details><summary><code>client.outputs.<a href="src/fern/outputs/client.py">get_siacoin_output_spent</a>(...) -> ElementSpentResponse</code></summary>
+<details><summary><code>client.outputs.<a href="src/fern/outputs/client.py#L58-L85">get_siacoin_output_spent</a>(...) -> ElementSpentResponse</code></summary>
 <dl>
 <dd>
 
@@ -2048,7 +2048,7 @@ client.outputs.get_siacoin_output_spent(
 </dl>
 </details>
 
-<details><summary><code>client.outputs.<a href="src/fern/outputs/client.py">get_siafund_output</a>(...) -> SiafundElement</code></summary>
+<details><summary><code>client.outputs.<a href="src/fern/outputs/client.py#L87-L114">get_siafund_output</a>(...) -> SiafundElement</code></summary>
 <dl>
 <dd>
 
@@ -2106,7 +2106,7 @@ client.outputs.get_siafund_output(
 </dl>
 </details>
 
-<details><summary><code>client.outputs.<a href="src/fern/outputs/client.py">get_siafund_output_spent</a>(...) -> ElementSpentResponse</code></summary>
+<details><summary><code>client.outputs.<a href="src/fern/outputs/client.py#L116-L143">get_siafund_output_spent</a>(...) -> ElementSpentResponse</code></summary>
 <dl>
 <dd>
 
@@ -2165,7 +2165,7 @@ client.outputs.get_siafund_output_spent(
 </details>
 
 ## events
-<details><summary><code>client.events.<a href="src/fern/events/client.py">get_event</a>(...) -> Event</code></summary>
+<details><summary><code>client.events.<a href="src/fern/events/client.py#L27-L52">get_event</a>(...) -> Event</code></summary>
 <dl>
 <dd>
 
@@ -2224,7 +2224,7 @@ client.events.get_event(
 </details>
 
 ## rescan
-<details><summary><code>client.rescan.<a href="src/fern/rescan/client.py">get_rescan</a>() -> RescanResponse</code></summary>
+<details><summary><code>client.rescan.<a href="src/fern/rescan/client.py#L29-L49">get_rescan</a>() -> RescanResponse</code></summary>
 <dl>
 <dd>
 
@@ -2272,7 +2272,7 @@ client.rescan.get_rescan()
 </dl>
 </details>
 
-<details><summary><code>client.rescan.<a href="src/fern/rescan/client.py">post_rescan</a>(...)</code></summary>
+<details><summary><code>client.rescan.<a href="src/fern/rescan/client.py#L51-L76">post_rescan</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2345,7 +2345,7 @@ client.rescan.post_rescan(
 </details>
 
 ## wallets
-<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py">get_wallets</a>() -> typing.List[Wallet]</code></summary>
+<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py#L44-L64">get_wallets</a>() -> typing.List[Wallet]</code></summary>
 <dl>
 <dd>
 
@@ -2393,7 +2393,7 @@ client.wallets.get_wallets()
 </dl>
 </details>
 
-<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py">post_wallet</a>(...) -> Wallet</code></summary>
+<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py#L66-L101">post_wallet</a>(...) -> Wallet</code></summary>
 <dl>
 <dd>
 
@@ -2449,7 +2449,7 @@ client.wallets.post_wallet()
 </dl>
 </details>
 
-<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py">post_wallet_by_id</a>(...) -> Wallet</code></summary>
+<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py#L103-L144">post_wallet_by_id</a>(...) -> Wallet</code></summary>
 <dl>
 <dd>
 
@@ -2515,7 +2515,7 @@ client.wallets.post_wallet_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py">delete_wallet_by_id</a>(...)</code></summary>
+<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py#L146-L170">delete_wallet_by_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2573,7 +2573,7 @@ client.wallets.delete_wallet_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py">get_wallet_addresses</a>(...) -> typing.List[WalletAddress]</code></summary>
+<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py#L172-L199">get_wallet_addresses</a>(...) -> typing.List[WalletAddress]</code></summary>
 <dl>
 <dd>
 
@@ -2631,7 +2631,7 @@ client.wallets.get_wallet_addresses(
 </dl>
 </details>
 
-<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py">put_wallet_address</a>(...)</code></summary>
+<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py#L201-L251">put_wallet_address</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2699,7 +2699,7 @@ client.wallets.put_wallet_address(
 </dl>
 </details>
 
-<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py">put_wallet_batch_addresses</a>(...)</code></summary>
+<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py#L253-L291">put_wallet_batch_addresses</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2771,7 +2771,7 @@ client.wallets.put_wallet_batch_addresses(
 </dl>
 </details>
 
-<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py">delete_wallet_address</a>(...)</code></summary>
+<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py#L293-L323">delete_wallet_address</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2838,7 +2838,7 @@ client.wallets.delete_wallet_address(
 </dl>
 </details>
 
-<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py">get_wallet_balance</a>(...) -> Balance</code></summary>
+<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py#L325-L350">get_wallet_balance</a>(...) -> Balance</code></summary>
 <dl>
 <dd>
 
@@ -2896,7 +2896,7 @@ client.wallets.get_wallet_balance(
 </dl>
 </details>
 
-<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py">get_wallet_events</a>(...) -> typing.List[Event]</code></summary>
+<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py#L352-L390">get_wallet_events</a>(...) -> typing.List[Event]</code></summary>
 <dl>
 <dd>
 
@@ -2970,7 +2970,7 @@ client.wallets.get_wallet_events(
 </dl>
 </details>
 
-<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py">get_wallet_events_unconfirmed</a>(...) -> typing.List[Event]</code></summary>
+<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py#L392-L419">get_wallet_events_unconfirmed</a>(...) -> typing.List[Event]</code></summary>
 <dl>
 <dd>
 
@@ -3028,7 +3028,7 @@ client.wallets.get_wallet_events_unconfirmed(
 </dl>
 </details>
 
-<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py">get_wallet_siacoin_outputs</a>(...) -> UnspentSiacoinElementsResponse</code></summary>
+<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py#L421-L461">get_wallet_siacoin_outputs</a>(...) -> UnspentSiacoinElementsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3102,7 +3102,7 @@ client.wallets.get_wallet_siacoin_outputs(
 </dl>
 </details>
 
-<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py">get_wallet_siafund_outputs</a>(...) -> UnspentSiafundElementsResponse</code></summary>
+<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py#L463-L503">get_wallet_siafund_outputs</a>(...) -> UnspentSiafundElementsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3176,7 +3176,7 @@ client.wallets.get_wallet_siafund_outputs(
 </dl>
 </details>
 
-<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py">post_wallet_reserve</a>(...)</code></summary>
+<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py#L505-L542">post_wallet_reserve</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3250,7 +3250,7 @@ client.wallets.post_wallet_reserve(
 </dl>
 </details>
 
-<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py">post_wallet_release</a>(...)</code></summary>
+<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py#L544-L581">post_wallet_release</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3324,7 +3324,7 @@ client.wallets.post_wallet_release(
 </dl>
 </details>
 
-<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py">post_wallet_fund</a>(...) -> WalletFundResponse</code></summary>
+<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py#L583-L628">post_wallet_fund</a>(...) -> WalletFundResponse</code></summary>
 <dl>
 <dd>
 
@@ -3410,7 +3410,7 @@ client.wallets.post_wallet_fund(
 </dl>
 </details>
 
-<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py">post_wallet_fund_siafunds</a>(...) -> WalletFundResponse</code></summary>
+<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py#L630-L683">post_wallet_fund_siafunds</a>(...) -> WalletFundResponse</code></summary>
 <dl>
 <dd>
 
@@ -3504,7 +3504,7 @@ client.wallets.post_wallet_fund_siafunds(
 </dl>
 </details>
 
-<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py">post_wallet_construct_transaction</a>(...) -> WalletConstructResponse</code></summary>
+<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py#L685-L729">post_wallet_construct_transaction</a>(...) -> WalletConstructResponse</code></summary>
 <dl>
 <dd>
 
@@ -3585,7 +3585,7 @@ client.wallets.post_wallet_construct_transaction(
 </dl>
 </details>
 
-<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py">post_wallet_construct_v2transaction</a>(...) -> WalletConstructV2Response</code></summary>
+<details><summary><code>client.wallets.<a href="src/fern/wallets/client.py#L731-L775">post_wallet_construct_v2transaction</a>(...) -> WalletConstructV2Response</code></summary>
 <dl>
 <dd>
 
@@ -3667,7 +3667,7 @@ client.wallets.post_wallet_construct_v2transaction(
 </details>
 
 ## debug
-<details><summary><code>client.debug.<a href="src/fern/debug/client.py">post_debug_mine</a>(...)</code></summary>
+<details><summary><code>client.debug.<a href="src/fern/debug/client.py#L30-L61">post_debug_mine</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3748,7 +3748,7 @@ client.debug.post_debug_mine(
 </dl>
 </details>
 
-<details><summary><code>client.debug.<a href="src/fern/debug/client.py">get_pprof_data</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.debug.<a href="src/fern/debug/client.py#L63-L82">get_pprof_data</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 

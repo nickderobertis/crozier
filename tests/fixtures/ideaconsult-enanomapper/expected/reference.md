@@ -1,6 +1,6 @@
 # Reference
 ## Studies
-<details><summary><code>client.studies.<a href="src/fern/studies/client.py">get_investigation_results</a>(...) -> Investigation</code></summary>
+<details><summary><code>client.studies.<a href="src/fern/studies/client.py#L37-L110">get_investigation_results</a>(...) -> Investigation</code></summary>
 <dl>
 <dd>
 
@@ -124,7 +124,7 @@ client.studies.get_investigation_results(
 </dl>
 </details>
 
-<details><summary><code>client.studies.<a href="src/fern/studies/client.py">get_endpoint_summary</a>(...) -> Facet</code></summary>
+<details><summary><code>client.studies.<a href="src/fern/studies/client.py#L112-L156">get_endpoint_summary</a>(...) -> Facet</code></summary>
 <dl>
 <dd>
 
@@ -213,7 +213,7 @@ client.studies.get_endpoint_summary(
 </dl>
 </details>
 
-<details><summary><code>client.studies.<a href="src/fern/studies/client.py">get_substance_study</a>(...) -> SubstanceStudy</code></summary>
+<details><summary><code>client.studies.<a href="src/fern/studies/client.py#L158-L236">get_substance_study</a>(...) -> SubstanceStudy</code></summary>
 <dl>
 <dd>
 
@@ -351,7 +351,7 @@ client.studies.get_substance_study(
 </dl>
 </details>
 
-<details><summary><code>client.studies.<a href="src/fern/studies/client.py">get_substance_study_summary</a>(...) -> SubstanceStudySummary</code></summary>
+<details><summary><code>client.studies.<a href="src/fern/studies/client.py#L238-L316">get_substance_study_summary</a>(...) -> SubstanceStudySummary</code></summary>
 <dl>
 <dd>
 
@@ -490,7 +490,7 @@ client.studies.get_substance_study_summary(
 </details>
 
 ## Structures
-<details><summary><code>client.structures.<a href="src/fern/structures/client.py">search_by_identifier</a>(...) -> Dataset</code></summary>
+<details><summary><code>client.structures.<a href="src/fern/structures/client.py#L36-L123">search_by_identifier</a>(...) -> Dataset</code></summary>
 <dl>
 <dd>
 
@@ -637,7 +637,7 @@ client.structures.search_by_identifier(
 </dl>
 </details>
 
-<details><summary><code>client.structures.<a href="src/fern/structures/client.py">search_by_similarity</a>(...) -> Dataset</code></summary>
+<details><summary><code>client.structures.<a href="src/fern/structures/client.py#L125-L217">search_by_similarity</a>(...) -> Dataset</code></summary>
 <dl>
 <dd>
 
@@ -798,7 +798,7 @@ client.structures.search_by_similarity(
 </dl>
 </details>
 
-<details><summary><code>client.structures.<a href="src/fern/structures/client.py">search_by_smarts</a>(...) -> Dataset</code></summary>
+<details><summary><code>client.structures.<a href="src/fern/structures/client.py#L219-L306">search_by_smarts</a>(...) -> Dataset</code></summary>
 <dl>
 <dd>
 
@@ -951,7 +951,7 @@ client.structures.search_by_smarts(
 </dl>
 </details>
 
-<details><summary><code>client.structures.<a href="src/fern/structures/client.py">get_substance_composition</a>(...) -> SubstanceComposition</code></summary>
+<details><summary><code>client.structures.<a href="src/fern/structures/client.py#L308-L361">get_substance_composition</a>(...) -> SubstanceComposition</code></summary>
 <dl>
 <dd>
 
@@ -1057,7 +1057,7 @@ client.structures.get_substance_composition(
 </dl>
 </details>
 
-<details><summary><code>client.structures.<a href="src/fern/structures/client.py">get_substance_structures</a>(...) -> Dataset</code></summary>
+<details><summary><code>client.structures.<a href="src/fern/structures/client.py#L363-L412">get_substance_structures</a>(...) -> Dataset</code></summary>
 <dl>
 <dd>
 
@@ -1156,7 +1156,7 @@ client.structures.get_substance_structures(
 </details>
 
 ## Substances
-<details><summary><code>client.substances.<a href="src/fern/substances/client.py">get_substances</a>(...) -> Substance</code></summary>
+<details><summary><code>client.substances.<a href="src/fern/substances/client.py#L29-L105">get_substances</a>(...) -> Substance</code></summary>
 <dl>
 <dd>
 
@@ -1293,7 +1293,7 @@ client.substances.get_substances(
 </dl>
 </details>
 
-<details><summary><code>client.substances.<a href="src/fern/substances/client.py">get_substance_by_uuid</a>(...) -> Substance</code></summary>
+<details><summary><code>client.substances.<a href="src/fern/substances/client.py#L107-L160">get_substance_by_uuid</a>(...) -> Substance</code></summary>
 <dl>
 <dd>
 
@@ -1400,7 +1400,7 @@ client.substances.get_substance_by_uuid(
 </details>
 
 ## Search
-<details><summary><code>client.search.<a href="src/fern/search/client.py">solrquery_get</a>(...) -> SolrResponse</code></summary>
+<details><summary><code>client.search.<a href="src/fern/search/client.py#L32-L87">solrquery_get</a>(...) -> SolrResponse</code></summary>
 <dl>
 <dd>
 
@@ -1513,7 +1513,7 @@ client.search.solrquery_get(
 </dl>
 </details>
 
-<details><summary><code>client.search.<a href="src/fern/search/client.py">solrquery_post</a>(...) -> SolrResponse</code></summary>
+<details><summary><code>client.search.<a href="src/fern/search/client.py#L89-L125">solrquery_post</a>(...) -> SolrResponse</code></summary>
 <dl>
 <dd>
 

@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">start_firing</a>(...) -> Firing</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L100-L126">start_firing</a>(...) -> Firing</code></summary>
 <dl>
 <dd>
 

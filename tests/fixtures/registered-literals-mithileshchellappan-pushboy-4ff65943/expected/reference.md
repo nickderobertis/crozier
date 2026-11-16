@@ -1,6 +1,6 @@
 # Reference
 ## Health
-<details><summary><code>client.health.<a href="src/fern/health/client.py">liveness_check</a>() -> str</code></summary>
+<details><summary><code>client.health.<a href="src/fern/health/client.py#L25-L45">liveness_check</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -49,7 +49,7 @@ client.health.liveness_check()
 </details>
 
 ## Users
-<details><summary><code>client.users.<a href="src/fern/users/client.py">list_users</a>(...) -> PaginatedUsers</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L30-L62">list_users</a>(...) -> PaginatedUsers</code></summary>
 <dl>
 <dd>
 
@@ -113,7 +113,7 @@ client.users.list_users()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">create_a_user</a>(...) -> User</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L64-L89">create_a_user</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -169,7 +169,7 @@ client.users.create_a_user()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_a_user</a>(...) -> User</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L91-L115">get_a_user</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -227,7 +227,7 @@ client.users.get_a_user(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">delete_a_user</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L117-L140">delete_a_user</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -286,7 +286,7 @@ client.users.delete_a_user(
 </details>
 
 ## Tokens
-<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">register_a_push_token</a>(...) -> PostV1UsersTokensResponse</code></summary>
+<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py#L31-L72">register_a_push_token</a>(...) -> PostV1UsersTokensResponse</code></summary>
 <dl>
 <dd>
 
@@ -375,7 +375,7 @@ client.tokens.register_a_push_token(
 </dl>
 </details>
 
-<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">list_a_users_push_tokens</a>(...) -> typing.List[Token]</code></summary>
+<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py#L74-L100">list_a_users_push_tokens</a>(...) -> typing.List[Token]</code></summary>
 <dl>
 <dd>
 
@@ -433,7 +433,7 @@ client.tokens.list_a_users_push_tokens(
 </dl>
 </details>
 
-<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">delete_a_push_token</a>(...)</code></summary>
+<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py#L102-L132">delete_a_push_token</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -515,7 +515,7 @@ client.tokens.delete_a_push_token(
 </details>
 
 ## Subscriptions
-<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">subscribe_a_user_to_a_topic</a>(...) -> UserTopicSubscription</code></summary>
+<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py#L27-L56">subscribe_a_user_to_a_topic</a>(...) -> UserTopicSubscription</code></summary>
 <dl>
 <dd>
 
@@ -582,7 +582,7 @@ client.subscriptions.subscribe_a_user_to_a_topic(
 </dl>
 </details>
 
-<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">unsubscribe_a_user_from_a_topic</a>(...)</code></summary>
+<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py#L58-L86">unsubscribe_a_user_from_a_topic</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -649,7 +649,7 @@ client.subscriptions.unsubscribe_a_user_from_a_topic(
 </dl>
 </details>
 
-<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">list_a_users_topic_subscriptions</a>(...) -> typing.List[UserTopicSubscription]</code></summary>
+<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py#L88-L114">list_a_users_topic_subscriptions</a>(...) -> typing.List[UserTopicSubscription]</code></summary>
 <dl>
 <dd>
 
@@ -707,7 +707,7 @@ client.subscriptions.list_a_users_topic_subscriptions(
 </dl>
 </details>
 
-<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">list_topic_subscribers</a>(...) -> PaginatedTopicSubscribers</code></summary>
+<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py#L116-L155">list_topic_subscribers</a>(...) -> PaginatedTopicSubscribers</code></summary>
 <dl>
 <dd>
 
@@ -782,7 +782,7 @@ client.subscriptions.list_topic_subscribers(
 </details>
 
 ## Notifications
-<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py">list_notifications_eligible_for_a_user</a>(...) -> PaginatedPublishJobs</code></summary>
+<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py#L35-L80">list_notifications_eligible_for_a_user</a>(...) -> PaginatedPublishJobs</code></summary>
 <dl>
 <dd>
 
@@ -878,7 +878,7 @@ client.notifications.list_notifications_eligible_for_a_user(
 </dl>
 </details>
 
-<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py">send_or_schedule_a_notification_to_one_user</a>(...) -> QueuedJobResponse</code></summary>
+<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py#L82-L168">send_or_schedule_a_notification_to_one_user</a>(...) -> QueuedJobResponse</code></summary>
 <dl>
 <dd>
 
@@ -944,7 +944,7 @@ client.notifications.send_or_schedule_a_notification_to_one_user(
 </dl>
 </details>
 
-<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py">list_notifications_for_a_topic</a>(...) -> PaginatedPublishJobs</code></summary>
+<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py#L170-L213">list_notifications_for_a_topic</a>(...) -> PaginatedPublishJobs</code></summary>
 <dl>
 <dd>
 
@@ -1026,7 +1026,7 @@ client.notifications.list_notifications_for_a_topic(
 </dl>
 </details>
 
-<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py">send_or_schedule_a_notification_to_a_topic</a>(...) -> QueuedJobResponse</code></summary>
+<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py#L215-L301">send_or_schedule_a_notification_to_a_topic</a>(...) -> QueuedJobResponse</code></summary>
 <dl>
 <dd>
 
@@ -1092,7 +1092,7 @@ client.notifications.send_or_schedule_a_notification_to_a_topic(
 </dl>
 </details>
 
-<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py">get_notification_job</a>(...) -> PublishJob</code></summary>
+<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py#L303-L329">get_notification_job</a>(...) -> PublishJob</code></summary>
 <dl>
 <dd>
 
@@ -1151,7 +1151,7 @@ client.notifications.get_notification_job(
 </details>
 
 ## Topics
-<details><summary><code>client.topics.<a href="src/fern/topics/client.py">list_topics</a>() -> typing.List[Topic]</code></summary>
+<details><summary><code>client.topics.<a href="src/fern/topics/client.py#L30-L50">list_topics</a>() -> typing.List[Topic]</code></summary>
 <dl>
 <dd>
 
@@ -1199,7 +1199,7 @@ client.topics.list_topics()
 </dl>
 </details>
 
-<details><summary><code>client.topics.<a href="src/fern/topics/client.py">create_a_topic</a>(...) -> Topic</code></summary>
+<details><summary><code>client.topics.<a href="src/fern/topics/client.py#L52-L79">create_a_topic</a>(...) -> Topic</code></summary>
 <dl>
 <dd>
 
@@ -1266,7 +1266,7 @@ client.topics.create_a_topic(
 </dl>
 </details>
 
-<details><summary><code>client.topics.<a href="src/fern/topics/client.py">get_a_topic</a>(...) -> Topic</code></summary>
+<details><summary><code>client.topics.<a href="src/fern/topics/client.py#L81-L105">get_a_topic</a>(...) -> Topic</code></summary>
 <dl>
 <dd>
 
@@ -1324,7 +1324,7 @@ client.topics.get_a_topic(
 </dl>
 </details>
 
-<details><summary><code>client.topics.<a href="src/fern/topics/client.py">delete_a_topic</a>(...)</code></summary>
+<details><summary><code>client.topics.<a href="src/fern/topics/client.py#L107-L130">delete_a_topic</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1382,7 +1382,7 @@ client.topics.delete_a_topic(
 </dl>
 </details>
 
-<details><summary><code>client.topics.<a href="src/fern/topics/client.py">count_topic_subscribers</a>(...) -> GetV1TopicsTopicIdCountResponse</code></summary>
+<details><summary><code>client.topics.<a href="src/fern/topics/client.py#L132-L158">count_topic_subscribers</a>(...) -> GetV1TopicsTopicIdCountResponse</code></summary>
 <dl>
 <dd>
 
@@ -1441,7 +1441,7 @@ client.topics.count_topic_subscribers(
 </details>
 
 ## LiveActivity
-<details><summary><code>client.live_activity.<a href="src/fern/live_activity/client.py">register_a_live_activity_token</a>(...) -> PostV1LiveActivityTokensResponse</code></summary>
+<details><summary><code>client.live_activity.<a href="src/fern/live_activity/client.py#L35-L97">register_a_live_activity_token</a>(...) -> PostV1LiveActivityTokensResponse</code></summary>
 <dl>
 <dd>
 
@@ -1564,7 +1564,7 @@ client.live_activity.register_a_live_activity_token(
 </dl>
 </details>
 
-<details><summary><code>client.live_activity.<a href="src/fern/live_activity/client.py">invalidate_a_live_activity_token</a>(...)</code></summary>
+<details><summary><code>client.live_activity.<a href="src/fern/live_activity/client.py#L99-L129">invalidate_a_live_activity_token</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1631,7 +1631,7 @@ client.live_activity.invalidate_a_live_activity_token(
 </dl>
 </details>
 
-<details><summary><code>client.live_activity.<a href="src/fern/live_activity/client.py">subscribe_a_user_to_a_live_activity_topic</a>(...) -> LiveActivityUserTopicSubscription</code></summary>
+<details><summary><code>client.live_activity.<a href="src/fern/live_activity/client.py#L131-L162">subscribe_a_user_to_a_live_activity_topic</a>(...) -> LiveActivityUserTopicSubscription</code></summary>
 <dl>
 <dd>
 
@@ -1698,7 +1698,7 @@ client.live_activity.subscribe_a_user_to_a_live_activity_topic(
 </dl>
 </details>
 
-<details><summary><code>client.live_activity.<a href="src/fern/live_activity/client.py">start_update_or_end_a_live_activity</a>(...) -> LiveActivityJobResponse</code></summary>
+<details><summary><code>client.live_activity.<a href="src/fern/live_activity/client.py#L164-L214">start_update_or_end_a_live_activity</a>(...) -> LiveActivityJobResponse</code></summary>
 <dl>
 <dd>
 

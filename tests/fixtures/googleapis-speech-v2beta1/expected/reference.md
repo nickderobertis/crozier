@@ -1,6 +1,6 @@
 # Reference
 ## projects
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">speech_projects_locations_operations_get</a>(...) -> Operation</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L35-L127">speech_projects_locations_operations_get</a>(...) -> Operation</code></summary>
 <dl>
 <dd>
 
@@ -161,7 +161,7 @@ client.projects.speech_projects_locations_operations_get(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">speech_projects_locations_operations_list</a>(...) -> ListOperationsResponse</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L129-L236">speech_projects_locations_operations_list</a>(...) -> ListOperationsResponse</code></summary>
 <dl>
 <dd>
 

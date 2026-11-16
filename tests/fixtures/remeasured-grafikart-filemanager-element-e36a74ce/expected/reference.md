@@ -1,6 +1,6 @@
 # Reference
 ## FolderResource
-<details><summary><code>client.folder_resource.<a href="src/fern/folder_resource/client.py">get_folders</a>(...) -> typing.List[Folder]</code></summary>
+<details><summary><code>client.folder_resource.<a href="src/fern/folder_resource/client.py#L30-L58">get_folders</a>(...) -> typing.List[Folder]</code></summary>
 <dl>
 <dd>
 
@@ -69,7 +69,7 @@ client.folder_resource.get_folders()
 </dl>
 </details>
 
-<details><summary><code>client.folder_resource.<a href="src/fern/folder_resource/client.py">post_folders</a>(...) -> Folder</code></summary>
+<details><summary><code>client.folder_resource.<a href="src/fern/folder_resource/client.py#L60-L96">post_folders</a>(...) -> Folder</code></summary>
 <dl>
 <dd>
 
@@ -148,7 +148,7 @@ client.folder_resource.post_folders(
 </dl>
 </details>
 
-<details><summary><code>client.folder_resource.<a href="src/fern/folder_resource/client.py">delete_folders_id</a>(...)</code></summary>
+<details><summary><code>client.folder_resource.<a href="src/fern/folder_resource/client.py#L98-L125">delete_folders_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -220,7 +220,7 @@ client.folder_resource.delete_folders_id(
 </details>
 
 ## File
-<details><summary><code>client.file.<a href="src/fern/file/client.py">get_files</a>(...) -> typing.List[File]</code></summary>
+<details><summary><code>client.file.<a href="src/fern/file/client.py#L31-L59">get_files</a>(...) -> typing.List[File]</code></summary>
 <dl>
 <dd>
 
@@ -289,7 +289,7 @@ client.file.get_files()
 </dl>
 </details>
 
-<details><summary><code>client.file.<a href="src/fern/file/client.py">post_files</a>(...) -> File</code></summary>
+<details><summary><code>client.file.<a href="src/fern/file/client.py#L61-L98">post_files</a>(...) -> File</code></summary>
 <dl>
 <dd>
 
@@ -369,7 +369,7 @@ client.file.post_files(
 </dl>
 </details>
 
-<details><summary><code>client.file.<a href="src/fern/file/client.py">delete_files_id</a>(...)</code></summary>
+<details><summary><code>client.file.<a href="src/fern/file/client.py#L100-L127">delete_files_id</a>(...)</code></summary>
 <dl>
 <dd>
 

@@ -69,7 +69,12 @@ exactly, except:
 ## Parity status and the residual manifest
 
 **Every registered corpus but two reproduces its whole committed Fern golden
-byte-for-byte at `fernapi/fern-python-sdk:5.41.3`.** Every `Corpus` in
+byte-for-byte at Fern CLI 5.200.0 / `fernapi/fern-python-sdk:5.41.25`**, the
+certified pair, apart from the catalogued departures the ledger pins. The Fern
+goldens run 43423270787 regenerated every golden at that pair. `subsloth` and
+`viskit-studio`, whose pinned upstream URLs now answer 404, were regenerated
+from their committed copies, each verified against the corpus row's recorded
+SHA-256 first (`fetch-corpus --if-missing`), so they too are compared there. Every `Corpus` in
 `crates/crozier-e2e/tests/e2e.rs` carries an empty `unmatched` list except `komga` and
 `webflow-v2`, which are registered with a measured residual; that file is the
 measured truth, and this document holds the judgment about *why* each shape generates the
@@ -103,7 +108,7 @@ coverage.
 
 `calorieninjas.com` is the only such corpus. Its source operation declares no
 `operationId`; Fern 5.20.0 emitted unnamed methods (`def (`, `_raw_client.(`) and
-its own Ruff pass then rejected the SDK (not re-measured at the certified 5.41.3), so the failure is upstream of crozier —
+its own Ruff pass then rejected the SDK (reproduced with the same exit and fingerprint at the certified 5.41.25 by the Fern goldens run 43423270787), so the failure is upstream of crozier —
 crozier generates that same spec successfully and *names* the operation. The
 registration is bound to the exact generator version, corpus name/ref/URL, exit
 code, ordered syntax diagnostics with their source lines, Ruff summary, and
@@ -276,7 +281,7 @@ under `ruff` isort. The
 **Which parameter examples reach a worked call.** Fern keeps a *parameter-level*
 `example`/`examples` only on a `type: string` parameter, and does so identically
 for query, header and path parameters. Probed directly against Fern 5.20.0 (not
-re-probed at the certified pair; the goldens below hold it at 5.41.3): an
+re-probed since; the goldens below hold it at 5.41.25): an
 integer or boolean example declared on the parameter never reaches the call, nor
 does a string-*valued* example on an `integer` schema — the gate is the declared
 type, not the example's JSON kind — and a required argument whose example was
@@ -1495,8 +1500,14 @@ an **XML model** (`src/emit/xml.rs`, after Fern's own generator source): its
 pydantic class gains `to_xml`/`from_xml`, `__str__`, private ordered-content
 fields, `add_child`/`add_text`/the comment methods, a fluent builder per XML
 model its child lists hold, and `copy_on_model_validation = "none"`; the SDK
-gains `core/xml_utilities.py` and a `tests/xml/test_<model>.py` round trip per
-model. What Fern reads, and so what crozier reads:
+gains `core/xml_utilities.py` and a `tests/xml/test_xml_<model>.py` round trip
+per model (`test_<model>.py` before fern-python-sdk 5.41.25). A model whose
+constructor takes its text or inline children passes its extra keyword
+arguments through `check_xml_extra_attributes`, with the attributes whose XML
+name differs from their field (`{"schemaLocation": "xsi_schema_location"}`):
+such a key sets that attribute, and one differing from a declared name only by
+case raises `TypeError`, where 5.41.3 kept either as an undeclared attribute.
+What Fern reads, and so what crozier reads:
 
 - the element is the `xml.name`, else the type name, with `namespace`/`prefix`;
 - each property of the model is a child element unless its `xml` (or, for a
@@ -1514,7 +1525,7 @@ sample document leaves out fails its round trip in Fern's SDK too.
 
 ### Known defects crozier reproduces on purpose
 
-By user ruling, crozier reproduces fern-python-sdk 5.41.3's XML models and their
+By user ruling, crozier reproduces fern-python-sdk 5.41.25's XML models and their
 generated `tests/xml/` modules byte for byte, **including their known defects**:
 this is a deliberate match, not a catalogued departure. Only a specification
 that declares OpenAPI `xml` objects is affected; without one no XML model and no
@@ -1536,9 +1547,10 @@ that declares OpenAPI `xml` objects is affected; without one no XML model and no
   single-valued field, so the serialized form has one `<header />` and the
   `in` assertion fails.
 
-Measured by running each golden's `tests/xml/` with pytest under pydantic
-2.14.1 on Python 3.14 (crozier's output byte-matches each golden, so the counts
-are crozier's too):
+Measured at Fern CLI 5.200.0 / fern-python-sdk 5.41.25 by running each golden's
+`tests/xml/` with pytest under pydantic 2.14.0 on Python 3.14.7 (crozier's
+output byte-matches each golden, so the counts are crozier's too). The counts
+and shapes are the ones 5.41.3 measured:
 
 | golden | failing / total | shapes |
 |---|---|---|
@@ -1702,8 +1714,11 @@ the **packaged** SDK every `expected/` golden holds. A generator whose `output` 
 no `--preview`, writes a **flat** module tree. crozier writes the second with
 `layout: flat` (`--layout flat`, `CROZIER_LAYOUT=flat`; see
 [`configuration.md`](configuration.md#output-layout)). Everything below was
-measured with real Fern at the certified pair (CLI 5.163.1,
-`fernapi/fern-python-sdk` 5.41.3) and is pinned by the flat goldens.
+measured with real Fern at the pair then certified (CLI 5.163.1,
+`fernapi/fern-python-sdk` 5.41.3) and is pinned by the flat goldens, which the
+Fern goldens workflow regenerated at CLI 5.200.0 / fern-python-sdk 5.41.25,
+where they changed only in the shared `core/` runtime, the XML models and
+their tests, the metadata record and the async README example.
 
 **The tree.** At the output root Fern's flat run writes:
 
@@ -1723,7 +1738,7 @@ and crozier's flat output reproduces each:
    in `tests/test_aiohttp_autodetect.py`, name the **package** (module) name
    where the packaged form names the **project** (distribution) name:
    `pip install fern[aiohttp]` flat against `pip install
-   default_package_name[aiohttp]` packaged, for the default names. Ruff lays the
+   default-package-name[aiohttp]` packaged, for the default names. Ruff lays the
    hint's `raise` out by the name's length: on one line when it fits in 120
    columns (a flat `fern`), split over three lines otherwise, with the string
    itself split when even that overflows. crozier joins the short form only in
@@ -1764,7 +1779,8 @@ README heading apart from the package name, so a Fern setup whose
 `package_name` differs from its organization is outside what crozier
 reproduces, in either layout.
 
-No Fern option at the certified pair sets the **project** (distribution) name
+No Fern option at the pair measured (CLI 5.163.1 / fern-python-sdk 5.41.3)
+sets the **project** (distribution) name
 apart from the package name:
 
 - `package_name: my_pkg` set both (`name = "my_pkg"` in the packaged
@@ -1773,7 +1789,13 @@ apart from the package name:
   distribution `my_pkg` under `--preview`.
 - The flat run refuses a `pypi` output outright without a real `FERN_TOKEN`.
 
-Fern's default distribution name is `default_package_name`. The flat tree has no
+Fern's default distribution name is `default_package_name`, which
+fern-python-sdk 5.41.25 writes with its underscores as hyphens,
+`default-package-name`, in `pyproject.toml`, `version.py`, the aiohttp install
+hint and the SDK-name header (every one of the 749 packaged trees the workflow
+regenerated at CLI 5.200.0). crozier writes its project name the same way,
+configured or derived (`my_api` packages as `my-api`); the import package keeps
+its underscores. The flat tree has no
 distribution at all: its README installs the package name, and nothing else in
 it names the project. So crozier's flat output is identical whatever
 `project-name` says (`flat_output_carries_no_project_name`), and the
@@ -1793,7 +1815,7 @@ flat tree, and the cursor-paginated shape the flat layout once left unpaged:
 
 | Flat golden | Setting it pins |
 | --- | --- |
-| `swagger-petstore` | the default names (`fern`, `default_package_name`) |
+| `swagger-petstore` | the default names (`fern`, `default_package_name`, packaged as `default-package-name`) |
 | `client-class-name` | `client-class-name: AcmeClient` |
 | `audience-filter-strict` | `audiences: [public]` with `audience-strict: true` |
 | `eos.local-extra-fields-forbid` | `extra-fields: forbid` (a `CORPUS.md` row, refreshed by the workflow) |

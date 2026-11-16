@@ -1,6 +1,6 @@
 # Reference
 ## Assistants
-<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py">create_assistant</a>(...) -> Assistant</code></summary>
+<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py#L38-L112">create_assistant</a>(...) -> Assistant</code></summary>
 <dl>
 <dd>
 
@@ -129,7 +129,7 @@ client.assistants.create_assistant(
 </dl>
 </details>
 
-<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py">search_assistants</a>(...) -> typing.List[Assistant]</code></summary>
+<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py#L114-L186">search_assistants</a>(...) -> typing.List[Assistant]</code></summary>
 <dl>
 <dd>
 
@@ -256,7 +256,7 @@ client.assistants.search_assistants()
 </dl>
 </details>
 
-<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py">count_assistants</a>(...) -> int</code></summary>
+<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py#L188-L230">count_assistants</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -341,7 +341,7 @@ client.assistants.count_assistants()
 </dl>
 </details>
 
-<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py">get_assistant</a>(...) -> Assistant</code></summary>
+<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py#L232-L261">get_assistant</a>(...) -> Assistant</code></summary>
 <dl>
 <dd>
 
@@ -412,7 +412,7 @@ client.assistants.get_assistant(
 </dl>
 </details>
 
-<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py">delete_assistant</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py#L263-L305">delete_assistant</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -493,7 +493,7 @@ client.assistants.delete_assistant(
 </dl>
 </details>
 
-<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py">patch_assistant</a>(...) -> Assistant</code></summary>
+<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py#L307-L374">patch_assistant</a>(...) -> Assistant</code></summary>
 <dl>
 <dd>
 
@@ -612,7 +612,7 @@ client.assistants.patch_assistant(
 </dl>
 </details>
 
-<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py">get_assistant_graph</a>(...) -> typing.Dict[str, typing.List[typing.Dict[str, typing.Any]]]</code></summary>
+<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py#L376-L414">get_assistant_graph</a>(...) -> typing.Dict[str, typing.List[typing.Dict[str, typing.Any]]]</code></summary>
 <dl>
 <dd>
 
@@ -691,7 +691,7 @@ client.assistants.get_assistant_graph(
 </dl>
 </details>
 
-<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py">get_assistant_subgraphs</a>(...) -> Subgraphs</code></summary>
+<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py#L416-L461">get_assistant_subgraphs</a>(...) -> Subgraphs</code></summary>
 <dl>
 <dd>
 
@@ -779,7 +779,7 @@ client.assistants.get_assistant_subgraphs(
 </dl>
 </details>
 
-<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py">get_assistant_schemas</a>(...) -> GraphSchema</code></summary>
+<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py#L463-L494">get_assistant_schemas</a>(...) -> GraphSchema</code></summary>
 <dl>
 <dd>
 
@@ -850,7 +850,7 @@ client.assistants.get_assistant_schemas(
 </dl>
 </details>
 
-<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py">get_assistant_versions_assistants_assistant_id_versions_get</a>(...) -> typing.List[Assistant]</code></summary>
+<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py#L496-L529">get_assistant_versions_assistants_assistant_id_versions_get</a>(...) -> typing.List[Assistant]</code></summary>
 <dl>
 <dd>
 
@@ -921,7 +921,7 @@ client.assistants.get_assistant_versions_assistants_assistant_id_versions_get(
 </dl>
 </details>
 
-<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py">set_latest_assistant_version_assistants_assistant_id_versions_post</a>(...) -> Assistant</code></summary>
+<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py#L531-L568">set_latest_assistant_version_assistants_assistant_id_versions_post</a>(...) -> Assistant</code></summary>
 <dl>
 <dd>
 
@@ -1002,7 +1002,7 @@ client.assistants.set_latest_assistant_version_assistants_assistant_id_versions_
 </details>
 
 ## Threads
-<details><summary><code>client.threads.<a href="src/fern/threads/client.py">create_thread</a>(...) -> Thread</code></summary>
+<details><summary><code>client.threads.<a href="src/fern/threads/client.py#L48-L102">create_thread</a>(...) -> Thread</code></summary>
 <dl>
 <dd>
 
@@ -1103,7 +1103,7 @@ client.threads.create_thread()
 </dl>
 </details>
 
-<details><summary><code>client.threads.<a href="src/fern/threads/client.py">search_threads</a>(...) -> typing.List[Thread]</code></summary>
+<details><summary><code>client.threads.<a href="src/fern/threads/client.py#L104-L186">search_threads</a>(...) -> typing.List[Thread]</code></summary>
 <dl>
 <dd>
 
@@ -1246,7 +1246,7 @@ client.threads.search_threads()
 </dl>
 </details>
 
-<details><summary><code>client.threads.<a href="src/fern/threads/client.py">count_threads</a>(...) -> int</code></summary>
+<details><summary><code>client.threads.<a href="src/fern/threads/client.py#L188-L230">count_threads</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -1331,7 +1331,7 @@ client.threads.count_threads()
 </dl>
 </details>
 
-<details><summary><code>client.threads.<a href="src/fern/threads/client.py">prune_threads</a>(...) -> ThreadPruneResponse</code></summary>
+<details><summary><code>client.threads.<a href="src/fern/threads/client.py#L232-L272">prune_threads</a>(...) -> ThreadPruneResponse</code></summary>
 <dl>
 <dd>
 
@@ -1412,7 +1412,7 @@ client.threads.prune_threads(
 </dl>
 </details>
 
-<details><summary><code>client.threads.<a href="src/fern/threads/client.py">get_thread_storage</a>(...) -> ThreadStorage</code></summary>
+<details><summary><code>client.threads.<a href="src/fern/threads/client.py#L274-L305">get_thread_storage</a>(...) -> ThreadStorage</code></summary>
 <dl>
 <dd>
 
@@ -1483,7 +1483,7 @@ client.threads.get_thread_storage(
 </dl>
 </details>
 
-<details><summary><code>client.threads.<a href="src/fern/threads/client.py">get_latest_thread_state</a>(...) -> ThreadState</code></summary>
+<details><summary><code>client.threads.<a href="src/fern/threads/client.py#L307-L349">get_latest_thread_state</a>(...) -> ThreadState</code></summary>
 <dl>
 <dd>
 
@@ -1564,7 +1564,7 @@ client.threads.get_latest_thread_state(
 </dl>
 </details>
 
-<details><summary><code>client.threads.<a href="src/fern/threads/client.py">update_thread_state</a>(...) -> ThreadStateUpdateResponse</code></summary>
+<details><summary><code>client.threads.<a href="src/fern/threads/client.py#L351-L399">update_thread_state</a>(...) -> ThreadStateUpdateResponse</code></summary>
 <dl>
 <dd>
 
@@ -1659,7 +1659,7 @@ client.threads.update_thread_state(
 </dl>
 </details>
 
-<details><summary><code>client.threads.<a href="src/fern/threads/client.py">get_thread_state_at_checkpoint</a>(...) -> ThreadState</code></summary>
+<details><summary><code>client.threads.<a href="src/fern/threads/client.py#L401-L446">get_thread_state_at_checkpoint</a>(...) -> ThreadState</code></summary>
 <dl>
 <dd>
 
@@ -1747,7 +1747,7 @@ client.threads.get_thread_state_at_checkpoint(
 </dl>
 </details>
 
-<details><summary><code>client.threads.<a href="src/fern/threads/client.py">post_thread_state_at_checkpoint_threads_thread_id_state_checkpoint_id_get</a>(...) -> ThreadState</code></summary>
+<details><summary><code>client.threads.<a href="src/fern/threads/client.py#L448-L493">post_thread_state_at_checkpoint_threads_thread_id_state_checkpoint_id_get</a>(...) -> ThreadState</code></summary>
 <dl>
 <dd>
 
@@ -1835,7 +1835,7 @@ client.threads.post_thread_state_at_checkpoint_threads_thread_id_state_checkpoin
 </dl>
 </details>
 
-<details><summary><code>client.threads.<a href="src/fern/threads/client.py">get_thread_history</a>(...) -> typing.List[ThreadState]</code></summary>
+<details><summary><code>client.threads.<a href="src/fern/threads/client.py#L495-L537">get_thread_history</a>(...) -> typing.List[ThreadState]</code></summary>
 <dl>
 <dd>
 
@@ -1922,7 +1922,7 @@ client.threads.get_thread_history(
 </dl>
 </details>
 
-<details><summary><code>client.threads.<a href="src/fern/threads/client.py">get_thread_history_post</a>(...) -> typing.List[ThreadState]</code></summary>
+<details><summary><code>client.threads.<a href="src/fern/threads/client.py#L539-L596">get_thread_history_post</a>(...) -> typing.List[ThreadState]</code></summary>
 <dl>
 <dd>
 
@@ -2025,7 +2025,7 @@ client.threads.get_thread_history_post(
 </dl>
 </details>
 
-<details><summary><code>client.threads.<a href="src/fern/threads/client.py">copy_thread_post</a>(...) -> Thread</code></summary>
+<details><summary><code>client.threads.<a href="src/fern/threads/client.py#L598-L627">copy_thread_post</a>(...) -> Thread</code></summary>
 <dl>
 <dd>
 
@@ -2096,7 +2096,7 @@ client.threads.copy_thread_post(
 </dl>
 </details>
 
-<details><summary><code>client.threads.<a href="src/fern/threads/client.py">get_thread</a>(...) -> Thread</code></summary>
+<details><summary><code>client.threads.<a href="src/fern/threads/client.py#L629-L667">get_thread</a>(...) -> Thread</code></summary>
 <dl>
 <dd>
 
@@ -2175,7 +2175,7 @@ client.threads.get_thread(
 </dl>
 </details>
 
-<details><summary><code>client.threads.<a href="src/fern/threads/client.py">delete_thread</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.threads.<a href="src/fern/threads/client.py#L669-L698">delete_thread</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2246,7 +2246,7 @@ client.threads.delete_thread(
 </dl>
 </details>
 
-<details><summary><code>client.threads.<a href="src/fern/threads/client.py">patch_thread</a>(...) -> Thread</code></summary>
+<details><summary><code>client.threads.<a href="src/fern/threads/client.py#L700-L744">patch_thread</a>(...) -> Thread</code></summary>
 <dl>
 <dd>
 
@@ -2333,7 +2333,7 @@ client.threads.patch_thread(
 </dl>
 </details>
 
-<details><summary><code>client.threads.<a href="src/fern/threads/client.py">join_thread_stream</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.threads.<a href="src/fern/threads/client.py#L746-L792">join_thread_stream</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -2421,7 +2421,7 @@ client.threads.join_thread_stream(
 </details>
 
 ## Streaming
-<details><summary><code>client.streaming.<a href="src/fern/streaming/client.py">protocol_thread_events_post</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.streaming.<a href="src/fern/streaming/client.py#L31-L93">protocol_thread_events_post</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -2529,7 +2529,7 @@ client.streaming.protocol_thread_events_post(
 </dl>
 </details>
 
-<details><summary><code>client.streaming.<a href="src/fern/streaming/client.py">protocol_thread_command_post</a>(...) -> ProtocolThreadCommandPostResponse</code></summary>
+<details><summary><code>client.streaming.<a href="src/fern/streaming/client.py#L95-L149">protocol_thread_command_post</a>(...) -> ProtocolThreadCommandPostResponse</code></summary>
 <dl>
 <dd>
 
@@ -2631,7 +2631,7 @@ client.streaming.protocol_thread_command_post(
 </details>
 
 ## Thread Runs
-<details><summary><code>client.thread_runs.<a href="src/fern/thread_runs/client.py">list_runs_http</a>(...) -> typing.List[Run]</code></summary>
+<details><summary><code>client.thread_runs.<a href="src/fern/thread_runs/client.py#L51-L105">list_runs_http</a>(...) -> typing.List[Run]</code></summary>
 <dl>
 <dd>
 
@@ -2734,7 +2734,7 @@ client.thread_runs.list_runs_http(
 </dl>
 </details>
 
-<details><summary><code>client.thread_runs.<a href="src/fern/thread_runs/client.py">create_run</a>(...) -> Run</code></summary>
+<details><summary><code>client.thread_runs.<a href="src/fern/thread_runs/client.py#L107-L243">create_run</a>(...) -> Run</code></summary>
 <dl>
 <dd>
 
@@ -2814,7 +2814,7 @@ client.thread_runs.create_run(
 </dl>
 </details>
 
-<details><summary><code>client.thread_runs.<a href="src/fern/thread_runs/client.py">stream_run</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.thread_runs.<a href="src/fern/thread_runs/client.py#L245-L388">stream_run</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -2894,7 +2894,7 @@ client.thread_runs.stream_run(
 </dl>
 </details>
 
-<details><summary><code>client.thread_runs.<a href="src/fern/thread_runs/client.py">wait_run</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.thread_runs.<a href="src/fern/thread_runs/client.py#L390-L531">wait_run</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2974,7 +2974,7 @@ client.thread_runs.wait_run(
 </dl>
 </details>
 
-<details><summary><code>client.thread_runs.<a href="src/fern/thread_runs/client.py">get_run_http</a>(...) -> Run</code></summary>
+<details><summary><code>client.thread_runs.<a href="src/fern/thread_runs/client.py#L533-L568">get_run_http</a>(...) -> Run</code></summary>
 <dl>
 <dd>
 
@@ -3054,7 +3054,7 @@ client.thread_runs.get_run_http(
 </dl>
 </details>
 
-<details><summary><code>client.thread_runs.<a href="src/fern/thread_runs/client.py">delete_run</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.thread_runs.<a href="src/fern/thread_runs/client.py#L570-L605">delete_run</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -3134,7 +3134,7 @@ client.thread_runs.delete_run(
 </dl>
 </details>
 
-<details><summary><code>client.thread_runs.<a href="src/fern/thread_runs/client.py">join_run_http</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.thread_runs.<a href="src/fern/thread_runs/client.py#L607-L652">join_run_http</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -3222,7 +3222,7 @@ client.thread_runs.join_run_http(
 </dl>
 </details>
 
-<details><summary><code>client.thread_runs.<a href="src/fern/thread_runs/client.py">stream_run_http_threads_thread_id_runs_run_id_join_get</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.thread_runs.<a href="src/fern/thread_runs/client.py#L654-L716">stream_run_http_threads_thread_id_runs_run_id_join_get</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -3326,7 +3326,7 @@ client.thread_runs.stream_run_http_threads_thread_id_runs_run_id_join_get(
 </dl>
 </details>
 
-<details><summary><code>client.thread_runs.<a href="src/fern/thread_runs/client.py">cancel_run_http</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.thread_runs.<a href="src/fern/thread_runs/client.py#L718-L764">cancel_run_http</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -3408,7 +3408,7 @@ client.thread_runs.cancel_run_http(
 </dl>
 </details>
 
-<details><summary><code>client.thread_runs.<a href="src/fern/thread_runs/client.py">cancel_runs_post</a>(...)</code></summary>
+<details><summary><code>client.thread_runs.<a href="src/fern/thread_runs/client.py#L766-L811">cancel_runs_post</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3502,7 +3502,7 @@ client.thread_runs.cancel_runs_post()
 </details>
 
 ## Crons
-<details><summary><code>client.crons.<a href="src/fern/crons/client.py">create_thread_cron</a>(...) -> Cron</code></summary>
+<details><summary><code>client.crons.<a href="src/fern/crons/client.py#L54-L177">create_thread_cron</a>(...) -> Cron</code></summary>
 <dl>
 <dd>
 
@@ -3711,7 +3711,7 @@ client.crons.create_thread_cron(
 </dl>
 </details>
 
-<details><summary><code>client.crons.<a href="src/fern/crons/client.py">create_cron</a>(...) -> Cron</code></summary>
+<details><summary><code>client.crons.<a href="src/fern/crons/client.py#L179-L296">create_cron</a>(...) -> Cron</code></summary>
 <dl>
 <dd>
 
@@ -3911,7 +3911,7 @@ client.crons.create_cron(
 </dl>
 </details>
 
-<details><summary><code>client.crons.<a href="src/fern/crons/client.py">search_crons_runs_crons_post</a>(...) -> typing.List[Cron]</code></summary>
+<details><summary><code>client.crons.<a href="src/fern/crons/client.py#L298-L373">search_crons_runs_crons_post</a>(...) -> typing.List[Cron]</code></summary>
 <dl>
 <dd>
 
@@ -4044,7 +4044,7 @@ client.crons.search_crons_runs_crons_post()
 </dl>
 </details>
 
-<details><summary><code>client.crons.<a href="src/fern/crons/client.py">count_crons</a>(...) -> int</code></summary>
+<details><summary><code>client.crons.<a href="src/fern/crons/client.py#L375-L417">count_crons</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -4129,7 +4129,7 @@ client.crons.count_crons()
 </dl>
 </details>
 
-<details><summary><code>client.crons.<a href="src/fern/crons/client.py">get_cron</a>(...) -> Cron</code></summary>
+<details><summary><code>client.crons.<a href="src/fern/crons/client.py#L419-L447">get_cron</a>(...) -> Cron</code></summary>
 <dl>
 <dd>
 
@@ -4200,7 +4200,7 @@ client.crons.get_cron(
 </dl>
 </details>
 
-<details><summary><code>client.crons.<a href="src/fern/crons/client.py">delete_cron</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.crons.<a href="src/fern/crons/client.py#L449-L477">delete_cron</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4271,7 +4271,7 @@ client.crons.delete_cron(
 </dl>
 </details>
 
-<details><summary><code>client.crons.<a href="src/fern/crons/client.py">patch_cron</a>(...) -> Cron</code></summary>
+<details><summary><code>client.crons.<a href="src/fern/crons/client.py#L479-L595">patch_cron</a>(...) -> Cron</code></summary>
 <dl>
 <dd>
 
@@ -4471,7 +4471,7 @@ client.crons.patch_cron(
 </details>
 
 ## Stateless Runs
-<details><summary><code>client.stateless_runs.<a href="src/fern/stateless_runs/client.py">stream_run_stateless</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.stateless_runs.<a href="src/fern/stateless_runs/client.py#L36-L153">stream_run_stateless</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -4542,7 +4542,7 @@ client.stateless_runs.stream_run_stateless(
 </dl>
 </details>
 
-<details><summary><code>client.stateless_runs.<a href="src/fern/stateless_runs/client.py">wait_run_stateless</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.stateless_runs.<a href="src/fern/stateless_runs/client.py#L155-L270">wait_run_stateless</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4613,7 +4613,7 @@ client.stateless_runs.wait_run_stateless(
 </dl>
 </details>
 
-<details><summary><code>client.stateless_runs.<a href="src/fern/stateless_runs/client.py">run_stateless</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.stateless_runs.<a href="src/fern/stateless_runs/client.py#L272-L382">run_stateless</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4684,7 +4684,7 @@ client.stateless_runs.run_stateless(
 </dl>
 </details>
 
-<details><summary><code>client.stateless_runs.<a href="src/fern/stateless_runs/client.py">run_batch_stateless_runs_post</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.stateless_runs.<a href="src/fern/stateless_runs/client.py#L384-L418">run_batch_stateless_runs_post</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4760,7 +4760,7 @@ client.stateless_runs.run_batch_stateless_runs_post(
 </details>
 
 ## Store
-<details><summary><code>client.store.<a href="src/fern/store/client.py">get_item</a>(...) -> Item</code></summary>
+<details><summary><code>client.store.<a href="src/fern/store/client.py#L32-L72">get_item</a>(...) -> Item</code></summary>
 <dl>
 <dd>
 
@@ -4833,7 +4833,7 @@ client.store.get_item(
 </dl>
 </details>
 
-<details><summary><code>client.store.<a href="src/fern/store/client.py">put_item</a>(...)</code></summary>
+<details><summary><code>client.store.<a href="src/fern/store/client.py#L74-L125">put_item</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4928,7 +4928,7 @@ client.store.put_item(
 </dl>
 </details>
 
-<details><summary><code>client.store.<a href="src/fern/store/client.py">delete_item</a>(...)</code></summary>
+<details><summary><code>client.store.<a href="src/fern/store/client.py#L127-L162">delete_item</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4993,7 +4993,7 @@ client.store.delete_item(
 </dl>
 </details>
 
-<details><summary><code>client.store.<a href="src/fern/store/client.py">search_items</a>(...) -> SearchItemsResponse</code></summary>
+<details><summary><code>client.store.<a href="src/fern/store/client.py#L164-L224">search_items</a>(...) -> SearchItemsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5102,7 +5102,7 @@ client.store.search_items()
 </dl>
 </details>
 
-<details><summary><code>client.store.<a href="src/fern/store/client.py">list_namespaces</a>(...) -> ListNamespaceResponse</code></summary>
+<details><summary><code>client.store.<a href="src/fern/store/client.py#L226-L279">list_namespaces</a>(...) -> ListNamespaceResponse</code></summary>
 <dl>
 <dd>
 
@@ -5190,7 +5190,7 @@ client.store.list_namespaces()
 </details>
 
 ## A2A
-<details><summary><code>client.a2a.<a href="src/fern/a2a/client.py">post_a2a</a>(...) -> PostA2AResponse</code></summary>
+<details><summary><code>client.a2a.<a href="src/fern/a2a/client.py#L32-L138">post_a2a</a>(...) -> PostA2AResponse</code></summary>
 <dl>
 <dd>
 
@@ -5339,7 +5339,7 @@ client.a2a.post_a2a(
 </details>
 
 ## MCP
-<details><summary><code>client.mcp.<a href="src/fern/mcp/client.py">get_mcp</a>()</code></summary>
+<details><summary><code>client.mcp.<a href="src/fern/mcp/client.py#L29-L52">get_mcp</a>()</code></summary>
 <dl>
 <dd>
 
@@ -5400,7 +5400,7 @@ client.mcp.get_mcp()
 </dl>
 </details>
 
-<details><summary><code>client.mcp.<a href="src/fern/mcp/client.py">post_mcp</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.mcp.<a href="src/fern/mcp/client.py#L54-L110">post_mcp</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -5493,7 +5493,7 @@ client.mcp.post_mcp(
 </dl>
 </details>
 
-<details><summary><code>client.mcp.<a href="src/fern/mcp/client.py">delete_mcp</a>()</code></summary>
+<details><summary><code>client.mcp.<a href="src/fern/mcp/client.py#L112-L136">delete_mcp</a>()</code></summary>
 <dl>
 <dd>
 
@@ -5557,7 +5557,7 @@ client.mcp.delete_mcp()
 </details>
 
 ## System
-<details><summary><code>client.system.<a href="src/fern/system/client.py">server_info</a>() -> ServerInfoInfoGetResponse</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py#L28-L52">server_info</a>() -> ServerInfoInfoGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -5618,7 +5618,7 @@ client.system.server_info()
 </dl>
 </details>
 
-<details><summary><code>client.system.<a href="src/fern/system/client.py">system_metrics</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py#L54-L86">system_metrics</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -5687,7 +5687,7 @@ client.system.system_metrics()
 </dl>
 </details>
 
-<details><summary><code>client.system.<a href="src/fern/system/client.py">docs_get</a>() -> str</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py#L88-L112">docs_get</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -5748,7 +5748,7 @@ client.system.docs_get()
 </dl>
 </details>
 
-<details><summary><code>client.system.<a href="src/fern/system/client.py">health_check</a>(...) -> HealthCheckOkGetResponse</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py#L114-L143">health_check</a>(...) -> HealthCheckOkGetResponse</code></summary>
 <dl>
 <dd>
 

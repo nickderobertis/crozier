@@ -1,6 +1,6 @@
 # Reference
 ## System
-<details><summary><code>client.system.<a href="src/fern/system/client.py">ping</a>() -> BaseResponse</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py#L26-L48">ping</a>() -> BaseResponse</code></summary>
 <dl>
 <dd>
 
@@ -62,7 +62,7 @@ client.system.ping()
 </dl>
 </details>
 
-<details><summary><code>client.system.<a href="src/fern/system/client.py">get_versions</a>() -> BaseResponse</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py#L50-L72">get_versions</a>() -> BaseResponse</code></summary>
 <dl>
 <dd>
 
@@ -124,7 +124,7 @@ client.system.get_versions()
 </dl>
 </details>
 
-<details><summary><code>client.system.<a href="src/fern/system/client.py">get_audio_formats</a>() -> BaseResponse</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py#L74-L96">get_audio_formats</a>() -> BaseResponse</code></summary>
 <dl>
 <dd>
 
@@ -187,7 +187,7 @@ client.system.get_audio_formats()
 </details>
 
 ## Models
-<details><summary><code>client.models.<a href="src/fern/models/client.py">reload_models</a>() -> BaseResponse</code></summary>
+<details><summary><code>client.models.<a href="src/fern/models/client.py#L26-L46">reload_models</a>() -> BaseResponse</code></summary>
 <dl>
 <dd>
 
@@ -235,7 +235,7 @@ client.models.reload_models()
 </dl>
 </details>
 
-<details><summary><code>client.models.<a href="src/fern/models/client.py">unload_models</a>() -> BaseResponse</code></summary>
+<details><summary><code>client.models.<a href="src/fern/models/client.py#L48-L68">unload_models</a>() -> BaseResponse</code></summary>
 <dl>
 <dd>
 
@@ -284,7 +284,7 @@ client.models.unload_models()
 </details>
 
 ## Style
-<details><summary><code>client.style.<a href="src/fern/style/client.py">list_styles</a>() -> BaseResponse</code></summary>
+<details><summary><code>client.style.<a href="src/fern/style/client.py#L26-L49">list_styles</a>() -> BaseResponse</code></summary>
 <dl>
 <dd>
 
@@ -348,7 +348,7 @@ client.style.list_styles()
 </details>
 
 ## Speaker
-<details><summary><code>client.speaker.<a href="src/fern/speaker/client.py">list_speakers</a>(...) -> BaseResponse</code></summary>
+<details><summary><code>client.speaker.<a href="src/fern/speaker/client.py#L30-L70">list_speakers</a>(...) -> BaseResponse</code></summary>
 <dl>
 <dd>
 
@@ -437,7 +437,7 @@ client.speaker.list_speakers()
 </dl>
 </details>
 
-<details><summary><code>client.speaker.<a href="src/fern/speaker/client.py">refresh_speakers</a>() -> BaseResponse</code></summary>
+<details><summary><code>client.speaker.<a href="src/fern/speaker/client.py#L72-L95">refresh_speakers</a>() -> BaseResponse</code></summary>
 <dl>
 <dd>
 
@@ -500,7 +500,7 @@ client.speaker.refresh_speakers()
 </dl>
 </details>
 
-<details><summary><code>client.speaker.<a href="src/fern/speaker/client.py">update_speakers</a>(...) -> BaseResponse</code></summary>
+<details><summary><code>client.speaker.<a href="src/fern/speaker/client.py#L97-L131">update_speakers</a>(...) -> BaseResponse</code></summary>
 <dl>
 <dd>
 
@@ -579,7 +579,7 @@ client.speaker.update_speakers(
 </dl>
 </details>
 
-<details><summary><code>client.speaker.<a href="src/fern/speaker/client.py">create_speaker</a>(...) -> BaseResponse</code></summary>
+<details><summary><code>client.speaker.<a href="src/fern/speaker/client.py#L133-L195">create_speaker</a>(...) -> BaseResponse</code></summary>
 <dl>
 <dd>
 
@@ -703,7 +703,7 @@ client.speaker.create_speaker(
 </dl>
 </details>
 
-<details><summary><code>client.speaker.<a href="src/fern/speaker/client.py">update_speaker</a>(...) -> BaseResponse</code></summary>
+<details><summary><code>client.speaker.<a href="src/fern/speaker/client.py#L197-L229">update_speaker</a>(...) -> BaseResponse</code></summary>
 <dl>
 <dd>
 
@@ -776,7 +776,7 @@ client.speaker.update_speaker()
 </dl>
 </details>
 
-<details><summary><code>client.speaker.<a href="src/fern/speaker/client.py">speaker_detail</a>(...) -> BaseResponse</code></summary>
+<details><summary><code>client.speaker.<a href="src/fern/speaker/client.py#L231-L267">speaker_detail</a>(...) -> BaseResponse</code></summary>
 <dl>
 <dd>
 
@@ -859,7 +859,7 @@ client.speaker.speaker_detail(
 </details>
 
 ## Tts
-<details><summary><code>client.tts.<a href="src/fern/tts/client.py">synthesize_tts</a>(...)</code></summary>
+<details><summary><code>client.tts.<a href="src/fern/tts/client.py#L26-L205">synthesize_tts</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1174,7 +1174,7 @@ client.tts.synthesize_tts(
 </details>
 
 ## Ssml
-<details><summary><code>client.ssml.<a href="src/fern/ssml/client.py">synthesize_ssml_api</a>(...)</code></summary>
+<details><summary><code>client.ssml.<a href="src/fern/ssml/client.py#L31-L133">synthesize_ssml_api</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1348,7 +1348,7 @@ client.ssml.synthesize_ssml_api(
 </details>
 
 ## GoogleApi
-<details><summary><code>client.google_api.<a href="src/fern/google_api/client.py">google_text_synthesize</a>(...) -> GoogleTextSynthesizeResponse</code></summary>
+<details><summary><code>client.google_api.<a href="src/fern/google_api/client.py#L33-L89">google_text_synthesize</a>(...) -> GoogleTextSynthesizeResponse</code></summary>
 <dl>
 <dd>
 
@@ -1454,7 +1454,7 @@ client.google_api.google_text_synthesize(
 </dl>
 </details>
 
-<details><summary><code>client.google_api.<a href="src/fern/google_api/client.py">speech_recognize</a>() -> typing.Any</code></summary>
+<details><summary><code>client.google_api.<a href="src/fern/google_api/client.py#L91-L113">speech_recognize</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1516,7 +1516,7 @@ client.google_api.speech_recognize()
 </dl>
 </details>
 
-<details><summary><code>client.google_api.<a href="src/fern/google_api/client.py">long_running_recognize</a>() -> typing.Any</code></summary>
+<details><summary><code>client.google_api.<a href="src/fern/google_api/client.py#L115-L137">long_running_recognize</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1579,7 +1579,7 @@ client.google_api.long_running_recognize()
 </details>
 
 ## OpenAiApi
-<details><summary><code>client.open_ai_api.<a href="src/fern/open_ai_api/client.py">openai_speech_api</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.open_ai_api.<a href="src/fern/open_ai_api/client.py#L30-L139">openai_speech_api</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1787,7 +1787,7 @@ client.open_ai_api.openai_speech_api(
 </dl>
 </details>
 
-<details><summary><code>client.open_ai_api.<a href="src/fern/open_ai_api/client.py">transcribe</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.open_ai_api.<a href="src/fern/open_ai_api/client.py#L141-L198">transcribe</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1908,7 +1908,7 @@ client.open_ai_api.transcribe(
 </details>
 
 ## Text
-<details><summary><code>client.text.<a href="src/fern/text/client.py">refiner_prompt_post</a>(...) -> BaseResponse</code></summary>
+<details><summary><code>client.text.<a href="src/fern/text/client.py#L31-L106">refiner_prompt_post</a>(...) -> BaseResponse</code></summary>
 <dl>
 <dd>
 
@@ -2057,7 +2057,7 @@ client.text.refiner_prompt_post(
 </dl>
 </details>
 
-<details><summary><code>client.text.<a href="src/fern/text/client.py">text_normalize_post</a>(...) -> BaseResponse</code></summary>
+<details><summary><code>client.text.<a href="src/fern/text/client.py#L108-L167">text_normalize_post</a>(...) -> BaseResponse</code></summary>
 <dl>
 <dd>
 
@@ -2166,7 +2166,7 @@ client.text.text_normalize_post(
 </details>
 
 ## Xtts
-<details><summary><code>client.xtts.<a href="src/fern/xtts/client.py">speakers</a>() -> typing.Any</code></summary>
+<details><summary><code>client.xtts.<a href="src/fern/xtts/client.py#L28-L52">speakers</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2230,7 +2230,7 @@ client.xtts.speakers()
 </dl>
 </details>
 
-<details><summary><code>client.xtts.<a href="src/fern/xtts/client.py">tts_to_audio</a>(...)</code></summary>
+<details><summary><code>client.xtts.<a href="src/fern/xtts/client.py#L54-L95">tts_to_audio</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2321,7 +2321,7 @@ client.xtts.tts_to_audio(
 </dl>
 </details>
 
-<details><summary><code>client.xtts.<a href="src/fern/xtts/client.py">tts_stream</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.xtts.<a href="src/fern/xtts/client.py#L97-L142">tts_stream</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2420,7 +2420,7 @@ client.xtts.tts_stream(
 </dl>
 </details>
 
-<details><summary><code>client.xtts.<a href="src/fern/xtts/client.py">set_tts_settings</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.xtts.<a href="src/fern/xtts/client.py#L144-L251">set_tts_settings</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2630,7 +2630,7 @@ client.xtts.set_tts_settings(
 </details>
 
 ## Stt
-<details><summary><code>client.stt.<a href="src/fern/stt/client.py">transcribe</a>(...) -> TranscriptionsResponse</code></summary>
+<details><summary><code>client.stt.<a href="src/fern/stt/client.py#L31-L124">transcribe</a>(...) -> TranscriptionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2822,7 +2822,7 @@ client.stt.transcribe(
 </dl>
 </details>
 
-<details><summary><code>client.stt.<a href="src/fern/stt/client.py">transcribe_stream</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.stt.<a href="src/fern/stt/client.py#L126-L221">transcribe_stream</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -3017,7 +3017,7 @@ client.stt.transcribe_stream(
 </details>
 
 ## VoiceClone
-<details><summary><code>client.voice_clone.<a href="src/fern/voice_clone/client.py">voice_clone</a>(...)</code></summary>
+<details><summary><code>client.voice_clone.<a href="src/fern/voice_clone/client.py#L29-L90">voice_clone</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3143,7 +3143,7 @@ client.voice_clone.voice_clone(
 </details>
 
 ## ForgeV2
-<details><summary><code>client.forge_v2.<a href="src/fern/forge_v2/client.py">forge_text_synthesize</a>(...)</code></summary>
+<details><summary><code>client.forge_v2.<a href="src/fern/forge_v2/client.py#L39-L168">forge_text_synthesize</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3351,7 +3351,7 @@ client.forge_v2.forge_text_synthesize()
 </dl>
 </details>
 
-<details><summary><code>client.forge_v2.<a href="src/fern/forge_v2/client.py">transcribe_v2</a>(...) -> TranscriptionsResponse</code></summary>
+<details><summary><code>client.forge_v2.<a href="src/fern/forge_v2/client.py#L170-L284">transcribe_v2</a>(...) -> TranscriptionsResponse</code></summary>
 <dl>
 <dd>
 

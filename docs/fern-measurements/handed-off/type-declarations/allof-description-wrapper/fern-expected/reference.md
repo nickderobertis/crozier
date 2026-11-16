@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_telescope</a>(...) -> Telescope</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L103-L134">get_telescope</a>(...) -> Telescope</code></summary>
 <dl>
 <dd>
 
@@ -64,7 +64,7 @@ client.get_telescope(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">retire_telescope</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L136-L161">retire_telescope</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -121,7 +121,7 @@ client.retire_telescope(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_booking</a>(...) -> Booking</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L163-L212">create_booking</a>(...) -> Booking</code></summary>
 <dl>
 <dd>
 

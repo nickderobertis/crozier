@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">register_label</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L99-L124">register_label</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -56,7 +56,7 @@ client.register_label(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">archive_label</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L126-L151">archive_label</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -111,7 +111,7 @@ client.archive_label()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">review_label</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L153-L178">review_label</a>(...)</code></summary>
 <dl>
 <dd>
 

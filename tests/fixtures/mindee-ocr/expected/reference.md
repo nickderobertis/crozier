@@ -1,6 +1,6 @@
 # Reference
 ## Prediction
-<details><summary><code>client.prediction.<a href="src/fern/prediction/client.py">predict</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.prediction.<a href="src/fern/prediction/client.py#L29-L79">predict</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -99,7 +99,7 @@ client.prediction.predict(
 </dl>
 </details>
 
-<details><summary><code>client.prediction.<a href="src/fern/prediction/client.py">predict_async</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.prediction.<a href="src/fern/prediction/client.py#L81-L128">predict_async</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -199,7 +199,7 @@ client.prediction.predict_async(
 </dl>
 </details>
 
-<details><summary><code>client.prediction.<a href="src/fern/prediction/client.py">get_async_result</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.prediction.<a href="src/fern/prediction/client.py#L130-L178">get_async_result</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -300,7 +300,7 @@ client.prediction.get_async_result(
 </details>
 
 ## Documents
-<details><summary><code>client.documents.<a href="src/fern/documents/client.py">get_document</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.documents.<a href="src/fern/documents/client.py#L28-L75">get_document</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -400,7 +400,7 @@ client.documents.get_document(
 </dl>
 </details>
 
-<details><summary><code>client.documents.<a href="src/fern/documents/client.py">send_document_feedback</a>(...)</code></summary>
+<details><summary><code>client.documents.<a href="src/fern/documents/client.py#L77-L115">send_document_feedback</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -485,7 +485,7 @@ client.documents.send_document_feedback(
 </details>
 
 ## Products
-<details><summary><code>client.products.<a href="src/fern/products/client.py">list_customer_products</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.products.<a href="src/fern/products/client.py#L25-L51">list_customer_products</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -548,7 +548,7 @@ client.products.list_customer_products()
 </dl>
 </details>
 
-<details><summary><code>client.products.<a href="src/fern/products/client.py">get_product_open_api</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.products.<a href="src/fern/products/client.py#L53-L89">get_product_open_api</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -640,7 +640,7 @@ client.products.get_product_open_api(
 </details>
 
 ## Workflows
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">execute_workflow</a>(...)</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L29-L65">execute_workflow</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -722,7 +722,7 @@ client.workflows.execute_workflow(
 </dl>
 </details>
 
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">workflow_predict_async</a>(...)</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L67-L105">workflow_predict_async</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -805,7 +805,7 @@ client.workflows.workflow_predict_async(
 </details>
 
 ## Health
-<details><summary><code>client.health.<a href="src/fern/health/client.py">check</a>() -> HealthResponse</code></summary>
+<details><summary><code>client.health.<a href="src/fern/health/client.py#L26-L50">check</a>() -> HealthResponse</code></summary>
 <dl>
 <dd>
 
@@ -869,7 +869,7 @@ client.health.check()
 </details>
 
 ## Cache
-<details><summary><code>client.cache.<a href="src/fern/cache/client.py">clear_cache</a>()</code></summary>
+<details><summary><code>client.cache.<a href="src/fern/cache/client.py#L28-L51">clear_cache</a>()</code></summary>
 <dl>
 <dd>
 
@@ -932,7 +932,7 @@ client.cache.clear_cache()
 </dl>
 </details>
 
-<details><summary><code>client.cache.<a href="src/fern/cache/client.py">clear_tokens_cache</a>(...)</code></summary>
+<details><summary><code>client.cache.<a href="src/fern/cache/client.py#L53-L82">clear_tokens_cache</a>(...)</code></summary>
 <dl>
 <dd>
 

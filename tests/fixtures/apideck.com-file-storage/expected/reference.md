@@ -107,7 +107,7 @@ client.drive_groups.all_(
 </dl>
 </details>
 
-<details><summary><code>client.drive_groups.<a href="src/fern/drive_groups/client.py">add</a>(...) -> CreateDriveGroupResponse</code></summary>
+<details><summary><code>client.drive_groups.<a href="src/fern/drive_groups/client.py#L97-L171">add</a>(...) -> CreateDriveGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -190,7 +190,7 @@ client.drive_groups.add(
 </dl>
 </details>
 
-<details><summary><code>client.drive_groups.<a href="src/fern/drive_groups/client.py">one</a>(...) -> GetDriveGroupResponse</code></summary>
+<details><summary><code>client.drive_groups.<a href="src/fern/drive_groups/client.py#L173-L219">one</a>(...) -> GetDriveGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -282,7 +282,7 @@ client.drive_groups.one(
 </dl>
 </details>
 
-<details><summary><code>client.drive_groups.<a href="src/fern/drive_groups/client.py">delete</a>(...) -> DeleteDriveGroupResponse</code></summary>
+<details><summary><code>client.drive_groups.<a href="src/fern/drive_groups/client.py#L221-L258">delete</a>(...) -> DeleteDriveGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -365,7 +365,7 @@ client.drive_groups.delete(
 </dl>
 </details>
 
-<details><summary><code>client.drive_groups.<a href="src/fern/drive_groups/client.py">update</a>(...) -> UpdateDriveGroupResponse</code></summary>
+<details><summary><code>client.drive_groups.<a href="src/fern/drive_groups/client.py#L260-L340">update</a>(...) -> UpdateDriveGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -565,7 +565,7 @@ client.drives.all_(
 </dl>
 </details>
 
-<details><summary><code>client.drives.<a href="src/fern/drives/client.py">add</a>(...) -> CreateDriveResponse</code></summary>
+<details><summary><code>client.drives.<a href="src/fern/drives/client.py#L97-L166">add</a>(...) -> CreateDriveResponse</code></summary>
 <dl>
 <dd>
 
@@ -648,7 +648,7 @@ client.drives.add(
 </dl>
 </details>
 
-<details><summary><code>client.drives.<a href="src/fern/drives/client.py">one</a>(...) -> GetDriveResponse</code></summary>
+<details><summary><code>client.drives.<a href="src/fern/drives/client.py#L168-L214">one</a>(...) -> GetDriveResponse</code></summary>
 <dl>
 <dd>
 
@@ -740,7 +740,7 @@ client.drives.one(
 </dl>
 </details>
 
-<details><summary><code>client.drives.<a href="src/fern/drives/client.py">delete</a>(...) -> DeleteDriveResponse</code></summary>
+<details><summary><code>client.drives.<a href="src/fern/drives/client.py#L216-L253">delete</a>(...) -> DeleteDriveResponse</code></summary>
 <dl>
 <dd>
 
@@ -823,7 +823,7 @@ client.drives.delete(
 </dl>
 </details>
 
-<details><summary><code>client.drives.<a href="src/fern/drives/client.py">update</a>(...) -> UpdateDriveResponse</code></summary>
+<details><summary><code>client.drives.<a href="src/fern/drives/client.py#L255-L330">update</a>(...) -> UpdateDriveResponse</code></summary>
 <dl>
 <dd>
 
@@ -1039,7 +1039,7 @@ client.files.all_(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">upload</a>(...) -> CreateFileResponse</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L109-L156">upload</a>(...) -> CreateFileResponse</code></summary>
 <dl>
 <dd>
 
@@ -1131,7 +1131,7 @@ client.files.upload(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">search</a>(...) -> GetFilesResponse</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L158-L210">search</a>(...) -> GetFilesResponse</code></summary>
 <dl>
 <dd>
 
@@ -1231,7 +1231,7 @@ client.files.search(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">one</a>(...) -> GetFileResponse</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L212-L258">one</a>(...) -> GetFileResponse</code></summary>
 <dl>
 <dd>
 
@@ -1323,7 +1323,7 @@ client.files.one(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">delete</a>(...) -> DeleteFileResponse</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L260-L297">delete</a>(...) -> DeleteFileResponse</code></summary>
 <dl>
 <dd>
 
@@ -1406,7 +1406,7 @@ client.files.delete(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">update</a>(...) -> UpdateFileResponse</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L299-L358">update</a>(...) -> UpdateFileResponse</code></summary>
 <dl>
 <dd>
 
@@ -1513,7 +1513,7 @@ client.files.update(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">download</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L360-L397">download</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -1597,7 +1597,7 @@ client.files.download(
 </details>
 
 ## Folders
-<details><summary><code>client.folders.<a href="src/fern/folders/client.py">add</a>(...) -> CreateFolderResponse</code></summary>
+<details><summary><code>client.folders.<a href="src/fern/folders/client.py#L33-L99">add</a>(...) -> CreateFolderResponse</code></summary>
 <dl>
 <dd>
 
@@ -1714,7 +1714,7 @@ client.folders.add(
 </dl>
 </details>
 
-<details><summary><code>client.folders.<a href="src/fern/folders/client.py">one</a>(...) -> GetFolderResponse</code></summary>
+<details><summary><code>client.folders.<a href="src/fern/folders/client.py#L101-L147">one</a>(...) -> GetFolderResponse</code></summary>
 <dl>
 <dd>
 
@@ -1806,7 +1806,7 @@ client.folders.one(
 </dl>
 </details>
 
-<details><summary><code>client.folders.<a href="src/fern/folders/client.py">delete</a>(...) -> DeleteFolderResponse</code></summary>
+<details><summary><code>client.folders.<a href="src/fern/folders/client.py#L149-L186">delete</a>(...) -> DeleteFolderResponse</code></summary>
 <dl>
 <dd>
 
@@ -1889,7 +1889,7 @@ client.folders.delete(
 </dl>
 </details>
 
-<details><summary><code>client.folders.<a href="src/fern/folders/client.py">update</a>(...) -> UpdateFolderResponse</code></summary>
+<details><summary><code>client.folders.<a href="src/fern/folders/client.py#L188-L247">update</a>(...) -> UpdateFolderResponse</code></summary>
 <dl>
 <dd>
 
@@ -1996,7 +1996,7 @@ client.folders.update(
 </dl>
 </details>
 
-<details><summary><code>client.folders.<a href="src/fern/folders/client.py">copy</a>(...) -> UpdateFolderResponse</code></summary>
+<details><summary><code>client.folders.<a href="src/fern/folders/client.py#L249-L310">copy</a>(...) -> UpdateFolderResponse</code></summary>
 <dl>
 <dd>
 
@@ -2205,7 +2205,7 @@ client.shared_links.all_(
 </dl>
 </details>
 
-<details><summary><code>client.shared_links.<a href="src/fern/shared_links/client.py">add</a>(...) -> CreateSharedLinkResponse</code></summary>
+<details><summary><code>client.shared_links.<a href="src/fern/shared_links/client.py#L91-L177">add</a>(...) -> CreateSharedLinkResponse</code></summary>
 <dl>
 <dd>
 
@@ -2288,7 +2288,7 @@ client.shared_links.add(
 </dl>
 </details>
 
-<details><summary><code>client.shared_links.<a href="src/fern/shared_links/client.py">one</a>(...) -> GetSharedLinkResponse</code></summary>
+<details><summary><code>client.shared_links.<a href="src/fern/shared_links/client.py#L179-L225">one</a>(...) -> GetSharedLinkResponse</code></summary>
 <dl>
 <dd>
 
@@ -2380,7 +2380,7 @@ client.shared_links.one(
 </dl>
 </details>
 
-<details><summary><code>client.shared_links.<a href="src/fern/shared_links/client.py">delete</a>(...) -> DeleteSharedLinkResponse</code></summary>
+<details><summary><code>client.shared_links.<a href="src/fern/shared_links/client.py#L227-L264">delete</a>(...) -> DeleteSharedLinkResponse</code></summary>
 <dl>
 <dd>
 
@@ -2463,7 +2463,7 @@ client.shared_links.delete(
 </dl>
 </details>
 
-<details><summary><code>client.shared_links.<a href="src/fern/shared_links/client.py">update</a>(...) -> UpdateSharedLinkResponse</code></summary>
+<details><summary><code>client.shared_links.<a href="src/fern/shared_links/client.py#L266-L358">update</a>(...) -> UpdateSharedLinkResponse</code></summary>
 <dl>
 <dd>
 
@@ -2556,7 +2556,7 @@ client.shared_links.update(
 </details>
 
 ## Upload Sessions
-<details><summary><code>client.upload_sessions.<a href="src/fern/upload_sessions/client.py">add</a>(...) -> CreateUploadSessionResponse</code></summary>
+<details><summary><code>client.upload_sessions.<a href="src/fern/upload_sessions/client.py#L35-L95">add</a>(...) -> CreateUploadSessionResponse</code></summary>
 <dl>
 <dd>
 
@@ -2665,7 +2665,7 @@ client.upload_sessions.add(
 </dl>
 </details>
 
-<details><summary><code>client.upload_sessions.<a href="src/fern/upload_sessions/client.py">one</a>(...) -> GetUploadSessionResponse</code></summary>
+<details><summary><code>client.upload_sessions.<a href="src/fern/upload_sessions/client.py#L97-L143">one</a>(...) -> GetUploadSessionResponse</code></summary>
 <dl>
 <dd>
 
@@ -2757,7 +2757,7 @@ client.upload_sessions.one(
 </dl>
 </details>
 
-<details><summary><code>client.upload_sessions.<a href="src/fern/upload_sessions/client.py">upload</a>(...) -> UpdateUploadSessionResponse</code></summary>
+<details><summary><code>client.upload_sessions.<a href="src/fern/upload_sessions/client.py#L145-L202">upload</a>(...) -> UpdateUploadSessionResponse</code></summary>
 <dl>
 <dd>
 
@@ -2867,7 +2867,7 @@ client.upload_sessions.upload(
 </dl>
 </details>
 
-<details><summary><code>client.upload_sessions.<a href="src/fern/upload_sessions/client.py">delete</a>(...) -> DeleteUploadSessionResponse</code></summary>
+<details><summary><code>client.upload_sessions.<a href="src/fern/upload_sessions/client.py#L204-L241">delete</a>(...) -> DeleteUploadSessionResponse</code></summary>
 <dl>
 <dd>
 
@@ -2950,7 +2950,7 @@ client.upload_sessions.delete(
 </dl>
 </details>
 
-<details><summary><code>client.upload_sessions.<a href="src/fern/upload_sessions/client.py">finish</a>(...) -> GetFileResponse</code></summary>
+<details><summary><code>client.upload_sessions.<a href="src/fern/upload_sessions/client.py#L243-L289">finish</a>(...) -> GetFileResponse</code></summary>
 <dl>
 <dd>
 

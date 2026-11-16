@@ -1,6 +1,6 @@
 # Reference
 ## Sensors
-<details><summary><code>client.sensors.<a href="src/fern/sensors/client.py">get_silence</a>(...) -> typing.Optional[Silence]</code></summary>
+<details><summary><code>client.sensors.<a href="src/fern/sensors/client.py#L41-L67">get_silence</a>(...) -> typing.Optional[Silence]</code></summary>
 <dl>
 <dd>
 
@@ -58,7 +58,7 @@ client.sensors.get_silence(
 </dl>
 </details>
 
-<details><summary><code>client.sensors.<a href="src/fern/sensors/client.py">get_gap</a>(...) -> typing.Optional[Gap]</code></summary>
+<details><summary><code>client.sensors.<a href="src/fern/sensors/client.py#L69-L95">get_gap</a>(...) -> typing.Optional[Gap]</code></summary>
 <dl>
 <dd>
 
@@ -116,7 +116,7 @@ client.sensors.get_gap(
 </dl>
 </details>
 
-<details><summary><code>client.sensors.<a href="src/fern/sensors/client.py">put_reading</a>(...) -> Reading</code></summary>
+<details><summary><code>client.sensors.<a href="src/fern/sensors/client.py#L97-L176">put_reading</a>(...) -> Reading</code></summary>
 <dl>
 <dd>
 
@@ -183,7 +183,7 @@ client.sensors.put_reading(
 </dl>
 </details>
 
-<details><summary><code>client.sensors.<a href="src/fern/sensors/client.py">put_channel</a>(...) -> Channels</code></summary>
+<details><summary><code>client.sensors.<a href="src/fern/sensors/client.py#L178-L207">put_channel</a>(...) -> Channels</code></summary>
 <dl>
 <dd>
 
@@ -250,7 +250,7 @@ client.sensors.put_channel(
 </dl>
 </details>
 
-<details><summary><code>client.sensors.<a href="src/fern/sensors/client.py">calibrate_sensor</a>(...) -> CalibrateSensorResponse</code></summary>
+<details><summary><code>client.sensors.<a href="src/fern/sensors/client.py#L209-L242">calibrate_sensor</a>(...) -> CalibrateSensorResponse</code></summary>
 <dl>
 <dd>
 

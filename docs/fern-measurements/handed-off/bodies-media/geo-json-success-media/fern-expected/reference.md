@@ -1,6 +1,6 @@
 # Reference
 ## Trailheads
-<details><summary><code>client.trailheads.<a href="src/fern/trailheads/client.py">get_trailhead</a>(...) -> TrailheadFeature</code></summary>
+<details><summary><code>client.trailheads.<a href="src/fern/trailheads/client.py#L26-L52">get_trailhead</a>(...) -> TrailheadFeature</code></summary>
 <dl>
 <dd>
 

@@ -1,6 +1,6 @@
 # Reference
 ## Health
-<details><summary><code>client.health.<a href="src/fern/health/client.py">get_health</a>() -> Health</code></summary>
+<details><summary><code>client.health.<a href="src/fern/health/client.py#L26-L48">get_health</a>() -> Health</code></summary>
 <dl>
 <dd>
 
@@ -63,7 +63,7 @@ client.health.get_health()
 </details>
 
 ## Containers
-<details><summary><code>client.containers.<a href="src/fern/containers/client.py">list_containers</a>(...) -> ContainerList</code></summary>
+<details><summary><code>client.containers.<a href="src/fern/containers/client.py#L34-L70">list_containers</a>(...) -> ContainerList</code></summary>
 <dl>
 <dd>
 
@@ -141,7 +141,7 @@ client.containers.list_containers()
 </dl>
 </details>
 
-<details><summary><code>client.containers.<a href="src/fern/containers/client.py">create_container</a>(...) -> Container</code></summary>
+<details><summary><code>client.containers.<a href="src/fern/containers/client.py#L72-L174">create_container</a>(...) -> Container</code></summary>
 <dl>
 <dd>
 
@@ -249,7 +249,7 @@ Requirements (per AEP-122):
 </dl>
 </details>
 
-<details><summary><code>client.containers.<a href="src/fern/containers/client.py">get_container</a>(...) -> Container</code></summary>
+<details><summary><code>client.containers.<a href="src/fern/containers/client.py#L176-L203">get_container</a>(...) -> Container</code></summary>
 <dl>
 <dd>
 
@@ -321,7 +321,7 @@ client.containers.get_container(
 </dl>
 </details>
 
-<details><summary><code>client.containers.<a href="src/fern/containers/client.py">delete_container</a>(...)</code></summary>
+<details><summary><code>client.containers.<a href="src/fern/containers/client.py#L205-L231">delete_container</a>(...)</code></summary>
 <dl>
 <dd>
 

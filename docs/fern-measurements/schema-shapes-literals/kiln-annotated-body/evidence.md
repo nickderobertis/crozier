@@ -1,8 +1,8 @@
 # Literals-mode schema arm proof
 
-Fern CLI 5.163.1 with fernapi/fern-python-sdk 5.41.3, with enum_type unset,
+Fern CLI 5.200.0 with fernapi/fern-python-sdk 5.41.25, with enum_type unset,
 produced this complete comment-stripped tree from
 `docs/fern-measurements/schema-shapes/kiln-annotated-body/openapi.yml`.
 No publishing was requested.
 
-Canonical tree SHA-256: `cf6cfce91dd5d7ef7fa40a5abcc922d1f2d3d15779a488fd5d3cd8a461aa1485`
+Canonical tree SHA-256: `c54de75919769e46007914e88e24636fa3f3f4a7604bd5a77f5c7e575f328c3d`

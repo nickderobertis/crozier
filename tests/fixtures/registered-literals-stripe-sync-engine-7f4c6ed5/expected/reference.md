@@ -1,6 +1,6 @@
 # Reference
 ## Status
-<details><summary><code>client.status.<a href="src/fern/status/client.py">health</a>() -> HealthResponse</code></summary>
+<details><summary><code>client.status.<a href="src/fern/status/client.py#L26-L48">health</a>() -> HealthResponse</code></summary>
 <dl>
 <dd>
 
@@ -48,7 +48,7 @@ client.status.health()
 </details>
 
 ## StatelessSyncApi
-<details><summary><code>client.stateless_sync_api.<a href="src/fern/stateless_sync_api/client.py">pipeline_check</a>(...) -> CheckOutput</code></summary>
+<details><summary><code>client.stateless_sync_api.<a href="src/fern/stateless_sync_api/client.py#L42-L95">pipeline_check</a>(...) -> CheckOutput</code></summary>
 <dl>
 <dd>
 
@@ -136,7 +136,7 @@ client.stateless_sync_api.pipeline_check(
 </dl>
 </details>
 
-<details><summary><code>client.stateless_sync_api.<a href="src/fern/stateless_sync_api/client.py">pipeline_setup</a>(...) -> SetupOutput</code></summary>
+<details><summary><code>client.stateless_sync_api.<a href="src/fern/stateless_sync_api/client.py#L97-L150">pipeline_setup</a>(...) -> SetupOutput</code></summary>
 <dl>
 <dd>
 
@@ -224,7 +224,7 @@ client.stateless_sync_api.pipeline_setup(
 </dl>
 </details>
 
-<details><summary><code>client.stateless_sync_api.<a href="src/fern/stateless_sync_api/client.py">pipeline_teardown</a>(...) -> TeardownOutput</code></summary>
+<details><summary><code>client.stateless_sync_api.<a href="src/fern/stateless_sync_api/client.py#L152-L205">pipeline_teardown</a>(...) -> TeardownOutput</code></summary>
 <dl>
 <dd>
 
@@ -312,7 +312,7 @@ client.stateless_sync_api.pipeline_teardown(
 </dl>
 </details>
 
-<details><summary><code>client.stateless_sync_api.<a href="src/fern/stateless_sync_api/client.py">source_discover</a>(...) -> DiscoverOutput</code></summary>
+<details><summary><code>client.stateless_sync_api.<a href="src/fern/stateless_sync_api/client.py#L207-L242">source_discover</a>(...) -> DiscoverOutput</code></summary>
 <dl>
 <dd>
 
@@ -386,7 +386,7 @@ client.stateless_sync_api.source_discover(
 </dl>
 </details>
 
-<details><summary><code>client.stateless_sync_api.<a href="src/fern/stateless_sync_api/client.py">pipeline_read</a>(...) -> Message</code></summary>
+<details><summary><code>client.stateless_sync_api.<a href="src/fern/stateless_sync_api/client.py#L244-L321">pipeline_read</a>(...) -> Message</code></summary>
 <dl>
 <dd>
 
@@ -506,7 +506,7 @@ client.stateless_sync_api.pipeline_read(
 </dl>
 </details>
 
-<details><summary><code>client.stateless_sync_api.<a href="src/fern/stateless_sync_api/client.py">pipeline_write</a>(...) -> DestinationOutput</code></summary>
+<details><summary><code>client.stateless_sync_api.<a href="src/fern/stateless_sync_api/client.py#L323-L391">pipeline_write</a>(...) -> DestinationOutput</code></summary>
 <dl>
 <dd>
 
@@ -606,7 +606,7 @@ client.stateless_sync_api.pipeline_write(
 </dl>
 </details>
 
-<details><summary><code>client.stateless_sync_api.<a href="src/fern/stateless_sync_api/client.py">pipeline_sync</a>(...) -> SyncOutput</code></summary>
+<details><summary><code>client.stateless_sync_api.<a href="src/fern/stateless_sync_api/client.py#L393-L470">pipeline_sync</a>(...) -> SyncOutput</code></summary>
 <dl>
 <dd>
 
@@ -726,7 +726,7 @@ client.stateless_sync_api.pipeline_sync(
 </dl>
 </details>
 
-<details><summary><code>client.stateless_sync_api.<a href="src/fern/stateless_sync_api/client.py">pipeline_sync_batch</a>(...) -> EofPayload</code></summary>
+<details><summary><code>client.stateless_sync_api.<a href="src/fern/stateless_sync_api/client.py#L472-L535">pipeline_sync_batch</a>(...) -> EofPayload</code></summary>
 <dl>
 <dd>
 
@@ -831,7 +831,7 @@ client.stateless_sync_api.pipeline_sync_batch(
 </details>
 
 ## Meta
-<details><summary><code>client.meta.<a href="src/fern/meta/client.py">sources_list</a>() -> MetaSourcesListResponse</code></summary>
+<details><summary><code>client.meta.<a href="src/fern/meta/client.py#L29-L51">sources_list</a>() -> MetaSourcesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -878,7 +878,7 @@ client.meta.sources_list()
 </dl>
 </details>
 
-<details><summary><code>client.meta.<a href="src/fern/meta/client.py">sources_get</a>(...) -> MetaSourcesGetResponse</code></summary>
+<details><summary><code>client.meta.<a href="src/fern/meta/client.py#L53-L81">sources_get</a>(...) -> MetaSourcesGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -935,7 +935,7 @@ client.meta.sources_get(
 </dl>
 </details>
 
-<details><summary><code>client.meta.<a href="src/fern/meta/client.py">destinations_list</a>() -> MetaDestinationsListResponse</code></summary>
+<details><summary><code>client.meta.<a href="src/fern/meta/client.py#L83-L107">destinations_list</a>() -> MetaDestinationsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -982,7 +982,7 @@ client.meta.destinations_list()
 </dl>
 </details>
 
-<details><summary><code>client.meta.<a href="src/fern/meta/client.py">destinations_get</a>(...) -> MetaDestinationsGetResponse</code></summary>
+<details><summary><code>client.meta.<a href="src/fern/meta/client.py#L109-L137">destinations_get</a>(...) -> MetaDestinationsGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -1040,7 +1040,7 @@ client.meta.destinations_get(
 </details>
 
 ## Internal
-<details><summary><code>client.internal.<a href="src/fern/internal/client.py">query</a>(...) -> InternalQueryResponse</code></summary>
+<details><summary><code>client.internal.<a href="src/fern/internal/client.py#L29-L68">query</a>(...) -> InternalQueryResponse</code></summary>
 <dl>
 <dd>
 

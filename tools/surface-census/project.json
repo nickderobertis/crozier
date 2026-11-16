@@ -14,7 +14,7 @@
       },
       "executor": "nx:run-commands",
       "options": {
-        "command": "uv run --locked --all-packages pytest --cov --cov-report= --deselect=tools/surface-census/tests/surface_census_test.py::HandedOffCombinationVerdictsTests --deselect=tools/surface-census/tests/surface_census_test.py::RankedBacklogTests --deselect=tools/surface-census/tests/surface_census_test.py::CombinationSearchRecordTests tools/surface-census/tests/surface_census_test.py tools/surface-census/tests/apis_guru_gap_screen_test.py tools/surface-census/tests/reach_store_test.py tools/surface-census/tests/repin_base_test.py tools/surface-census/tests/repin_messages_test.py tools/surface-census/tests/repin_merge_test.py tools/surface-census/tests/repin_anchor_test.py tools/surface-census/tests/reach_document_test.py",
+        "command": "uv run --locked --all-packages pytest --cov --cov-report= --deselect=tools/surface-census/tests/surface_census_test.py::HandedOffCombinationVerdictsTests --deselect=tools/surface-census/tests/surface_census_test.py::RankedBacklogTests --deselect=tools/surface-census/tests/surface_census_test.py::CombinationSearchRecordTests tools/surface-census/tests/surface_census_test.py tools/surface-census/tests/apis_guru_gap_screen_test.py tools/surface-census/tests/reach_store_test.py tools/surface-census/tests/repin_base_test.py tools/surface-census/tests/repin_messages_test.py tools/surface-census/tests/repin_merge_test.py tools/surface-census/tests/repin_anchor_test.py tools/surface-census/tests/reach_document_test.py tools/surface-census/tests/output_insensitive_remeasure_test.py",
         "env": {
           "COVERAGE_FILE": ".coverage-data/surface-census/test-census/.coverage"
         }
@@ -34,6 +34,7 @@
         "{workspaceRoot}/crates/crozier-e2e/tests/e2e.rs",
         "{workspaceRoot}/crates/crozier-e2e/tests/e2e/*.rs",
         "{workspaceRoot}/tests/generation.rs",
+        "{workspaceRoot}/tools/fern-goldens/generate-fern-fixture.sh",
         "{workspaceRoot}/tools/corpus/corpus-lib.sh",
         "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
         "{workspaceRoot}/tools/corpus/fetch-corpus.sh",

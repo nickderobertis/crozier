@@ -1,6 +1,6 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "97b6f8ecc21c7a991770a2884b321cf9927e1e26c101cebb1f9e34cf280b8e16"
+fern_cli_version = "5.200.0"
+fern_python_sdk_version = "5.41.25"
+digest = "26f12427b2160d5da880fb8d1f75ea1f282309ad196bbdd7b68df400e4429549"
 
 [[covers]]
 key = "integer-example-beyond-double-precision"

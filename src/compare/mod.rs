@@ -989,7 +989,7 @@ mod tests {
             "CROZIER_REFERENCE_LAYOUT=packaged".to_string(),
             format!("CROZIER_REFERENCE_OUTPUT={output}"),
             "CROZIER_REFERENCE_PACKAGE_NAME=widget_api".to_string(),
-            "CROZIER_REFERENCE_PROJECT_NAME=widget_api".to_string(),
+            "CROZIER_REFERENCE_PROJECT_NAME=widget-api".to_string(),
             format!(
                 "CROZIER_REFERENCE_SPEC={}",
                 svc.join("openapi.yml").display()

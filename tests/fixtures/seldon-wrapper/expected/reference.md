@@ -1,6 +1,6 @@
 # Reference
 ## Internal
-<details><summary><code>client.internal.<a href="src/fern/internal/client.py">aggregate</a>(...) -> SeldonMessage</code></summary>
+<details><summary><code>client.internal.<a href="src/fern/internal/client.py#L31-L57">aggregate</a>(...) -> SeldonMessage</code></summary>
 <dl>
 <dd>
 
@@ -58,7 +58,7 @@ client.internal.aggregate(
 </dl>
 </details>
 
-<details><summary><code>client.internal.<a href="src/fern/internal/client.py">aggregate2</a>(...) -> SeldonMessage</code></summary>
+<details><summary><code>client.internal.<a href="src/fern/internal/client.py#L59-L86">aggregate2</a>(...) -> SeldonMessage</code></summary>
 <dl>
 <dd>
 
@@ -114,7 +114,7 @@ client.internal.aggregate2()
 </dl>
 </details>
 
-<details><summary><code>client.internal.<a href="src/fern/internal/client.py">transform_input4</a>(...) -> SeldonMessage</code></summary>
+<details><summary><code>client.internal.<a href="src/fern/internal/client.py#L88-L114">transform_input4</a>(...) -> SeldonMessage</code></summary>
 <dl>
 <dd>
 
@@ -172,7 +172,7 @@ client.internal.transform_input4(
 </dl>
 </details>
 
-<details><summary><code>client.internal.<a href="src/fern/internal/client.py">transform_input3</a>(...) -> SeldonMessage</code></summary>
+<details><summary><code>client.internal.<a href="src/fern/internal/client.py#L116-L140">transform_input3</a>(...) -> SeldonMessage</code></summary>
 <dl>
 <dd>
 
@@ -228,7 +228,7 @@ client.internal.transform_input3()
 </dl>
 </details>
 
-<details><summary><code>client.internal.<a href="src/fern/internal/client.py">route2</a>(...) -> SeldonMessage</code></summary>
+<details><summary><code>client.internal.<a href="src/fern/internal/client.py#L142-L166">route2</a>(...) -> SeldonMessage</code></summary>
 <dl>
 <dd>
 
@@ -286,7 +286,7 @@ client.internal.route2(
 </dl>
 </details>
 
-<details><summary><code>client.internal.<a href="src/fern/internal/client.py">route</a>(...) -> SeldonMessage</code></summary>
+<details><summary><code>client.internal.<a href="src/fern/internal/client.py#L168-L192">route</a>(...) -> SeldonMessage</code></summary>
 <dl>
 <dd>
 
@@ -342,7 +342,7 @@ client.internal.route()
 </dl>
 </details>
 
-<details><summary><code>client.internal.<a href="src/fern/internal/client.py">send_feedback2</a>(...) -> SeldonMessage</code></summary>
+<details><summary><code>client.internal.<a href="src/fern/internal/client.py#L194-L220">send_feedback2</a>(...) -> SeldonMessage</code></summary>
 <dl>
 <dd>
 
@@ -400,7 +400,7 @@ client.internal.send_feedback2(
 </dl>
 </details>
 
-<details><summary><code>client.internal.<a href="src/fern/internal/client.py">send_feedback</a>(...) -> SeldonMessage</code></summary>
+<details><summary><code>client.internal.<a href="src/fern/internal/client.py#L222-L246">send_feedback</a>(...) -> SeldonMessage</code></summary>
 <dl>
 <dd>
 
@@ -456,7 +456,7 @@ client.internal.send_feedback()
 </dl>
 </details>
 
-<details><summary><code>client.internal.<a href="src/fern/internal/client.py">transform_input2</a>(...) -> SeldonMessage</code></summary>
+<details><summary><code>client.internal.<a href="src/fern/internal/client.py#L248-L274">transform_input2</a>(...) -> SeldonMessage</code></summary>
 <dl>
 <dd>
 
@@ -514,7 +514,7 @@ client.internal.transform_input2(
 </dl>
 </details>
 
-<details><summary><code>client.internal.<a href="src/fern/internal/client.py">transform_input</a>(...) -> SeldonMessage</code></summary>
+<details><summary><code>client.internal.<a href="src/fern/internal/client.py#L276-L300">transform_input</a>(...) -> SeldonMessage</code></summary>
 <dl>
 <dd>
 
@@ -570,7 +570,7 @@ client.internal.transform_input()
 </dl>
 </details>
 
-<details><summary><code>client.internal.<a href="src/fern/internal/client.py">transform_output2</a>(...) -> SeldonMessage</code></summary>
+<details><summary><code>client.internal.<a href="src/fern/internal/client.py#L302-L328">transform_output2</a>(...) -> SeldonMessage</code></summary>
 <dl>
 <dd>
 
@@ -628,7 +628,7 @@ client.internal.transform_output2(
 </dl>
 </details>
 
-<details><summary><code>client.internal.<a href="src/fern/internal/client.py">transform_output</a>(...) -> SeldonMessage</code></summary>
+<details><summary><code>client.internal.<a href="src/fern/internal/client.py#L330-L354">transform_output</a>(...) -> SeldonMessage</code></summary>
 <dl>
 <dd>
 

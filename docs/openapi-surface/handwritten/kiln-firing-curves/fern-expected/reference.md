@@ -1,6 +1,6 @@
 # Reference
 ## Curves
-<details><summary><code>client.curves.<a href="src/fern/curves/client.py">record_curve</a>(...) -> Curve</code></summary>
+<details><summary><code>client.curves.<a href="src/fern/curves/client.py#L29-L79">record_curve</a>(...) -> Curve</code></summary>
 <dl>
 <dd>
 

@@ -15,6 +15,7 @@ from ..core.xml_utilities import (
     XmlElement,
     XmlNode,
     build_xml_model,
+    check_xml_extra_attributes,
     extra_xml_attributes,
     order_xml_content,
     parse_xml,
@@ -85,7 +86,12 @@ class XmlResult(UniversalBaseModel):
             Additional XML attributes not declared in the API definition.
         """
         super().__init__(
-            **dict(header=header, metadata=metadata, xmlns_dri=xmlns_dri, xmlns_xsi=xmlns_xsi), **extra_attributes
+            **check_xml_extra_attributes(
+                type(self),
+                {"xmlns:dri": "xmlns_dri", "xmlns:xsi": "xmlns_xsi"},
+                dict(header=header, metadata=metadata, xmlns_dri=xmlns_dri, xmlns_xsi=xmlns_xsi),
+                extra_attributes,
+            )
         )
         self._content.extend(order_xml_content([], self.header, self.metadata))
 

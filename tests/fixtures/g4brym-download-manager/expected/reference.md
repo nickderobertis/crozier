@@ -1,6 +1,6 @@
 # Reference
 ## Files
-<details><summary><code>client.files.<a href="src/fern/files/client.py">file_count</a>() -> StatusDto</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L33-L56">file_count</a>() -> StatusDto</code></summary>
 <dl>
 <dd>
 
@@ -48,7 +48,7 @@ client.files.file_count()
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">file_download</a>(...) -> typing.List[DownloadDtoOut]</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L58-L93">file_download</a>(...) -> typing.List[DownloadDtoOut]</code></summary>
 <dl>
 <dd>
 
@@ -112,7 +112,7 @@ client.files.file_download(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">file_status</a>(...) -> DownloadDtoOut</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L95-L122">file_status</a>(...) -> DownloadDtoOut</code></summary>
 <dl>
 <dd>
 
@@ -170,7 +170,7 @@ client.files.file_status(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">file_retry</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L124-L151">file_retry</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -228,7 +228,7 @@ client.files.file_retry(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">file_retry_all</a>() -> SuccessResponse</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L153-L176">file_retry_all</a>() -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -276,7 +276,7 @@ client.files.file_retry_all()
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">file_status_bulk</a>(...) -> DownloadStatusDto</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L178-L207">file_status_bulk</a>(...) -> DownloadStatusDto</code></summary>
 <dl>
 <dd>
 

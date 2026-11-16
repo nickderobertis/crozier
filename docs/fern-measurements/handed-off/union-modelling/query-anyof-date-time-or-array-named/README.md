@@ -13,3 +13,10 @@ A query parameter whose schema is an `anyOf` of a scalar written `nullable: true
 The certified pair declares `ListParcelsRequestShippedAt = typing.Union[typing.Optional[dt.datetime], typing.List[typing.Optional[dt.datetime]]]` (and the same for `weight` over integers) and types the argument `typing.Optional[ListParcelsRequestShippedAt]`. crozier wrote the one-or-many `typing.Optional[typing.Union[dt.datetime, typing.Sequence[dt.datetime]]]`. It now byte-matches; repaired in `one_or_many_query_schema` and `InlineHoister::hoist_param_composition`. A probe of the same shape *without* `nullable` showed a separate difference (the certified pair passes the one-or-many date-time through `serialize_datetime`); it is outside this cause, removed from this document, and drafted as a follow-up.
 
 Held by `a_query_any_of_nullable_scalar_or_array_is_a_named_union` in `crates/crozier-e2e/tests/e2e/union_modelling.rs`: crozier generates `openapi.yml` and the SDK must byte-match `fern-expected/` (and `literals/fern-expected/` in `literals` mode where committed) apart from the catalogued departures the ledger records for the tree, and the pre-repair spelling written back into crozier's output must fail that comparison. The unit test `query_compositions_read_as_one_or_many_or_name_their_union` in `src/ir.rs`'s `union_modelling_tests` drives the repaired lowering on the same document.
+
+**Regenerated at the certified pair.** The Fern goldens workflow (run
+43423270787) regenerated every `fern-expected/` tree this record holds at Fern
+CLI 5.200.0 / `fernapi/fern-python-sdk` 5.41.25, the certified pair, and
+crozier's comparison holds the record to those trees. Statements above that name Fern CLI
+5.163.1 / fern-python-sdk 5.41.3 describe the measurement as first taken, at
+the pair certified then; a digest, log or exit code they cite is that run's.

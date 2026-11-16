@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">open_box</a>(...) -> Box</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L125-L152">open_box</a>(...) -> Box</code></summary>
 <dl>
 <dd>
 

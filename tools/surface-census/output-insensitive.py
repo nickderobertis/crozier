@@ -26,6 +26,7 @@ from typing import NamedTuple
 REGISTRY = Path("docs/openapi-surface/output-insensitive.tsv")
 COLUMNS = ("key", "context", "search_record", "fern_comparison", "crozier_comparison")
 SHA256 = re.compile(r"[0-9a-f]{64}")
+CENSUS_KEY = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
 
 
 def local_file(root: Path, value: str) -> Path:
@@ -167,7 +168,7 @@ def read_records(root: Path) -> tuple[set[tuple[str, str]], list[str]]:
                         raise ValueError("incomplete disposition row")
                     key, context = row["key"], row["context"]
                     pair = (key, context)
-                    if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", key):
+                    if not CENSUS_KEY.fullmatch(key):
                         raise ValueError("invalid census key")
                     if pair in seen:
                         raise ValueError("duplicate key and context")

@@ -1,6 +1,6 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "354ef137ff46e4bf5fddf3a6f392624baed3a2ef99edff73b5b0f8cbad2212e9"
+fern_cli_version = "5.200.0"
+fern_python_sdk_version = "5.41.25"
+digest = "b994ad04215fc5becf047b3f140bb3ed42276f9384e2d0a3cfecd297c757dd26"
 
 [[covers]]
 key = "discriminated-extension"

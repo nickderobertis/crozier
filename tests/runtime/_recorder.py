@@ -209,6 +209,114 @@ def async_request_and_response(sdk):
     return asyncio.run(run())
 
 
+def path_dot_segments_are_rejected(sdk):
+    """A path parameter of `.` or `..` (or a segment of one, encoded or not)
+    raises before any request is built; any other value is encoded as before."""
+    from fern.core.jsonable_encoder import encode_path_param, quote_path_param
+
+    observed = {}
+    for function in (encode_path_param, quote_path_param):
+        for value in ("..", ".", "a/../b", "%2e%2e", "dock.7", True):
+            try:
+                observed[f"{function.__name__}({value!r})"] = {"value": function(value)}
+            except ValueError as err:
+                observed[f"{function.__name__}({value!r})"] = {"error": type(err).__name__, "message": str(err)}
+    for rejected in ("encode_path_param('..')", "quote_path_param('..')", "quote_path_param('.')"):
+        if "error" not in observed[rejected]:
+            raise AssertionError(f"{rejected} should raise ValueError, got {observed[rejected]}")
+    return observed
+
+
+def retry_after_header_values(sdk):
+    """`retry-after-ms` is read as a number of milliseconds, fractions included;
+    a value that is not a positive finite number falls back to `retry-after`. A
+    429 carrying one is retried by the real client and then succeeds."""
+    from fern.core.http_client import _parse_retry_after
+
+    parsed = {}
+    for value in ("1500", "1.5", "0", "-5", "inf", "nan", "soon"):
+        headers = httpx.Headers({"retry-after-ms": value, "retry-after": "7"})
+        parsed[value] = _parse_retry_after(headers)
+    if parsed["1.5"] != 0.0015 or parsed["1500"] != 1.5 or parsed["soon"] != 7:
+        raise AssertionError(f"retry-after-ms values parsed as {parsed}")
+
+    replies = iter(
+        [
+            httpx.Response(429, headers={"retry-after-ms": "1.5"}, json={"message": "slow down"}),
+            httpx.Response(200, json=_workspace_payload()),
+        ]
+    )
+    requests = []
+
+    def handler(request):
+        requests.append(request)
+        return next(replies)
+
+    client = sdk.FernApi(
+        base_url=BASE_URL, token=TOKEN, httpx_client=httpx.Client(transport=httpx.MockTransport(handler))
+    )
+    result = client.workspace.get_workspace(workspace_id="workspace-a", request_options={"max_retries": 1})
+    if len(requests) != 2:
+        raise AssertionError(f"a 429 with retry-after-ms should be retried once, saw {len(requests)} request(s)")
+    return {
+        "parsed": parsed,
+        "requests": [_request_record(request) for request in requests],
+        "outcome": {"model": type(result).__name__, "data": _dump(result)},
+    }
+
+
+def environment_proxy_mounts(sdk):
+    """The environment's proxies become keepalive transport mounts, sync and
+    async; a NO_PROXY host is a `None` mount that falls back to the default."""
+    from fern.core.http_client import get_async_keepalive_proxy_mounts, get_keepalive_proxy_mounts
+
+    names = ("HTTPS_PROXY", "HTTP_PROXY", "ALL_PROXY", "NO_PROXY", "https_proxy", "http_proxy", "all_proxy", "no_proxy")
+    saved = {name: os.environ.pop(name) for name in names if name in os.environ}
+    try:
+        os.environ["HTTPS_PROXY"] = "http://proxy.example.test:3128"
+        os.environ["NO_PROXY"] = "internal.example.test"
+        mounts = {
+            "sync": get_keepalive_proxy_mounts(),
+            "async": get_async_keepalive_proxy_mounts(),
+        }
+    finally:
+        for name in names:
+            os.environ.pop(name, None)
+        os.environ.update(saved)
+    observed = {
+        side: {pattern: None if transport is None else type(transport).__name__ for pattern, transport in found.items()}
+        for side, found in mounts.items()
+    }
+    if observed["sync"].get("https://") != "HTTPTransport" or observed["async"].get("https://") != "AsyncHTTPTransport":
+        raise AssertionError(f"HTTPS_PROXY should mount a keepalive transport, got {observed}")
+    if "all://*internal.example.test" not in observed["sync"]:
+        raise AssertionError(f"NO_PROXY should mount a bypass, got {observed}")
+    return observed
+
+
+def local_forward_refs_resolve(sdk):
+    """`update_forward_refs` resolves a forward reference to a model passed as a
+    local name, as a generated recursive or late-declared model does."""
+    from fern.core.pydantic_utilities import UniversalBaseModel, update_forward_refs
+
+    def declare():
+        class Berth(UniversalBaseModel):
+            name: str
+            moored: "Vessel | None" = None
+
+        class Vessel(UniversalBaseModel):
+            hull: str
+
+        return Berth, Vessel
+
+    berth_type, vessel_type = declare()
+    update_forward_refs(berth_type, Vessel=vessel_type)
+    berth = berth_type(name="north", moored={"hull": "steel"})
+    if type(berth.moored).__name__ != "Vessel":
+        raise AssertionError(f"the forward reference did not resolve: {berth!r}")
+    return {"model": type(berth).__name__, "data": _dump(berth)}
+
+
 JOURNEYS = [
     request_construction_and_response,
     no_auth_omits_authorization,
@@ -216,6 +324,10 @@ JOURNEYS = [
     query_parameters_are_encoded,
     raw_response_exposes_underlying_http,
     async_request_and_response,
+    path_dot_segments_are_rejected,
+    retry_after_header_values,
+    environment_proxy_mounts,
+    local_forward_refs_resolve,
 ]
 JOURNEY_NAMES = [journey.__name__ for journey in JOURNEYS]
 

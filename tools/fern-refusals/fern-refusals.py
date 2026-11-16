@@ -52,6 +52,7 @@ import gzip
 import hashlib
 import importlib.util
 import json
+import math
 import os
 import re
 import shutil
@@ -1604,7 +1605,13 @@ def check(_args: argparse.Namespace) -> int:
         fail("\n  ".join(["the registry drifted from its contract:", *problems]))
     # Both stages are reported together: a template that drifts shows in the
     # tables and in every disposition it derives alike.
-    agreement = cross_reference_problems() + confirmation_problems() + shape_problems() + stray_reduction_logs()
+    agreement = (
+        cross_reference_problems()
+        + confirmation_problems()
+        + unsettled_problems()
+        + shape_problems()
+        + stray_reduction_logs()
+    )
     written, inputs = tables()
     for name, text in written.items():
         if (REGISTRY / name).read_text(encoding="utf-8") != text:
@@ -2019,12 +2026,13 @@ SHAPE_LOG = re.compile(
 )
 
 
-def read_shape_log(text: str) -> ShapeRun | None:
+def read_shape_log(text: str, pair_line: str = PAIR_LINE) -> ShapeRun | None:
     """The run a shape's log records, or `None` when it is not one `shapes` wrote
-    at the pair: each exit an exit status or `timeout`, the file count a count."""
-    if not text.startswith(PAIR_LINE):
+    at the pair (`pair_line` names it): each exit an exit status or `timeout`,
+    the file count a count."""
+    if not text.startswith(pair_line):
         return None
-    match = SHAPE_LOG.fullmatch(text[len(PAIR_LINE) :])
+    match = SHAPE_LOG.fullmatch(text[len(pair_line) :])
     check = stage_exit(match["check_exit"]) if match else None
     if match is None or check is None:
         return None
@@ -2180,6 +2188,7 @@ def shape_problems() -> list[str]:
     if not path.is_file():
         return [f"{rel(path)} is missing; run `tools/fern-refusals/fern-refusals.py shapes`"] if every else []
     on_record = shape_records(path)
+    unsettled = unsettled_pair_lines()
     problems = []
     for shape in every:
         row = on_record.pop((shape.cls, shape.path.name), None)
@@ -2190,6 +2199,11 @@ def shape_problems() -> list[str]:
             continue
         log = REPO / row["log"]
         recorded = read_shape_log(log.read_text(encoding="utf-8")) if log.is_file() else None
+        historical = unsettled.get(shape.cls)
+        if recorded is None and historical is not None and log.is_file():
+            # A class not settled at the pair keeps the logs of the pair its
+            # refusal record was taken at, as history (see `unsettled_problems`).
+            recorded = read_shape_log(log.read_text(encoding="utf-8"), historical)
         if recorded is None:
             problems.append(
                 f"{rel(shape.path)}: its log {row['log']} is not one `shapes` wrote at Fern CLI {FERN_CLI} with "
@@ -2217,6 +2231,171 @@ def shape_problems() -> list[str]:
         for name, shape in sorted(on_record)
     ]
     return problems
+
+
+# A class whose probe Fern did not settle at the certified pair (each stage ran
+# past its bound) records that in `unsettled.txt`, beside the refusal record
+# kept from the pair it last settled at.
+# The fields of an `unsettled.txt` and the reach a stage cut short by its bound
+# must show (its trace starts a moment after the probe's timer, so it reads a few
+# seconds under the bound, never far under): one declaration the e2e gate reads
+# too, `docs/fern-refusals/unsettled-contract.json`.
+# The fields `unsettled_problems` reads; the contract may order them, never drop one.
+UNSETTLED_READ = frozenset(
+    (
+        "fern_cli_version",
+        "fern_python_sdk_version",
+        "check_exit",
+        "check_seconds",
+        "generate_exit",
+        "generate_seconds",
+        "bound_seconds",
+        "reason",
+        "follow_up",
+    )
+)
+
+
+def unsettled_contract(path: Path) -> tuple[tuple[str, ...], float]:
+    """The contract's fields (distinct, non-empty names, every one this script
+    reads among them) and its reach (a finite fraction above zero, at most one);
+    anything else fails naming the file."""
+    where = rel(path)
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
+        fail(f"{where} cannot be read: {error}; restore it from git")
+    match data:
+        case {"fields": [*fields], "reach": int() | float() as reach} if (
+            not isinstance(reach, bool)
+            and fields
+            and all(isinstance(field, str) and field for field in fields)
+            and len(set(fields)) == len(fields)
+            and UNSETTLED_READ.issubset(fields)
+            and 0 < reach <= 1
+            and math.isfinite(reach)
+        ):
+            return tuple(fields), float(reach)
+        case _:
+            fail(
+                f"{where} must hold `fields`, distinct non-empty names including {sorted(UNSETTLED_READ)}, and "
+                "`reach`, a finite fraction above 0 and at most 1; restore it from git"
+            )
+
+
+UNSETTLED_FIELDS, UNSETTLED_REACH = unsettled_contract(REPO / "docs" / "fern-refusals" / "unsettled-contract.json")
+SECONDS = re.compile(r"(0|[1-9][0-9]*)(\.[0-9]+)?")
+RELEASE = re.compile(r"[0-9]+\.[0-9]+\.[0-9]+")
+
+
+class Unsettled(NamedTuple):
+    """A validated `unsettled.txt` (whose own pair is the certified one): the
+    earlier pair its kept refusal record was settled at (`cli`, `sdk`), each
+    stage's elapsed seconds at the certified pair, the bound, why, and the
+    follow-up."""
+
+    cli: str
+    sdk: str
+    check_seconds: float
+    generate_seconds: float
+    bound_seconds: float
+    reason: str
+    follow_up: str
+
+
+def record_fields(path: Path) -> tuple[list[str], dict[str, str]]:
+    """A `key: value` record's field names in order (a repeated one twice) and
+    its values."""
+    names, values = [], {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        name, _, value = line.partition(": ")
+        names.append(name.removesuffix(":"))
+        values[name.removesuffix(":")] = value
+    return names, values
+
+
+def unsettled_record(name: str) -> tuple[Unsettled | None, list[str]]:
+    """The class `name`'s `unsettled.txt`, validated, and its problems. An
+    unsettled record is never a silent pass: one missing or repeating a field,
+    naming another pair, a stage that did not run to its bound, no reason or no
+    follow-up, or beside a refusal record that is at the pair, or that names no
+    release, is a problem and validates nothing."""
+    path = REGISTRY / name / "unsettled.txt"
+    where = f"docs/fern-refusals/{name}/unsettled.txt"
+    names, fields = record_fields(path)
+    if tuple(names) != UNSETTLED_FIELDS:
+        return None, [f"{where} carries {names}; it carries exactly {list(UNSETTLED_FIELDS)}, once each, in order"]
+    problems = []
+    if (fields["fern_cli_version"], fields["fern_python_sdk_version"]) != (FERN_CLI, FERN_PYTHON_SDK):
+        problems.append(
+            f"{where} names Fern CLI {fields['fern_cli_version']} / fern-python-sdk "
+            f"{fields['fern_python_sdk_version']}, not the certified pair {FERN_CLI} / {FERN_PYTHON_SDK}; "
+            "re-run `probe` at the pair and settle the class, or record why it is still unsettled"
+        )
+
+    def seconds(text: str) -> float | None:
+        value = float(text) if SECONDS.fullmatch(text) else None
+        return value if value is not None and math.isfinite(value) else None
+
+    bound = seconds(fields["bound_seconds"]) or 0.0
+    if bound <= 0:
+        problems.append(f"{where}: bound_seconds must be the probe's positive per-stage bound in seconds")
+    for stage in ("check", "generate"):
+        elapsed = seconds(fields[f"{stage}_seconds"])
+        if fields[f"{stage}_exit"] != "timeout" or elapsed is None:
+            problems.append(f"{where}: {stage}_exit must be `timeout` with {stage}_seconds its elapsed seconds")
+        elif bound > 0 and elapsed < bound * UNSETTLED_REACH:
+            problems.append(
+                f"{where}: {stage}_seconds {fields[f'{stage}_seconds']} is short of the "
+                f"{fields['bound_seconds']}-second bound; "
+                "a stage the bound cut short runs to it"
+            )
+    for key in ("reason", "follow_up"):
+        if not fields[key].strip():
+            problems.append(f"{where}: {key} is empty; an unsettled class says why, and names its follow-up")
+    record = REGISTRY / name / "fern-refusal.txt"
+    recorded = record_fields(record)[1] if record.is_file() else {}
+    kept = (recorded.get("fern_cli_version", ""), recorded.get("fern_python_sdk_version", ""))
+    if not all(RELEASE.fullmatch(version) for version in kept):
+        problems.append(f"{where}: the class has no fern-refusal.txt naming the pair it last settled at")
+    elif kept == (FERN_CLI, FERN_PYTHON_SDK):
+        problems.append(f"{where}: its refusal record is at the certified pair, so the class is settled; remove it")
+    if problems:
+        return None, problems
+    return Unsettled(
+        kept[0],
+        kept[1],
+        seconds(fields["check_seconds"]) or 0.0,
+        seconds(fields["generate_seconds"]) or 0.0,
+        bound,
+        fields["reason"],
+        fields["follow_up"],
+    ), []
+
+
+def unsettled_classes() -> tuple[dict[str, Unsettled], list[str]]:
+    """Every class validly unsettled at the certified pair (its record naming the
+    pair its kept refusal record was taken at), and every problem found."""
+    valid, problems = {}, []
+    for directory in sorted(path for path in REGISTRY.iterdir() if (path / "unsettled.txt").is_file()):
+        record, found = unsettled_record(directory.name)
+        problems += found
+        if record is not None:
+            valid[directory.name] = record
+    return valid, problems
+
+
+def unsettled_problems() -> list[str]:
+    return unsettled_classes()[1]
+
+
+def unsettled_pair_lines() -> dict[str, str]:
+    """Each class validly unsettled at the certified pair, mapped to the first
+    line of the logs taken at the pair its refusal record names."""
+    return {
+        name: f"fern-refusals: Fern CLI {record.cli}, fernapi/fern-python-sdk {record.sdk}\n"
+        for name, record in unsettled_classes()[0].items()
+    }
 
 
 def dispositions_path() -> Path:

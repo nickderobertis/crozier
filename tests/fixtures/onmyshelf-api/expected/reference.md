@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">c6d08df4eef7d67fd32fd36edf132140</a>()</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L102-L123">c6d08df4eef7d67fd32fd36edf132140</a>()</code></summary>
 <dl>
 <dd>
 

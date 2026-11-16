@@ -1,5 +1,16 @@
 # unresolved-reference: refuse
 
+## At Fern CLI 5.200.0 / fern-python-sdk 5.41.25
+
+Decision: **refuse**, unchanged. The Fern goldens run 43423270787
+re-took the [probe record](fern-refusal.txt) at this pair, and Fern still refuses
+the probe as recorded. Every shape, confirmation and reduction the registry
+carries for the class was retaken at this pair (`fern-refusals.py shapes`,
+`confirm` and `reduce`, serially), each with its role's verdict, and
+`fern-refusals.py check` holds them there. crozier's behaviour is unchanged: the
+e2e gate still runs its probe in both modes. The sections below are history at
+the pairs they name.
+
 ## Narrowed for the document-acceptance area (2026-11-01, Fern CLI 5.163.1 / fern-python-sdk 5.41.3)
 
 A Response Object's `links` are no Reference Objects crozier resolves: the certified pair ignores response links and generates over a Link Object `$ref` to a declared or an absent `components/links` entry, so the reference walk no longer descends into them ([`R14`](../../fern-measurements/handed-off/document-acceptance/R14/README.md), [`crozier-refuses-component-link-ref`](../../fern-measurements/handed-off/document-acceptance/crozier-refuses-component-link-ref/README.md)). A response written as a `$ref` to a component schema stays refused: the certified pair's parse fails on it ([`crozier-refuses-dangling-component-ref`](../../fern-measurements/handed-off/document-acceptance/crozier-refuses-dangling-component-ref/README.md)). Decision otherwise unchanged: **refuse**, in both modes.
@@ -146,3 +157,8 @@ Taken at Fern CLI 5.67.1 / fern-python-sdk 5.20.0, over a document never committ
 - [`evaluation-logs/fern-present-security-reference-generate.log`](evaluation-logs/fern-present-security-reference-generate.log)
 - [`evaluation-logs/fern-present-security-unimported.log`](evaluation-logs/fern-present-security-unimported.log)
 - [`evaluation-logs/fern-response-fragment-pure.log`](evaluation-logs/fern-response-fragment-pure.log)
+
+**Historical.** This record was measured at Fern CLI 5.163.1 /
+`fernapi/fern-python-sdk` 5.41.3, the pair certified when it was taken; where it
+says "the certified pair" it means that pair. It has not been re-measured at
+the current certified pair, Fern CLI 5.200.0 / fern-python-sdk 5.41.25.

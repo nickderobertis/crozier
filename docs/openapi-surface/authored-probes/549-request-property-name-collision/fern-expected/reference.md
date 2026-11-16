@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">update_repo</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L99-L132">update_repo</a>(...)</code></summary>
 <dl>
 <dd>
 

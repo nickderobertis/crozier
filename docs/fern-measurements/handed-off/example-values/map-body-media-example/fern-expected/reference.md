@@ -1,6 +1,6 @@
 # Reference
 ## Lanterns
-<details><summary><code>client.lanterns.<a href="src/fern/lanterns/client.py">set_lantern_labels</a>(...)</code></summary>
+<details><summary><code>client.lanterns.<a href="src/fern/lanterns/client.py#L28-L62">set_lantern_labels</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -69,7 +69,7 @@ client.lanterns.set_lantern_labels(
 </dl>
 </details>
 
-<details><summary><code>client.lanterns.<a href="src/fern/lanterns/client.py">add_lantern_note</a>(...)</code></summary>
+<details><summary><code>client.lanterns.<a href="src/fern/lanterns/client.py#L64-L98">add_lantern_note</a>(...)</code></summary>
 <dl>
 <dd>
 

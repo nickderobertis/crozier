@@ -1,6 +1,6 @@
 # Reference
 ## Files
-<details><summary><code>client.files.<a href="src/fern/files/client.py">create_playback</a>(...) -> PlaybackSession</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L58-L87">create_playback</a>(...) -> PlaybackSession</code></summary>
 <dl>
 <dd>
 
@@ -60,7 +60,7 @@ client.files.create_playback(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">stream_playback</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L89-L157">stream_playback</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -184,7 +184,7 @@ client.files.stream_playback(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">get_playback_diagnostics</a>(...) -> PlaybackDiagnostics</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L159-L190">get_playback_diagnostics</a>(...) -> PlaybackDiagnostics</code></summary>
 <dl>
 <dd>
 
@@ -258,7 +258,7 @@ client.files.get_playback_diagnostics(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">get_playback_tracks</a>(...) -> MediaTracks</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L192-L221">get_playback_tracks</a>(...) -> MediaTracks</code></summary>
 <dl>
 <dd>
 
@@ -318,7 +318,7 @@ client.files.get_playback_tracks(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">get_playback_subtitles</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L223-L264">get_playback_subtitles</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -395,7 +395,7 @@ client.files.get_playback_subtitles(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">create_casting_relay</a>(...) -> CastingRelay</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L266-L295">create_casting_relay</a>(...) -> CastingRelay</code></summary>
 <dl>
 <dd>
 
@@ -455,7 +455,7 @@ client.files.create_casting_relay(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">list_casting_devices</a>() -> CastingDevices</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L297-L320">list_casting_devices</a>() -> CastingDevices</code></summary>
 <dl>
 <dd>
 
@@ -505,7 +505,7 @@ client.files.list_casting_devices()
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">play_on_casting_device</a>(...)</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L322-L385">play_on_casting_device</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -617,7 +617,7 @@ client.files.play_on_casting_device(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">control_casting_device</a>(...)</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L387-L424">control_casting_device</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -687,7 +687,7 @@ client.files.control_casting_device(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">list_files</a>(...) -> ListFilesResponse</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L426-L515">list_files</a>(...) -> ListFilesResponse</code></summary>
 <dl>
 <dd>
 
@@ -863,7 +863,7 @@ client.files.list_files()
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">get_file</a>(...) -> FileEntry</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L517-L546">get_file</a>(...) -> FileEntry</code></summary>
 <dl>
 <dd>
 
@@ -937,7 +937,7 @@ client.files.get_file(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">trash_file</a>(...)</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L548-L576">trash_file</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1011,7 +1011,7 @@ client.files.trash_file(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">update_file</a>(...) -> FileEntry</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L578-L623">update_file</a>(...) -> FileEntry</code></summary>
 <dl>
 <dd>
 
@@ -1101,7 +1101,7 @@ client.files.update_file(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">move_file</a>(...) -> FileEntry</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L625-L680">move_file</a>(...) -> FileEntry</code></summary>
 <dl>
 <dd>
 
@@ -1208,7 +1208,7 @@ client.files.move_file(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">copy_file</a>(...) -> FileEntry</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L682-L737">copy_file</a>(...) -> FileEntry</code></summary>
 <dl>
 <dd>
 
@@ -1315,7 +1315,7 @@ client.files.copy_file(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">restore_file</a>(...) -> FileEntry</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L739-L776">restore_file</a>(...) -> FileEntry</code></summary>
 <dl>
 <dd>
 
@@ -1398,7 +1398,7 @@ client.files.restore_file(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">purge_file</a>(...)</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L778-L806">purge_file</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1472,7 +1472,7 @@ client.files.purge_file(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">clean_trash</a>()</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L808-L832">clean_trash</a>()</code></summary>
 <dl>
 <dd>
 
@@ -1536,7 +1536,7 @@ client.files.clean_trash()
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">download_file</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L834-L889">download_file</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -1643,7 +1643,7 @@ client.files.download_file(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">head_file</a>(...)</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L891-L924">head_file</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1726,7 +1726,7 @@ client.files.head_file(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">download_file_legacy</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L926-L972">download_file_legacy</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -1824,7 +1824,7 @@ client.files.download_file_legacy(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">head_file_legacy</a>(...)</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L974-L1004">head_file_legacy</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1898,7 +1898,7 @@ client.files.head_file_legacy(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">get_file_view_state</a>(...) -> typing.Optional[FileViewState]</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L1006-L1037">get_file_view_state</a>(...) -> typing.Optional[FileViewState]</code></summary>
 <dl>
 <dd>
 
@@ -1972,7 +1972,7 @@ client.files.get_file_view_state(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">put_file_view_state</a>(...) -> FileViewState</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L1039-L1093">put_file_view_state</a>(...) -> FileViewState</code></summary>
 <dl>
 <dd>
 
@@ -2079,7 +2079,7 @@ client.files.put_file_view_state(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">delete_file_view_state</a>(...)</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L1095-L1123">delete_file_view_state</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2153,7 +2153,7 @@ client.files.delete_file_view_state(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">bulk_move_files</a>(...) -> FileBulkResult</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L1125-L1176">bulk_move_files</a>(...) -> FileBulkResult</code></summary>
 <dl>
 <dd>
 
@@ -2254,7 +2254,7 @@ client.files.bulk_move_files(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">bulk_spam_files</a>(...) -> FileBulkResult</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L1178-L1219">bulk_spam_files</a>(...) -> FileBulkResult</code></summary>
 <dl>
 <dd>
 
@@ -2339,7 +2339,7 @@ client.files.bulk_spam_files(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">bulk_trash_files</a>(...) -> FileBulkResult</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L1221-L1262">bulk_trash_files</a>(...) -> FileBulkResult</code></summary>
 <dl>
 <dd>
 
@@ -2424,7 +2424,7 @@ client.files.bulk_trash_files(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">get_file_category_statistics</a>() -> typing.List[FileCategoryStatistics]</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L1264-L1291">get_file_category_statistics</a>() -> typing.List[FileCategoryStatistics]</code></summary>
 <dl>
 <dd>
 
@@ -2488,7 +2488,7 @@ client.files.get_file_category_statistics()
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">get_drive_statistics</a>() -> DriveStatistics</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L1293-L1318">get_drive_statistics</a>() -> DriveStatistics</code></summary>
 <dl>
 <dd>
 
@@ -2553,7 +2553,7 @@ client.files.get_drive_statistics()
 </details>
 
 ## Public shares
-<details><summary><code>client.public_shares.<a href="src/fern/public_shares/client.py">create_public_playback</a>(...) -> PlaybackSession</code></summary>
+<details><summary><code>client.public_shares.<a href="src/fern/public_shares/client.py#L44-L85">create_public_playback</a>(...) -> PlaybackSession</code></summary>
 <dl>
 <dd>
 
@@ -2630,7 +2630,7 @@ client.public_shares.create_public_playback(
 </dl>
 </details>
 
-<details><summary><code>client.public_shares.<a href="src/fern/public_shares/client.py">get_public_share</a>(...) -> PublicShare</code></summary>
+<details><summary><code>client.public_shares.<a href="src/fern/public_shares/client.py#L87-L124">get_public_share</a>(...) -> PublicShare</code></summary>
 <dl>
 <dd>
 
@@ -2698,7 +2698,7 @@ client.public_shares.get_public_share(
 </dl>
 </details>
 
-<details><summary><code>client.public_shares.<a href="src/fern/public_shares/client.py">list_public_share_files</a>(...) -> ListPublicShareFilesResponse</code></summary>
+<details><summary><code>client.public_shares.<a href="src/fern/public_shares/client.py#L126-L184">list_public_share_files</a>(...) -> ListPublicShareFilesResponse</code></summary>
 <dl>
 <dd>
 
@@ -2812,7 +2812,7 @@ client.public_shares.list_public_share_files(
 </dl>
 </details>
 
-<details><summary><code>client.public_shares.<a href="src/fern/public_shares/client.py">download_public_share_file</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.public_shares.<a href="src/fern/public_shares/client.py#L186-L248">download_public_share_file</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -2922,7 +2922,7 @@ client.public_shares.download_public_share_file(
 </dl>
 </details>
 
-<details><summary><code>client.public_shares.<a href="src/fern/public_shares/client.py">head_public_share_file</a>(...)</code></summary>
+<details><summary><code>client.public_shares.<a href="src/fern/public_shares/client.py#L250-L294">head_public_share_file</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3008,7 +3008,7 @@ client.public_shares.head_public_share_file(
 </dl>
 </details>
 
-<details><summary><code>client.public_shares.<a href="src/fern/public_shares/client.py">download_public_share</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.public_shares.<a href="src/fern/public_shares/client.py#L296-L353">download_public_share</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -3109,7 +3109,7 @@ client.public_shares.download_public_share(
 </dl>
 </details>
 
-<details><summary><code>client.public_shares.<a href="src/fern/public_shares/client.py">head_public_share</a>(...)</code></summary>
+<details><summary><code>client.public_shares.<a href="src/fern/public_shares/client.py#L355-L395">head_public_share</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3186,7 +3186,7 @@ client.public_shares.head_public_share(
 </dl>
 </details>
 
-<details><summary><code>client.public_shares.<a href="src/fern/public_shares/client.py">download_public_share_file_legacy</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.public_shares.<a href="src/fern/public_shares/client.py#L397-L454">download_public_share_file_legacy</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -3287,7 +3287,7 @@ client.public_shares.download_public_share_file_legacy(
 </dl>
 </details>
 
-<details><summary><code>client.public_shares.<a href="src/fern/public_shares/client.py">head_public_share_file_legacy</a>(...)</code></summary>
+<details><summary><code>client.public_shares.<a href="src/fern/public_shares/client.py#L456-L496">head_public_share_file_legacy</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3364,7 +3364,7 @@ client.public_shares.head_public_share_file_legacy(
 </dl>
 </details>
 
-<details><summary><code>client.public_shares.<a href="src/fern/public_shares/client.py">download_public_share_legacy</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.public_shares.<a href="src/fern/public_shares/client.py#L498-L550">download_public_share_legacy</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -3456,7 +3456,7 @@ client.public_shares.download_public_share_legacy(
 </dl>
 </details>
 
-<details><summary><code>client.public_shares.<a href="src/fern/public_shares/client.py">head_public_share_legacy</a>(...)</code></summary>
+<details><summary><code>client.public_shares.<a href="src/fern/public_shares/client.py#L552-L588">head_public_share_legacy</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3524,7 +3524,7 @@ client.public_shares.head_public_share_legacy(
 </dl>
 </details>
 
-<details><summary><code>client.public_shares.<a href="src/fern/public_shares/client.py">create_public_share_folder</a>(...) -> FileEntry</code></summary>
+<details><summary><code>client.public_shares.<a href="src/fern/public_shares/client.py#L590-L646">create_public_share_folder</a>(...) -> FileEntry</code></summary>
 <dl>
 <dd>
 
@@ -3601,7 +3601,7 @@ client.public_shares.create_public_share_folder(
 </dl>
 </details>
 
-<details><summary><code>client.public_shares.<a href="src/fern/public_shares/client.py">trash_public_share_file</a>(...)</code></summary>
+<details><summary><code>client.public_shares.<a href="src/fern/public_shares/client.py#L648-L688">trash_public_share_file</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3678,7 +3678,7 @@ client.public_shares.trash_public_share_file(
 </dl>
 </details>
 
-<details><summary><code>client.public_shares.<a href="src/fern/public_shares/client.py">update_public_share_file</a>(...) -> FileEntry</code></summary>
+<details><summary><code>client.public_shares.<a href="src/fern/public_shares/client.py#L690-L747">update_public_share_file</a>(...) -> FileEntry</code></summary>
 <dl>
 <dd>
 
@@ -3772,7 +3772,7 @@ client.public_shares.update_public_share_file(
 </dl>
 </details>
 
-<details><summary><code>client.public_shares.<a href="src/fern/public_shares/client.py">create_public_share_upload</a>(...) -> UploadSession</code></summary>
+<details><summary><code>client.public_shares.<a href="src/fern/public_shares/client.py#L749-L839">create_public_share_upload</a>(...) -> UploadSession</code></summary>
 <dl>
 <dd>
 
@@ -3861,7 +3861,7 @@ client.public_shares.create_public_share_upload(
 </dl>
 </details>
 
-<details><summary><code>client.public_shares.<a href="src/fern/public_shares/client.py">put_public_share_upload_part</a>(...) -> UploadPart</code></summary>
+<details><summary><code>client.public_shares.<a href="src/fern/public_shares/client.py#L841-L872">put_public_share_upload_part</a>(...) -> UploadPart</code></summary>
 <dl>
 <dd>
 
@@ -3933,7 +3933,7 @@ client.public_shares.put_public_share_upload_part(...)
 </dl>
 </details>
 
-<details><summary><code>client.public_shares.<a href="src/fern/public_shares/client.py">complete_public_share_upload</a>(...) -> FileEntry</code></summary>
+<details><summary><code>client.public_shares.<a href="src/fern/public_shares/client.py#L874-L924">complete_public_share_upload</a>(...) -> FileEntry</code></summary>
 <dl>
 <dd>
 
@@ -4019,7 +4019,7 @@ client.public_shares.complete_public_share_upload(
 </dl>
 </details>
 
-<details><summary><code>client.public_shares.<a href="src/fern/public_shares/client.py">abort_public_share_upload</a>(...)</code></summary>
+<details><summary><code>client.public_shares.<a href="src/fern/public_shares/client.py#L926-L966">abort_public_share_upload</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4097,7 +4097,7 @@ client.public_shares.abort_public_share_upload(
 </details>
 
 ## System
-<details><summary><code>client.system.<a href="src/fern/system/client.py">health_live</a>() -> HealthStatus</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py#L26-L51">health_live</a>() -> HealthStatus</code></summary>
 <dl>
 <dd>
 
@@ -4161,7 +4161,7 @@ client.system.health_live()
 </dl>
 </details>
 
-<details><summary><code>client.system.<a href="src/fern/system/client.py">health_ready</a>() -> HealthStatus</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py#L53-L78">health_ready</a>() -> HealthStatus</code></summary>
 <dl>
 <dd>
 
@@ -4226,7 +4226,7 @@ client.system.health_ready()
 </details>
 
 ## Authentication
-<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py">telegram_login_start</a>(...) -> TelegramLoginStartResponse</code></summary>
+<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py#L33-L71">telegram_login_start</a>(...) -> TelegramLoginStartResponse</code></summary>
 <dl>
 <dd>
 
@@ -4309,7 +4309,7 @@ client.authentication.telegram_login_start(
 </dl>
 </details>
 
-<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py">telegram_qr_login_start</a>(...) -> TelegramQrLoginResponse</code></summary>
+<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py#L73-L107">telegram_qr_login_start</a>(...) -> TelegramQrLoginResponse</code></summary>
 <dl>
 <dd>
 
@@ -4383,7 +4383,7 @@ client.authentication.telegram_qr_login_start(
 </dl>
 </details>
 
-<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py">telegram_qr_login_poll</a>(...) -> TokenPair</code></summary>
+<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py#L109-L146">telegram_qr_login_poll</a>(...) -> TokenPair</code></summary>
 <dl>
 <dd>
 
@@ -4466,7 +4466,7 @@ client.authentication.telegram_qr_login_poll(
 </dl>
 </details>
 
-<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py">telegram_login_verify_code</a>(...) -> TokenPair</code></summary>
+<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py#L148-L193">telegram_login_verify_code</a>(...) -> TokenPair</code></summary>
 <dl>
 <dd>
 
@@ -4550,7 +4550,7 @@ client.authentication.telegram_login_verify_code(
 </dl>
 </details>
 
-<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py">telegram_login_verify_password</a>(...) -> TokenPair</code></summary>
+<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py#L195-L240">telegram_login_verify_password</a>(...) -> TokenPair</code></summary>
 <dl>
 <dd>
 
@@ -4634,7 +4634,7 @@ client.authentication.telegram_login_verify_password(
 </dl>
 </details>
 
-<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py">refresh_session</a>(...) -> TokenPair</code></summary>
+<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py#L242-L273">refresh_session</a>(...) -> TokenPair</code></summary>
 <dl>
 <dd>
 
@@ -4708,7 +4708,7 @@ client.authentication.refresh_session(
 </dl>
 </details>
 
-<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py">cookie_telegram_login_verify_code</a>(...) -> CookieSession</code></summary>
+<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py#L275-L320">cookie_telegram_login_verify_code</a>(...) -> CookieSession</code></summary>
 <dl>
 <dd>
 
@@ -4792,7 +4792,7 @@ client.authentication.cookie_telegram_login_verify_code(
 </dl>
 </details>
 
-<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py">cookie_telegram_login_verify_password</a>(...) -> CookieSession</code></summary>
+<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py#L322-L367">cookie_telegram_login_verify_password</a>(...) -> CookieSession</code></summary>
 <dl>
 <dd>
 
@@ -4876,7 +4876,7 @@ client.authentication.cookie_telegram_login_verify_password(
 </dl>
 </details>
 
-<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py">cookie_telegram_qr_login_poll</a>(...) -> CookieSession</code></summary>
+<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py#L369-L406">cookie_telegram_qr_login_poll</a>(...) -> CookieSession</code></summary>
 <dl>
 <dd>
 
@@ -4959,7 +4959,7 @@ client.authentication.cookie_telegram_qr_login_poll(
 </dl>
 </details>
 
-<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py">refresh_cookie_session</a>() -> CookieSession</code></summary>
+<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py#L408-L433">refresh_cookie_session</a>() -> CookieSession</code></summary>
 <dl>
 <dd>
 
@@ -5023,7 +5023,7 @@ client.authentication.refresh_cookie_session()
 </dl>
 </details>
 
-<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py">logout_cookie_session</a>()</code></summary>
+<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py#L435-L459">logout_cookie_session</a>()</code></summary>
 <dl>
 <dd>
 
@@ -5088,7 +5088,7 @@ client.authentication.logout_cookie_session()
 </details>
 
 ## Account
-<details><summary><code>client.account.<a href="src/fern/account/client.py">get_current_user</a>() -> UserProfile</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py#L26-L51">get_current_user</a>() -> UserProfile</code></summary>
 <dl>
 <dd>
 
@@ -5152,7 +5152,7 @@ client.account.get_current_user()
 </dl>
 </details>
 
-<details><summary><code>client.account.<a href="src/fern/account/client.py">get_profile_photo</a>() -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py#L53-L78">get_profile_photo</a>() -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -5216,7 +5216,7 @@ client.account.get_profile_photo()
 </dl>
 </details>
 
-<details><summary><code>client.account.<a href="src/fern/account/client.py">logout_session</a>()</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py#L80-L104">logout_session</a>()</code></summary>
 <dl>
 <dd>
 
@@ -5281,7 +5281,7 @@ client.account.logout_session()
 </details>
 
 ## Users
-<details><summary><code>client.users.<a href="src/fern/users/client.py">search_users</a>(...) -> typing.List[UserSearchResult]</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L26-L55">search_users</a>(...) -> typing.List[UserSearchResult]</code></summary>
 <dl>
 <dd>
 
@@ -5342,7 +5342,7 @@ client.users.search_users(
 </details>
 
 ## Administration
-<details><summary><code>client.administration.<a href="src/fern/administration/client.py">list_admin_users</a>(...) -> typing.List[AdminUserSummary]</code></summary>
+<details><summary><code>client.administration.<a href="src/fern/administration/client.py#L30-L57">list_admin_users</a>(...) -> typing.List[AdminUserSummary]</code></summary>
 <dl>
 <dd>
 
@@ -5400,7 +5400,7 @@ client.administration.list_admin_users()
 </dl>
 </details>
 
-<details><summary><code>client.administration.<a href="src/fern/administration/client.py">update_admin_user</a>(...) -> AdminUserSummary</code></summary>
+<details><summary><code>client.administration.<a href="src/fern/administration/client.py#L59-L99">update_admin_user</a>(...) -> AdminUserSummary</code></summary>
 <dl>
 <dd>
 
@@ -5476,7 +5476,7 @@ client.administration.update_admin_user(
 </dl>
 </details>
 
-<details><summary><code>client.administration.<a href="src/fern/administration/client.py">revoke_admin_user_access</a>(...)</code></summary>
+<details><summary><code>client.administration.<a href="src/fern/administration/client.py#L101-L129">revoke_admin_user_access</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5537,7 +5537,7 @@ client.administration.revoke_admin_user_access(
 </details>
 
 ## API keys
-<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py">list_api_keys</a>(...) -> ListApiKeysResponse</code></summary>
+<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py#L33-L66">list_api_keys</a>(...) -> ListApiKeysResponse</code></summary>
 <dl>
 <dd>
 
@@ -5603,7 +5603,7 @@ client.api_keys.list_api_keys()
 </dl>
 </details>
 
-<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py">create_api_key</a>(...) -> ApiKeyCreated</code></summary>
+<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py#L68-L110">create_api_key</a>(...) -> ApiKeyCreated</code></summary>
 <dl>
 <dd>
 
@@ -5680,7 +5680,7 @@ client.api_keys.create_api_key(
 </dl>
 </details>
 
-<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py">revoke_api_key</a>(...)</code></summary>
+<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py#L112-L138">revoke_api_key</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5741,7 +5741,7 @@ client.api_keys.revoke_api_key(
 </details>
 
 ## Sessions
-<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py">list_sessions</a>(...) -> ListSessionsResponse</code></summary>
+<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py#L28-L63">list_sessions</a>(...) -> ListSessionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5821,7 +5821,7 @@ client.sessions.list_sessions()
 </dl>
 </details>
 
-<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py">revoke_session</a>(...)</code></summary>
+<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py#L65-L93">revoke_session</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5896,7 +5896,7 @@ client.sessions.revoke_session(
 </details>
 
 ## Channels
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">list_channels</a>(...) -> ListChannelsResponse</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L33-L66">list_channels</a>(...) -> ListChannelsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5962,7 +5962,7 @@ client.channels.list_channels()
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">create_channel</a>(...) -> ChannelSummary</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L68-L110">create_channel</a>(...) -> ChannelSummary</code></summary>
 <dl>
 <dd>
 
@@ -6038,7 +6038,7 @@ client.channels.create_channel(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">discover_channels</a>() -> typing.List[DiscoveredChannel]</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L112-L139">discover_channels</a>() -> typing.List[DiscoveredChannel]</code></summary>
 <dl>
 <dd>
 
@@ -6102,7 +6102,7 @@ client.channels.discover_channels()
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">sync_channels</a>(...) -> typing.List[ChannelSummary]</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L141-L182">sync_channels</a>(...) -> typing.List[ChannelSummary]</code></summary>
 <dl>
 <dd>
 
@@ -6187,7 +6187,7 @@ client.channels.sync_channels(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">select_channel</a>(...) -> ChannelSummary</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L184-L213">select_channel</a>(...) -> ChannelSummary</code></summary>
 <dl>
 <dd>
 
@@ -6247,7 +6247,7 @@ client.channels.select_channel(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">delete_channel</a>(...)</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L215-L241">delete_channel</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6308,7 +6308,7 @@ client.channels.delete_channel(
 </details>
 
 ## Bots
-<details><summary><code>client.bots.<a href="src/fern/bots/client.py">list_bots</a>(...) -> ListBotsResponse</code></summary>
+<details><summary><code>client.bots.<a href="src/fern/bots/client.py#L35-L68">list_bots</a>(...) -> ListBotsResponse</code></summary>
 <dl>
 <dd>
 
@@ -6374,7 +6374,7 @@ client.bots.list_bots()
 </dl>
 </details>
 
-<details><summary><code>client.bots.<a href="src/fern/bots/client.py">create_bots</a>(...) -> BotCreateResponse</code></summary>
+<details><summary><code>client.bots.<a href="src/fern/bots/client.py#L70-L110">create_bots</a>(...) -> BotCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -6445,7 +6445,7 @@ client.bots.create_bots(
 </dl>
 </details>
 
-<details><summary><code>client.bots.<a href="src/fern/bots/client.py">get_bot_manager</a>() -> BotManagerResponse</code></summary>
+<details><summary><code>client.bots.<a href="src/fern/bots/client.py#L112-L135">get_bot_manager</a>() -> BotManagerResponse</code></summary>
 <dl>
 <dd>
 
@@ -6495,7 +6495,7 @@ client.bots.get_bot_manager()
 </dl>
 </details>
 
-<details><summary><code>client.bots.<a href="src/fern/bots/client.py">select_bot_manager</a>(...) -> BotManagerResponse</code></summary>
+<details><summary><code>client.bots.<a href="src/fern/bots/client.py#L137-L172">select_bot_manager</a>(...) -> BotManagerResponse</code></summary>
 <dl>
 <dd>
 
@@ -6564,7 +6564,7 @@ client.bots.select_bot_manager(
 </dl>
 </details>
 
-<details><summary><code>client.bots.<a href="src/fern/bots/client.py">clear_bot_manager</a>() -> BotManagerResponse</code></summary>
+<details><summary><code>client.bots.<a href="src/fern/bots/client.py#L174-L197">clear_bot_manager</a>() -> BotManagerResponse</code></summary>
 <dl>
 <dd>
 
@@ -6614,7 +6614,7 @@ client.bots.clear_bot_manager()
 </dl>
 </details>
 
-<details><summary><code>client.bots.<a href="src/fern/bots/client.py">check_managed_bot_username</a>(...) -> CheckManagedBotUsernameResponse</code></summary>
+<details><summary><code>client.bots.<a href="src/fern/bots/client.py#L199-L228">check_managed_bot_username</a>(...) -> CheckManagedBotUsernameResponse</code></summary>
 <dl>
 <dd>
 
@@ -6674,7 +6674,7 @@ client.bots.check_managed_bot_username(
 </dl>
 </details>
 
-<details><summary><code>client.bots.<a href="src/fern/bots/client.py">create_managed_bot</a>(...) -> ManagedBotResponse</code></summary>
+<details><summary><code>client.bots.<a href="src/fern/bots/client.py#L230-L283">create_managed_bot</a>(...) -> ManagedBotResponse</code></summary>
 <dl>
 <dd>
 
@@ -6775,7 +6775,7 @@ client.bots.create_managed_bot(
 </dl>
 </details>
 
-<details><summary><code>client.bots.<a href="src/fern/bots/client.py">delete_bot</a>(...)</code></summary>
+<details><summary><code>client.bots.<a href="src/fern/bots/client.py#L285-L311">delete_bot</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6836,7 +6836,7 @@ client.bots.delete_bot(
 </details>
 
 ## Events
-<details><summary><code>client.events.<a href="src/fern/events/client.py">create_event_stream_ticket</a>() -> EventStreamTicket</code></summary>
+<details><summary><code>client.events.<a href="src/fern/events/client.py#L26-L53">create_event_stream_ticket</a>() -> EventStreamTicket</code></summary>
 <dl>
 <dd>
 
@@ -6900,7 +6900,7 @@ client.events.create_event_stream_ticket()
 </dl>
 </details>
 
-<details><summary><code>client.events.<a href="src/fern/events/client.py">stream_events</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.events.<a href="src/fern/events/client.py#L55-L98">stream_events</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -6989,7 +6989,7 @@ client.events.stream_events()
 </details>
 
 ## Folders
-<details><summary><code>client.folders.<a href="src/fern/folders/client.py">create_folder</a>(...) -> FileEntry</code></summary>
+<details><summary><code>client.folders.<a href="src/fern/folders/client.py#L32-L85">create_folder</a>(...) -> FileEntry</code></summary>
 <dl>
 <dd>
 
@@ -7059,7 +7059,7 @@ client.folders.create_folder(
 </details>
 
 ## Uploads
-<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py">list_uploads</a>(...) -> ListUploadsResponse</code></summary>
+<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py#L42-L82">list_uploads</a>(...) -> ListUploadsResponse</code></summary>
 <dl>
 <dd>
 
@@ -7147,7 +7147,7 @@ client.uploads.list_uploads()
 </dl>
 </details>
 
-<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py">create_upload</a>(...) -> UploadSession</code></summary>
+<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py#L84-L167">create_upload</a>(...) -> UploadSession</code></summary>
 <dl>
 <dd>
 
@@ -7233,7 +7233,7 @@ client.uploads.create_upload(
 </dl>
 </details>
 
-<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py">get_upload_statistics</a>(...) -> typing.List[UploadDailyStatistics]</code></summary>
+<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py#L169-L198">get_upload_statistics</a>(...) -> typing.List[UploadDailyStatistics]</code></summary>
 <dl>
 <dd>
 
@@ -7305,7 +7305,7 @@ client.uploads.get_upload_statistics()
 </dl>
 </details>
 
-<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py">create_upload_import</a>(...) -> Job</code></summary>
+<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py#L200-L276">create_upload_import</a>(...) -> Job</code></summary>
 <dl>
 <dd>
 
@@ -7448,7 +7448,7 @@ client.uploads.create_upload_import(
 </dl>
 </details>
 
-<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py">get_upload</a>(...) -> UploadSession</code></summary>
+<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py#L278-L307">get_upload</a>(...) -> UploadSession</code></summary>
 <dl>
 <dd>
 
@@ -7522,7 +7522,7 @@ client.uploads.get_upload(
 </dl>
 </details>
 
-<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py">abort_upload</a>(...)</code></summary>
+<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py#L309-L337">abort_upload</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7596,7 +7596,7 @@ client.uploads.abort_upload(
 </dl>
 </details>
 
-<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py">list_upload_parts</a>(...) -> ListUploadPartsResponse</code></summary>
+<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py#L339-L381">list_upload_parts</a>(...) -> ListUploadPartsResponse</code></summary>
 <dl>
 <dd>
 
@@ -7686,7 +7686,7 @@ client.uploads.list_upload_parts(
 </dl>
 </details>
 
-<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py">put_upload_part</a>(...) -> UploadPart</code></summary>
+<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py#L383-L414">put_upload_part</a>(...) -> UploadPart</code></summary>
 <dl>
 <dd>
 
@@ -7765,7 +7765,7 @@ client.uploads.put_upload_part(...)
 </dl>
 </details>
 
-<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py">complete_upload</a>(...) -> FileEntry</code></summary>
+<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py#L416-L454">complete_upload</a>(...) -> FileEntry</code></summary>
 <dl>
 <dd>
 
@@ -7850,7 +7850,7 @@ client.uploads.complete_upload(
 </details>
 
 ## Shares
-<details><summary><code>client.shares.<a href="src/fern/shares/client.py">list_file_shares</a>(...) -> ListFileSharesResponse</code></summary>
+<details><summary><code>client.shares.<a href="src/fern/shares/client.py#L38-L78">list_file_shares</a>(...) -> ListFileSharesResponse</code></summary>
 <dl>
 <dd>
 
@@ -7926,7 +7926,7 @@ client.shares.list_file_shares(
 </dl>
 </details>
 
-<details><summary><code>client.shares.<a href="src/fern/shares/client.py">create_share</a>(...) -> ShareCreated</code></summary>
+<details><summary><code>client.shares.<a href="src/fern/shares/client.py#L80-L138">create_share</a>(...) -> ShareCreated</code></summary>
 <dl>
 <dd>
 
@@ -8027,7 +8027,7 @@ client.shares.create_share(
 </dl>
 </details>
 
-<details><summary><code>client.shares.<a href="src/fern/shares/client.py">revoke_share</a>(...)</code></summary>
+<details><summary><code>client.shares.<a href="src/fern/shares/client.py#L140-L166">revoke_share</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8087,7 +8087,7 @@ client.shares.revoke_share(
 </dl>
 </details>
 
-<details><summary><code>client.shares.<a href="src/fern/shares/client.py">update_share</a>(...) -> ShareSummary</code></summary>
+<details><summary><code>client.shares.<a href="src/fern/shares/client.py#L168-L231">update_share</a>(...) -> ShareSummary</code></summary>
 <dl>
 <dd>
 
@@ -8203,7 +8203,7 @@ client.shares.update_share(
 </dl>
 </details>
 
-<details><summary><code>client.shares.<a href="src/fern/shares/client.py">list_file_access_grants</a>(...) -> typing.List[FileAccessGrantSummary]</code></summary>
+<details><summary><code>client.shares.<a href="src/fern/shares/client.py#L233-L262">list_file_access_grants</a>(...) -> typing.List[FileAccessGrantSummary]</code></summary>
 <dl>
 <dd>
 
@@ -8263,7 +8263,7 @@ client.shares.list_file_access_grants(
 </dl>
 </details>
 
-<details><summary><code>client.shares.<a href="src/fern/shares/client.py">create_file_access_grant</a>(...) -> FileAccessGrantSummary</code></summary>
+<details><summary><code>client.shares.<a href="src/fern/shares/client.py#L264-L312">create_file_access_grant</a>(...) -> FileAccessGrantSummary</code></summary>
 <dl>
 <dd>
 
@@ -8348,7 +8348,7 @@ client.shares.create_file_access_grant(
 </dl>
 </details>
 
-<details><summary><code>client.shares.<a href="src/fern/shares/client.py">revoke_file_access_grant</a>(...)</code></summary>
+<details><summary><code>client.shares.<a href="src/fern/shares/client.py#L314-L342">revoke_file_access_grant</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8408,7 +8408,7 @@ client.shares.revoke_file_access_grant(
 </dl>
 </details>
 
-<details><summary><code>client.shares.<a href="src/fern/shares/client.py">update_file_access_grant</a>(...) -> FileAccessGrantSummary</code></summary>
+<details><summary><code>client.shares.<a href="src/fern/shares/client.py#L344-L391">update_file_access_grant</a>(...) -> FileAccessGrantSummary</code></summary>
 <dl>
 <dd>
 
@@ -8492,7 +8492,7 @@ client.shares.update_file_access_grant(
 </dl>
 </details>
 
-<details><summary><code>client.shares.<a href="src/fern/shares/client.py">list_shared</a>() -> typing.List[FileEntry]</code></summary>
+<details><summary><code>client.shares.<a href="src/fern/shares/client.py#L393-L416">list_shared</a>() -> typing.List[FileEntry]</code></summary>
 <dl>
 <dd>
 
@@ -8542,7 +8542,7 @@ client.shares.list_shared()
 </dl>
 </details>
 
-<details><summary><code>client.shares.<a href="src/fern/shares/client.py">list_shared_with_me</a>() -> typing.List[SharedWithMeEntry]</code></summary>
+<details><summary><code>client.shares.<a href="src/fern/shares/client.py#L418-L443">list_shared_with_me</a>() -> typing.List[SharedWithMeEntry]</code></summary>
 <dl>
 <dd>
 
@@ -8592,7 +8592,7 @@ client.shares.list_shared_with_me()
 </dl>
 </details>
 
-<details><summary><code>client.shares.<a href="src/fern/shares/client.py">list_incoming_spam</a>() -> typing.List[FileEntry]</code></summary>
+<details><summary><code>client.shares.<a href="src/fern/shares/client.py#L445-L468">list_incoming_spam</a>() -> typing.List[FileEntry]</code></summary>
 <dl>
 <dd>
 
@@ -8642,7 +8642,7 @@ client.shares.list_incoming_spam()
 </dl>
 </details>
 
-<details><summary><code>client.shares.<a href="src/fern/shares/client.py">mark_incoming_spam</a>(...)</code></summary>
+<details><summary><code>client.shares.<a href="src/fern/shares/client.py#L470-L496">mark_incoming_spam</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8702,7 +8702,7 @@ client.shares.mark_incoming_spam(
 </dl>
 </details>
 
-<details><summary><code>client.shares.<a href="src/fern/shares/client.py">restore_incoming_spam</a>(...)</code></summary>
+<details><summary><code>client.shares.<a href="src/fern/shares/client.py#L498-L524">restore_incoming_spam</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8762,7 +8762,7 @@ client.shares.restore_incoming_spam(
 </dl>
 </details>
 
-<details><summary><code>client.shares.<a href="src/fern/shares/client.py">dismiss_incoming_spam</a>(...)</code></summary>
+<details><summary><code>client.shares.<a href="src/fern/shares/client.py#L526-L552">dismiss_incoming_spam</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8823,7 +8823,7 @@ client.shares.dismiss_incoming_spam(
 </details>
 
 ## Jobs
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">list_jobs</a>(...) -> JobPage</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L35-L79">list_jobs</a>(...) -> JobPage</code></summary>
 <dl>
 <dd>
 
@@ -8913,7 +8913,7 @@ client.jobs.list_jobs()
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">create_job</a>(...) -> Job</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L81-L137">create_job</a>(...) -> Job</code></summary>
 <dl>
 <dd>
 
@@ -9016,7 +9016,7 @@ client.jobs.create_job(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">get_job_statistics</a>() -> JobStatistics</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L139-L162">get_job_statistics</a>() -> JobStatistics</code></summary>
 <dl>
 <dd>
 
@@ -9066,7 +9066,7 @@ client.jobs.get_job_statistics()
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">list_job_queues</a>() -> JobQueueList</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L164-L187">list_job_queues</a>() -> JobQueueList</code></summary>
 <dl>
 <dd>
 
@@ -9116,7 +9116,7 @@ client.jobs.list_job_queues()
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">pause_job_queue</a>(...)</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L189-L215">pause_job_queue</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9176,7 +9176,7 @@ client.jobs.pause_job_queue(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">resume_job_queue</a>(...)</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L217-L243">resume_job_queue</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9236,7 +9236,7 @@ client.jobs.resume_job_queue(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">purge_jobs</a>(...) -> JobPurgeResult</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L245-L274">purge_jobs</a>(...) -> JobPurgeResult</code></summary>
 <dl>
 <dd>
 
@@ -9296,7 +9296,7 @@ client.jobs.purge_jobs(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">get_job</a>(...) -> Job</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L276-L303">get_job</a>(...) -> Job</code></summary>
 <dl>
 <dd>
 
@@ -9356,7 +9356,7 @@ client.jobs.get_job(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">delete_job</a>(...)</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L305-L331">delete_job</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9416,7 +9416,7 @@ client.jobs.delete_job(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">cancel_job</a>(...) -> Job</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L333-L360">cancel_job</a>(...) -> Job</code></summary>
 <dl>
 <dd>
 
@@ -9476,7 +9476,7 @@ client.jobs.cancel_job(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">retry_job</a>(...) -> Job</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L362-L389">retry_job</a>(...) -> Job</code></summary>
 <dl>
 <dd>
 
@@ -9537,7 +9537,7 @@ client.jobs.retry_job(
 </details>
 
 ## Periodic Jobs
-<details><summary><code>client.periodic_jobs.<a href="src/fern/periodic_jobs/client.py">list_periodic_jobs</a>() -> PeriodicJobList</code></summary>
+<details><summary><code>client.periodic_jobs.<a href="src/fern/periodic_jobs/client.py#L31-L54">list_periodic_jobs</a>() -> PeriodicJobList</code></summary>
 <dl>
 <dd>
 
@@ -9587,7 +9587,7 @@ client.periodic_jobs.list_periodic_jobs()
 </dl>
 </details>
 
-<details><summary><code>client.periodic_jobs.<a href="src/fern/periodic_jobs/client.py">create_periodic_job</a>(...) -> PeriodicJob</code></summary>
+<details><summary><code>client.periodic_jobs.<a href="src/fern/periodic_jobs/client.py#L56-L135">create_periodic_job</a>(...) -> PeriodicJob</code></summary>
 <dl>
 <dd>
 
@@ -9731,7 +9731,7 @@ client.periodic_jobs.create_periodic_job(
 </dl>
 </details>
 
-<details><summary><code>client.periodic_jobs.<a href="src/fern/periodic_jobs/client.py">get_periodic_job_catalog</a>() -> PeriodicJobCatalog</code></summary>
+<details><summary><code>client.periodic_jobs.<a href="src/fern/periodic_jobs/client.py#L137-L162">get_periodic_job_catalog</a>() -> PeriodicJobCatalog</code></summary>
 <dl>
 <dd>
 
@@ -9781,7 +9781,7 @@ client.periodic_jobs.get_periodic_job_catalog()
 </dl>
 </details>
 
-<details><summary><code>client.periodic_jobs.<a href="src/fern/periodic_jobs/client.py">reset_periodic_jobs</a>() -> PeriodicJobList</code></summary>
+<details><summary><code>client.periodic_jobs.<a href="src/fern/periodic_jobs/client.py#L164-L187">reset_periodic_jobs</a>() -> PeriodicJobList</code></summary>
 <dl>
 <dd>
 
@@ -9831,7 +9831,7 @@ client.periodic_jobs.reset_periodic_jobs()
 </dl>
 </details>
 
-<details><summary><code>client.periodic_jobs.<a href="src/fern/periodic_jobs/client.py">update_periodic_job</a>(...) -> PeriodicJob</code></summary>
+<details><summary><code>client.periodic_jobs.<a href="src/fern/periodic_jobs/client.py#L189-L268">update_periodic_job</a>(...) -> PeriodicJob</code></summary>
 <dl>
 <dd>
 
@@ -9975,7 +9975,7 @@ client.periodic_jobs.update_periodic_job(
 </dl>
 </details>
 
-<details><summary><code>client.periodic_jobs.<a href="src/fern/periodic_jobs/client.py">delete_periodic_job</a>(...)</code></summary>
+<details><summary><code>client.periodic_jobs.<a href="src/fern/periodic_jobs/client.py#L270-L298">delete_periodic_job</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -10035,7 +10035,7 @@ client.periodic_jobs.delete_periodic_job(
 </dl>
 </details>
 
-<details><summary><code>client.periodic_jobs.<a href="src/fern/periodic_jobs/client.py">pause_periodic_job</a>(...) -> PeriodicJob</code></summary>
+<details><summary><code>client.periodic_jobs.<a href="src/fern/periodic_jobs/client.py#L300-L329">pause_periodic_job</a>(...) -> PeriodicJob</code></summary>
 <dl>
 <dd>
 
@@ -10095,7 +10095,7 @@ client.periodic_jobs.pause_periodic_job(
 </dl>
 </details>
 
-<details><summary><code>client.periodic_jobs.<a href="src/fern/periodic_jobs/client.py">resume_periodic_job</a>(...) -> PeriodicJob</code></summary>
+<details><summary><code>client.periodic_jobs.<a href="src/fern/periodic_jobs/client.py#L331-L360">resume_periodic_job</a>(...) -> PeriodicJob</code></summary>
 <dl>
 <dd>
 
@@ -10156,7 +10156,7 @@ client.periodic_jobs.resume_periodic_job(
 </details>
 
 ## Storage
-<details><summary><code>client.storage.<a href="src/fern/storage/client.py">get_storage_stats</a>() -> StorageDashboard</code></summary>
+<details><summary><code>client.storage.<a href="src/fern/storage/client.py#L26-L51">get_storage_stats</a>() -> StorageDashboard</code></summary>
 <dl>
 <dd>
 
@@ -10221,7 +10221,7 @@ client.storage.get_storage_stats()
 </details>
 
 ## Rclone
-<details><summary><code>client.rclone.<a href="src/fern/rclone/client.py">action</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.rclone.<a href="src/fern/rclone/client.py#L29-L64">action</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -10289,7 +10289,7 @@ client.rclone.action(
 </dl>
 </details>
 
-<details><summary><code>client.rclone.<a href="src/fern/rclone/client.py">stage</a>(...) -> RcloneStageResponse</code></summary>
+<details><summary><code>client.rclone.<a href="src/fern/rclone/client.py#L66-L89">stage</a>(...) -> RcloneStageResponse</code></summary>
 <dl>
 <dd>
 
@@ -10345,7 +10345,7 @@ client.rclone.stage(...)
 </dl>
 </details>
 
-<details><summary><code>client.rclone.<a href="src/fern/rclone/client.py">local_content</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.rclone.<a href="src/fern/rclone/client.py#L91-L120">local_content</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 

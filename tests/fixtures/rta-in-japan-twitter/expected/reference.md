@@ -1,6 +1,6 @@
 # Reference
 ## Statuses
-<details><summary><code>client.statuses.<a href="src/fern/statuses/client.py">get_statuses_user_timeline</a>() -> StatusesResponse</code></summary>
+<details><summary><code>client.statuses.<a href="src/fern/statuses/client.py#L29-L55">get_statuses_user_timeline</a>() -> StatusesResponse</code></summary>
 <dl>
 <dd>
 
@@ -62,7 +62,7 @@ client.statuses.get_statuses_user_timeline()
 </dl>
 </details>
 
-<details><summary><code>client.statuses.<a href="src/fern/statuses/client.py">get_statuses_mentions_timeline</a>() -> StatusesResponse</code></summary>
+<details><summary><code>client.statuses.<a href="src/fern/statuses/client.py#L57-L83">get_statuses_mentions_timeline</a>() -> StatusesResponse</code></summary>
 <dl>
 <dd>
 
@@ -124,7 +124,7 @@ client.statuses.get_statuses_mentions_timeline()
 </dl>
 </details>
 
-<details><summary><code>client.statuses.<a href="src/fern/statuses/client.py">get_statuses_hash</a>() -> StatusesResponse</code></summary>
+<details><summary><code>client.statuses.<a href="src/fern/statuses/client.py#L85-L109">get_statuses_hash</a>() -> StatusesResponse</code></summary>
 <dl>
 <dd>
 
@@ -186,7 +186,7 @@ client.statuses.get_statuses_hash()
 </dl>
 </details>
 
-<details><summary><code>client.statuses.<a href="src/fern/statuses/client.py">post_statuses_update</a>(...) -> StatusesResponse</code></summary>
+<details><summary><code>client.statuses.<a href="src/fern/statuses/client.py#L111-L164">post_statuses_update</a>(...) -> StatusesResponse</code></summary>
 <dl>
 <dd>
 
@@ -285,7 +285,7 @@ client.statuses.post_statuses_update(
 </dl>
 </details>
 
-<details><summary><code>client.statuses.<a href="src/fern/statuses/client.py">post_statuses_destroy_id</a>(...) -> StatusesResponse</code></summary>
+<details><summary><code>client.statuses.<a href="src/fern/statuses/client.py#L166-L197">post_statuses_destroy_id</a>(...) -> StatusesResponse</code></summary>
 <dl>
 <dd>
 
@@ -358,7 +358,7 @@ client.statuses.post_statuses_destroy_id(
 </details>
 
 ## Media
-<details><summary><code>client.media.<a href="src/fern/media/client.py">post_media_upload</a>(...) -> PostMediaUploadResponse</code></summary>
+<details><summary><code>client.media.<a href="src/fern/media/client.py#L30-L59">post_media_upload</a>(...) -> PostMediaUploadResponse</code></summary>
 <dl>
 <dd>
 

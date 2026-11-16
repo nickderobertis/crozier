@@ -1,6 +1,6 @@
 # Reference
 ## MobileAuthorization
-<details><summary><code>client.mobile_authorization.<a href="src/fern/mobile_authorization/client.py">create_mobile_authorization_code</a>(...) -> CreateMobileAuthorizationCodeResponse</code></summary>
+<details><summary><code>client.mobile_authorization.<a href="src/fern/mobile_authorization/client.py#L29-L72">create_mobile_authorization_code</a>(...) -> CreateMobileAuthorizationCodeResponse</code></summary>
 <dl>
 <dd>
 
@@ -84,7 +84,7 @@ client.mobile_authorization.create_mobile_authorization_code()
 </details>
 
 ## OAuth
-<details><summary><code>client.o_auth.<a href="src/fern/o_auth/client.py">renew_token</a>(...) -> RenewTokenResponse</code></summary>
+<details><summary><code>client.o_auth.<a href="src/fern/o_auth/client.py#L31-L89">renew_token</a>(...) -> RenewTokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -185,7 +185,7 @@ client.o_auth.renew_token(
 </dl>
 </details>
 
-<details><summary><code>client.o_auth.<a href="src/fern/o_auth/client.py">revoke_token</a>(...) -> RevokeTokenResponse</code></summary>
+<details><summary><code>client.o_auth.<a href="src/fern/o_auth/client.py#L91-L162">revoke_token</a>(...) -> RevokeTokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -309,7 +309,7 @@ Default: `false`
 </dl>
 </details>
 
-<details><summary><code>client.o_auth.<a href="src/fern/o_auth/client.py">obtain_token</a>(...) -> ObtainTokenResponse</code></summary>
+<details><summary><code>client.o_auth.<a href="src/fern/o_auth/client.py#L164-L270">obtain_token</a>(...) -> ObtainTokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -492,7 +492,7 @@ The short-lived access token returned in the response will expire in 24 hours.
 </details>
 
 ## V1Employees
-<details><summary><code>client.v1employees.<a href="src/fern/v1employees/client.py">list_employees</a>(...) -> typing.List[V1Employee]</code></summary>
+<details><summary><code>client.v1employees.<a href="src/fern/v1employees/client.py#L30-L107">list_employees</a>(...) -> typing.List[V1Employee]</code></summary>
 <dl>
 <dd>
 
@@ -631,7 +631,7 @@ original query to the endpoint.
 </dl>
 </details>
 
-<details><summary><code>client.v1employees.<a href="src/fern/v1employees/client.py">create_employee</a>(...) -> V1Employee</code></summary>
+<details><summary><code>client.v1employees.<a href="src/fern/v1employees/client.py#L109-L200">create_employee</a>(...) -> V1Employee</code></summary>
 <dl>
 <dd>
 
@@ -713,7 +713,7 @@ client.v1employees.create_employee(
 </dl>
 </details>
 
-<details><summary><code>client.v1employees.<a href="src/fern/v1employees/client.py">retrieve_employee</a>(...) -> V1Employee</code></summary>
+<details><summary><code>client.v1employees.<a href="src/fern/v1employees/client.py#L202-L234">retrieve_employee</a>(...) -> V1Employee</code></summary>
 <dl>
 <dd>
 
@@ -787,7 +787,7 @@ client.v1employees.retrieve_employee(
 </dl>
 </details>
 
-<details><summary><code>client.v1employees.<a href="src/fern/v1employees/client.py">update_employee</a>(...) -> V1Employee</code></summary>
+<details><summary><code>client.v1employees.<a href="src/fern/v1employees/client.py#L236-L326">update_employee</a>(...) -> V1Employee</code></summary>
 <dl>
 <dd>
 
@@ -871,7 +871,7 @@ client.v1employees.update_employee(
 </dl>
 </details>
 
-<details><summary><code>client.v1employees.<a href="src/fern/v1employees/client.py">list_employee_roles</a>(...) -> typing.List[V1EmployeeRole]</code></summary>
+<details><summary><code>client.v1employees.<a href="src/fern/v1employees/client.py#L328-L372">list_employee_roles</a>(...) -> typing.List[V1EmployeeRole]</code></summary>
 <dl>
 <dd>
 
@@ -962,7 +962,7 @@ original query to the endpoint.
 </dl>
 </details>
 
-<details><summary><code>client.v1employees.<a href="src/fern/v1employees/client.py">create_employee_role</a>(...) -> V1EmployeeRole</code></summary>
+<details><summary><code>client.v1employees.<a href="src/fern/v1employees/client.py#L374-L450">create_employee_role</a>(...) -> V1EmployeeRole</code></summary>
 <dl>
 <dd>
 
@@ -1051,7 +1051,7 @@ client.v1employees.create_employee_role(
 </dl>
 </details>
 
-<details><summary><code>client.v1employees.<a href="src/fern/v1employees/client.py">retrieve_employee_role</a>(...) -> V1EmployeeRole</code></summary>
+<details><summary><code>client.v1employees.<a href="src/fern/v1employees/client.py#L452-L484">retrieve_employee_role</a>(...) -> V1EmployeeRole</code></summary>
 <dl>
 <dd>
 
@@ -1125,7 +1125,7 @@ client.v1employees.retrieve_employee_role(
 </dl>
 </details>
 
-<details><summary><code>client.v1employees.<a href="src/fern/v1employees/client.py">update_employee_role</a>(...) -> V1EmployeeRole</code></summary>
+<details><summary><code>client.v1employees.<a href="src/fern/v1employees/client.py#L486-L556">update_employee_role</a>(...) -> V1EmployeeRole</code></summary>
 <dl>
 <dd>
 
@@ -1212,7 +1212,7 @@ client.v1employees.update_employee_role(
 </details>
 
 ## V1Transactions
-<details><summary><code>client.v1transactions.<a href="src/fern/v1transactions/client.py">list_orders</a>(...) -> typing.List[V1Order]</code></summary>
+<details><summary><code>client.v1transactions.<a href="src/fern/v1transactions/client.py#L33-L83">list_orders</a>(...) -> typing.List[V1Order]</code></summary>
 <dl>
 <dd>
 
@@ -1313,7 +1313,7 @@ original query to the endpoint.
 </dl>
 </details>
 
-<details><summary><code>client.v1transactions.<a href="src/fern/v1transactions/client.py">retrieve_order</a>(...) -> V1Order</code></summary>
+<details><summary><code>client.v1transactions.<a href="src/fern/v1transactions/client.py#L85-L121">retrieve_order</a>(...) -> V1Order</code></summary>
 <dl>
 <dd>
 
@@ -1396,7 +1396,7 @@ client.v1transactions.retrieve_order(
 </dl>
 </details>
 
-<details><summary><code>client.v1transactions.<a href="src/fern/v1transactions/client.py">update_order</a>(...) -> V1Order</code></summary>
+<details><summary><code>client.v1transactions.<a href="src/fern/v1transactions/client.py#L123-L193">update_order</a>(...) -> V1Order</code></summary>
 <dl>
 <dd>
 
@@ -1520,7 +1520,7 @@ client.v1transactions.update_order(
 </dl>
 </details>
 
-<details><summary><code>client.v1transactions.<a href="src/fern/v1transactions/client.py">list_payments</a>(...) -> typing.List[V1Payment]</code></summary>
+<details><summary><code>client.v1transactions.<a href="src/fern/v1transactions/client.py#L195-L274">list_payments</a>(...) -> typing.List[V1Payment]</code></summary>
 <dl>
 <dd>
 
@@ -1655,7 +1655,7 @@ original query to the endpoint.
 </dl>
 </details>
 
-<details><summary><code>client.v1transactions.<a href="src/fern/v1transactions/client.py">retrieve_payment</a>(...) -> V1Payment</code></summary>
+<details><summary><code>client.v1transactions.<a href="src/fern/v1transactions/client.py#L276-L312">retrieve_payment</a>(...) -> V1Payment</code></summary>
 <dl>
 <dd>
 
@@ -1738,7 +1738,7 @@ client.v1transactions.retrieve_payment(
 </dl>
 </details>
 
-<details><summary><code>client.v1transactions.<a href="src/fern/v1transactions/client.py">list_refunds</a>(...) -> typing.List[V1Refund]</code></summary>
+<details><summary><code>client.v1transactions.<a href="src/fern/v1transactions/client.py#L314-L378">list_refunds</a>(...) -> typing.List[V1Refund]</code></summary>
 <dl>
 <dd>
 
@@ -1855,7 +1855,7 @@ original query to the endpoint.
 </dl>
 </details>
 
-<details><summary><code>client.v1transactions.<a href="src/fern/v1transactions/client.py">create_refund</a>(...) -> V1Refund</code></summary>
+<details><summary><code>client.v1transactions.<a href="src/fern/v1transactions/client.py#L380-L458">create_refund</a>(...) -> V1Refund</code></summary>
 <dl>
 <dd>
 
@@ -1987,7 +1987,7 @@ particular tender you want to refund.
 </dl>
 </details>
 
-<details><summary><code>client.v1transactions.<a href="src/fern/v1transactions/client.py">list_settlements</a>(...) -> typing.List[V1Settlement]</code></summary>
+<details><summary><code>client.v1transactions.<a href="src/fern/v1transactions/client.py#L460-L534">list_settlements</a>(...) -> typing.List[V1Settlement]</code></summary>
 <dl>
 <dd>
 
@@ -2117,7 +2117,7 @@ original query to the endpoint.
 </dl>
 </details>
 
-<details><summary><code>client.v1transactions.<a href="src/fern/v1transactions/client.py">retrieve_settlement</a>(...) -> V1Settlement</code></summary>
+<details><summary><code>client.v1transactions.<a href="src/fern/v1transactions/client.py#L536-L588">retrieve_settlement</a>(...) -> V1Settlement</code></summary>
 <dl>
 <dd>
 
@@ -2217,7 +2217,7 @@ client.v1transactions.retrieve_settlement(
 </details>
 
 ## ApplePay
-<details><summary><code>client.apple_pay.<a href="src/fern/apple_pay/client.py">register_domain</a>(...) -> RegisterDomainResponse</code></summary>
+<details><summary><code>client.apple_pay.<a href="src/fern/apple_pay/client.py#L29-L69">register_domain</a>(...) -> RegisterDomainResponse</code></summary>
 <dl>
 <dd>
 
@@ -2300,7 +2300,7 @@ client.apple_pay.register_domain(
 </details>
 
 ## BankAccounts
-<details><summary><code>client.bank_accounts.<a href="src/fern/bank_accounts/client.py">list_bank_accounts</a>(...) -> ListBankAccountsResponse</code></summary>
+<details><summary><code>client.bank_accounts.<a href="src/fern/bank_accounts/client.py#L28-L78">list_bank_accounts</a>(...) -> ListBankAccountsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2401,7 +2401,7 @@ to retrieve only the linked bank accounts belonging to a specific location.
 </dl>
 </details>
 
-<details><summary><code>client.bank_accounts.<a href="src/fern/bank_accounts/client.py">get_bank_account_by_v1id</a>(...) -> GetBankAccountByV1IdResponse</code></summary>
+<details><summary><code>client.bank_accounts.<a href="src/fern/bank_accounts/client.py#L80-L113">get_bank_account_by_v1id</a>(...) -> GetBankAccountByV1IdResponse</code></summary>
 <dl>
 <dd>
 
@@ -2478,7 +2478,7 @@ Connect V1 ID of the desired `BankAccount`. For more information, see
 </dl>
 </details>
 
-<details><summary><code>client.bank_accounts.<a href="src/fern/bank_accounts/client.py">get_bank_account</a>(...) -> GetBankAccountResponse</code></summary>
+<details><summary><code>client.bank_accounts.<a href="src/fern/bank_accounts/client.py#L115-L148">get_bank_account</a>(...) -> GetBankAccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -2554,7 +2554,7 @@ client.bank_accounts.get_bank_account(
 </details>
 
 ## Bookings
-<details><summary><code>client.bookings.<a href="src/fern/bookings/client.py">create_booking</a>(...) -> CreateBookingResponse</code></summary>
+<details><summary><code>client.bookings.<a href="src/fern/bookings/client.py#L38-L90">create_booking</a>(...) -> CreateBookingResponse</code></summary>
 <dl>
 <dd>
 
@@ -2648,7 +2648,7 @@ client.bookings.create_booking(
 </dl>
 </details>
 
-<details><summary><code>client.bookings.<a href="src/fern/bookings/client.py">search_availability</a>(...) -> SearchAvailabilityResponse</code></summary>
+<details><summary><code>client.bookings.<a href="src/fern/bookings/client.py#L92-L146">search_availability</a>(...) -> SearchAvailabilityResponse</code></summary>
 <dl>
 <dd>
 
@@ -2741,7 +2741,7 @@ client.bookings.search_availability(
 </dl>
 </details>
 
-<details><summary><code>client.bookings.<a href="src/fern/bookings/client.py">retrieve_business_booking_profile</a>() -> RetrieveBusinessBookingProfileResponse</code></summary>
+<details><summary><code>client.bookings.<a href="src/fern/bookings/client.py#L148-L175">retrieve_business_booking_profile</a>() -> RetrieveBusinessBookingProfileResponse</code></summary>
 <dl>
 <dd>
 
@@ -2805,7 +2805,7 @@ client.bookings.retrieve_business_booking_profile()
 </dl>
 </details>
 
-<details><summary><code>client.bookings.<a href="src/fern/bookings/client.py">list_team_member_booking_profiles</a>(...) -> ListTeamMemberBookingProfilesResponse</code></summary>
+<details><summary><code>client.bookings.<a href="src/fern/bookings/client.py#L177-L228">list_team_member_booking_profiles</a>(...) -> ListTeamMemberBookingProfilesResponse</code></summary>
 <dl>
 <dd>
 
@@ -2901,7 +2901,7 @@ client.bookings.list_team_member_booking_profiles()
 </dl>
 </details>
 
-<details><summary><code>client.bookings.<a href="src/fern/bookings/client.py">retrieve_team_member_booking_profile</a>(...) -> RetrieveTeamMemberBookingProfileResponse</code></summary>
+<details><summary><code>client.bookings.<a href="src/fern/bookings/client.py#L230-L264">retrieve_team_member_booking_profile</a>(...) -> RetrieveTeamMemberBookingProfileResponse</code></summary>
 <dl>
 <dd>
 
@@ -2975,7 +2975,7 @@ client.bookings.retrieve_team_member_booking_profile(
 </dl>
 </details>
 
-<details><summary><code>client.bookings.<a href="src/fern/bookings/client.py">retrieve_booking</a>(...) -> RetrieveBookingResponse</code></summary>
+<details><summary><code>client.bookings.<a href="src/fern/bookings/client.py#L266-L298">retrieve_booking</a>(...) -> RetrieveBookingResponse</code></summary>
 <dl>
 <dd>
 
@@ -3049,7 +3049,7 @@ client.bookings.retrieve_booking(
 </dl>
 </details>
 
-<details><summary><code>client.bookings.<a href="src/fern/bookings/client.py">update_booking</a>(...) -> UpdateBookingResponse</code></summary>
+<details><summary><code>client.bookings.<a href="src/fern/bookings/client.py#L300-L348">update_booking</a>(...) -> UpdateBookingResponse</code></summary>
 <dl>
 <dd>
 
@@ -3143,7 +3143,7 @@ client.bookings.update_booking(
 </dl>
 </details>
 
-<details><summary><code>client.bookings.<a href="src/fern/bookings/client.py">cancel_booking</a>(...) -> CancelBookingResponse</code></summary>
+<details><summary><code>client.bookings.<a href="src/fern/bookings/client.py#L350-L399">cancel_booking</a>(...) -> CancelBookingResponse</code></summary>
 <dl>
 <dd>
 
@@ -3235,7 +3235,7 @@ client.bookings.cancel_booking(
 </details>
 
 ## Cards
-<details><summary><code>client.cards.<a href="src/fern/cards/client.py">list_cards</a>(...) -> ListCardsResponse</code></summary>
+<details><summary><code>client.cards.<a href="src/fern/cards/client.py#L33-L96">list_cards</a>(...) -> ListCardsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3354,7 +3354,7 @@ This field defaults to ASC.
 </dl>
 </details>
 
-<details><summary><code>client.cards.<a href="src/fern/cards/client.py">create_card</a>(...) -> CreateCardResponse</code></summary>
+<details><summary><code>client.cards.<a href="src/fern/cards/client.py#L98-L161">create_card</a>(...) -> CreateCardResponse</code></summary>
 <dl>
 <dd>
 
@@ -3467,7 +3467,7 @@ See the [SCA Overview](https://developer.squareup.com/docs/sca-overview).
 </dl>
 </details>
 
-<details><summary><code>client.cards.<a href="src/fern/cards/client.py">retrieve_card</a>(...) -> RetrieveCardResponse</code></summary>
+<details><summary><code>client.cards.<a href="src/fern/cards/client.py#L163-L195">retrieve_card</a>(...) -> RetrieveCardResponse</code></summary>
 <dl>
 <dd>
 
@@ -3541,7 +3541,7 @@ client.cards.retrieve_card(
 </dl>
 </details>
 
-<details><summary><code>client.cards.<a href="src/fern/cards/client.py">disable_card</a>(...) -> DisableCardResponse</code></summary>
+<details><summary><code>client.cards.<a href="src/fern/cards/client.py#L197-L230">disable_card</a>(...) -> DisableCardResponse</code></summary>
 <dl>
 <dd>
 
@@ -3617,7 +3617,7 @@ client.cards.disable_card(
 </details>
 
 ## CashDrawers
-<details><summary><code>client.cash_drawers.<a href="src/fern/cash_drawers/client.py">list_cash_drawer_shifts</a>(...) -> ListCashDrawerShiftsResponse</code></summary>
+<details><summary><code>client.cash_drawers.<a href="src/fern/cash_drawers/client.py#L28-L94">list_cash_drawer_shifts</a>(...) -> ListCashDrawerShiftsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3738,7 +3738,7 @@ default, 1000 max).
 </dl>
 </details>
 
-<details><summary><code>client.cash_drawers.<a href="src/fern/cash_drawers/client.py">retrieve_cash_drawer_shift</a>(...) -> RetrieveCashDrawerShiftResponse</code></summary>
+<details><summary><code>client.cash_drawers.<a href="src/fern/cash_drawers/client.py#L96-L135">retrieve_cash_drawer_shift</a>(...) -> RetrieveCashDrawerShiftResponse</code></summary>
 <dl>
 <dd>
 
@@ -3822,7 +3822,7 @@ client.cash_drawers.retrieve_cash_drawer_shift(
 </dl>
 </details>
 
-<details><summary><code>client.cash_drawers.<a href="src/fern/cash_drawers/client.py">list_cash_drawer_shift_events</a>(...) -> ListCashDrawerShiftEventsResponse</code></summary>
+<details><summary><code>client.cash_drawers.<a href="src/fern/cash_drawers/client.py#L137-L188">list_cash_drawer_shift_events</a>(...) -> ListCashDrawerShiftEventsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3925,7 +3925,7 @@ default, 1000 max).
 </details>
 
 ## Catalog
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">batch_delete_catalog_objects</a>(...) -> BatchDeleteCatalogObjectsResponse</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py#L44-L90">batch_delete_catalog_objects</a>(...) -> BatchDeleteCatalogObjectsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4010,7 +4010,7 @@ CatalogItem will delete its CatalogItemVariation.
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">batch_retrieve_catalog_objects</a>(...) -> BatchRetrieveCatalogObjectsResponse</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py#L92-L155">batch_retrieve_catalog_objects</a>(...) -> BatchRetrieveCatalogObjectsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4121,7 +4121,7 @@ the response.
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">batch_upsert_catalog_objects</a>(...) -> BatchUpsertCatalogObjectsResponse</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py#L157-L244">batch_upsert_catalog_objects</a>(...) -> BatchUpsertCatalogObjectsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4253,7 +4253,7 @@ See [Idempotency](https://developer.squareup.com/docs/basics/api101/idempotency)
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">catalog_info</a>() -> CatalogInfoResponse</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py#L246-L272">catalog_info</a>() -> CatalogInfoResponse</code></summary>
 <dl>
 <dd>
 
@@ -4318,7 +4318,7 @@ client.catalog.catalog_info()
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">list_catalog</a>(...) -> ListCatalogResponse</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py#L274-L336">list_catalog</a>(...) -> ListCatalogResponse</code></summary>
 <dl>
 <dd>
 
@@ -4431,7 +4431,7 @@ the [CatalogObject](https://developer.squareup.com/reference/square_2021-08-18/o
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">upsert_catalog_object</a>(...) -> UpsertCatalogObjectResponse</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py#L338-L387">upsert_catalog_object</a>(...) -> UpsertCatalogObjectResponse</code></summary>
 <dl>
 <dd>
 
@@ -4528,7 +4528,7 @@ See [Idempotency](https://developer.squareup.com/docs/basics/api101/idempotency)
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">retrieve_catalog_object</a>(...) -> RetrieveCatalogObjectResponse</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py#L389-L454">retrieve_catalog_object</a>(...) -> RetrieveCatalogObjectResponse</code></summary>
 <dl>
 <dd>
 
@@ -4639,7 +4639,7 @@ in the version field of [CatalogObject](https://developer.squareup.com/reference
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">delete_catalog_object</a>(...) -> DeleteCatalogObjectResponse</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py#L456-L495">delete_catalog_object</a>(...) -> DeleteCatalogObjectResponse</code></summary>
 <dl>
 <dd>
 
@@ -4722,7 +4722,7 @@ catalog item will delete its catalog item variations).
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">search_catalog_objects</a>(...) -> SearchCatalogObjectsResponse</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py#L497-L587">search_catalog_objects</a>(...) -> SearchCatalogObjectsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4877,7 +4877,7 @@ is higher than the maximum limit of 1,000, it will be ignored.
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">search_catalog_items</a>(...) -> SearchCatalogItemsResponse</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py#L589-L678">search_catalog_items</a>(...) -> SearchCatalogItemsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5030,7 +5030,7 @@ the `name`, `sku`, or `upc` attribute value of an item variation.
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">update_item_modifier_lists</a>(...) -> UpdateItemModifierListsResponse</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py#L680-L730">update_item_modifier_lists</a>(...) -> UpdateItemModifierListsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5124,7 +5124,7 @@ client.catalog.update_item_modifier_lists(
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">update_item_taxes</a>(...) -> UpdateItemTaxesResponse</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py#L732-L782">update_item_taxes</a>(...) -> UpdateItemTaxesResponse</code></summary>
 <dl>
 <dd>
 
@@ -5219,7 +5219,7 @@ client.catalog.update_item_taxes(
 </details>
 
 ## Customers
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">list_customers</a>(...) -> ListCustomersResponse</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py#L40-L102">list_customers</a>(...) -> ListCustomersResponse</code></summary>
 <dl>
 <dd>
 
@@ -5338,7 +5338,7 @@ The default value is `ASC`.
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">create_customer</a>(...) -> CreateCustomerResponse</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py#L104-L202">create_customer</a>(...) -> CreateCustomerResponse</code></summary>
 <dl>
 <dd>
 
@@ -5509,7 +5509,7 @@ entity in another system.
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">search_customers</a>(...) -> SearchCustomersResponse</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py#L204-L260">search_customers</a>(...) -> SearchCustomersResponse</code></summary>
 <dl>
 <dd>
 
@@ -5615,7 +5615,7 @@ For more information, see [Pagination](https://developer.squareup.com/docs/worki
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">retrieve_customer</a>(...) -> RetrieveCustomerResponse</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py#L262-L294">retrieve_customer</a>(...) -> RetrieveCustomerResponse</code></summary>
 <dl>
 <dd>
 
@@ -5689,7 +5689,7 @@ client.customers.retrieve_customer(
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">update_customer</a>(...) -> UpdateCustomerResponse</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py#L296-L399">update_customer</a>(...) -> UpdateCustomerResponse</code></summary>
 <dl>
 <dd>
 
@@ -5868,7 +5868,7 @@ As a best practice, you should include this field to enable [optimistic concurre
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">delete_customer</a>(...) -> DeleteCustomerResponse</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py#L401-L446">delete_customer</a>(...) -> DeleteCustomerResponse</code></summary>
 <dl>
 <dd>
 
@@ -5958,7 +5958,7 @@ As a best practice, you should include this parameter to enable [optimistic conc
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">create_customer_card</a>(...) -> CreateCustomerCardResponse</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py#L448-L519">create_customer_card</a>(...) -> CreateCustomerCardResponse</code></summary>
 <dl>
 <dd>
 
@@ -6082,7 +6082,7 @@ challenge results to indicate that Square has verified the buyer identity.
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">delete_customer_card</a>(...) -> DeleteCustomerCardResponse</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py#L521-L557">delete_customer_card</a>(...) -> DeleteCustomerCardResponse</code></summary>
 <dl>
 <dd>
 
@@ -6165,7 +6165,7 @@ client.customers.delete_customer_card(
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">add_group_to_customer</a>(...) -> AddGroupToCustomerResponse</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py#L559-L598">add_group_to_customer</a>(...) -> AddGroupToCustomerResponse</code></summary>
 <dl>
 <dd>
 
@@ -6251,7 +6251,7 @@ client.customers.add_group_to_customer(
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">remove_group_from_customer</a>(...) -> RemoveGroupFromCustomerResponse</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py#L600-L639">remove_group_from_customer</a>(...) -> RemoveGroupFromCustomerResponse</code></summary>
 <dl>
 <dd>
 
@@ -6338,7 +6338,7 @@ client.customers.remove_group_from_customer(
 </details>
 
 ## CustomerGroups
-<details><summary><code>client.customer_groups.<a href="src/fern/customer_groups/client.py">list_customer_groups</a>(...) -> ListCustomerGroupsResponse</code></summary>
+<details><summary><code>client.customer_groups.<a href="src/fern/customer_groups/client.py#L34-L77">list_customer_groups</a>(...) -> ListCustomerGroupsResponse</code></summary>
 <dl>
 <dd>
 
@@ -6428,7 +6428,7 @@ For more information, see [Pagination](https://developer.squareup.com/docs/worki
 </dl>
 </details>
 
-<details><summary><code>client.customer_groups.<a href="src/fern/customer_groups/client.py">create_customer_group</a>(...) -> CreateCustomerGroupResponse</code></summary>
+<details><summary><code>client.customer_groups.<a href="src/fern/customer_groups/client.py#L79-L123">create_customer_group</a>(...) -> CreateCustomerGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -6514,7 +6514,7 @@ client.customer_groups.create_customer_group(
 </dl>
 </details>
 
-<details><summary><code>client.customer_groups.<a href="src/fern/customer_groups/client.py">retrieve_customer_group</a>(...) -> RetrieveCustomerGroupResponse</code></summary>
+<details><summary><code>client.customer_groups.<a href="src/fern/customer_groups/client.py#L125-L157">retrieve_customer_group</a>(...) -> RetrieveCustomerGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -6588,7 +6588,7 @@ client.customer_groups.retrieve_customer_group(
 </dl>
 </details>
 
-<details><summary><code>client.customer_groups.<a href="src/fern/customer_groups/client.py">update_customer_group</a>(...) -> UpdateCustomerGroupResponse</code></summary>
+<details><summary><code>client.customer_groups.<a href="src/fern/customer_groups/client.py#L159-L196">update_customer_group</a>(...) -> UpdateCustomerGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -6673,7 +6673,7 @@ client.customer_groups.update_customer_group(
 </dl>
 </details>
 
-<details><summary><code>client.customer_groups.<a href="src/fern/customer_groups/client.py">delete_customer_group</a>(...) -> DeleteCustomerGroupResponse</code></summary>
+<details><summary><code>client.customer_groups.<a href="src/fern/customer_groups/client.py#L198-L230">delete_customer_group</a>(...) -> DeleteCustomerGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -6748,7 +6748,7 @@ client.customer_groups.delete_customer_group(
 </details>
 
 ## CustomerSegments
-<details><summary><code>client.customer_segments.<a href="src/fern/customer_segments/client.py">list_customer_segments</a>(...) -> ListCustomerSegmentsResponse</code></summary>
+<details><summary><code>client.customer_segments.<a href="src/fern/customer_segments/client.py#L27-L70">list_customer_segments</a>(...) -> ListCustomerSegmentsResponse</code></summary>
 <dl>
 <dd>
 
@@ -6838,7 +6838,7 @@ For more information, see [Pagination](https://developer.squareup.com/docs/worki
 </dl>
 </details>
 
-<details><summary><code>client.customer_segments.<a href="src/fern/customer_segments/client.py">retrieve_customer_segment</a>(...) -> RetrieveCustomerSegmentResponse</code></summary>
+<details><summary><code>client.customer_segments.<a href="src/fern/customer_segments/client.py#L72-L104">retrieve_customer_segment</a>(...) -> RetrieveCustomerSegmentResponse</code></summary>
 <dl>
 <dd>
 
@@ -6913,7 +6913,7 @@ client.customer_segments.retrieve_customer_segment(
 </details>
 
 ## Devices
-<details><summary><code>client.devices.<a href="src/fern/devices/client.py">list_device_codes</a>(...) -> ListDeviceCodesResponse</code></summary>
+<details><summary><code>client.devices.<a href="src/fern/devices/client.py#L32-L89">list_device_codes</a>(...) -> ListDeviceCodesResponse</code></summary>
 <dl>
 <dd>
 
@@ -7023,7 +7023,7 @@ Returns DeviceCodes of status `PAIRED` and `UNPAIRED` if empty.
 </dl>
 </details>
 
-<details><summary><code>client.devices.<a href="src/fern/devices/client.py">create_device_code</a>(...) -> CreateDeviceCodeResponse</code></summary>
+<details><summary><code>client.devices.<a href="src/fern/devices/client.py#L91-L134">create_device_code</a>(...) -> CreateDeviceCodeResponse</code></summary>
 <dl>
 <dd>
 
@@ -7114,7 +7114,7 @@ See [Idempotency keys](https://developer.squareup.com/docs/basics/api101/idempot
 </dl>
 </details>
 
-<details><summary><code>client.devices.<a href="src/fern/devices/client.py">get_device_code</a>(...) -> GetDeviceCodeResponse</code></summary>
+<details><summary><code>client.devices.<a href="src/fern/devices/client.py#L136-L168">get_device_code</a>(...) -> GetDeviceCodeResponse</code></summary>
 <dl>
 <dd>
 
@@ -7189,7 +7189,7 @@ client.devices.get_device_code(
 </details>
 
 ## Disputes
-<details><summary><code>client.disputes.<a href="src/fern/disputes/client.py">list_disputes</a>(...) -> ListDisputesResponse</code></summary>
+<details><summary><code>client.disputes.<a href="src/fern/disputes/client.py#L36-L84">list_disputes</a>(...) -> ListDisputesResponse</code></summary>
 <dl>
 <dd>
 
@@ -7288,7 +7288,7 @@ all open disputes (the dispute status is not `INQUIRY_CLOSED`, `WON`, or `LOST`)
 </dl>
 </details>
 
-<details><summary><code>client.disputes.<a href="src/fern/disputes/client.py">retrieve_dispute</a>(...) -> RetrieveDisputeResponse</code></summary>
+<details><summary><code>client.disputes.<a href="src/fern/disputes/client.py#L86-L118">retrieve_dispute</a>(...) -> RetrieveDisputeResponse</code></summary>
 <dl>
 <dd>
 
@@ -7362,7 +7362,7 @@ client.disputes.retrieve_dispute(
 </dl>
 </details>
 
-<details><summary><code>client.disputes.<a href="src/fern/disputes/client.py">accept_dispute</a>(...) -> AcceptDisputeResponse</code></summary>
+<details><summary><code>client.disputes.<a href="src/fern/disputes/client.py#L120-L156">accept_dispute</a>(...) -> AcceptDisputeResponse</code></summary>
 <dl>
 <dd>
 
@@ -7440,7 +7440,7 @@ client.disputes.accept_dispute(
 </dl>
 </details>
 
-<details><summary><code>client.disputes.<a href="src/fern/disputes/client.py">list_dispute_evidence</a>(...) -> ListDisputeEvidenceResponse</code></summary>
+<details><summary><code>client.disputes.<a href="src/fern/disputes/client.py#L158-L199">list_dispute_evidence</a>(...) -> ListDisputeEvidenceResponse</code></summary>
 <dl>
 <dd>
 
@@ -7526,7 +7526,7 @@ For more information, see [Pagination](https://developer.squareup.com/docs/basic
 </dl>
 </details>
 
-<details><summary><code>client.disputes.<a href="src/fern/disputes/client.py">create_dispute_evidence_text</a>(...) -> CreateDisputeEvidenceTextResponse</code></summary>
+<details><summary><code>client.disputes.<a href="src/fern/disputes/client.py#L201-L256">create_dispute_evidence_text</a>(...) -> CreateDisputeEvidenceTextResponse</code></summary>
 <dl>
 <dd>
 
@@ -7626,7 +7626,7 @@ client.disputes.create_dispute_evidence_text(
 </dl>
 </details>
 
-<details><summary><code>client.disputes.<a href="src/fern/disputes/client.py">retrieve_dispute_evidence</a>(...) -> RetrieveDisputeEvidenceResponse</code></summary>
+<details><summary><code>client.disputes.<a href="src/fern/disputes/client.py#L258-L297">retrieve_dispute_evidence</a>(...) -> RetrieveDisputeEvidenceResponse</code></summary>
 <dl>
 <dd>
 
@@ -7712,7 +7712,7 @@ client.disputes.retrieve_dispute_evidence(
 </dl>
 </details>
 
-<details><summary><code>client.disputes.<a href="src/fern/disputes/client.py">delete_dispute_evidence</a>(...) -> DeleteDisputeEvidenceResponse</code></summary>
+<details><summary><code>client.disputes.<a href="src/fern/disputes/client.py#L299-L338">delete_dispute_evidence</a>(...) -> DeleteDisputeEvidenceResponse</code></summary>
 <dl>
 <dd>
 
@@ -7798,7 +7798,7 @@ client.disputes.delete_dispute_evidence(
 </dl>
 </details>
 
-<details><summary><code>client.disputes.<a href="src/fern/disputes/client.py">submit_evidence</a>(...) -> SubmitEvidenceResponse</code></summary>
+<details><summary><code>client.disputes.<a href="src/fern/disputes/client.py#L340-L377">submit_evidence</a>(...) -> SubmitEvidenceResponse</code></summary>
 <dl>
 <dd>
 
@@ -7878,7 +7878,7 @@ client.disputes.submit_evidence(
 </details>
 
 ## Employees
-<details><summary><code>client.employees.<a href="src/fern/employees/client.py">list_employees</a>(...) -> ListEmployeesResponse</code></summary>
+<details><summary><code>client.employees.<a href="src/fern/employees/client.py#L27-L74">list_employees</a>(...) -> ListEmployeesResponse</code></summary>
 <dl>
 <dd>
 
@@ -7974,7 +7974,7 @@ client.employees.list_employees()
 </dl>
 </details>
 
-<details><summary><code>client.employees.<a href="src/fern/employees/client.py">retrieve_employee</a>(...) -> RetrieveEmployeeResponse</code></summary>
+<details><summary><code>client.employees.<a href="src/fern/employees/client.py#L76-L108">retrieve_employee</a>(...) -> RetrieveEmployeeResponse</code></summary>
 <dl>
 <dd>
 
@@ -8049,7 +8049,7 @@ client.employees.retrieve_employee(
 </details>
 
 ## GiftCards
-<details><summary><code>client.gift_cards.<a href="src/fern/gift_cards/client.py">list_gift_cards</a>(...) -> ListGiftCardsResponse</code></summary>
+<details><summary><code>client.gift_cards.<a href="src/fern/gift_cards/client.py#L36-L96">list_gift_cards</a>(...) -> ListGiftCardsResponse</code></summary>
 <dl>
 <dd>
 
@@ -8170,7 +8170,7 @@ For more information, see [Pagination](https://developer.squareup.com/docs/docs/
 </dl>
 </details>
 
-<details><summary><code>client.gift_cards.<a href="src/fern/gift_cards/client.py">create_gift_card</a>(...) -> CreateGiftCardResponse</code></summary>
+<details><summary><code>client.gift_cards.<a href="src/fern/gift_cards/client.py#L98-L151">create_gift_card</a>(...) -> CreateGiftCardResponse</code></summary>
 <dl>
 <dd>
 
@@ -8266,7 +8266,7 @@ client.gift_cards.create_gift_card(
 </dl>
 </details>
 
-<details><summary><code>client.gift_cards.<a href="src/fern/gift_cards/client.py">retrieve_gift_card_from_gan</a>(...) -> RetrieveGiftCardFromGanResponse</code></summary>
+<details><summary><code>client.gift_cards.<a href="src/fern/gift_cards/client.py#L153-L187">retrieve_gift_card_from_gan</a>(...) -> RetrieveGiftCardFromGanResponse</code></summary>
 <dl>
 <dd>
 
@@ -8344,7 +8344,7 @@ Square-issued gift cards have 16-digit GANs.
 </dl>
 </details>
 
-<details><summary><code>client.gift_cards.<a href="src/fern/gift_cards/client.py">retrieve_gift_card_from_nonce</a>(...) -> RetrieveGiftCardFromNonceResponse</code></summary>
+<details><summary><code>client.gift_cards.<a href="src/fern/gift_cards/client.py#L189-L221">retrieve_gift_card_from_nonce</a>(...) -> RetrieveGiftCardFromNonceResponse</code></summary>
 <dl>
 <dd>
 
@@ -8418,7 +8418,7 @@ client.gift_cards.retrieve_gift_card_from_nonce(
 </dl>
 </details>
 
-<details><summary><code>client.gift_cards.<a href="src/fern/gift_cards/client.py">link_customer_to_gift_card</a>(...) -> LinkCustomerToGiftCardResponse</code></summary>
+<details><summary><code>client.gift_cards.<a href="src/fern/gift_cards/client.py#L223-L261">link_customer_to_gift_card</a>(...) -> LinkCustomerToGiftCardResponse</code></summary>
 <dl>
 <dd>
 
@@ -8501,7 +8501,7 @@ client.gift_cards.link_customer_to_gift_card(
 </dl>
 </details>
 
-<details><summary><code>client.gift_cards.<a href="src/fern/gift_cards/client.py">unlink_customer_from_gift_card</a>(...) -> UnlinkCustomerFromGiftCardResponse</code></summary>
+<details><summary><code>client.gift_cards.<a href="src/fern/gift_cards/client.py#L263-L301">unlink_customer_from_gift_card</a>(...) -> UnlinkCustomerFromGiftCardResponse</code></summary>
 <dl>
 <dd>
 
@@ -8584,7 +8584,7 @@ client.gift_cards.unlink_customer_from_gift_card(
 </dl>
 </details>
 
-<details><summary><code>client.gift_cards.<a href="src/fern/gift_cards/client.py">retrieve_gift_card</a>(...) -> RetrieveGiftCardResponse</code></summary>
+<details><summary><code>client.gift_cards.<a href="src/fern/gift_cards/client.py#L303-L335">retrieve_gift_card</a>(...) -> RetrieveGiftCardResponse</code></summary>
 <dl>
 <dd>
 
@@ -8659,7 +8659,7 @@ client.gift_cards.retrieve_gift_card(
 </details>
 
 ## GiftCardActivities
-<details><summary><code>client.gift_card_activities.<a href="src/fern/gift_card_activities/client.py">list_gift_card_activities</a>(...) -> ListGiftCardActivitiesResponse</code></summary>
+<details><summary><code>client.gift_card_activities.<a href="src/fern/gift_card_activities/client.py#L31-L116">list_gift_card_activities</a>(...) -> ListGiftCardActivitiesResponse</code></summary>
 <dl>
 <dd>
 
@@ -8817,7 +8817,7 @@ The order in which the endpoint returns the activities, based on `created_at`.
 </dl>
 </details>
 
-<details><summary><code>client.gift_card_activities.<a href="src/fern/gift_card_activities/client.py">create_gift_card_activity</a>(...) -> CreateGiftCardActivityResponse</code></summary>
+<details><summary><code>client.gift_card_activities.<a href="src/fern/gift_card_activities/client.py#L118-L164">create_gift_card_activity</a>(...) -> CreateGiftCardActivityResponse</code></summary>
 <dl>
 <dd>
 
@@ -8906,7 +8906,7 @@ client.gift_card_activities.create_gift_card_activity(
 </details>
 
 ## Inventory
-<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">deprecated_retrieve_inventory_adjustment</a>(...) -> RetrieveInventoryAdjustmentResponse</code></summary>
+<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py#L37-L72">deprecated_retrieve_inventory_adjustment</a>(...) -> RetrieveInventoryAdjustmentResponse</code></summary>
 <dl>
 <dd>
 
@@ -8981,7 +8981,7 @@ client.inventory.deprecated_retrieve_inventory_adjustment(
 </dl>
 </details>
 
-<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">retrieve_inventory_adjustment</a>(...) -> RetrieveInventoryAdjustmentResponse</code></summary>
+<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py#L74-L107">retrieve_inventory_adjustment</a>(...) -> RetrieveInventoryAdjustmentResponse</code></summary>
 <dl>
 <dd>
 
@@ -9056,7 +9056,7 @@ client.inventory.retrieve_inventory_adjustment(
 </dl>
 </details>
 
-<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">deprecated_batch_change_inventory</a>(...) -> BatchChangeInventoryResponse</code></summary>
+<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py#L109-L166">deprecated_batch_change_inventory</a>(...) -> BatchChangeInventoryResponse</code></summary>
 <dl>
 <dd>
 
@@ -9131,7 +9131,7 @@ client.inventory.deprecated_batch_change_inventory(
 </dl>
 </details>
 
-<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">deprecated_batch_retrieve_inventory_changes</a>(...) -> BatchRetrieveInventoryChangesResponse</code></summary>
+<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py#L168-L247">deprecated_batch_retrieve_inventory_changes</a>(...) -> BatchRetrieveInventoryChangesResponse</code></summary>
 <dl>
 <dd>
 
@@ -9204,7 +9204,7 @@ client.inventory.deprecated_batch_retrieve_inventory_changes()
 </dl>
 </details>
 
-<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">deprecated_batch_retrieve_inventory_counts</a>(...) -> BatchRetrieveInventoryCountsResponse</code></summary>
+<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py#L249-L315">deprecated_batch_retrieve_inventory_counts</a>(...) -> BatchRetrieveInventoryCountsResponse</code></summary>
 <dl>
 <dd>
 
@@ -9277,7 +9277,7 @@ client.inventory.deprecated_batch_retrieve_inventory_counts()
 </dl>
 </details>
 
-<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">batch_change_inventory</a>(...) -> BatchChangeInventoryResponse</code></summary>
+<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py#L317-L377">batch_change_inventory</a>(...) -> BatchChangeInventoryResponse</code></summary>
 <dl>
 <dd>
 
@@ -9355,7 +9355,7 @@ client.inventory.batch_change_inventory(
 </dl>
 </details>
 
-<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">batch_retrieve_inventory_changes</a>(...) -> BatchRetrieveInventoryChangesResponse</code></summary>
+<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py#L379-L464">batch_retrieve_inventory_changes</a>(...) -> BatchRetrieveInventoryChangesResponse</code></summary>
 <dl>
 <dd>
 
@@ -9434,7 +9434,7 @@ client.inventory.batch_retrieve_inventory_changes()
 </dl>
 </details>
 
-<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">batch_retrieve_inventory_counts</a>(...) -> BatchRetrieveInventoryCountsResponse</code></summary>
+<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py#L466-L541">batch_retrieve_inventory_counts</a>(...) -> BatchRetrieveInventoryCountsResponse</code></summary>
 <dl>
 <dd>
 
@@ -9516,7 +9516,7 @@ client.inventory.batch_retrieve_inventory_counts()
 </dl>
 </details>
 
-<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">deprecated_retrieve_inventory_physical_count</a>(...) -> RetrieveInventoryPhysicalCountResponse</code></summary>
+<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py#L543-L579">deprecated_retrieve_inventory_physical_count</a>(...) -> RetrieveInventoryPhysicalCountResponse</code></summary>
 <dl>
 <dd>
 
@@ -9594,7 +9594,7 @@ ID of the
 </dl>
 </details>
 
-<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">retrieve_inventory_physical_count</a>(...) -> RetrieveInventoryPhysicalCountResponse</code></summary>
+<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py#L581-L617">retrieve_inventory_physical_count</a>(...) -> RetrieveInventoryPhysicalCountResponse</code></summary>
 <dl>
 <dd>
 
@@ -9672,7 +9672,7 @@ ID of the
 </dl>
 </details>
 
-<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">retrieve_inventory_transfer</a>(...) -> RetrieveInventoryTransferResponse</code></summary>
+<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py#L619-L652">retrieve_inventory_transfer</a>(...) -> RetrieveInventoryTransferResponse</code></summary>
 <dl>
 <dd>
 
@@ -9747,7 +9747,7 @@ client.inventory.retrieve_inventory_transfer(
 </dl>
 </details>
 
-<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">retrieve_inventory_count</a>(...) -> RetrieveInventoryCountResponse</code></summary>
+<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py#L654-L706">retrieve_inventory_count</a>(...) -> RetrieveInventoryCountResponse</code></summary>
 <dl>
 <dd>
 
@@ -9848,7 +9848,7 @@ See the [Pagination](https://developer.squareup.com/docs/working-with-apis/pagin
 </dl>
 </details>
 
-<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">retrieve_inventory_changes</a>(...) -> RetrieveInventoryChangesResponse</code></summary>
+<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py#L708-L769">retrieve_inventory_changes</a>(...) -> RetrieveInventoryChangesResponse</code></summary>
 <dl>
 <dd>
 
@@ -9959,7 +9959,7 @@ See the [Pagination](https://developer.squareup.com/docs/working-with-apis/pagin
 </details>
 
 ## Invoices
-<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py">list_invoices</a>(...) -> ListInvoicesResponse</code></summary>
+<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py#L38-L89">list_invoices</a>(...) -> ListInvoicesResponse</code></summary>
 <dl>
 <dd>
 
@@ -10059,7 +10059,7 @@ If not provided, the server uses a default limit of 100 invoices.
 </dl>
 </details>
 
-<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py">create_invoice</a>(...) -> CreateInvoiceResponse</code></summary>
+<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py#L91-L139">create_invoice</a>(...) -> CreateInvoiceResponse</code></summary>
 <dl>
 <dd>
 
@@ -10151,7 +10151,7 @@ For more information, see [Idempotency](https://developer.squareup.com/docs/work
 </dl>
 </details>
 
-<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py">search_invoices</a>(...) -> SearchInvoicesResponse</code></summary>
+<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py#L141-L199">search_invoices</a>(...) -> SearchInvoicesResponse</code></summary>
 <dl>
 <dd>
 
@@ -10261,7 +10261,7 @@ If not provided, the server uses a default limit of 100 invoices.
 </dl>
 </details>
 
-<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py">get_invoice</a>(...) -> GetInvoiceResponse</code></summary>
+<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py#L201-L233">get_invoice</a>(...) -> GetInvoiceResponse</code></summary>
 <dl>
 <dd>
 
@@ -10335,7 +10335,7 @@ client.invoices.get_invoice(
 </dl>
 </details>
 
-<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py">update_invoice</a>(...) -> UpdateInvoiceResponse</code></summary>
+<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py#L235-L296">update_invoice</a>(...) -> UpdateInvoiceResponse</code></summary>
 <dl>
 <dd>
 
@@ -10446,7 +10446,7 @@ For more information, see [Idempotency](https://developer.squareup.com/docs/work
 </dl>
 </details>
 
-<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py">delete_invoice</a>(...) -> DeleteInvoiceResponse</code></summary>
+<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py#L298-L341">delete_invoice</a>(...) -> DeleteInvoiceResponse</code></summary>
 <dl>
 <dd>
 
@@ -10534,7 +10534,7 @@ If you do not know the version, you can call [GetInvoice](https://developer.squa
 </dl>
 </details>
 
-<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py">cancel_invoice</a>(...) -> CancelInvoiceResponse</code></summary>
+<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py#L343-L384">cancel_invoice</a>(...) -> CancelInvoiceResponse</code></summary>
 <dl>
 <dd>
 
@@ -10624,7 +10624,7 @@ If you do not know the version, you can call
 </dl>
 </details>
 
-<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py">publish_invoice</a>(...) -> PublishInvoiceResponse</code></summary>
+<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py#L386-L447">publish_invoice</a>(...) -> PublishInvoiceResponse</code></summary>
 <dl>
 <dd>
 
@@ -10735,7 +10735,7 @@ For more information, see [Idempotency](https://developer.squareup.com/docs/work
 </details>
 
 ## Labor
-<details><summary><code>client.labor.<a href="src/fern/labor/client.py">list_break_types</a>(...) -> ListBreakTypesResponse</code></summary>
+<details><summary><code>client.labor.<a href="src/fern/labor/client.py#L48-L93">list_break_types</a>(...) -> ListBreakTypesResponse</code></summary>
 <dl>
 <dd>
 
@@ -10829,7 +10829,7 @@ and 200. The default is 200.
 </dl>
 </details>
 
-<details><summary><code>client.labor.<a href="src/fern/labor/client.py">create_break_type</a>(...) -> CreateBreakTypeResponse</code></summary>
+<details><summary><code>client.labor.<a href="src/fern/labor/client.py#L95-L153">create_break_type</a>(...) -> CreateBreakTypeResponse</code></summary>
 <dl>
 <dd>
 
@@ -10929,7 +10929,7 @@ client.labor.create_break_type(
 </dl>
 </details>
 
-<details><summary><code>client.labor.<a href="src/fern/labor/client.py">get_break_type</a>(...) -> GetBreakTypeResponse</code></summary>
+<details><summary><code>client.labor.<a href="src/fern/labor/client.py#L155-L187">get_break_type</a>(...) -> GetBreakTypeResponse</code></summary>
 <dl>
 <dd>
 
@@ -11003,7 +11003,7 @@ client.labor.get_break_type(
 </dl>
 </details>
 
-<details><summary><code>client.labor.<a href="src/fern/labor/client.py">update_break_type</a>(...) -> UpdateBreakTypeResponse</code></summary>
+<details><summary><code>client.labor.<a href="src/fern/labor/client.py#L189-L229">update_break_type</a>(...) -> UpdateBreakTypeResponse</code></summary>
 <dl>
 <dd>
 
@@ -11091,7 +11091,7 @@ client.labor.update_break_type(
 </dl>
 </details>
 
-<details><summary><code>client.labor.<a href="src/fern/labor/client.py">delete_break_type</a>(...) -> DeleteBreakTypeResponse</code></summary>
+<details><summary><code>client.labor.<a href="src/fern/labor/client.py#L231-L265">delete_break_type</a>(...) -> DeleteBreakTypeResponse</code></summary>
 <dl>
 <dd>
 
@@ -11167,7 +11167,7 @@ client.labor.delete_break_type(
 </dl>
 </details>
 
-<details><summary><code>client.labor.<a href="src/fern/labor/client.py">list_employee_wages</a>(...) -> ListEmployeeWagesResponse</code></summary>
+<details><summary><code>client.labor.<a href="src/fern/labor/client.py#L267-L311">list_employee_wages</a>(...) -> ListEmployeeWagesResponse</code></summary>
 <dl>
 <dd>
 
@@ -11258,7 +11258,7 @@ The maximum number of `EmployeeWage` results to return per page. The number can 
 </dl>
 </details>
 
-<details><summary><code>client.labor.<a href="src/fern/labor/client.py">get_employee_wage</a>(...) -> GetEmployeeWageResponse</code></summary>
+<details><summary><code>client.labor.<a href="src/fern/labor/client.py#L313-L345">get_employee_wage</a>(...) -> GetEmployeeWageResponse</code></summary>
 <dl>
 <dd>
 
@@ -11332,7 +11332,7 @@ client.labor.get_employee_wage(
 </dl>
 </details>
 
-<details><summary><code>client.labor.<a href="src/fern/labor/client.py">create_shift</a>(...) -> CreateShiftResponse</code></summary>
+<details><summary><code>client.labor.<a href="src/fern/labor/client.py#L347-L406">create_shift</a>(...) -> CreateShiftResponse</code></summary>
 <dl>
 <dd>
 
@@ -11433,7 +11433,7 @@ client.labor.create_shift(
 </dl>
 </details>
 
-<details><summary><code>client.labor.<a href="src/fern/labor/client.py">search_shifts</a>(...) -> SearchShiftsResponse</code></summary>
+<details><summary><code>client.labor.<a href="src/fern/labor/client.py#L408-L463">search_shifts</a>(...) -> SearchShiftsResponse</code></summary>
 <dl>
 <dd>
 
@@ -11534,7 +11534,7 @@ client.labor.search_shifts()
 </dl>
 </details>
 
-<details><summary><code>client.labor.<a href="src/fern/labor/client.py">get_shift</a>(...) -> GetShiftResponse</code></summary>
+<details><summary><code>client.labor.<a href="src/fern/labor/client.py#L465-L495">get_shift</a>(...) -> GetShiftResponse</code></summary>
 <dl>
 <dd>
 
@@ -11608,7 +11608,7 @@ client.labor.get_shift(
 </dl>
 </details>
 
-<details><summary><code>client.labor.<a href="src/fern/labor/client.py">update_shift</a>(...) -> UpdateShiftResponse</code></summary>
+<details><summary><code>client.labor.<a href="src/fern/labor/client.py#L497-L540">update_shift</a>(...) -> UpdateShiftResponse</code></summary>
 <dl>
 <dd>
 
@@ -11699,7 +11699,7 @@ client.labor.update_shift(
 </dl>
 </details>
 
-<details><summary><code>client.labor.<a href="src/fern/labor/client.py">delete_shift</a>(...) -> DeleteShiftResponse</code></summary>
+<details><summary><code>client.labor.<a href="src/fern/labor/client.py#L542-L572">delete_shift</a>(...) -> DeleteShiftResponse</code></summary>
 <dl>
 <dd>
 
@@ -11773,7 +11773,7 @@ client.labor.delete_shift(
 </dl>
 </details>
 
-<details><summary><code>client.labor.<a href="src/fern/labor/client.py">list_team_member_wages</a>(...) -> ListTeamMemberWagesResponse</code></summary>
+<details><summary><code>client.labor.<a href="src/fern/labor/client.py#L574-L619">list_team_member_wages</a>(...) -> ListTeamMemberWagesResponse</code></summary>
 <dl>
 <dd>
 
@@ -11867,7 +11867,7 @@ The maximum number of `TeamMemberWage` results to return per page. The number ca
 </dl>
 </details>
 
-<details><summary><code>client.labor.<a href="src/fern/labor/client.py">get_team_member_wage</a>(...) -> GetTeamMemberWageResponse</code></summary>
+<details><summary><code>client.labor.<a href="src/fern/labor/client.py#L621-L653">get_team_member_wage</a>(...) -> GetTeamMemberWageResponse</code></summary>
 <dl>
 <dd>
 
@@ -11941,7 +11941,7 @@ client.labor.get_team_member_wage(
 </dl>
 </details>
 
-<details><summary><code>client.labor.<a href="src/fern/labor/client.py">list_workweek_configs</a>(...) -> ListWorkweekConfigsResponse</code></summary>
+<details><summary><code>client.labor.<a href="src/fern/labor/client.py#L655-L692">list_workweek_configs</a>(...) -> ListWorkweekConfigsResponse</code></summary>
 <dl>
 <dd>
 
@@ -12021,7 +12021,7 @@ client.labor.list_workweek_configs()
 </dl>
 </details>
 
-<details><summary><code>client.labor.<a href="src/fern/labor/client.py">update_workweek_config</a>(...) -> UpdateWorkweekConfigResponse</code></summary>
+<details><summary><code>client.labor.<a href="src/fern/labor/client.py#L694-L734">update_workweek_config</a>(...) -> UpdateWorkweekConfigResponse</code></summary>
 <dl>
 <dd>
 
@@ -12108,7 +12108,7 @@ client.labor.update_workweek_config(
 </details>
 
 ## Locations
-<details><summary><code>client.locations.<a href="src/fern/locations/client.py">list_locations</a>() -> ListLocationsResponse</code></summary>
+<details><summary><code>client.locations.<a href="src/fern/locations/client.py#L33-L62">list_locations</a>() -> ListLocationsResponse</code></summary>
 <dl>
 <dd>
 
@@ -12176,7 +12176,7 @@ client.locations.list_locations()
 </dl>
 </details>
 
-<details><summary><code>client.locations.<a href="src/fern/locations/client.py">create_location</a>(...) -> CreateLocationResponse</code></summary>
+<details><summary><code>client.locations.<a href="src/fern/locations/client.py#L64-L93">create_location</a>(...) -> CreateLocationResponse</code></summary>
 <dl>
 <dd>
 
@@ -12248,7 +12248,7 @@ client.locations.create_location()
 </dl>
 </details>
 
-<details><summary><code>client.locations.<a href="src/fern/locations/client.py">retrieve_location</a>(...) -> RetrieveLocationResponse</code></summary>
+<details><summary><code>client.locations.<a href="src/fern/locations/client.py#L95-L130">retrieve_location</a>(...) -> RetrieveLocationResponse</code></summary>
 <dl>
 <dd>
 
@@ -12327,7 +12327,7 @@ then the endpoint returns the main location.
 </dl>
 </details>
 
-<details><summary><code>client.locations.<a href="src/fern/locations/client.py">update_location</a>(...) -> UpdateLocationResponse</code></summary>
+<details><summary><code>client.locations.<a href="src/fern/locations/client.py#L132-L170">update_location</a>(...) -> UpdateLocationResponse</code></summary>
 <dl>
 <dd>
 
@@ -12410,7 +12410,7 @@ client.locations.update_location(
 </details>
 
 ## Checkout
-<details><summary><code>client.checkout.<a href="src/fern/checkout/client.py">create_checkout</a>(...) -> CreateCheckoutResponse</code></summary>
+<details><summary><code>client.checkout.<a href="src/fern/checkout/client.py#L32-L162">create_checkout</a>(...) -> CreateCheckoutResponse</code></summary>
 <dl>
 <dd>
 
@@ -12620,7 +12620,7 @@ Default: none; only exists if explicitly set.
 </details>
 
 ## Transactions
-<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py">list_refunds</a>(...) -> ListRefundsResponse</code></summary>
+<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py#L38-L119">list_refunds</a>(...) -> ListRefundsResponse</code></summary>
 <dl>
 <dd>
 
@@ -12757,7 +12757,7 @@ See [Paginating results](https://developer.squareup.com/docs/working-with-apis/p
 </dl>
 </details>
 
-<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py">list_transactions</a>(...) -> ListTransactionsResponse</code></summary>
+<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py#L121-L198">list_transactions</a>(...) -> ListTransactionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -12890,7 +12890,7 @@ See [Paginating results](https://developer.squareup.com/docs/working-with-apis/p
 </dl>
 </details>
 
-<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py">charge</a>(...) -> ChargeResponse</code></summary>
+<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py#L200-L373">charge</a>(...) -> ChargeResponse</code></summary>
 <dl>
 <dd>
 
@@ -13166,7 +13166,7 @@ customer's device info and 3ds challenge result.
 </dl>
 </details>
 
-<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py">retrieve_transaction</a>(...) -> RetrieveTransactionResponse</code></summary>
+<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py#L375-L411">retrieve_transaction</a>(...) -> RetrieveTransactionResponse</code></summary>
 <dl>
 <dd>
 
@@ -13249,7 +13249,7 @@ client.transactions.retrieve_transaction(
 </dl>
 </details>
 
-<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py">capture_transaction</a>(...) -> CaptureTransactionResponse</code></summary>
+<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py#L413-L454">capture_transaction</a>(...) -> CaptureTransactionResponse</code></summary>
 <dl>
 <dd>
 
@@ -13337,7 +13337,7 @@ client.transactions.capture_transaction(
 </dl>
 </details>
 
-<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py">create_refund</a>(...) -> CreateRefundResponse</code></summary>
+<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py#L456-L543">create_refund</a>(...) -> CreateRefundResponse</code></summary>
 <dl>
 <dd>
 
@@ -13482,7 +13482,7 @@ Default value: `Refund via API`
 </dl>
 </details>
 
-<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py">void_transaction</a>(...) -> VoidTransactionResponse</code></summary>
+<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py#L545-L586">void_transaction</a>(...) -> VoidTransactionResponse</code></summary>
 <dl>
 <dd>
 
@@ -13571,7 +13571,7 @@ client.transactions.void_transaction(
 </details>
 
 ## Loyalty
-<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py">create_loyalty_account</a>(...) -> CreateLoyaltyAccountResponse</code></summary>
+<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py#L52-L96">create_loyalty_account</a>(...) -> CreateLoyaltyAccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -13659,7 +13659,7 @@ Keys can be any valid string, but must be unique for every request.
 </dl>
 </details>
 
-<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py">search_loyalty_accounts</a>(...) -> SearchLoyaltyAccountsResponse</code></summary>
+<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py#L98-L149">search_loyalty_accounts</a>(...) -> SearchLoyaltyAccountsResponse</code></summary>
 <dl>
 <dd>
 
@@ -13758,7 +13758,7 @@ see [Pagination](https://developer.squareup.com/docs/basics/api101/pagination).
 </dl>
 </details>
 
-<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py">retrieve_loyalty_account</a>(...) -> RetrieveLoyaltyAccountResponse</code></summary>
+<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py#L151-L183">retrieve_loyalty_account</a>(...) -> RetrieveLoyaltyAccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -13832,7 +13832,7 @@ client.loyalty.retrieve_loyalty_account(
 </dl>
 </details>
 
-<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py">accumulate_loyalty_points</a>(...) -> AccumulateLoyaltyPointsResponse</code></summary>
+<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py#L185-L252">accumulate_loyalty_points</a>(...) -> AccumulateLoyaltyPointsResponse</code></summary>
 <dl>
 <dd>
 
@@ -13947,7 +13947,7 @@ Keys can be any valid string but must be unique for every request.
 </dl>
 </details>
 
-<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py">adjust_loyalty_points</a>(...) -> AdjustLoyaltyPointsResponse</code></summary>
+<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py#L254-L307">adjust_loyalty_points</a>(...) -> AdjustLoyaltyPointsResponse</code></summary>
 <dl>
 <dd>
 
@@ -14048,7 +14048,7 @@ Keys can be any valid string, but must be unique for every request.
 </dl>
 </details>
 
-<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py">search_loyalty_events</a>(...) -> SearchLoyaltyEventsResponse</code></summary>
+<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py#L309-L362">search_loyalty_events</a>(...) -> SearchLoyaltyEventsResponse</code></summary>
 <dl>
 <dd>
 
@@ -14151,7 +14151,7 @@ The default is 30 events.
 </dl>
 </details>
 
-<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py">list_loyalty_programs</a>() -> ListLoyaltyProgramsResponse</code></summary>
+<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py#L364-L395">list_loyalty_programs</a>() -> ListLoyaltyProgramsResponse</code></summary>
 <dl>
 <dd>
 
@@ -14219,7 +14219,7 @@ client.loyalty.list_loyalty_programs()
 </dl>
 </details>
 
-<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py">retrieve_loyalty_program</a>(...) -> RetrieveLoyaltyProgramResponse</code></summary>
+<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py#L397-L431">retrieve_loyalty_program</a>(...) -> RetrieveLoyaltyProgramResponse</code></summary>
 <dl>
 <dd>
 
@@ -14295,7 +14295,7 @@ client.loyalty.retrieve_loyalty_program(
 </dl>
 </details>
 
-<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py">calculate_loyalty_points</a>(...) -> CalculateLoyaltyPointsResponse</code></summary>
+<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py#L433-L493">calculate_loyalty_points</a>(...) -> CalculateLoyaltyPointsResponse</code></summary>
 <dl>
 <dd>
 
@@ -14400,7 +14400,7 @@ Otherwise, specify the `transaction_amount_money`.
 </dl>
 </details>
 
-<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py">create_loyalty_reward</a>(...) -> CreateLoyaltyRewardResponse</code></summary>
+<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py#L495-L543">create_loyalty_reward</a>(...) -> CreateLoyaltyRewardResponse</code></summary>
 <dl>
 <dd>
 
@@ -14496,7 +14496,7 @@ Keys can be any valid string, but must be unique for every request.
 </dl>
 </details>
 
-<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py">search_loyalty_rewards</a>(...) -> SearchLoyaltyRewardsResponse</code></summary>
+<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py#L545-L598">search_loyalty_rewards</a>(...) -> SearchLoyaltyRewardsResponse</code></summary>
 <dl>
 <dd>
 
@@ -14597,7 +14597,7 @@ see [Pagination](https://developer.squareup.com/docs/basics/api101/pagination).
 </dl>
 </details>
 
-<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py">retrieve_loyalty_reward</a>(...) -> RetrieveLoyaltyRewardResponse</code></summary>
+<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py#L600-L632">retrieve_loyalty_reward</a>(...) -> RetrieveLoyaltyRewardResponse</code></summary>
 <dl>
 <dd>
 
@@ -14671,7 +14671,7 @@ client.loyalty.retrieve_loyalty_reward(
 </dl>
 </details>
 
-<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py">delete_loyalty_reward</a>(...) -> DeleteLoyaltyRewardResponse</code></summary>
+<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py#L634-L674">delete_loyalty_reward</a>(...) -> DeleteLoyaltyRewardResponse</code></summary>
 <dl>
 <dd>
 
@@ -14753,7 +14753,7 @@ client.loyalty.delete_loyalty_reward(
 </dl>
 </details>
 
-<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py">redeem_loyalty_reward</a>(...) -> RedeemLoyaltyRewardResponse</code></summary>
+<details><summary><code>client.loyalty.<a href="src/fern/loyalty/client.py#L676-L734">redeem_loyalty_reward</a>(...) -> RedeemLoyaltyRewardResponse</code></summary>
 <dl>
 <dd>
 
@@ -14859,7 +14859,7 @@ Keys can be any valid string, but must be unique for every request.
 </details>
 
 ## Merchants
-<details><summary><code>client.merchants.<a href="src/fern/merchants/client.py">list_merchants</a>(...) -> ListMerchantsResponse</code></summary>
+<details><summary><code>client.merchants.<a href="src/fern/merchants/client.py#L27-L64">list_merchants</a>(...) -> ListMerchantsResponse</code></summary>
 <dl>
 <dd>
 
@@ -14938,7 +14938,7 @@ client.merchants.list_merchants()
 </dl>
 </details>
 
-<details><summary><code>client.merchants.<a href="src/fern/merchants/client.py">retrieve_merchant</a>(...) -> RetrieveMerchantResponse</code></summary>
+<details><summary><code>client.merchants.<a href="src/fern/merchants/client.py#L66-L99">retrieve_merchant</a>(...) -> RetrieveMerchantResponse</code></summary>
 <dl>
 <dd>
 
@@ -15016,7 +15016,7 @@ then retrieve the merchant that is currently accessible to this call.
 </details>
 
 ## Orders
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">create_order</a>(...) -> CreateOrderResponse</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py#L38-L89">create_order</a>(...) -> CreateOrderResponse</code></summary>
 <dl>
 <dd>
 
@@ -15094,7 +15094,7 @@ client.orders.create_order()
 </dl>
 </details>
 
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">batch_retrieve_orders</a>(...) -> BatchRetrieveOrdersResponse</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py#L91-L135">batch_retrieve_orders</a>(...) -> BatchRetrieveOrdersResponse</code></summary>
 <dl>
 <dd>
 
@@ -15183,7 +15183,7 @@ orders within the scope of the current authorization's merchant ID.
 </dl>
 </details>
 
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">calculate_order</a>(...) -> CalculateOrderResponse</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py#L137-L183">calculate_order</a>(...) -> CalculateOrderResponse</code></summary>
 <dl>
 <dd>
 
@@ -15273,7 +15273,7 @@ random strings used only to reference the reward tier.
 </dl>
 </details>
 
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">search_orders</a>(...) -> SearchOrdersResponse</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py#L185-L270">search_orders</a>(...) -> SearchOrdersResponse</code></summary>
 <dl>
 <dd>
 
@@ -15415,7 +15415,7 @@ Default: `false`.
 </dl>
 </details>
 
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">retrieve_order</a>(...) -> RetrieveOrderResponse</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py#L272-L304">retrieve_order</a>(...) -> RetrieveOrderResponse</code></summary>
 <dl>
 <dd>
 
@@ -15489,7 +15489,7 @@ client.orders.retrieve_order(
 </dl>
 </details>
 
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">update_order</a>(...) -> UpdateOrderResponse</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py#L306-L381">update_order</a>(...) -> UpdateOrderResponse</code></summary>
 <dl>
 <dd>
 
@@ -15614,7 +15614,7 @@ For more information, see [Idempotency](https://developer.squareup.com/docs/basi
 </dl>
 </details>
 
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">pay_order</a>(...) -> PayOrderResponse</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py#L383-L455">pay_order</a>(...) -> PayOrderResponse</code></summary>
 <dl>
 <dd>
 
@@ -15736,7 +15736,7 @@ The payment total must match the order total.
 </details>
 
 ## Payments
-<details><summary><code>client.payments.<a href="src/fern/payments/client.py">list_payments</a>(...) -> ListPaymentsResponse</code></summary>
+<details><summary><code>client.payments.<a href="src/fern/payments/client.py#L40-L136">list_payments</a>(...) -> ListPaymentsResponse</code></summary>
 <dl>
 <dd>
 
@@ -15904,7 +15904,7 @@ Default: `100`
 </dl>
 </details>
 
-<details><summary><code>client.payments.<a href="src/fern/payments/client.py">create_payment</a>(...) -> CreatePaymentResponse</code></summary>
+<details><summary><code>client.payments.<a href="src/fern/payments/client.py#L138-L333">create_payment</a>(...) -> CreatePaymentResponse</code></summary>
 <dl>
 <dd>
 
@@ -16221,7 +16221,7 @@ For more information, see [SCA Overview](https://developer.squareup.com/docs/sca
 </dl>
 </details>
 
-<details><summary><code>client.payments.<a href="src/fern/payments/client.py">cancel_payment_by_idempotency_key</a>(...) -> CancelPaymentByIdempotencyKeyResponse</code></summary>
+<details><summary><code>client.payments.<a href="src/fern/payments/client.py#L335-L379">cancel_payment_by_idempotency_key</a>(...) -> CancelPaymentByIdempotencyKeyResponse</code></summary>
 <dl>
 <dd>
 
@@ -16305,7 +16305,7 @@ client.payments.cancel_payment_by_idempotency_key(
 </dl>
 </details>
 
-<details><summary><code>client.payments.<a href="src/fern/payments/client.py">get_payment</a>(...) -> GetPaymentResponse</code></summary>
+<details><summary><code>client.payments.<a href="src/fern/payments/client.py#L381-L413">get_payment</a>(...) -> GetPaymentResponse</code></summary>
 <dl>
 <dd>
 
@@ -16379,7 +16379,7 @@ client.payments.get_payment(
 </dl>
 </details>
 
-<details><summary><code>client.payments.<a href="src/fern/payments/client.py">update_payment</a>(...) -> UpdatePaymentResponse</code></summary>
+<details><summary><code>client.payments.<a href="src/fern/payments/client.py#L415-L466">update_payment</a>(...) -> UpdatePaymentResponse</code></summary>
 <dl>
 <dd>
 
@@ -16478,7 +16478,7 @@ For more information, see [Idempotency](https://developer.squareup.com/docs/basi
 </dl>
 </details>
 
-<details><summary><code>client.payments.<a href="src/fern/payments/client.py">cancel_payment</a>(...) -> CancelPaymentResponse</code></summary>
+<details><summary><code>client.payments.<a href="src/fern/payments/client.py#L468-L501">cancel_payment</a>(...) -> CancelPaymentResponse</code></summary>
 <dl>
 <dd>
 
@@ -16553,7 +16553,7 @@ client.payments.cancel_payment(
 </dl>
 </details>
 
-<details><summary><code>client.payments.<a href="src/fern/payments/client.py">complete_payment</a>(...) -> CompletePaymentResponse</code></summary>
+<details><summary><code>client.payments.<a href="src/fern/payments/client.py#L503-L538">complete_payment</a>(...) -> CompletePaymentResponse</code></summary>
 <dl>
 <dd>
 
@@ -16631,7 +16631,7 @@ client.payments.complete_payment(
 </details>
 
 ## Refunds
-<details><summary><code>client.refunds.<a href="src/fern/refunds/client.py">list_payment_refunds</a>(...) -> ListPaymentRefundsResponse</code></summary>
+<details><summary><code>client.refunds.<a href="src/fern/refunds/client.py#L32-L131">list_payment_refunds</a>(...) -> ListPaymentRefundsResponse</code></summary>
 <dl>
 <dd>
 
@@ -16803,7 +16803,7 @@ Default: 100
 </dl>
 </details>
 
-<details><summary><code>client.refunds.<a href="src/fern/refunds/client.py">refund_payment</a>(...) -> RefundPaymentResponse</code></summary>
+<details><summary><code>client.refunds.<a href="src/fern/refunds/client.py#L133-L197">refund_payment</a>(...) -> RefundPaymentResponse</code></summary>
 <dl>
 <dd>
 
@@ -16919,7 +16919,7 @@ For more information, see [Idempotency](https://developer.squareup.com/docs/work
 </dl>
 </details>
 
-<details><summary><code>client.refunds.<a href="src/fern/refunds/client.py">get_payment_refund</a>(...) -> GetPaymentRefundResponse</code></summary>
+<details><summary><code>client.refunds.<a href="src/fern/refunds/client.py#L199-L231">get_payment_refund</a>(...) -> GetPaymentRefundResponse</code></summary>
 <dl>
 <dd>
 
@@ -16994,7 +16994,7 @@ client.refunds.get_payment_refund(
 </details>
 
 ## Sites
-<details><summary><code>client.sites.<a href="src/fern/sites/client.py">list_sites</a>() -> ListSitesResponse</code></summary>
+<details><summary><code>client.sites.<a href="src/fern/sites/client.py#L26-L54">list_sites</a>() -> ListSitesResponse</code></summary>
 <dl>
 <dd>
 
@@ -17062,7 +17062,7 @@ client.sites.list_sites()
 </details>
 
 ## Snippets
-<details><summary><code>client.snippets.<a href="src/fern/snippets/client.py">retrieve_snippet</a>(...) -> RetrieveSnippetResponse</code></summary>
+<details><summary><code>client.snippets.<a href="src/fern/snippets/client.py#L32-L69">retrieve_snippet</a>(...) -> RetrieveSnippetResponse</code></summary>
 <dl>
 <dd>
 
@@ -17141,7 +17141,7 @@ client.snippets.retrieve_snippet(
 </dl>
 </details>
 
-<details><summary><code>client.snippets.<a href="src/fern/snippets/client.py">upsert_snippet</a>(...) -> UpsertSnippetResponse</code></summary>
+<details><summary><code>client.snippets.<a href="src/fern/snippets/client.py#L71-L114">upsert_snippet</a>(...) -> UpsertSnippetResponse</code></summary>
 <dl>
 <dd>
 
@@ -17232,7 +17232,7 @@ client.snippets.upsert_snippet(
 </dl>
 </details>
 
-<details><summary><code>client.snippets.<a href="src/fern/snippets/client.py">delete_snippet</a>(...) -> DeleteSnippetResponse</code></summary>
+<details><summary><code>client.snippets.<a href="src/fern/snippets/client.py#L116-L153">delete_snippet</a>(...) -> DeleteSnippetResponse</code></summary>
 <dl>
 <dd>
 
@@ -17312,7 +17312,7 @@ client.snippets.delete_snippet(
 </details>
 
 ## Subscriptions
-<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">create_subscription</a>(...) -> CreateSubscriptionResponse</code></summary>
+<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py#L38-L146">create_subscription</a>(...) -> CreateSubscriptionResponse</code></summary>
 <dl>
 <dd>
 
@@ -17498,7 +17498,7 @@ a list of time zones, see [List of tz database time zones](https://en.wikipedia.
 </dl>
 </details>
 
-<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">search_subscriptions</a>(...) -> SearchSubscriptionsResponse</code></summary>
+<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py#L148-L211">search_subscriptions</a>(...) -> SearchSubscriptionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -17611,7 +17611,7 @@ Default: `200`
 </dl>
 </details>
 
-<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">retrieve_subscription</a>(...) -> RetrieveSubscriptionResponse</code></summary>
+<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py#L213-L245">retrieve_subscription</a>(...) -> RetrieveSubscriptionResponse</code></summary>
 <dl>
 <dd>
 
@@ -17685,7 +17685,7 @@ client.subscriptions.retrieve_subscription(
 </dl>
 </details>
 
-<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">update_subscription</a>(...) -> UpdateSubscriptionResponse</code></summary>
+<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py#L247-L288">update_subscription</a>(...) -> UpdateSubscriptionResponse</code></summary>
 <dl>
 <dd>
 
@@ -17768,7 +17768,7 @@ client.subscriptions.update_subscription(
 </dl>
 </details>
 
-<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">cancel_subscription</a>(...) -> CancelSubscriptionResponse</code></summary>
+<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py#L290-L323">cancel_subscription</a>(...) -> CancelSubscriptionResponse</code></summary>
 <dl>
 <dd>
 
@@ -17843,7 +17843,7 @@ client.subscriptions.cancel_subscription(
 </dl>
 </details>
 
-<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">list_subscription_events</a>(...) -> ListSubscriptionEventsResponse</code></summary>
+<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py#L325-L377">list_subscription_events</a>(...) -> ListSubscriptionEventsResponse</code></summary>
 <dl>
 <dd>
 
@@ -17944,7 +17944,7 @@ Default: `200`
 </dl>
 </details>
 
-<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">resume_subscription</a>(...) -> ResumeSubscriptionResponse</code></summary>
+<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py#L379-L411">resume_subscription</a>(...) -> ResumeSubscriptionResponse</code></summary>
 <dl>
 <dd>
 
@@ -18019,7 +18019,7 @@ client.subscriptions.resume_subscription(
 </details>
 
 ## Team
-<details><summary><code>client.team.<a href="src/fern/team/client.py">create_team_member</a>(...) -> CreateTeamMemberResponse</code></summary>
+<details><summary><code>client.team.<a href="src/fern/team/client.py#L41-L88">create_team_member</a>(...) -> CreateTeamMemberResponse</code></summary>
 <dl>
 <dd>
 
@@ -18096,7 +18096,7 @@ client.team.create_team_member()
 </dl>
 </details>
 
-<details><summary><code>client.team.<a href="src/fern/team/client.py">bulk_create_team_members</a>(...) -> BulkCreateTeamMembersResponse</code></summary>
+<details><summary><code>client.team.<a href="src/fern/team/client.py#L90-L132">bulk_create_team_members</a>(...) -> BulkCreateTeamMembersResponse</code></summary>
 <dl>
 <dd>
 
@@ -18177,7 +18177,7 @@ client.team.bulk_create_team_members(
 </dl>
 </details>
 
-<details><summary><code>client.team.<a href="src/fern/team/client.py">bulk_update_team_members</a>(...) -> BulkUpdateTeamMembersResponse</code></summary>
+<details><summary><code>client.team.<a href="src/fern/team/client.py#L134-L175">bulk_update_team_members</a>(...) -> BulkUpdateTeamMembersResponse</code></summary>
 <dl>
 <dd>
 
@@ -18257,7 +18257,7 @@ client.team.bulk_update_team_members(
 </dl>
 </details>
 
-<details><summary><code>client.team.<a href="src/fern/team/client.py">search_team_members</a>(...) -> SearchTeamMembersResponse</code></summary>
+<details><summary><code>client.team.<a href="src/fern/team/client.py#L177-L223">search_team_members</a>(...) -> SearchTeamMembersResponse</code></summary>
 <dl>
 <dd>
 
@@ -18351,7 +18351,7 @@ The opaque cursor for fetching the next page. For more information, see
 </dl>
 </details>
 
-<details><summary><code>client.team.<a href="src/fern/team/client.py">retrieve_team_member</a>(...) -> RetrieveTeamMemberResponse</code></summary>
+<details><summary><code>client.team.<a href="src/fern/team/client.py#L225-L258">retrieve_team_member</a>(...) -> RetrieveTeamMemberResponse</code></summary>
 <dl>
 <dd>
 
@@ -18426,7 +18426,7 @@ client.team.retrieve_team_member(
 </dl>
 </details>
 
-<details><summary><code>client.team.<a href="src/fern/team/client.py">update_team_member</a>(...) -> UpdateTeamMemberResponse</code></summary>
+<details><summary><code>client.team.<a href="src/fern/team/client.py#L260-L301">update_team_member</a>(...) -> UpdateTeamMemberResponse</code></summary>
 <dl>
 <dd>
 
@@ -18509,7 +18509,7 @@ client.team.update_team_member(
 </dl>
 </details>
 
-<details><summary><code>client.team.<a href="src/fern/team/client.py">retrieve_wage_setting</a>(...) -> RetrieveWageSettingResponse</code></summary>
+<details><summary><code>client.team.<a href="src/fern/team/client.py#L303-L337">retrieve_wage_setting</a>(...) -> RetrieveWageSettingResponse</code></summary>
 <dl>
 <dd>
 
@@ -18585,7 +18585,7 @@ client.team.retrieve_wage_setting(
 </dl>
 </details>
 
-<details><summary><code>client.team.<a href="src/fern/team/client.py">update_wage_setting</a>(...) -> UpdateWageSettingResponse</code></summary>
+<details><summary><code>client.team.<a href="src/fern/team/client.py#L339-L380">update_wage_setting</a>(...) -> UpdateWageSettingResponse</code></summary>
 <dl>
 <dd>
 
@@ -18673,7 +18673,7 @@ client.team.update_wage_setting(
 </details>
 
 ## Terminal
-<details><summary><code>client.terminal.<a href="src/fern/terminal/client.py">create_terminal_checkout</a>(...) -> CreateTerminalCheckoutResponse</code></summary>
+<details><summary><code>client.terminal.<a href="src/fern/terminal/client.py#L40-L90">create_terminal_checkout</a>(...) -> CreateTerminalCheckoutResponse</code></summary>
 <dl>
 <dd>
 
@@ -18767,7 +18767,7 @@ See [Idempotency keys](https://developer.squareup.com/docs/basics/api101/idempot
 </dl>
 </details>
 
-<details><summary><code>client.terminal.<a href="src/fern/terminal/client.py">search_terminal_checkouts</a>(...) -> SearchTerminalCheckoutsResponse</code></summary>
+<details><summary><code>client.terminal.<a href="src/fern/terminal/client.py#L92-L136">search_terminal_checkouts</a>(...) -> SearchTerminalCheckoutsResponse</code></summary>
 <dl>
 <dd>
 
@@ -18859,7 +18859,7 @@ See [Pagination](https://developer.squareup.com/docs/basics/api101/pagination) f
 </dl>
 </details>
 
-<details><summary><code>client.terminal.<a href="src/fern/terminal/client.py">get_terminal_checkout</a>(...) -> GetTerminalCheckoutResponse</code></summary>
+<details><summary><code>client.terminal.<a href="src/fern/terminal/client.py#L138-L170">get_terminal_checkout</a>(...) -> GetTerminalCheckoutResponse</code></summary>
 <dl>
 <dd>
 
@@ -18933,7 +18933,7 @@ client.terminal.get_terminal_checkout(
 </dl>
 </details>
 
-<details><summary><code>client.terminal.<a href="src/fern/terminal/client.py">cancel_terminal_checkout</a>(...) -> CancelTerminalCheckoutResponse</code></summary>
+<details><summary><code>client.terminal.<a href="src/fern/terminal/client.py#L172-L204">cancel_terminal_checkout</a>(...) -> CancelTerminalCheckoutResponse</code></summary>
 <dl>
 <dd>
 
@@ -19007,7 +19007,7 @@ client.terminal.cancel_terminal_checkout(
 </dl>
 </details>
 
-<details><summary><code>client.terminal.<a href="src/fern/terminal/client.py">create_terminal_refund</a>(...) -> CreateTerminalRefundResponse</code></summary>
+<details><summary><code>client.terminal.<a href="src/fern/terminal/client.py#L206-L249">create_terminal_refund</a>(...) -> CreateTerminalRefundResponse</code></summary>
 <dl>
 <dd>
 
@@ -19094,7 +19094,7 @@ See [Idempotency keys](https://developer.squareup.com/docs/basics/api101/idempot
 </dl>
 </details>
 
-<details><summary><code>client.terminal.<a href="src/fern/terminal/client.py">search_terminal_refunds</a>(...) -> SearchTerminalRefundsResponse</code></summary>
+<details><summary><code>client.terminal.<a href="src/fern/terminal/client.py#L251-L294">search_terminal_refunds</a>(...) -> SearchTerminalRefundsResponse</code></summary>
 <dl>
 <dd>
 
@@ -19185,7 +19185,7 @@ Provide this cursor to retrieve the next set of results for the original query.
 </dl>
 </details>
 
-<details><summary><code>client.terminal.<a href="src/fern/terminal/client.py">get_terminal_refund</a>(...) -> GetTerminalRefundResponse</code></summary>
+<details><summary><code>client.terminal.<a href="src/fern/terminal/client.py#L296-L328">get_terminal_refund</a>(...) -> GetTerminalRefundResponse</code></summary>
 <dl>
 <dd>
 
@@ -19259,7 +19259,7 @@ client.terminal.get_terminal_refund(
 </dl>
 </details>
 
-<details><summary><code>client.terminal.<a href="src/fern/terminal/client.py">cancel_terminal_refund</a>(...) -> CancelTerminalRefundResponse</code></summary>
+<details><summary><code>client.terminal.<a href="src/fern/terminal/client.py#L330-L362">cancel_terminal_refund</a>(...) -> CancelTerminalRefundResponse</code></summary>
 <dl>
 <dd>
 

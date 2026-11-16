@@ -1,6 +1,6 @@
 # Reference
 ## Authors
-<details><summary><code>client.authors.<a href="src/fern/authors/client.py">get_author_by_id</a>(...) -> Author</code></summary>
+<details><summary><code>client.authors.<a href="src/fern/authors/client.py#L43-L82">get_author_by_id</a>(...) -> Author</code></summary>
 <dl>
 <dd>
 
@@ -82,7 +82,7 @@ client.authors.get_author_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.authors.<a href="src/fern/authors/client.py">delete_author_by_id</a>(...) -> str</code></summary>
+<details><summary><code>client.authors.<a href="src/fern/authors/client.py#L84-L113">delete_author_by_id</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -155,7 +155,7 @@ client.authors.delete_author_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.authors.<a href="src/fern/authors/client.py">update_author_by_id</a>(...) -> UpdateAuthorByIdResponse</code></summary>
+<details><summary><code>client.authors.<a href="src/fern/authors/client.py#L115-L163">update_author_by_id</a>(...) -> UpdateAuthorByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -260,7 +260,7 @@ client.authors.update_author_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.authors.<a href="src/fern/authors/client.py">get_author_image_by_id</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.authors.<a href="src/fern/authors/client.py#L165-L207">get_author_image_by_id</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -349,7 +349,7 @@ client.authors.get_author_image_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.authors.<a href="src/fern/authors/client.py">add_author_image_by_id</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.authors.<a href="src/fern/authors/client.py#L209-L257">add_author_image_by_id</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -447,7 +447,7 @@ client.authors.add_author_image_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.authors.<a href="src/fern/authors/client.py">delete_author_image_by_id</a>(...)</code></summary>
+<details><summary><code>client.authors.<a href="src/fern/authors/client.py#L259-L300">delete_author_image_by_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -536,7 +536,7 @@ client.authors.delete_author_image_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.authors.<a href="src/fern/authors/client.py">update_author_image_by_id</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.authors.<a href="src/fern/authors/client.py#L302-L358">update_author_image_by_id</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -657,7 +657,7 @@ client.authors.update_author_image_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.authors.<a href="src/fern/authors/client.py">match_author_by_id</a>(...) -> MatchAuthorByIdResponse</code></summary>
+<details><summary><code>client.authors.<a href="src/fern/authors/client.py#L360-L405">match_author_by_id</a>(...) -> MatchAuthorByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -755,7 +755,7 @@ client.authors.match_author_by_id(
 </details>
 
 ## Email
-<details><summary><code>client.email.<a href="src/fern/email/client.py">get_email_settings</a>() -> EmailSettings</code></summary>
+<details><summary><code>client.email.<a href="src/fern/email/client.py#L33-L57">get_email_settings</a>() -> EmailSettings</code></summary>
 <dl>
 <dd>
 
@@ -818,7 +818,7 @@ client.email.get_email_settings()
 </dl>
 </details>
 
-<details><summary><code>client.email.<a href="src/fern/email/client.py">update_email_settings</a>(...) -> EmailSettings</code></summary>
+<details><summary><code>client.email.<a href="src/fern/email/client.py#L59-L152">update_email_settings</a>(...) -> EmailSettings</code></summary>
 <dl>
 <dd>
 
@@ -886,7 +886,7 @@ client.email.update_email_settings(
 </dl>
 </details>
 
-<details><summary><code>client.email.<a href="src/fern/email/client.py">send_test_email</a>()</code></summary>
+<details><summary><code>client.email.<a href="src/fern/email/client.py#L154-L175">send_test_email</a>()</code></summary>
 <dl>
 <dd>
 
@@ -935,7 +935,7 @@ client.email.send_test_email()
 </dl>
 </details>
 
-<details><summary><code>client.email.<a href="src/fern/email/client.py">update_e_reader_devices</a>(...) -> UpdateEReaderDevicesResponse</code></summary>
+<details><summary><code>client.email.<a href="src/fern/email/client.py#L177-L208">update_e_reader_devices</a>(...) -> UpdateEReaderDevicesResponse</code></summary>
 <dl>
 <dd>
 
@@ -992,7 +992,7 @@ client.email.update_e_reader_devices()
 </dl>
 </details>
 
-<details><summary><code>client.email.<a href="src/fern/email/client.py">send_e_book_to_device</a>(...)</code></summary>
+<details><summary><code>client.email.<a href="src/fern/email/client.py#L210-L243">send_e_book_to_device</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1058,7 +1058,7 @@ client.email.send_e_book_to_device()
 </details>
 
 ## Libraries
-<details><summary><code>client.libraries.<a href="src/fern/libraries/client.py">get_libraries</a>() -> GetLibrariesResponse</code></summary>
+<details><summary><code>client.libraries.<a href="src/fern/libraries/client.py#L45-L69">get_libraries</a>() -> GetLibrariesResponse</code></summary>
 <dl>
 <dd>
 
@@ -1121,7 +1121,7 @@ client.libraries.get_libraries()
 </dl>
 </details>
 
-<details><summary><code>client.libraries.<a href="src/fern/libraries/client.py">create_library</a>(...) -> Library</code></summary>
+<details><summary><code>client.libraries.<a href="src/fern/libraries/client.py#L71-L132">create_library</a>(...) -> Library</code></summary>
 <dl>
 <dd>
 
@@ -1245,7 +1245,7 @@ client.libraries.create_library(
 </dl>
 </details>
 
-<details><summary><code>client.libraries.<a href="src/fern/libraries/client.py">get_library_by_id</a>(...) -> Library</code></summary>
+<details><summary><code>client.libraries.<a href="src/fern/libraries/client.py#L134-L178">get_library_by_id</a>(...) -> Library</code></summary>
 <dl>
 <dd>
 
@@ -1335,7 +1335,7 @@ client.libraries.get_library_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.libraries.<a href="src/fern/libraries/client.py">delete_library_by_id</a>(...) -> Library</code></summary>
+<details><summary><code>client.libraries.<a href="src/fern/libraries/client.py#L180-L211">delete_library_by_id</a>(...) -> Library</code></summary>
 <dl>
 <dd>
 
@@ -1408,7 +1408,7 @@ client.libraries.delete_library_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.libraries.<a href="src/fern/libraries/client.py">update_library_by_id</a>(...) -> Library</code></summary>
+<details><summary><code>client.libraries.<a href="src/fern/libraries/client.py#L213-L278">update_library_by_id</a>(...) -> Library</code></summary>
 <dl>
 <dd>
 
@@ -1537,7 +1537,7 @@ client.libraries.update_library_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.libraries.<a href="src/fern/libraries/client.py">get_library_authors</a>(...) -> GetLibraryAuthorsResponse</code></summary>
+<details><summary><code>client.libraries.<a href="src/fern/libraries/client.py#L280-L311">get_library_authors</a>(...) -> GetLibraryAuthorsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1610,7 +1610,7 @@ client.libraries.get_library_authors(
 </dl>
 </details>
 
-<details><summary><code>client.libraries.<a href="src/fern/libraries/client.py">get_library_items</a>(...) -> GetLibraryItemsResponse</code></summary>
+<details><summary><code>client.libraries.<a href="src/fern/libraries/client.py#L313-L394">get_library_items</a>(...) -> GetLibraryItemsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1751,7 +1751,7 @@ client.libraries.get_library_items(
 </dl>
 </details>
 
-<details><summary><code>client.libraries.<a href="src/fern/libraries/client.py">delete_library_issues</a>(...) -> str</code></summary>
+<details><summary><code>client.libraries.<a href="src/fern/libraries/client.py#L396-L425">delete_library_issues</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1824,7 +1824,7 @@ client.libraries.delete_library_issues(
 </dl>
 </details>
 
-<details><summary><code>client.libraries.<a href="src/fern/libraries/client.py">get_library_series</a>(...) -> GetLibrarySeriesResponse</code></summary>
+<details><summary><code>client.libraries.<a href="src/fern/libraries/client.py#L427-L502">get_library_series</a>(...) -> GetLibrarySeriesResponse</code></summary>
 <dl>
 <dd>
 
@@ -1956,7 +1956,7 @@ client.libraries.get_library_series(
 </dl>
 </details>
 
-<details><summary><code>client.libraries.<a href="src/fern/libraries/client.py">get_library_series_by_id</a>(...) -> SeriesWithProgressAndRss</code></summary>
+<details><summary><code>client.libraries.<a href="src/fern/libraries/client.py#L504-L585">get_library_series_by_id</a>(...) -> SeriesWithProgressAndRss</code></summary>
 <dl>
 <dd>
 
@@ -2098,7 +2098,7 @@ client.libraries.get_library_series_by_id(
 </details>
 
 ## Notification
-<details><summary><code>client.notification.<a href="src/fern/notification/client.py">get_notifications</a>() -> GetNotificationsResponse</code></summary>
+<details><summary><code>client.notification.<a href="src/fern/notification/client.py#L45-L69">get_notifications</a>() -> GetNotificationsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2161,7 +2161,7 @@ client.notification.get_notifications()
 </dl>
 </details>
 
-<details><summary><code>client.notification.<a href="src/fern/notification/client.py">create_notification</a>(...) -> CreateNotificationResponse</code></summary>
+<details><summary><code>client.notification.<a href="src/fern/notification/client.py#L71-L134">create_notification</a>(...) -> CreateNotificationResponse</code></summary>
 <dl>
 <dd>
 
@@ -2287,7 +2287,7 @@ client.notification.create_notification(
 </dl>
 </details>
 
-<details><summary><code>client.notification.<a href="src/fern/notification/client.py">configure_notification_settings</a>(...) -> str</code></summary>
+<details><summary><code>client.notification.<a href="src/fern/notification/client.py#L136-L178">configure_notification_settings</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2374,7 +2374,7 @@ client.notification.configure_notification_settings()
 </dl>
 </details>
 
-<details><summary><code>client.notification.<a href="src/fern/notification/client.py">get_notification_event_data</a>() -> GetNotificationEventDataResponse</code></summary>
+<details><summary><code>client.notification.<a href="src/fern/notification/client.py#L180-L206">get_notification_event_data</a>() -> GetNotificationEventDataResponse</code></summary>
 <dl>
 <dd>
 
@@ -2437,7 +2437,7 @@ client.notification.get_notification_event_data()
 </dl>
 </details>
 
-<details><summary><code>client.notification.<a href="src/fern/notification/client.py">send_default_test_notification</a>(...) -> str</code></summary>
+<details><summary><code>client.notification.<a href="src/fern/notification/client.py#L208-L237">send_default_test_notification</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2508,7 +2508,7 @@ client.notification.send_default_test_notification()
 </dl>
 </details>
 
-<details><summary><code>client.notification.<a href="src/fern/notification/client.py">delete_notification</a>(...) -> DeleteNotificationResponse</code></summary>
+<details><summary><code>client.notification.<a href="src/fern/notification/client.py#L239-L270">delete_notification</a>(...) -> DeleteNotificationResponse</code></summary>
 <dl>
 <dd>
 
@@ -2581,7 +2581,7 @@ client.notification.delete_notification(
 </dl>
 </details>
 
-<details><summary><code>client.notification.<a href="src/fern/notification/client.py">update_notification</a>(...) -> UpdateNotificationResponse</code></summary>
+<details><summary><code>client.notification.<a href="src/fern/notification/client.py#L272-L337">update_notification</a>(...) -> UpdateNotificationResponse</code></summary>
 <dl>
 <dd>
 
@@ -2710,7 +2710,7 @@ client.notification.update_notification(
 </dl>
 </details>
 
-<details><summary><code>client.notification.<a href="src/fern/notification/client.py">send_test_notification</a>(...) -> str</code></summary>
+<details><summary><code>client.notification.<a href="src/fern/notification/client.py#L339-L370">send_test_notification</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2784,7 +2784,7 @@ client.notification.send_test_notification(
 </details>
 
 ## Podcasts
-<details><summary><code>client.podcasts.<a href="src/fern/podcasts/client.py">create_podcast</a>(...) -> Podcast</code></summary>
+<details><summary><code>client.podcasts.<a href="src/fern/podcasts/client.py#L42-L151">create_podcast</a>(...) -> Podcast</code></summary>
 <dl>
 <dd>
 
@@ -2841,7 +2841,7 @@ client.podcasts.create_podcast()
 </dl>
 </details>
 
-<details><summary><code>client.podcasts.<a href="src/fern/podcasts/client.py">get_podcast_feed</a>(...) -> GetPodcastFeedResponse</code></summary>
+<details><summary><code>client.podcasts.<a href="src/fern/podcasts/client.py#L153-L180">get_podcast_feed</a>(...) -> GetPodcastFeedResponse</code></summary>
 <dl>
 <dd>
 
@@ -2898,7 +2898,7 @@ client.podcasts.get_podcast_feed()
 </dl>
 </details>
 
-<details><summary><code>client.podcasts.<a href="src/fern/podcasts/client.py">get_feeds_from_opml_text</a>(...) -> GetFeedsFromOpmlTextResponse</code></summary>
+<details><summary><code>client.podcasts.<a href="src/fern/podcasts/client.py#L182-L210">get_feeds_from_opml_text</a>(...) -> GetFeedsFromOpmlTextResponse</code></summary>
 <dl>
 <dd>
 
@@ -2969,7 +2969,7 @@ client.podcasts.get_feeds_from_opml_text()
 </dl>
 </details>
 
-<details><summary><code>client.podcasts.<a href="src/fern/podcasts/client.py">bulk_create_podcasts_from_opml_feed_urls</a>(...)</code></summary>
+<details><summary><code>client.podcasts.<a href="src/fern/podcasts/client.py#L212-L255">bulk_create_podcasts_from_opml_feed_urls</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3050,7 +3050,7 @@ client.podcasts.bulk_create_podcasts_from_opml_feed_urls()
 </dl>
 </details>
 
-<details><summary><code>client.podcasts.<a href="src/fern/podcasts/client.py">check_new_episodes</a>(...) -> CheckNewEpisodesResponse</code></summary>
+<details><summary><code>client.podcasts.<a href="src/fern/podcasts/client.py#L257-L293">check_new_episodes</a>(...) -> CheckNewEpisodesResponse</code></summary>
 <dl>
 <dd>
 
@@ -3117,7 +3117,7 @@ client.podcasts.check_new_episodes(
 </dl>
 </details>
 
-<details><summary><code>client.podcasts.<a href="src/fern/podcasts/client.py">clear_episode_download_queue</a>(...)</code></summary>
+<details><summary><code>client.podcasts.<a href="src/fern/podcasts/client.py#L295-L323">clear_episode_download_queue</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3176,7 +3176,7 @@ client.podcasts.clear_episode_download_queue(
 </dl>
 </details>
 
-<details><summary><code>client.podcasts.<a href="src/fern/podcasts/client.py">get_episode_downloads</a>(...) -> GetEpisodeDownloadsResponse</code></summary>
+<details><summary><code>client.podcasts.<a href="src/fern/podcasts/client.py#L325-L354">get_episode_downloads</a>(...) -> GetEpisodeDownloadsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3235,7 +3235,7 @@ client.podcasts.get_episode_downloads(
 </dl>
 </details>
 
-<details><summary><code>client.podcasts.<a href="src/fern/podcasts/client.py">find_episode</a>(...) -> FindEpisodeResponse</code></summary>
+<details><summary><code>client.podcasts.<a href="src/fern/podcasts/client.py#L356-L389">find_episode</a>(...) -> FindEpisodeResponse</code></summary>
 <dl>
 <dd>
 
@@ -3303,7 +3303,7 @@ client.podcasts.find_episode(
 </dl>
 </details>
 
-<details><summary><code>client.podcasts.<a href="src/fern/podcasts/client.py">download_episodes</a>(...)</code></summary>
+<details><summary><code>client.podcasts.<a href="src/fern/podcasts/client.py#L391-L422">download_episodes</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3373,7 +3373,7 @@ client.podcasts.download_episodes(
 </dl>
 </details>
 
-<details><summary><code>client.podcasts.<a href="src/fern/podcasts/client.py">quick_match_episodes</a>(...) -> QuickMatchEpisodesResponse</code></summary>
+<details><summary><code>client.podcasts.<a href="src/fern/podcasts/client.py#L424-L460">quick_match_episodes</a>(...) -> QuickMatchEpisodesResponse</code></summary>
 <dl>
 <dd>
 
@@ -3440,7 +3440,7 @@ client.podcasts.quick_match_episodes(
 </dl>
 </details>
 
-<details><summary><code>client.podcasts.<a href="src/fern/podcasts/client.py">get_episode</a>(...) -> PodcastEpisode</code></summary>
+<details><summary><code>client.podcasts.<a href="src/fern/podcasts/client.py#L462-L495">get_episode</a>(...) -> PodcastEpisode</code></summary>
 <dl>
 <dd>
 
@@ -3508,7 +3508,7 @@ client.podcasts.get_episode(
 </dl>
 </details>
 
-<details><summary><code>client.podcasts.<a href="src/fern/podcasts/client.py">remove_episode</a>(...) -> Podcast</code></summary>
+<details><summary><code>client.podcasts.<a href="src/fern/podcasts/client.py#L497-L538">remove_episode</a>(...) -> Podcast</code></summary>
 <dl>
 <dd>
 
@@ -3584,7 +3584,7 @@ client.podcasts.remove_episode(
 </dl>
 </details>
 
-<details><summary><code>client.podcasts.<a href="src/fern/podcasts/client.py">update_episode</a>(...) -> Podcast</code></summary>
+<details><summary><code>client.podcasts.<a href="src/fern/podcasts/client.py#L540-L581">update_episode</a>(...) -> Podcast</code></summary>
 <dl>
 <dd>
 
@@ -3664,7 +3664,7 @@ client.podcasts.update_episode(
 </details>
 
 ## Series
-<details><summary><code>client.series.<a href="src/fern/series/client.py">get_series</a>(...) -> SeriesWithProgressAndRss</code></summary>
+<details><summary><code>client.series.<a href="src/fern/series/client.py#L33-L64">get_series</a>(...) -> SeriesWithProgressAndRss</code></summary>
 <dl>
 <dd>
 
@@ -3737,7 +3737,7 @@ client.series.get_series(
 </dl>
 </details>
 
-<details><summary><code>client.series.<a href="src/fern/series/client.py">update_series</a>(...) -> Series</code></summary>
+<details><summary><code>client.series.<a href="src/fern/series/client.py#L66-L108">update_series</a>(...) -> Series</code></summary>
 <dl>
 <dd>
 

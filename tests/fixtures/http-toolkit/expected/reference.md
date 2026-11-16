@@ -1,6 +1,6 @@
 # Reference
 ## Base Routes
-<details><summary><code>client.base_routes.<a href="src/fern/base_routes/client.py">base_ok</a>() -> str</code></summary>
+<details><summary><code>client.base_routes.<a href="src/fern/base_routes/client.py#L26-L52">base_ok</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -63,7 +63,7 @@ client.base_routes.base_ok()
 </dl>
 </details>
 
-<details><summary><code>client.base_routes.<a href="src/fern/base_routes/client.py">base_health</a>() -> str</code></summary>
+<details><summary><code>client.base_routes.<a href="src/fern/base_routes/client.py#L54-L80">base_health</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -126,7 +126,7 @@ client.base_routes.base_health()
 </dl>
 </details>
 
-<details><summary><code>client.base_routes.<a href="src/fern/base_routes/client.py">base_info</a>() -> SystemInfo</code></summary>
+<details><summary><code>client.base_routes.<a href="src/fern/base_routes/client.py#L82-L108">base_info</a>() -> SystemInfo</code></summary>
 <dl>
 <dd>
 
@@ -190,7 +190,7 @@ client.base_routes.base_info()
 </details>
 
 ## Wildcard Inspection Routes
-<details><summary><code>client.wildcard_inspection_routes.<a href="src/fern/wildcard_inspection_routes/client.py">wildcard_inspect_anything</a>(...) -> RequestInfo</code></summary>
+<details><summary><code>client.wildcard_inspection_routes.<a href="src/fern/wildcard_inspection_routes/client.py#L26-L58">wildcard_inspect_anything</a>(...) -> RequestInfo</code></summary>
 <dl>
 <dd>
 
@@ -263,7 +263,7 @@ client.wildcard_inspection_routes.wildcard_inspect_anything(
 </dl>
 </details>
 
-<details><summary><code>client.wildcard_inspection_routes.<a href="src/fern/wildcard_inspection_routes/client.py">wildcard_inspect_anything_post</a>(...) -> RequestInfo</code></summary>
+<details><summary><code>client.wildcard_inspection_routes.<a href="src/fern/wildcard_inspection_routes/client.py#L60-L92">wildcard_inspect_anything_post</a>(...) -> RequestInfo</code></summary>
 <dl>
 <dd>
 
@@ -336,7 +336,7 @@ client.wildcard_inspection_routes.wildcard_inspect_anything_post(
 </dl>
 </details>
 
-<details><summary><code>client.wildcard_inspection_routes.<a href="src/fern/wildcard_inspection_routes/client.py">wildcard_inspect_anything_put</a>(...) -> RequestInfo</code></summary>
+<details><summary><code>client.wildcard_inspection_routes.<a href="src/fern/wildcard_inspection_routes/client.py#L94-L126">wildcard_inspect_anything_put</a>(...) -> RequestInfo</code></summary>
 <dl>
 <dd>
 
@@ -409,7 +409,7 @@ client.wildcard_inspection_routes.wildcard_inspect_anything_put(
 </dl>
 </details>
 
-<details><summary><code>client.wildcard_inspection_routes.<a href="src/fern/wildcard_inspection_routes/client.py">wildcard_inspect_anything_delete</a>(...) -> RequestInfo</code></summary>
+<details><summary><code>client.wildcard_inspection_routes.<a href="src/fern/wildcard_inspection_routes/client.py#L128-L160">wildcard_inspect_anything_delete</a>(...) -> RequestInfo</code></summary>
 <dl>
 <dd>
 
@@ -482,7 +482,7 @@ client.wildcard_inspection_routes.wildcard_inspect_anything_delete(
 </dl>
 </details>
 
-<details><summary><code>client.wildcard_inspection_routes.<a href="src/fern/wildcard_inspection_routes/client.py">wildcard_inspect_anything_patch</a>(...) -> RequestInfo</code></summary>
+<details><summary><code>client.wildcard_inspection_routes.<a href="src/fern/wildcard_inspection_routes/client.py#L162-L194">wildcard_inspect_anything_patch</a>(...) -> RequestInfo</code></summary>
 <dl>
 <dd>
 
@@ -556,7 +556,7 @@ client.wildcard_inspection_routes.wildcard_inspect_anything_patch(
 </details>
 
 ## Authenticated Routes
-<details><summary><code>client.authenticated_routes.<a href="src/fern/authenticated_routes/client.py">auth_basic_auth</a>() -> str</code></summary>
+<details><summary><code>client.authenticated_routes.<a href="src/fern/authenticated_routes/client.py#L25-L51">auth_basic_auth</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -619,7 +619,7 @@ client.authenticated_routes.auth_basic_auth()
 </dl>
 </details>
 
-<details><summary><code>client.authenticated_routes.<a href="src/fern/authenticated_routes/client.py">auth_basic_auth_post</a>() -> str</code></summary>
+<details><summary><code>client.authenticated_routes.<a href="src/fern/authenticated_routes/client.py#L53-L79">auth_basic_auth_post</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -682,7 +682,7 @@ client.authenticated_routes.auth_basic_auth_post()
 </dl>
 </details>
 
-<details><summary><code>client.authenticated_routes.<a href="src/fern/authenticated_routes/client.py">auth_jwt_auth</a>() -> str</code></summary>
+<details><summary><code>client.authenticated_routes.<a href="src/fern/authenticated_routes/client.py#L81-L107">auth_jwt_auth</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -745,7 +745,7 @@ client.authenticated_routes.auth_jwt_auth()
 </dl>
 </details>
 
-<details><summary><code>client.authenticated_routes.<a href="src/fern/authenticated_routes/client.py">auth_jwt_auth_post</a>() -> str</code></summary>
+<details><summary><code>client.authenticated_routes.<a href="src/fern/authenticated_routes/client.py#L109-L135">auth_jwt_auth_post</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -809,7 +809,7 @@ client.authenticated_routes.auth_jwt_auth_post()
 </details>
 
 ## Utility Routes
-<details><summary><code>client.utility_routes.<a href="src/fern/utility_routes/client.py">utils_delay_random</a>() -> str</code></summary>
+<details><summary><code>client.utility_routes.<a href="src/fern/utility_routes/client.py#L25-L51">utils_delay_random</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -872,7 +872,7 @@ client.utility_routes.utils_delay_random()
 </dl>
 </details>
 
-<details><summary><code>client.utility_routes.<a href="src/fern/utility_routes/client.py">utils_delay</a>(...) -> str</code></summary>
+<details><summary><code>client.utility_routes.<a href="src/fern/utility_routes/client.py#L53-L83">utils_delay</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -945,7 +945,7 @@ client.utility_routes.utils_delay(
 </dl>
 </details>
 
-<details><summary><code>client.utility_routes.<a href="src/fern/utility_routes/client.py">utils_number</a>() -> str</code></summary>
+<details><summary><code>client.utility_routes.<a href="src/fern/utility_routes/client.py#L85-L111">utils_number</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -1008,7 +1008,7 @@ client.utility_routes.utils_number()
 </dl>
 </details>
 
-<details><summary><code>client.utility_routes.<a href="src/fern/utility_routes/client.py">utils_number_max</a>(...) -> str</code></summary>
+<details><summary><code>client.utility_routes.<a href="src/fern/utility_routes/client.py#L113-L143">utils_number_max</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1081,7 +1081,7 @@ client.utility_routes.utils_number_max(
 </dl>
 </details>
 
-<details><summary><code>client.utility_routes.<a href="src/fern/utility_routes/client.py">utils_status</a>(...) -> str</code></summary>
+<details><summary><code>client.utility_routes.<a href="src/fern/utility_routes/client.py#L145-L175">utils_status</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1154,7 +1154,7 @@ client.utility_routes.utils_status(
 </dl>
 </details>
 
-<details><summary><code>client.utility_routes.<a href="src/fern/utility_routes/client.py">utils_uuid</a>() -> str</code></summary>
+<details><summary><code>client.utility_routes.<a href="src/fern/utility_routes/client.py#L177-L203">utils_uuid</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -1217,7 +1217,7 @@ client.utility_routes.utils_uuid()
 </dl>
 </details>
 
-<details><summary><code>client.utility_routes.<a href="src/fern/utility_routes/client.py">utils_uuid_from</a>(...) -> str</code></summary>
+<details><summary><code>client.utility_routes.<a href="src/fern/utility_routes/client.py#L205-L235">utils_uuid_from</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1290,7 +1290,7 @@ client.utility_routes.utils_uuid_from(
 </dl>
 </details>
 
-<details><summary><code>client.utility_routes.<a href="src/fern/utility_routes/client.py">utils_word</a>() -> str</code></summary>
+<details><summary><code>client.utility_routes.<a href="src/fern/utility_routes/client.py#L237-L263">utils_word</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -1353,7 +1353,7 @@ client.utility_routes.utils_word()
 </dl>
 </details>
 
-<details><summary><code>client.utility_routes.<a href="src/fern/utility_routes/client.py">utils_words</a>(...) -> str</code></summary>
+<details><summary><code>client.utility_routes.<a href="src/fern/utility_routes/client.py#L265-L295">utils_words</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1427,7 +1427,7 @@ client.utility_routes.utils_words(
 </details>
 
 ## Inspect Routes
-<details><summary><code>client.inspect_routes.<a href="src/fern/inspect_routes/client.py">inspect_inspect</a>() -> RequestInfo</code></summary>
+<details><summary><code>client.inspect_routes.<a href="src/fern/inspect_routes/client.py#L26-L52">inspect_inspect</a>() -> RequestInfo</code></summary>
 <dl>
 <dd>
 
@@ -1490,7 +1490,7 @@ client.inspect_routes.inspect_inspect()
 </dl>
 </details>
 
-<details><summary><code>client.inspect_routes.<a href="src/fern/inspect_routes/client.py">inspect_inspect_post</a>() -> RequestInfo</code></summary>
+<details><summary><code>client.inspect_routes.<a href="src/fern/inspect_routes/client.py#L54-L80">inspect_inspect_post</a>() -> RequestInfo</code></summary>
 <dl>
 <dd>
 
@@ -1553,7 +1553,7 @@ client.inspect_routes.inspect_inspect_post()
 </dl>
 </details>
 
-<details><summary><code>client.inspect_routes.<a href="src/fern/inspect_routes/client.py">inspect_inspect_put</a>() -> RequestInfo</code></summary>
+<details><summary><code>client.inspect_routes.<a href="src/fern/inspect_routes/client.py#L82-L108">inspect_inspect_put</a>() -> RequestInfo</code></summary>
 <dl>
 <dd>
 
@@ -1616,7 +1616,7 @@ client.inspect_routes.inspect_inspect_put()
 </dl>
 </details>
 
-<details><summary><code>client.inspect_routes.<a href="src/fern/inspect_routes/client.py">inspect_inspect_delete</a>() -> RequestInfo</code></summary>
+<details><summary><code>client.inspect_routes.<a href="src/fern/inspect_routes/client.py#L110-L136">inspect_inspect_delete</a>() -> RequestInfo</code></summary>
 <dl>
 <dd>
 
@@ -1679,7 +1679,7 @@ client.inspect_routes.inspect_inspect_delete()
 </dl>
 </details>
 
-<details><summary><code>client.inspect_routes.<a href="src/fern/inspect_routes/client.py">inspect_inspect_patch</a>() -> RequestInfo</code></summary>
+<details><summary><code>client.inspect_routes.<a href="src/fern/inspect_routes/client.py#L138-L164">inspect_inspect_patch</a>() -> RequestInfo</code></summary>
 <dl>
 <dd>
 

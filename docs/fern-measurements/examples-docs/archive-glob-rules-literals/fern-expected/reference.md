@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">list_rules</a>(...) -> typing.List[RotationRule]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L101-L137">list_rules</a>(...) -> typing.List[RotationRule]</code></summary>
 <dl>
 <dd>
 
@@ -76,7 +76,7 @@ client.list_rules()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">add_rule</a>(...) -> RotationRule</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L139-L180">add_rule</a>(...) -> RotationRule</code></summary>
 <dl>
 <dd>
 
@@ -133,7 +133,7 @@ client.add_rule(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">drop_rule</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L182-L208">drop_rule</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -190,7 +190,7 @@ client.drop_rule(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">upload_archive</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L210-L229">upload_archive</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -238,7 +238,7 @@ client.upload_archive(...)
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">restore_archive</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L231-L250">restore_archive</a>(...)</code></summary>
 <dl>
 <dd>
 

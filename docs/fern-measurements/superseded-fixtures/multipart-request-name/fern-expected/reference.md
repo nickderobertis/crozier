@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">upload_emblem</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L100-L129">upload_emblem</a>(...)</code></summary>
 <dl>
 <dd>
 

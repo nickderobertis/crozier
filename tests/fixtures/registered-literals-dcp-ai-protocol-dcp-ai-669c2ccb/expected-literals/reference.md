@@ -1,6 +1,6 @@
 # Reference
 ## Health
-<details><summary><code>client.health.<a href="src/fern/health/client.py">check</a>() -> HealthCheckResponse</code></summary>
+<details><summary><code>client.health.<a href="src/fern/health/client.py#L26-L49">check</a>() -> HealthCheckResponse</code></summary>
 <dl>
 <dd>
 
@@ -51,7 +51,7 @@ client.health.check()
 </details>
 
 ## Discovery
-<details><summary><code>client.discovery.<a href="src/fern/discovery/client.py">get_capabilities</a>() -> DcpCapabilities</code></summary>
+<details><summary><code>client.discovery.<a href="src/fern/discovery/client.py#L26-L51">get_capabilities</a>() -> DcpCapabilities</code></summary>
 <dl>
 <dd>
 
@@ -116,7 +116,7 @@ client.discovery.get_capabilities()
 </details>
 
 ## Advisory
-<details><summary><code>client.advisory.<a href="src/fern/advisory/client.py">get_algorithm_advisories</a>() -> GetAlgorithmAdvisoriesResponse</code></summary>
+<details><summary><code>client.advisory.<a href="src/fern/advisory/client.py#L33-L58">get_algorithm_advisories</a>() -> GetAlgorithmAdvisoriesResponse</code></summary>
 <dl>
 <dd>
 
@@ -166,7 +166,7 @@ client.advisory.get_algorithm_advisories()
 </dl>
 </details>
 
-<details><summary><code>client.advisory.<a href="src/fern/advisory/client.py">publish_advisory</a>(...) -> PublishAdvisoryResponse</code></summary>
+<details><summary><code>client.advisory.<a href="src/fern/advisory/client.py#L60-L96">publish_advisory</a>(...) -> PublishAdvisoryResponse</code></summary>
 <dl>
 <dd>
 
@@ -247,7 +247,7 @@ client.advisory.publish_advisory(
 </dl>
 </details>
 
-<details><summary><code>client.advisory.<a href="src/fern/advisory/client.py">check_advisories</a>() -> CheckAdvisoriesResponse</code></summary>
+<details><summary><code>client.advisory.<a href="src/fern/advisory/client.py#L98-L121">check_advisories</a>() -> CheckAdvisoriesResponse</code></summary>
 <dl>
 <dd>
 
@@ -297,7 +297,7 @@ client.advisory.check_advisories()
 </dl>
 </details>
 
-<details><summary><code>client.advisory.<a href="src/fern/advisory/client.py">auto_apply_advisories</a>() -> AutoApplyAdvisoriesResponse</code></summary>
+<details><summary><code>client.advisory.<a href="src/fern/advisory/client.py#L123-L152">auto_apply_advisories</a>() -> AutoApplyAdvisoriesResponse</code></summary>
 <dl>
 <dd>
 
@@ -364,7 +364,7 @@ client.advisory.auto_apply_advisories()
 </details>
 
 ## Governance
-<details><summary><code>client.governance.<a href="src/fern/governance/client.py">get_governance_keys</a>() -> GovernanceKeySet</code></summary>
+<details><summary><code>client.governance.<a href="src/fern/governance/client.py#L30-L53">get_governance_keys</a>() -> GovernanceKeySet</code></summary>
 <dl>
 <dd>
 
@@ -414,7 +414,7 @@ client.governance.get_governance_keys()
 </dl>
 </details>
 
-<details><summary><code>client.governance.<a href="src/fern/governance/client.py">register_governance</a>(...) -> RegisterGovernanceResponse</code></summary>
+<details><summary><code>client.governance.<a href="src/fern/governance/client.py#L55-L90">register_governance</a>(...) -> RegisterGovernanceResponse</code></summary>
 <dl>
 <dd>
 
@@ -481,7 +481,7 @@ client.governance.register_governance(
 </details>
 
 ## Verification
-<details><summary><code>client.verification.<a href="src/fern/verification/client.py">verify_bundle</a>(...) -> VerificationResult</code></summary>
+<details><summary><code>client.verification.<a href="src/fern/verification/client.py#L32-L133">verify_bundle</a>(...) -> VerificationResult</code></summary>
 <dl>
 <dd>
 
@@ -626,7 +626,7 @@ client.verification.verify_bundle(
 </dl>
 </details>
 
-<details><summary><code>client.verification.<a href="src/fern/verification/client.py">verify_bundle_v2</a>(...) -> VerifyBundleV2Response</code></summary>
+<details><summary><code>client.verification.<a href="src/fern/verification/client.py#L135-L168">verify_bundle_v2</a>(...) -> VerifyBundleV2Response</code></summary>
 <dl>
 <dd>
 
@@ -700,7 +700,7 @@ client.verification.verify_bundle_v2()
 </details>
 
 ## Anchoring
-<details><summary><code>client.anchoring.<a href="src/fern/anchoring/client.py">anchor_hash</a>(...) -> AnchorReceipt</code></summary>
+<details><summary><code>client.anchoring.<a href="src/fern/anchoring/client.py#L30-L69">anchor_hash</a>(...) -> AnchorReceipt</code></summary>
 <dl>
 <dd>
 
@@ -785,7 +785,7 @@ client.anchoring.anchor_hash(
 </details>
 
 ## Revocation
-<details><summary><code>client.revocation.<a href="src/fern/revocation/client.py">list_revocations</a>() -> ListRevocationsResponse</code></summary>
+<details><summary><code>client.revocation.<a href="src/fern/revocation/client.py#L32-L57">list_revocations</a>() -> ListRevocationsResponse</code></summary>
 <dl>
 <dd>
 
@@ -849,7 +849,7 @@ client.revocation.list_revocations()
 </dl>
 </details>
 
-<details><summary><code>client.revocation.<a href="src/fern/revocation/client.py">publish_revocation</a>(...) -> PublishRevocationResponse</code></summary>
+<details><summary><code>client.revocation.<a href="src/fern/revocation/client.py#L59-L125">publish_revocation</a>(...) -> PublishRevocationResponse</code></summary>
 <dl>
 <dd>
 
@@ -929,7 +929,7 @@ client.revocation.publish_revocation(
 </dl>
 </details>
 
-<details><summary><code>client.revocation.<a href="src/fern/revocation/client.py">check_revocation</a>(...) -> CheckRevocationResponse</code></summary>
+<details><summary><code>client.revocation.<a href="src/fern/revocation/client.py#L127-L158">check_revocation</a>(...) -> CheckRevocationResponse</code></summary>
 <dl>
 <dd>
 
@@ -1004,7 +1004,7 @@ client.revocation.check_revocation(
 </details>
 
 ## Transparency
-<details><summary><code>client.transparency.<a href="src/fern/transparency/client.py">add_to_log</a>(...) -> AddToLogResponse</code></summary>
+<details><summary><code>client.transparency.<a href="src/fern/transparency/client.py#L36-L67">add_to_log</a>(...) -> AddToLogResponse</code></summary>
 <dl>
 <dd>
 
@@ -1078,7 +1078,7 @@ client.transparency.add_to_log(
 </dl>
 </details>
 
-<details><summary><code>client.transparency.<a href="src/fern/transparency/client.py">get_log_root</a>() -> GetLogRootResponse</code></summary>
+<details><summary><code>client.transparency.<a href="src/fern/transparency/client.py#L69-L94">get_log_root</a>() -> GetLogRootResponse</code></summary>
 <dl>
 <dd>
 
@@ -1142,7 +1142,7 @@ client.transparency.get_log_root()
 </dl>
 </details>
 
-<details><summary><code>client.transparency.<a href="src/fern/transparency/client.py">get_log_proof</a>(...) -> InclusionProof</code></summary>
+<details><summary><code>client.transparency.<a href="src/fern/transparency/client.py#L96-L125">get_log_proof</a>(...) -> InclusionProof</code></summary>
 <dl>
 <dd>
 
@@ -1216,7 +1216,7 @@ client.transparency.get_log_proof(
 </dl>
 </details>
 
-<details><summary><code>client.transparency.<a href="src/fern/transparency/client.py">get_signed_tree_head</a>() -> SignedTreeHead</code></summary>
+<details><summary><code>client.transparency.<a href="src/fern/transparency/client.py#L127-L153">get_signed_tree_head</a>() -> SignedTreeHead</code></summary>
 <dl>
 <dd>
 
@@ -1281,7 +1281,7 @@ client.transparency.get_signed_tree_head()
 </dl>
 </details>
 
-<details><summary><code>client.transparency.<a href="src/fern/transparency/client.py">get_gossip_peers</a>() -> GetGossipPeersResponse</code></summary>
+<details><summary><code>client.transparency.<a href="src/fern/transparency/client.py#L155-L180">get_gossip_peers</a>() -> GetGossipPeersResponse</code></summary>
 <dl>
 <dd>
 
@@ -1345,7 +1345,7 @@ client.transparency.get_gossip_peers()
 </dl>
 </details>
 
-<details><summary><code>client.transparency.<a href="src/fern/transparency/client.py">add_gossip_peer</a>(...) -> AddGossipPeerResponse</code></summary>
+<details><summary><code>client.transparency.<a href="src/fern/transparency/client.py#L182-L216">add_gossip_peer</a>(...) -> AddGossipPeerResponse</code></summary>
 <dl>
 <dd>
 
@@ -1414,7 +1414,7 @@ client.transparency.add_gossip_peer(
 </dl>
 </details>
 
-<details><summary><code>client.transparency.<a href="src/fern/transparency/client.py">gossip_exchange</a>(...) -> GossipExchangeResponse</code></summary>
+<details><summary><code>client.transparency.<a href="src/fern/transparency/client.py#L218-L248">gossip_exchange</a>(...) -> GossipExchangeResponse</code></summary>
 <dl>
 <dd>
 
@@ -1487,7 +1487,7 @@ client.transparency.gossip_exchange()
 </dl>
 </details>
 
-<details><summary><code>client.transparency.<a href="src/fern/transparency/client.py">get_gossip_alerts</a>() -> GetGossipAlertsResponse</code></summary>
+<details><summary><code>client.transparency.<a href="src/fern/transparency/client.py#L250-L273">get_gossip_alerts</a>() -> GetGossipAlertsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1538,7 +1538,7 @@ client.transparency.get_gossip_alerts()
 </details>
 
 ## Passport
-<details><summary><code>client.passport.<a href="src/fern/passport/client.py">register_passport</a>(...) -> RegisterPassportResponse</code></summary>
+<details><summary><code>client.passport.<a href="src/fern/passport/client.py#L30-L92">register_passport</a>(...) -> RegisterPassportResponse</code></summary>
 <dl>
 <dd>
 
@@ -1631,7 +1631,7 @@ client.passport.register_passport(
 </details>
 
 ## Intent
-<details><summary><code>client.intent.<a href="src/fern/intent/client.py">declare_intent</a>(...) -> DeclareIntentResponse</code></summary>
+<details><summary><code>client.intent.<a href="src/fern/intent/client.py#L30-L84">declare_intent</a>(...) -> DeclareIntentResponse</code></summary>
 <dl>
 <dd>
 
@@ -1724,7 +1724,7 @@ client.intent.declare_intent(
 </details>
 
 ## Audit
-<details><summary><code>client.audit.<a href="src/fern/audit/client.py">append_audit</a>(...) -> AppendAuditResponse</code></summary>
+<details><summary><code>client.audit.<a href="src/fern/audit/client.py#L31-L70">append_audit</a>(...) -> AppendAuditResponse</code></summary>
 <dl>
 <dd>
 
@@ -1808,7 +1808,7 @@ client.audit.append_audit(
 </dl>
 </details>
 
-<details><summary><code>client.audit.<a href="src/fern/audit/client.py">compact_audit</a>(...) -> CompactAuditResponse</code></summary>
+<details><summary><code>client.audit.<a href="src/fern/audit/client.py#L72-L111">compact_audit</a>(...) -> CompactAuditResponse</code></summary>
 <dl>
 <dd>
 
@@ -1892,7 +1892,7 @@ client.audit.compact_audit(
 </details>
 
 ## Keys
-<details><summary><code>client.keys.<a href="src/fern/keys/client.py">lookup_key</a>(...) -> LookupKeyResponse</code></summary>
+<details><summary><code>client.keys.<a href="src/fern/keys/client.py#L31-L58">lookup_key</a>(...) -> LookupKeyResponse</code></summary>
 <dl>
 <dd>
 
@@ -1952,7 +1952,7 @@ client.keys.lookup_key(
 </dl>
 </details>
 
-<details><summary><code>client.keys.<a href="src/fern/keys/client.py">rotate_key</a>(...) -> RotateKeyResponse</code></summary>
+<details><summary><code>client.keys.<a href="src/fern/keys/client.py#L60-L109">rotate_key</a>(...) -> RotateKeyResponse</code></summary>
 <dl>
 <dd>
 
@@ -2041,7 +2041,7 @@ client.keys.rotate_key(
 </details>
 
 ## Emergency
-<details><summary><code>client.emergency.<a href="src/fern/emergency/client.py">revoke</a>(...) -> EmergencyRevokeResponse</code></summary>
+<details><summary><code>client.emergency.<a href="src/fern/emergency/client.py#L29-L73">revoke</a>(...) -> EmergencyRevokeResponse</code></summary>
 <dl>
 <dd>
 
@@ -2134,7 +2134,7 @@ client.emergency.revoke(
 </details>
 
 ## MultiParty
-<details><summary><code>client.multi_party.<a href="src/fern/multi_party/client.py">multi_party_authorize</a>(...) -> MultiPartyAuthorizeResponse</code></summary>
+<details><summary><code>client.multi_party.<a href="src/fern/multi_party/client.py#L30-L76">multi_party_authorize</a>(...) -> MultiPartyAuthorizeResponse</code></summary>
 <dl>
 <dd>
 
@@ -2217,7 +2217,7 @@ client.multi_party.multi_party_authorize(
 </details>
 
 ## Policy
-<details><summary><code>client.policy.<a href="src/fern/policy/client.py">get_policy</a>() -> GetPolicyResponse</code></summary>
+<details><summary><code>client.policy.<a href="src/fern/policy/client.py#L31-L54">get_policy</a>() -> GetPolicyResponse</code></summary>
 <dl>
 <dd>
 
@@ -2267,7 +2267,7 @@ client.policy.get_policy()
 </dl>
 </details>
 
-<details><summary><code>client.policy.<a href="src/fern/policy/client.py">switch_policy_mode</a>(...) -> SwitchPolicyModeResponse</code></summary>
+<details><summary><code>client.policy.<a href="src/fern/policy/client.py#L56-L85">switch_policy_mode</a>(...) -> SwitchPolicyModeResponse</code></summary>
 <dl>
 <dd>
 

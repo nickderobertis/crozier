@@ -1,0 +1,75 @@
+fern-refusals: Fern CLI 5.200.0, fernapi/fern-python-sdk 5.41.25
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk __package__.yml -> types -> CourseOffering
+                  __package__.yml
+                  [error] Object has multiple properties named "offeringType":
+                    - CourseOffering -> offeringType
+                    - CourseOffering -> (extends) OfferingProperties -> offeringType
+                  [error] Object has multiple properties named "abbreviation":
+                    - CourseOffering -> abbreviation
+                    - CourseOffering -> (extends) OfferingProperties -> abbreviation
+                  [error] Object has multiple properties named "modeOfDelivery":
+                    - CourseOffering -> modeOfDelivery
+                    - CourseOffering -> (extends) OfferingProperties -> modeOfDelivery
+                  [error] Object has multiple properties named "maxNumberStudents":
+                    - CourseOffering -> maxNumberStudents
+                    - CourseOffering -> (extends) OfferingProperties -> maxNumberStudents
+                  [error] Object has multiple properties named "enrolledNumberStudents":
+                    - CourseOffering -> enrolledNumberStudents
+                    - CourseOffering -> (extends) OfferingProperties -> enrolledNumberStudents
+                  [error] Object has multiple properties named "pendingNumberStudents":
+                    - CourseOffering -> pendingNumberStudents
+                    - CourseOffering -> (extends) OfferingProperties -> pendingNumberStudents
+                  [error] Object has multiple properties named "resultValueType":
+                    - CourseOffering -> resultValueType
+                    - CourseOffering -> (extends) OfferingProperties -> resultValueType
+                  [error] Object has multiple properties named "link":
+                    - CourseOffering -> link
+                    - CourseOffering -> (extends) OfferingProperties -> link
+                  [error] Object has multiple properties named "otherCodes":
+                    - CourseOffering -> otherCodes
+                    - CourseOffering -> (extends) OfferingProperties -> otherCodes
+                  [error] Object has multiple properties named "ext":
+                    - CourseOffering -> ext
+                    - CourseOffering -> (extends) OfferingProperties -> ext
+                  
+[api]: python-sdk __package__.yml -> types -> ProgramOffering
+                  __package__.yml
+                  [error] Object has multiple properties named "offeringType":
+                    - ProgramOffering -> offeringType
+                    - ProgramOffering -> (extends) OfferingProperties -> offeringType
+                  [error] Object has multiple properties named "abbreviation":
+                    - ProgramOffering -> abbreviation
+                    - ProgramOffering -> (extends) OfferingProperties -> abbreviation
+                  [error] Object has multiple properties named "modeOfDelivery":
+                    - ProgramOffering -> modeOfDelivery
+                    - ProgramOffering -> (extends) OfferingProperties -> modeOfDelivery
+                  [error] Object has multiple properties named "maxNumberStudents":
+                    - ProgramOffering -> maxNumberStudents
+                    - ProgramOffering -> (extends) OfferingProperties -> maxNumberStudents
+                  [error] Object has multiple properties named "enrolledNumberStudents":
+                    - ProgramOffering -> enrolledNumberStudents
+                    - ProgramOffering -> (extends) OfferingProperties -> enrolledNumberStudents
+                  [error] Object has multiple properties named "pendingNumberStudents":
+                    - ProgramOffering -> pendingNumberStudents
+                    - ProgramOffering -> (extends) OfferingProperties -> pendingNumberStudents
+                  [error] Object has multiple properties named "resultValueType":
+                    - ProgramOffering -> resultValueType
+                    - ProgramOffering -> (extends) OfferingProperties -> resultValueType
+                  [error] Object has multiple properties named "link":
+                    - ProgramOffering -> link
+                    - ProgramOffering -> (extends) OfferingProperties -> link
+                  [error] Object has multiple properties named "otherCodes":
+                    - ProgramOffering -> otherCodes
+                    - ProgramOffering -> (extends) OfferingProperties -> otherCodes
+                  [error] Object has multiple properties named "ext":
+                    - ProgramOffering -> ext
+                    - ProgramOffering -> (extends) OfferingProperties -> ext
+                  
+[api]: python-sdk Found 20 errors and 0 warnings in <n> seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

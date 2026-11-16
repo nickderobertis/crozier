@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_site_status</a>(...) -> GetSiteStatusResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L118-L148">get_site_status</a>(...) -> GetSiteStatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -59,7 +59,7 @@ client.get_site_status(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">put_secret</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L150-L180">put_secret</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -131,7 +131,7 @@ client.put_secret(...)
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_secret</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L182-L227">delete_secret</a>(...)</code></summary>
 <dl>
 <dd>
 

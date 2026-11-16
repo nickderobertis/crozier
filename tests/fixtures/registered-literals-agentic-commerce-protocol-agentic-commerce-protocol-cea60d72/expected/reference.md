@@ -1,6 +1,6 @@
 # Reference
 ## CheckoutSessions
-<details><summary><code>client.checkout_sessions.<a href="src/fern/checkout_sessions/client.py">create_checkout_session</a>(...) -> CheckoutSession</code></summary>
+<details><summary><code>client.checkout_sessions.<a href="src/fern/checkout_sessions/client.py#L38-L101">create_checkout_session</a>(...) -> CheckoutSession</code></summary>
 <dl>
 <dd>
 
@@ -107,7 +107,7 @@ client.checkout_sessions.create_checkout_session(
 </dl>
 </details>
 
-<details><summary><code>client.checkout_sessions.<a href="src/fern/checkout_sessions/client.py">get_checkout_session</a>(...) -> CheckoutSession</code></summary>
+<details><summary><code>client.checkout_sessions.<a href="src/fern/checkout_sessions/client.py#L103-L139">get_checkout_session</a>(...) -> CheckoutSession</code></summary>
 <dl>
 <dd>
 
@@ -181,7 +181,7 @@ client.checkout_sessions.get_checkout_session(
 </dl>
 </details>
 
-<details><summary><code>client.checkout_sessions.<a href="src/fern/checkout_sessions/client.py">update_checkout_session</a>(...) -> CheckoutSession</code></summary>
+<details><summary><code>client.checkout_sessions.<a href="src/fern/checkout_sessions/client.py#L141-L208">update_checkout_session</a>(...) -> CheckoutSession</code></summary>
 <dl>
 <dd>
 
@@ -292,7 +292,7 @@ client.checkout_sessions.update_checkout_session(
 </dl>
 </details>
 
-<details><summary><code>client.checkout_sessions.<a href="src/fern/checkout_sessions/client.py">complete_checkout_session</a>(...) -> CheckoutSessionWithOrder</code></summary>
+<details><summary><code>client.checkout_sessions.<a href="src/fern/checkout_sessions/client.py#L210-L280">complete_checkout_session</a>(...) -> CheckoutSessionWithOrder</code></summary>
 <dl>
 <dd>
 
@@ -410,7 +410,7 @@ client.checkout_sessions.complete_checkout_session(
 </dl>
 </details>
 
-<details><summary><code>client.checkout_sessions.<a href="src/fern/checkout_sessions/client.py">cancel_checkout_session</a>(...) -> CheckoutSession</code></summary>
+<details><summary><code>client.checkout_sessions.<a href="src/fern/checkout_sessions/client.py#L282-L327">cancel_checkout_session</a>(...) -> CheckoutSession</code></summary>
 <dl>
 <dd>
 

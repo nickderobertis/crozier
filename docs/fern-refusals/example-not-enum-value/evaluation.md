@@ -1,5 +1,16 @@
 # example-not-enum-value: refuse
 
+## At Fern CLI 5.200.0 / fern-python-sdk 5.41.25
+
+Decision: **refuse**, unchanged. The Fern goldens run 43423270787
+re-took the [probe record](fern-refusal.txt) at this pair, and Fern still refuses
+the probe as recorded. Every shape, confirmation and reduction the registry
+carries for the class was retaken at this pair (`fern-refusals.py shapes`,
+`confirm` and `reduce`, serially), each with its role's verdict, and
+`fern-refusals.py check` holds them there. crozier's behaviour is unchanged: the
+e2e gate still runs its probe in both modes. The sections below are history at
+the pairs they name.
+
 ## Widened for the document-acceptance area (2026-11-01, Fern CLI 5.163.1 / fern-python-sdk 5.41.3)
 
 Two components whose names differ only in their first letter's case are one type to the certified pair, the later declaration. Where an operation answers the earlier of two such enums and the later drops the earlier's first value (Fern's example of it), the certified pair refuses `"WALK" is not a valid example for this enum`; crozier now refuses that document with this class in both modes, through the same component-collision check that already refused the object case as `example-unexpected-property` ([`crozier-refuses-type-name-collision`](../../fern-measurements/handed-off/document-acceptance/crozier-refuses-type-name-collision/README.md), `first-letter-referenced-enum-control`). An earlier enum whose first value the later keeps generates ([`never-compared-type-name-collision`](../../fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/README.md)). Decision otherwise unchanged: **refuse**, in both modes.
@@ -72,3 +83,8 @@ measured with the finished detector, were retrieved at their digests and
 refused in both modes: exit 1, no files, one class/element stderr line and the
 strict cause when applicable. Four are refused by this class; the rest by
 another registered class or example-value rule that fires first.
+
+**Historical.** This record was measured at Fern CLI 5.163.1 /
+`fernapi/fern-python-sdk` 5.41.3, the pair certified when it was taken; where it
+says "the certified pair" it means that pair. It has not been re-measured at
+the current certified pair, Fern CLI 5.200.0 / fern-python-sdk 5.41.25.

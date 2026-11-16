@@ -1,6 +1,6 @@
 # Reference
 ## Authentication
-<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py">createoauthtoken</a>(...) -> TokenResponse</code></summary>
+<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py#L29-L70">createoauthtoken</a>(...) -> TokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -77,7 +77,7 @@ client.authentication.createoauthtoken(
 </dl>
 </details>
 
-<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py">validateoauthtoken</a>()</code></summary>
+<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py#L72-L93">validateoauthtoken</a>()</code></summary>
 <dl>
 <dd>
 
@@ -126,7 +126,7 @@ client.authentication.validateoauthtoken()
 </dl>
 </details>
 
-<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py">revokeoauthtoken</a>(...)</code></summary>
+<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py#L95-L120">revokeoauthtoken</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -186,7 +186,7 @@ client.authentication.revokeoauthtoken(
 </details>
 
 ## Orders
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">createorder</a>(...) -> Order</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py#L33-L106">createorder</a>(...) -> Order</code></summary>
 <dl>
 <dd>
 
@@ -307,7 +307,7 @@ client.orders.createorder(
 </dl>
 </details>
 
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">getorder</a>(...) -> Order</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py#L108-L135">getorder</a>(...) -> Order</code></summary>
 <dl>
 <dd>
 
@@ -366,7 +366,7 @@ client.orders.getorder(
 </dl>
 </details>
 
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">updateorder</a>(...) -> Order</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py#L137-L187">updateorder</a>(...) -> Order</code></summary>
 <dl>
 <dd>
 
@@ -457,7 +457,7 @@ client.orders.updateorder(
 </dl>
 </details>
 
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">cancelorder</a>(...)</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py#L189-L214">cancelorder</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -517,7 +517,7 @@ client.orders.cancelorder(
 </details>
 
 ## Invoices
-<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py">createinvoice</a>(...) -> Invoice</code></summary>
+<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py#L31-L87">createinvoice</a>(...) -> Invoice</code></summary>
 <dl>
 <dd>
 
@@ -614,7 +614,7 @@ client.invoices.createinvoice(
 </dl>
 </details>
 
-<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py">getinvoice</a>(...) -> Invoice</code></summary>
+<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py#L89-L115">getinvoice</a>(...) -> Invoice</code></summary>
 <dl>
 <dd>
 
@@ -673,7 +673,7 @@ client.invoices.getinvoice(
 </dl>
 </details>
 
-<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py">cancelinvoice</a>(...)</code></summary>
+<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py#L117-L142">cancelinvoice</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -732,7 +732,7 @@ client.invoices.cancelinvoice(
 </dl>
 </details>
 
-<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py">updateinvoice</a>(...)</code></summary>
+<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py#L144-L182">updateinvoice</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -807,7 +807,7 @@ client.invoices.updateinvoice(
 </dl>
 </details>
 
-<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py">confirminvoicepayment</a>(...)</code></summary>
+<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py#L184-L216">confirminvoicepayment</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -875,7 +875,7 @@ client.invoices.confirminvoicepayment(
 </dl>
 </details>
 
-<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py">extendinvoiceduration</a>(...)</code></summary>
+<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py#L218-L251">extendinvoiceduration</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -943,7 +943,7 @@ client.invoices.extendinvoiceduration(
 </dl>
 </details>
 
-<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py">pauseinvoicedunning</a>(...)</code></summary>
+<details><summary><code>client.invoices.<a href="src/fern/invoices/client.py#L253-L278">pauseinvoicedunning</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1003,7 +1003,7 @@ client.invoices.pauseinvoicedunning(
 </details>
 
 ## Credit Notes
-<details><summary><code>client.credit_notes.<a href="src/fern/credit_notes/client.py">createcreditnote</a>(...)</code></summary>
+<details><summary><code>client.credit_notes.<a href="src/fern/credit_notes/client.py#L29-L75">createcreditnote</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1092,7 +1092,7 @@ client.credit_notes.createcreditnote(
 </details>
 
 ## Checkout
-<details><summary><code>client.checkout.<a href="src/fern/checkout/client.py">create_checkout_session</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.checkout.<a href="src/fern/checkout/client.py#L28-L58">create_checkout_session</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1167,7 +1167,7 @@ client.checkout.create_checkout_session(
 </dl>
 </details>
 
-<details><summary><code>client.checkout.<a href="src/fern/checkout/client.py">create_hosted_payment_page_session</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.checkout.<a href="src/fern/checkout/client.py#L60-L92">create_hosted_payment_page_session</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1242,7 +1242,7 @@ client.checkout.create_hosted_payment_page_session(
 </dl>
 </details>
 
-<details><summary><code>client.checkout.<a href="src/fern/checkout/client.py">get_authorization</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.checkout.<a href="src/fern/checkout/client.py#L94-L123">get_authorization</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1315,7 +1315,7 @@ client.checkout.get_authorization(
 </dl>
 </details>
 
-<details><summary><code>client.checkout.<a href="src/fern/checkout/client.py">confirm_checkout_session</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.checkout.<a href="src/fern/checkout/client.py#L125-L159">confirm_checkout_session</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1400,7 +1400,7 @@ client.checkout.confirm_checkout_session(
 </details>
 
 ## Reference Data
-<details><summary><code>client.reference_data.<a href="src/fern/reference_data/client.py">get_legal_forms</a>() -> typing.Any</code></summary>
+<details><summary><code>client.reference_data.<a href="src/fern/reference_data/client.py#L25-L49">get_legal_forms</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 

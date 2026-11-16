@@ -1,6 +1,6 @@
 # Reference
 ## Sluices
-<details><summary><code>client.sluices.<a href="src/fern/sluices/client.py">fetch_sluice</a>(...) -> Sluice</code></summary>
+<details><summary><code>client.sluices.<a href="src/fern/sluices/client.py#L26-L52">fetch_sluice</a>(...) -> Sluice</code></summary>
 <dl>
 <dd>
 

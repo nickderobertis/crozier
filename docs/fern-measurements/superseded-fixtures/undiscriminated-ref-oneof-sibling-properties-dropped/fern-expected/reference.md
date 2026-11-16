@@ -1,6 +1,6 @@
 # Reference
 ## Launches
-<details><summary><code>client.launches.<a href="src/fern/launches/client.py">fetch_launch</a>(...) -> Launch</code></summary>
+<details><summary><code>client.launches.<a href="src/fern/launches/client.py#L26-L52">fetch_launch</a>(...) -> Launch</code></summary>
 <dl>
 <dd>
 

@@ -64,3 +64,8 @@ Plaid's 2020-09-14 document (corpus row 5619) gives `FDXNotification.sentOn` as
 YAML timestamp. The certified pair writes its `2024-01-15` placeholder; crozier
 keeps the component's declared instant, by the same principle of ruling 3
 (`referenced-timestamp-example`, recorded `ruling-applied:yaml-timestamp-parameter-example`).
+
+**Historical.** This record was measured at Fern CLI 5.163.1 /
+`fernapi/fern-python-sdk` 5.41.3, the pair certified when it was taken; where it
+says "the certified pair" it means that pair. It has not been re-measured at
+the current certified pair, Fern CLI 5.200.0 / fern-python-sdk 5.41.25.

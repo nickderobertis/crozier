@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">book_stay</a>(...) -> Stay</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L114-L141">book_stay</a>(...) -> Stay</code></summary>
 <dl>
 <dd>
 
@@ -67,7 +67,7 @@ client.book_stay(
 </details>
 
 ## Stays
-<details><summary><code>client.stays.<a href="src/fern/stays/client.py">list_stays</a>() -> typing.List[Stay]</code></summary>
+<details><summary><code>client.stays.<a href="src/fern/stays/client.py#L26-L46">list_stays</a>() -> typing.List[Stay]</code></summary>
 <dl>
 <dd>
 
@@ -115,7 +115,7 @@ client.stays.list_stays()
 </dl>
 </details>
 
-<details><summary><code>client.stays.<a href="src/fern/stays/client.py">get_stay</a>(...) -> Stay</code></summary>
+<details><summary><code>client.stays.<a href="src/fern/stays/client.py#L48-L72">get_stay</a>(...) -> Stay</code></summary>
 <dl>
 <dd>
 

@@ -25,3 +25,13 @@ Array items that are `{type: object, oneOf: [...]}` over members declaring prope
 The certified pair declares `LinkPatchItem`, `LinkPatchItemZero`, `LinkPatchItemOne` and their enums, and works `request=[LinkPatchItemZero()]`. crozier left the element untyped (`typing.Dict[str, typing.Any]`) and worked `request=[{"key": "value"}]`. It now byte-matches in both enum modes (repaired in `Builder::add_named_shape`'s array arm); the recursive-base flattening is repaired in `Builder::add_object` and proven on rd-alliance itself (below).
 
 Held by `object_member_items_are_a_named_union_of_models` in `crates/crozier-e2e/tests/e2e/union_modelling.rs`: crozier generates `openapi.yml` and the SDK must byte-match `fern-expected/` (and `literals/fern-expected/` in `literals` mode where committed) apart from the catalogued departures the ledger records for the tree, and the pre-repair spelling written back into crozier's output must fail that comparison. The unit test `items_over_type_less_object_members_are_a_union_of_models` in `src/ir.rs`'s `union_modelling_tests` drives the repaired lowering on the same document.
+
+**Regenerated at the certified pair.** The trees under this record's
+`fern-expected/` (and `expected-literals/` or `literals/`, where it has them)
+were regenerated at Fern CLI 5.200.0 / `fernapi/fern-python-sdk` 5.41.25, the
+certified pair, one Fern run at a time through
+`tools/fern-goldens/fern-references.py`'s own `generated_tree` (and
+`reduce_overlay` for an overlay), and crozier's comparison holds the record to
+them. Statements above that name Fern CLI 5.163.1 / fern-python-sdk 5.41.3
+describe the measurement as first taken, at the pair certified then; a digest,
+log or exit code they cite is that run's.

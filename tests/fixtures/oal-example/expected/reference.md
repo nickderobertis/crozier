@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">put_some_path_id_template</a>(...) -> Obj1</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L120-L178">put_some_path_id_template</a>(...) -> Obj1</code></summary>
 <dl>
 <dd>
 
@@ -77,7 +77,7 @@ client.put_some_path_id_template(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">patch_some_path_id_template</a>(...) -> Obj1</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L180-L238">patch_some_path_id_template</a>(...) -> Obj1</code></summary>
 <dl>
 <dd>
 
@@ -155,7 +155,7 @@ client.patch_some_path_id_template(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_something</a>(...) -> typing.Optional[Obj3]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L240-L275">get_something</a>(...) -> typing.Optional[Obj3]</code></summary>
 <dl>
 <dd>
 
@@ -223,7 +223,7 @@ client.get_something(
 </details>
 
 ## Blah
-<details><summary><code>client.blah.<a href="src/fern/blah/client.py">get_some_path_id_template</a>(...) -> Obj1</code></summary>
+<details><summary><code>client.blah.<a href="src/fern/blah/client.py#L26-L57">get_some_path_id_template</a>(...) -> Obj1</code></summary>
 <dl>
 <dd>
 

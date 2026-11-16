@@ -1,6 +1,6 @@
 # Reference
 ## Tiles
-<details><summary><code>client.tiles.<a href="src/fern/tiles/client.py">retire_tiles</a>(...)</code></summary>
+<details><summary><code>client.tiles.<a href="src/fern/tiles/client.py#L31-L54">retire_tiles</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -58,7 +58,7 @@ client.tiles.retire_tiles(
 </dl>
 </details>
 
-<details><summary><code>client.tiles.<a href="src/fern/tiles/client.py">search_tiles</a>(...) -> typing.List[Tile]</code></summary>
+<details><summary><code>client.tiles.<a href="src/fern/tiles/client.py#L56-L88">search_tiles</a>(...) -> typing.List[Tile]</code></summary>
 <dl>
 <dd>
 

@@ -107,7 +107,7 @@ The SDK also exports an `async` client so that you can make non-blocking calls t
 ```python
 import asyncio
 
-from fern import AsyncFernApi
+from fern import AsyncFernApi, Dashboard, Tile_Chart, ChartTileLayout, ChartTileLayoutPosition, ChartTileLayoutSize, ChartTileDefinition, ChartTileDefinitionQuery_ApiUsage, AdvancedFiltersItem_ControlPlane, TimeRange_Relative, Chart_Donut
 
 client = AsyncFernApi(
     token="<token>",

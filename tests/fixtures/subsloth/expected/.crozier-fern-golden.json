@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.25",
+  "corpus_spec_name": "subsloth",
+  "corpus_spec_ref": "b4acb8e87ee47a4154f40c431b7c91d8d27d1b64",
+  "corpus_spec_url": "https://raw.githubusercontent.com/knirski/subsloth/b4acb8e87ee47a4154f40c431b7c91d8d27d1b64/api/subsloth.openapi.yaml"
+}

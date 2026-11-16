@@ -1,5 +1,5 @@
 {
-  "fern_python_sdk_version": "5.41.3",
+  "fern_python_sdk_version": "5.41.25",
   "corpus_spec_name": "registered-literals-atacan-assemblyai-10ca68af",
   "corpus_spec_ref": "ed31d2fbb08b69633e7d1bcc31bc4cf8eacc8718",
   "corpus_spec_url": "https://raw.githubusercontent.com/atacan/AssemblyAI/ed31d2fbb08b69633e7d1bcc31bc4cf8eacc8718/original_openapi.yaml"

@@ -54,3 +54,8 @@ here, preserving the original evidence paths.
 The comparisons above describe this repair node’s own tree. Each document’s
 present status is recorded in [`../documents.tsv`](../documents.tsv); remaining
 parity and registration work is attributed in [`../residuals.tsv`](../residuals.tsv).
+
+**Historical.** This record was measured at Fern CLI 5.163.1 /
+`fernapi/fern-python-sdk` 5.41.3, the pair certified when it was taken; where it
+says "the certified pair" it means that pair. It has not been re-measured at
+the current certified pair, Fern CLI 5.200.0 / fern-python-sdk 5.41.25.

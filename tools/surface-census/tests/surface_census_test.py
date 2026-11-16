@@ -3505,7 +3505,7 @@ class RecipeWiringTests(unittest.TestCase):
             "tools/surface-census/tests/apis_guru_gap_screen_test.py tools/surface-census/tests/reach_store_test.py "
             "tools/surface-census/tests/repin_base_test.py tools/surface-census/tests/repin_messages_test.py "
             "tools/surface-census/tests/repin_merge_test.py tools/surface-census/tests/repin_anchor_test.py "
-            "tools/surface-census/tests/reach_document_test.py",
+            "tools/surface-census/tests/reach_document_test.py tools/surface-census/tests/output_insensitive_remeasure_test.py",
             project["targets"]["test-census"]["options"]["command"],
         )
         self.assertIn("test-census", project["targets"]["test"]["dependsOn"])
@@ -20202,6 +20202,7 @@ class LegacyLocaleEncodingTests(unittest.TestCase):
         "handwritten-fixtures.py": ("\u2014",),
         "openapi-surface-census.py": ("\u2014",),
         "output-insensitive.py": ("\u2014",),
+        "output-insensitive-remeasure.py": ("--crozier", "\u2014"),
         "probe-differential-isolation.py": ("missing-root", "\u2014", "missing-probe", "missing-control"),
         "scenario-proof-index.py": ("\u2014",),
         "restate-coverage.py": ("\u2014",),

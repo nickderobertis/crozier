@@ -1,6 +1,6 @@
 # Reference
 ## APIs
-<details><summary><code>client.ap_is.<a href="src/fern/ap_is/client.py">list_ap_is</a>() -> ApIs</code></summary>
+<details><summary><code>client.ap_is.<a href="src/fern/ap_is/client.py#L30-L56">list_ap_is</a>() -> ApIs</code></summary>
 <dl>
 <dd>
 
@@ -66,7 +66,7 @@ client.ap_is.list_ap_is()
 </dl>
 </details>
 
-<details><summary><code>client.ap_is.<a href="src/fern/ap_is/client.py">get_metrics</a>() -> Metrics</code></summary>
+<details><summary><code>client.ap_is.<a href="src/fern/ap_is/client.py#L58-L81">get_metrics</a>() -> Metrics</code></summary>
 <dl>
 <dd>
 
@@ -129,7 +129,7 @@ client.ap_is.get_metrics()
 </dl>
 </details>
 
-<details><summary><code>client.ap_is.<a href="src/fern/ap_is/client.py">get_providers</a>() -> GetProvidersResponse</code></summary>
+<details><summary><code>client.ap_is.<a href="src/fern/ap_is/client.py#L83-L105">get_providers</a>() -> GetProvidersResponse</code></summary>
 <dl>
 <dd>
 
@@ -191,7 +191,7 @@ client.ap_is.get_providers()
 </dl>
 </details>
 
-<details><summary><code>client.ap_is.<a href="src/fern/ap_is/client.py">get_api</a>(...) -> Api</code></summary>
+<details><summary><code>client.ap_is.<a href="src/fern/ap_is/client.py#L107-L136">get_api</a>(...) -> Api</code></summary>
 <dl>
 <dd>
 
@@ -272,7 +272,7 @@ client.ap_is.get_api(
 </dl>
 </details>
 
-<details><summary><code>client.ap_is.<a href="src/fern/ap_is/client.py">get_service_api</a>(...) -> Api</code></summary>
+<details><summary><code>client.ap_is.<a href="src/fern/ap_is/client.py#L138-L172">get_service_api</a>(...) -> Api</code></summary>
 <dl>
 <dd>
 
@@ -362,7 +362,7 @@ client.ap_is.get_service_api(
 </dl>
 </details>
 
-<details><summary><code>client.ap_is.<a href="src/fern/ap_is/client.py">get_provider</a>(...) -> ApIs</code></summary>
+<details><summary><code>client.ap_is.<a href="src/fern/ap_is/client.py#L174-L201">get_provider</a>(...) -> ApIs</code></summary>
 <dl>
 <dd>
 
@@ -435,7 +435,7 @@ client.ap_is.get_provider(
 </dl>
 </details>
 
-<details><summary><code>client.ap_is.<a href="src/fern/ap_is/client.py">get_services</a>(...) -> GetServicesResponse</code></summary>
+<details><summary><code>client.ap_is.<a href="src/fern/ap_is/client.py#L203-L231">get_services</a>(...) -> GetServicesResponse</code></summary>
 <dl>
 <dd>
 

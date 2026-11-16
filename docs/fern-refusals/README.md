@@ -1,10 +1,18 @@
 # Fern refusal registry
 
-The classes of input Fern (CLI 5.163.1, `fernapi/fern-python-sdk` 5.41.3, the
+The classes of input Fern (CLI 5.200.0, `fernapi/fern-python-sdk` 5.41.25, the
 certified pair `assets/scaffolding/metadata.json` declares) refuses, crashes on,
 or falsely reports success over, and what crozier does with each. The whole
 population, every class's probe and committed shapes, and each class's
-confirmations are measured at that pair.
+confirmations are measured at that pair, except `heap-exhausted`: its probe ran
+past its 900-second bound in both stages at this pair, so it is **not compared**
+here and its probe record and shapes are the Fern CLI 5.163.1 / fern-python-sdk
+5.41.3 history ([its evaluation](heap-exhausted/evaluation.md)). A class in that
+state carries `<class>/unsettled.txt` (the pair, each stage's `timeout` and
+elapsed seconds, the bound, the reason and the follow-up that settles it), the
+only file under which the checks accept a refusal record from an earlier pair;
+one missing a field, reason or follow-up, naming another pair, or beside a
+record at the pair fails them.
 crozier's default is to generate wherever its output is valid and useful;
 `fern-strict` refuses as Fern does. This directory is the one statement of which inputs that covers. The gate
 (`crates/crozier-e2e/tests/e2e.rs::fern_refusal_classes_hold`, in `just check`) reads it, and

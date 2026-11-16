@@ -1,6 +1,6 @@
 # Reference
 ## Capabilities
-<details><summary><code>client.capabilities.<a href="src/fern/capabilities/client.py">get_landing_page</a>() -> LandingPage</code></summary>
+<details><summary><code>client.capabilities.<a href="src/fern/capabilities/client.py#L29-L57">get_landing_page</a>() -> LandingPage</code></summary>
 <dl>
 <dd>
 
@@ -63,7 +63,7 @@ client.capabilities.get_landing_page()
 </dl>
 </details>
 
-<details><summary><code>client.capabilities.<a href="src/fern/capabilities/client.py">get_conformance_declaration</a>() -> ConfClasses</code></summary>
+<details><summary><code>client.capabilities.<a href="src/fern/capabilities/client.py#L59-L87">get_conformance_declaration</a>() -> ConfClasses</code></summary>
 <dl>
 <dd>
 
@@ -126,7 +126,7 @@ client.capabilities.get_conformance_declaration()
 </dl>
 </details>
 
-<details><summary><code>client.capabilities.<a href="src/fern/capabilities/client.py">get_collections</a>() -> Collections</code></summary>
+<details><summary><code>client.capabilities.<a href="src/fern/capabilities/client.py#L89-L123">get_collections</a>() -> Collections</code></summary>
 <dl>
 <dd>
 
@@ -174,7 +174,7 @@ client.capabilities.get_collections()
 </dl>
 </details>
 
-<details><summary><code>client.capabilities.<a href="src/fern/capabilities/client.py">describe_collection</a>(...) -> Collection</code></summary>
+<details><summary><code>client.capabilities.<a href="src/fern/capabilities/client.py#L125-L163">describe_collection</a>(...) -> Collection</code></summary>
 <dl>
 <dd>
 
@@ -233,7 +233,7 @@ client.capabilities.describe_collection(
 </details>
 
 ## Data
-<details><summary><code>client.data.<a href="src/fern/data/client.py">get_features</a>(...) -> FeatureCollectionGeoJson</code></summary>
+<details><summary><code>client.data.<a href="src/fern/data/client.py#L27-L143">get_features</a>(...) -> FeatureCollectionGeoJson</code></summary>
 <dl>
 <dd>
 
@@ -385,7 +385,7 @@ the extent or all relevant temporal properties.
 </dl>
 </details>
 
-<details><summary><code>client.data.<a href="src/fern/data/client.py">get_feature</a>(...) -> FeatureGeoJson</code></summary>
+<details><summary><code>client.data.<a href="src/fern/data/client.py#L145-L182">get_feature</a>(...) -> FeatureGeoJson</code></summary>
 <dl>
 <dd>
 

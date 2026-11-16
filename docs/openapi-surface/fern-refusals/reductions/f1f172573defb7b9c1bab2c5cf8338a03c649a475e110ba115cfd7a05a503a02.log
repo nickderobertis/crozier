@@ -1,5 +1,5 @@
 fern-refusals: reduction of e145ad381fe4277ec2e558cd19b86af645e76479eab8ad5801eef63c976a7fae: /paths/~1api/get;/paths/~1api~1processes-list/get
-fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
+fern-refusals: Fern CLI 5.200.0, fernapi/fern-python-sdk 5.41.25
 check exit: 0
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
@@ -15,7 +15,7 @@ Warnings for generators.yml:
 [api]: python-sdk fernapi/fern-python-sdk Started.
 [api]: python-sdk Failed to parse an OpenAPI schema at the following location: schema-2. Coercing to unknown.
 [api]: python-sdk ✓ All checks passed
-[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.41.3
+[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.41.25
 [api]: python-sdk fernapi/fern-python-sdk Generator logs here: <tmp>
 [api]: python-sdk fernapi/fern-python-sdk Container execution failed: Container exited with code 1.
                                           Failed to format Cannot parse: 3:9

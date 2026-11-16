@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">lookup</a>() -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L119-L139">lookup</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -48,7 +48,7 @@ client.lookup()
 </details>
 
 ## Ping
-<details><summary><code>client.ping.<a href="src/fern/ping/client.py">ping_ping</a>() -> str</code></summary>
+<details><summary><code>client.ping.<a href="src/fern/ping/client.py#L25-L45">ping_ping</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -96,7 +96,7 @@ client.ping.ping_ping()
 </dl>
 </details>
 
-<details><summary><code>client.ping.<a href="src/fern/ping/client.py">deep</a>() -> str</code></summary>
+<details><summary><code>client.ping.<a href="src/fern/ping/client.py#L47-L67">deep</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -145,7 +145,7 @@ client.ping.deep()
 </details>
 
 ## App
-<details><summary><code>client.app.<a href="src/fern/app/client.py">info</a>() -> str</code></summary>
+<details><summary><code>client.app.<a href="src/fern/app/client.py#L25-L45">info</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -193,7 +193,7 @@ client.app.info()
 </dl>
 </details>
 
-<details><summary><code>client.app.<a href="src/fern/app/client.py">version</a>() -> str</code></summary>
+<details><summary><code>client.app.<a href="src/fern/app/client.py#L47-L67">version</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -242,7 +242,7 @@ client.app.version()
 </details>
 
 ## Relay
-<details><summary><code>client.relay.<a href="src/fern/relay/client.py">relay_gateway_info</a>() -> str</code></summary>
+<details><summary><code>client.relay.<a href="src/fern/relay/client.py#L25-L45">relay_gateway_info</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -290,7 +290,7 @@ client.relay.relay_gateway_info()
 </dl>
 </details>
 
-<details><summary><code>client.relay.<a href="src/fern/relay/client.py">currentstatus</a>() -> str</code></summary>
+<details><summary><code>client.relay.<a href="src/fern/relay/client.py#L47-L67">currentstatus</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -339,7 +339,7 @@ client.relay.currentstatus()
 </details>
 
 ## Relaygateway
-<details><summary><code>client.relaygateway.<a href="src/fern/relaygateway/client.py">bandpricing</a>() -> str</code></summary>
+<details><summary><code>client.relaygateway.<a href="src/fern/relaygateway/client.py#L25-L45">bandpricing</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -436,7 +436,7 @@ client.relaygateway.all_()
 </details>
 
 ## Assets
-<details><summary><code>client.assets.<a href="src/fern/assets/client.py">serve_robots_txt</a>() -> str</code></summary>
+<details><summary><code>client.assets.<a href="src/fern/assets/client.py#L25-L45">serve_robots_txt</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -484,7 +484,7 @@ client.assets.serve_robots_txt()
 </dl>
 </details>
 
-<details><summary><code>client.assets.<a href="src/fern/assets/client.py">list_badges_ega_page_of_them</a>() -> str</code></summary>
+<details><summary><code>client.assets.<a href="src/fern/assets/client.py#L47-L67">list_badges_ega_page_of_them</a>() -> str</code></summary>
 <dl>
 <dd>
 

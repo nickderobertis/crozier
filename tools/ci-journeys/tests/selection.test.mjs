@@ -203,7 +203,7 @@ test("a script both read reaches both, and the coverage floor takes every suite'
 test("every census script is a declared input of its readers, or one no other suite loads", () => {
   const { namedInputs } = JSON.parse(readFileSync(join(REPO, "nx.json"), "utf8"));
   const declared = new Set(namedInputs.censusScripts.map((input) => input.replace("{workspaceRoot}/tools/surface-census/", "")));
-  const onlyCensus = new Set(["apis-guru-gap-screen.py", "update-predicate-grammar.py", "probe-differential-isolation.py"]);
+  const onlyCensus = new Set(["apis-guru-gap-screen.py", "update-predicate-grammar.py", "probe-differential-isolation.py", "output-insensitive-remeasure.py"]);
   for (const name of readdirSync(join(REPO, "tools/surface-census"))) {
     if (name.endsWith(".py") || name.endsWith(".sh")) assert.ok(declared.has(name) || onlyCensus.has(name), `${name}: add it to censusScripts in nx.json, or its readers never rerun`);
   }
@@ -216,6 +216,17 @@ test("a tool journey's surface runs that journey without paying for the golden s
     assert.ok(ran.has("crozier-tool-journeys:test"), `${edit}:\n${output}`);
     assert.ok(!ran.has("crozier-e2e:test"), `${edit} must not run crozier-e2e:\n${[...ran].join(" ")}`);
   }
+});
+
+test("the migration guide's option check is selected by the guide and the pin, not by the generator", (t) => {
+  const graph = realGraph(t);
+  for (const edit of ["docs/migrating-from-fern.md", "assets/scaffolding/metadata.json"]) {
+    const { ran, output } = lane(graph, [edit], "lane-test", ["--projects=tag:lane:sdk-env", "--platform=linux"]);
+    assert.ok(ran.has("migration-options:test"), `${edit}:\n${output}`);
+  }
+  const generator = lane(graph, ["src/lib.rs"], "lane-test", ["--projects=tag:lane:sdk-env", "--platform=linux"]);
+  assert.ok(generator.ran.has("sdk-env:test"), generator.output);
+  assert.ok(!generator.ran.has("migration-options:test"), `a generator edit must not select the option check:\n${[...generator.ran].join(" ")}`);
 });
 
 test("an unrelated documentation edit runs none of the expensive suites", (t) => {

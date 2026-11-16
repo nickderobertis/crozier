@@ -1,6 +1,6 @@
 # Reference
 ## Key
-<details><summary><code>client.key.<a href="src/fern/key/client.py">register</a>() -> KeyRegisterResponse</code></summary>
+<details><summary><code>client.key.<a href="src/fern/key/client.py#L31-L57">register</a>() -> KeyRegisterResponse</code></summary>
 <dl>
 <dd>
 
@@ -66,7 +66,7 @@ client.key.register()
 </dl>
 </details>
 
-<details><summary><code>client.key.<a href="src/fern/key/client.py">revoke_nosecret</a>(...) -> KeyRevokeNosecretResponse</code></summary>
+<details><summary><code>client.key.<a href="src/fern/key/client.py#L59-L106">revoke_nosecret</a>(...) -> KeyRevokeNosecretResponse</code></summary>
 <dl>
 <dd>
 
@@ -159,7 +159,7 @@ client.key.revoke_nosecret(
 </dl>
 </details>
 
-<details><summary><code>client.key.<a href="src/fern/key/client.py">retrieve</a>(...) -> KeyRetrieveResponse</code></summary>
+<details><summary><code>client.key.<a href="src/fern/key/client.py#L108-L135">retrieve</a>(...) -> KeyRetrieveResponse</code></summary>
 <dl>
 <dd>
 
@@ -231,7 +231,7 @@ client.key.retrieve(
 </dl>
 </details>
 
-<details><summary><code>client.key.<a href="src/fern/key/client.py">update</a>(...) -> KeyUpdateResponse</code></summary>
+<details><summary><code>client.key.<a href="src/fern/key/client.py#L137-L170">update</a>(...) -> KeyUpdateResponse</code></summary>
 <dl>
 <dd>
 
@@ -309,7 +309,7 @@ client.key.update(
 </dl>
 </details>
 
-<details><summary><code>client.key.<a href="src/fern/key/client.py">bind</a>(...) -> KeyBindResponse</code></summary>
+<details><summary><code>client.key.<a href="src/fern/key/client.py#L172-L206">bind</a>(...) -> KeyBindResponse</code></summary>
 <dl>
 <dd>
 
@@ -388,7 +388,7 @@ client.key.bind(
 </dl>
 </details>
 
-<details><summary><code>client.key.<a href="src/fern/key/client.py">revoke</a>(...) -> KeyRevokeResponse</code></summary>
+<details><summary><code>client.key.<a href="src/fern/key/client.py#L208-L241">revoke</a>(...) -> KeyRevokeResponse</code></summary>
 <dl>
 <dd>
 
@@ -469,7 +469,7 @@ client.key.revoke(
 </dl>
 </details>
 
-<details><summary><code>client.key.<a href="src/fern/key/client.py">head_key_pk</a>(...)</code></summary>
+<details><summary><code>client.key.<a href="src/fern/key/client.py#L243-L269">head_key_pk</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -542,7 +542,7 @@ client.key.head_key_pk(
 </details>
 
 ## Login
-<details><summary><code>client.login.<a href="src/fern/login/client.py">push_login_request</a>(...) -> PushLoginRequestResponse</code></summary>
+<details><summary><code>client.login.<a href="src/fern/login/client.py#L26-L56">push_login_request</a>(...) -> PushLoginRequestResponse</code></summary>
 <dl>
 <dd>
 
@@ -616,7 +616,7 @@ client.login.push_login_request(
 </details>
 
 ## Scope
-<details><summary><code>client.scope.<a href="src/fern/scope/client.py">sign_request</a>(...) -> SignRequestResponse</code></summary>
+<details><summary><code>client.scope.<a href="src/fern/scope/client.py#L29-L57">sign_request</a>(...) -> SignRequestResponse</code></summary>
 <dl>
 <dd>
 
@@ -687,7 +687,7 @@ client.scope.sign_request()
 </dl>
 </details>
 
-<details><summary><code>client.scope.<a href="src/fern/scope/client.py">sign_retrieve</a>(...) -> typing.Optional[SignRetrieveResponse]</code></summary>
+<details><summary><code>client.scope.<a href="src/fern/scope/client.py#L59-L88">sign_retrieve</a>(...) -> typing.Optional[SignRetrieveResponse]</code></summary>
 <dl>
 <dd>
 
@@ -759,7 +759,7 @@ client.scope.sign_retrieve(
 </dl>
 </details>
 
-<details><summary><code>client.scope.<a href="src/fern/scope/client.py">sign_confirm</a>(...) -> SignConfirmResponse</code></summary>
+<details><summary><code>client.scope.<a href="src/fern/scope/client.py#L90-L117">sign_confirm</a>(...) -> SignConfirmResponse</code></summary>
 <dl>
 <dd>
 
@@ -831,7 +831,7 @@ client.scope.sign_confirm(
 </dl>
 </details>
 
-<details><summary><code>client.scope.<a href="src/fern/scope/client.py">sign_update</a>(...)</code></summary>
+<details><summary><code>client.scope.<a href="src/fern/scope/client.py#L119-L146">sign_update</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -904,7 +904,7 @@ client.scope.sign_update(
 </dl>
 </details>
 
-<details><summary><code>client.scope.<a href="src/fern/scope/client.py">sign_delete</a>(...) -> SignDeleteResponse</code></summary>
+<details><summary><code>client.scope.<a href="src/fern/scope/client.py#L148-L175">sign_delete</a>(...) -> SignDeleteResponse</code></summary>
 <dl>
 <dd>
 
@@ -976,7 +976,7 @@ client.scope.sign_delete(
 </dl>
 </details>
 
-<details><summary><code>client.scope.<a href="src/fern/scope/client.py">sign_retrieve_head</a>(...)</code></summary>
+<details><summary><code>client.scope.<a href="src/fern/scope/client.py#L177-L205">sign_retrieve_head</a>(...)</code></summary>
 <dl>
 <dd>
 

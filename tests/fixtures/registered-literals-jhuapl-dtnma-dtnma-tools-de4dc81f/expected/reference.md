@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_version</a>() -> Version</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L109-L128">get_version</a>() -> Version</code></summary>
 <dl>
 <dd>
 
@@ -47,7 +47,7 @@ client.get_version()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_agents</a>() -> typing.Optional[Agents]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L130-L149">get_agents</a>() -> typing.Optional[Agents]</code></summary>
 <dl>
 <dd>
 
@@ -95,7 +95,7 @@ client.get_agents()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_agents</a>()</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L151-L170">post_agents</a>()</code></summary>
 <dl>
 <dd>
 
@@ -143,7 +143,7 @@ client.post_agents()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">agent_head</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L172-L197">agent_head</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -201,7 +201,7 @@ client.agent_head(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">agent_send</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L199-L231">agent_send</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -267,7 +267,7 @@ client.agent_send(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">agent_reports</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L233-L266">agent_reports</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -333,7 +333,7 @@ client.agent_reports(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">agent_clear_reports</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L268-L293">agent_clear_reports</a>(...)</code></summary>
 <dl>
 <dd>
 

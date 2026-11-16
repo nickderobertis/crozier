@@ -1,6 +1,6 @@
 # Reference
 ## Crews
-<details><summary><code>client.crews.<a href="src/fern/crews/client.py">register_crew</a>(...)</code></summary>
+<details><summary><code>client.crews.<a href="src/fern/crews/client.py#L29-L77">register_crew</a>(...)</code></summary>
 <dl>
 <dd>
 

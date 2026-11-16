@@ -1,6 +1,6 @@
 # Reference
 ## Server
-<details><summary><code>client.server.<a href="src/fern/server/client.py">get_version</a>() -> GetVersionResponse</code></summary>
+<details><summary><code>client.server.<a href="src/fern/server/client.py#L29-L53">get_version</a>() -> GetVersionResponse</code></summary>
 <dl>
 <dd>
 
@@ -63,7 +63,7 @@ client.server.get_version()
 </dl>
 </details>
 
-<details><summary><code>client.server.<a href="src/fern/server/client.py">post_disconnect</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.server.<a href="src/fern/server/client.py#L55-L101">post_disconnect</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -155,7 +155,7 @@ client.server.post_disconnect(
 </details>
 
 ## Favourites
-<details><summary><code>client.favourites.<a href="src/fern/favourites/client.py">get_favourites</a>(...) -> FavouritesResponse</code></summary>
+<details><summary><code>client.favourites.<a href="src/fern/favourites/client.py#L30-L101">get_favourites</a>(...) -> FavouritesResponse</code></summary>
 <dl>
 <dd>
 
@@ -289,7 +289,7 @@ Searchable fields:
 </dl>
 </details>
 
-<details><summary><code>client.favourites.<a href="src/fern/favourites/client.py">get_favourites_section_id</a>(...) -> FavouritesSection</code></summary>
+<details><summary><code>client.favourites.<a href="src/fern/favourites/client.py#L103-L133">get_favourites_section_id</a>(...) -> FavouritesSection</code></summary>
 <dl>
 <dd>
 
@@ -363,7 +363,7 @@ client.favourites.get_favourites_section_id(
 </details>
 
 ## Jobs
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">get_jobs</a>(...) -> JobsResponse</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L51-L139">get_jobs</a>(...) -> JobsResponse</code></summary>
 <dl>
 <dd>
 
@@ -533,7 +533,7 @@ Searchable fields:
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">post_jobs</a>(...) -> JobResponse</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L141-L204">post_jobs</a>(...) -> JobResponse</code></summary>
 <dl>
 <dd>
 
@@ -656,7 +656,7 @@ client.jobs.post_jobs(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">get_jobs_job_id</a>(...) -> JobResponse</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L206-L234">get_jobs_job_id</a>(...) -> JobResponse</code></summary>
 <dl>
 <dd>
 
@@ -729,7 +729,7 @@ client.jobs.get_jobs_job_id(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">put_jobs_job_id</a>(...) -> JobResponse</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L236-L277">put_jobs_job_id</a>(...) -> JobResponse</code></summary>
 <dl>
 <dd>
 
@@ -814,7 +814,7 @@ client.jobs.put_jobs_job_id(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">put_jobs_job_id_finalise</a>(...) -> JobResponse</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L279-L309">put_jobs_job_id_finalise</a>(...) -> JobResponse</code></summary>
 <dl>
 <dd>
 
@@ -887,7 +887,7 @@ client.jobs.put_jobs_job_id_finalise(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">get_jobs_job_id_phases</a>(...) -> JobPhasesResponse</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L311-L341">get_jobs_job_id_phases</a>(...) -> JobPhasesResponse</code></summary>
 <dl>
 <dd>
 
@@ -960,7 +960,7 @@ client.jobs.get_jobs_job_id_phases(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">post_jobs_job_id_phases</a>(...) -> JobPhaseResponse</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L343-L381">post_jobs_job_id_phases</a>(...) -> JobPhaseResponse</code></summary>
 <dl>
 <dd>
 
@@ -1051,7 +1051,7 @@ client.jobs.post_jobs_job_id_phases(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">get_jobs_job_id_phases_job_phase_id</a>(...) -> JobPhaseResponse</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L383-L418">get_jobs_job_id_phases_job_phase_id</a>(...) -> JobPhaseResponse</code></summary>
 <dl>
 <dd>
 
@@ -1133,7 +1133,7 @@ client.jobs.get_jobs_job_id_phases_job_phase_id(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">put_jobs_job_id_phases_job_phase_id</a>(...) -> JobPhaseResponse</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L420-L467">put_jobs_job_id_phases_job_phase_id</a>(...) -> JobPhaseResponse</code></summary>
 <dl>
 <dd>
 
@@ -1233,7 +1233,7 @@ client.jobs.put_jobs_job_id_phases_job_phase_id(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">post_jobs_job_id_phases_job_phase_id_void</a>(...)</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L469-L503">post_jobs_job_id_phases_job_phase_id_void</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1315,7 +1315,7 @@ client.jobs.post_jobs_job_id_phases_job_phase_id_void(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">get_jobs_job_id_financial_summary</a>(...) -> JobFinancialSummaryResponse</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L505-L535">get_jobs_job_id_financial_summary</a>(...) -> JobFinancialSummaryResponse</code></summary>
 <dl>
 <dd>
 
@@ -1388,7 +1388,7 @@ client.jobs.get_jobs_job_id_financial_summary(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">get_jobs_job_id_phases_job_phase_id_financial_summary</a>(...) -> JobFinancialSummaryResponse</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L537-L572">get_jobs_job_id_phases_job_phase_id_financial_summary</a>(...) -> JobFinancialSummaryResponse</code></summary>
 <dl>
 <dd>
 
@@ -1470,7 +1470,7 @@ client.jobs.get_jobs_job_id_phases_job_phase_id_financial_summary(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">get_jobs_job_id_quotes</a>(...) -> GetQuotesResponse</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L574-L634">get_jobs_job_id_quotes</a>(...) -> GetQuotesResponse</code></summary>
 <dl>
 <dd>
 
@@ -1591,7 +1591,7 @@ client.jobs.get_jobs_job_id_quotes(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">post_jobs_job_id_quotes</a>(...) -> AddQuoteResponse</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L636-L701">post_jobs_job_id_quotes</a>(...) -> AddQuoteResponse</code></summary>
 <dl>
 <dd>
 
@@ -1712,7 +1712,7 @@ client.jobs.post_jobs_job_id_quotes(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">get_jobs_job_id_quotes_quote_id</a>(...) -> GetQuoteByIdQuoteResponse</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L703-L736">get_jobs_job_id_quotes_quote_id</a>(...) -> GetQuoteByIdQuoteResponse</code></summary>
 <dl>
 <dd>
 
@@ -1794,7 +1794,7 @@ client.jobs.get_jobs_job_id_quotes_quote_id(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">put_jobs_job_id_quotes_quote_id</a>(...) -> UpdateQuoteResponse</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L738-L793">put_jobs_job_id_quotes_quote_id</a>(...) -> UpdateQuoteResponse</code></summary>
 <dl>
 <dd>
 
@@ -1906,7 +1906,7 @@ client.jobs.put_jobs_job_id_quotes_quote_id(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">put_jobs_job_id_quotes_version_version_number</a>(...) -> UpdateQuoteResponse</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L795-L855">put_jobs_job_id_quotes_version_version_number</a>(...) -> UpdateQuoteResponse</code></summary>
 <dl>
 <dd>
 
@@ -2019,7 +2019,7 @@ client.jobs.put_jobs_job_id_quotes_version_version_number(
 </details>
 
 ## JobsQuotes
-<details><summary><code>client.jobs_quotes.<a href="src/fern/jobs_quotes/client.py">get_jobs_quotes</a>(...) -> GetStandaloneQuotesResponse</code></summary>
+<details><summary><code>client.jobs_quotes.<a href="src/fern/jobs_quotes/client.py#L36-L96">get_jobs_quotes</a>(...) -> GetStandaloneQuotesResponse</code></summary>
 <dl>
 <dd>
 
@@ -2138,7 +2138,7 @@ client.jobs_quotes.get_jobs_quotes()
 </dl>
 </details>
 
-<details><summary><code>client.jobs_quotes.<a href="src/fern/jobs_quotes/client.py">get_jobs_quotes_quote_id</a>(...) -> GetQuoteByIdQuoteResponse</code></summary>
+<details><summary><code>client.jobs_quotes.<a href="src/fern/jobs_quotes/client.py#L98-L128">get_jobs_quotes_quote_id</a>(...) -> GetQuoteByIdQuoteResponse</code></summary>
 <dl>
 <dd>
 
@@ -2211,7 +2211,7 @@ client.jobs_quotes.get_jobs_quotes_quote_id(
 </dl>
 </details>
 
-<details><summary><code>client.jobs_quotes.<a href="src/fern/jobs_quotes/client.py">get_jobs_quotes_guid_guid</a>(...) -> GetQuoteByIdQuoteResponse</code></summary>
+<details><summary><code>client.jobs_quotes.<a href="src/fern/jobs_quotes/client.py#L130-L169">get_jobs_quotes_guid_guid</a>(...) -> GetQuoteByIdQuoteResponse</code></summary>
 <dl>
 <dd>
 
@@ -2292,7 +2292,7 @@ client.jobs_quotes.get_jobs_quotes_guid_guid(
 </dl>
 </details>
 
-<details><summary><code>client.jobs_quotes.<a href="src/fern/jobs_quotes/client.py">post_jobs_quotes_quote_id_publish</a>(...)</code></summary>
+<details><summary><code>client.jobs_quotes.<a href="src/fern/jobs_quotes/client.py#L171-L211">post_jobs_quotes_quote_id_publish</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2381,7 +2381,7 @@ client.jobs_quotes.post_jobs_quotes_quote_id_publish(
 </dl>
 </details>
 
-<details><summary><code>client.jobs_quotes.<a href="src/fern/jobs_quotes/client.py">post_jobs_quotes_quote_id_mark_as_sent</a>(...)</code></summary>
+<details><summary><code>client.jobs_quotes.<a href="src/fern/jobs_quotes/client.py#L213-L250">post_jobs_quotes_quote_id_mark_as_sent</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2462,7 +2462,7 @@ client.jobs_quotes.post_jobs_quotes_quote_id_mark_as_sent(
 </dl>
 </details>
 
-<details><summary><code>client.jobs_quotes.<a href="src/fern/jobs_quotes/client.py">post_jobs_quotes_quote_id_accept</a>(...) -> typing.Optional[AcceptQuoteResponse]</code></summary>
+<details><summary><code>client.jobs_quotes.<a href="src/fern/jobs_quotes/client.py#L252-L303">post_jobs_quotes_quote_id_accept</a>(...) -> typing.Optional[AcceptQuoteResponse]</code></summary>
 <dl>
 <dd>
 
@@ -2560,7 +2560,7 @@ client.jobs_quotes.post_jobs_quotes_quote_id_accept(
 </dl>
 </details>
 
-<details><summary><code>client.jobs_quotes.<a href="src/fern/jobs_quotes/client.py">post_jobs_quotes_quote_id_decline</a>(...)</code></summary>
+<details><summary><code>client.jobs_quotes.<a href="src/fern/jobs_quotes/client.py#L305-L352">post_jobs_quotes_quote_id_decline</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2657,7 +2657,7 @@ client.jobs_quotes.post_jobs_quotes_quote_id_decline(
 </dl>
 </details>
 
-<details><summary><code>client.jobs_quotes.<a href="src/fern/jobs_quotes/client.py">post_jobs_quotes_quote_id_void</a>(...)</code></summary>
+<details><summary><code>client.jobs_quotes.<a href="src/fern/jobs_quotes/client.py#L354-L391">post_jobs_quotes_quote_id_void</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2738,7 +2738,7 @@ client.jobs_quotes.post_jobs_quotes_quote_id_void(
 </dl>
 </details>
 
-<details><summary><code>client.jobs_quotes.<a href="src/fern/jobs_quotes/client.py">post_jobs_quotes_quote_id_totals</a>(...) -> QuoteTotalsResponse</code></summary>
+<details><summary><code>client.jobs_quotes.<a href="src/fern/jobs_quotes/client.py#L393-L432">post_jobs_quotes_quote_id_totals</a>(...) -> QuoteTotalsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2820,7 +2820,7 @@ client.jobs_quotes.post_jobs_quotes_quote_id_totals(
 </details>
 
 ## CustomerInvoices
-<details><summary><code>client.customer_invoices.<a href="src/fern/customer_invoices/client.py">get_customer_invoices</a>(...) -> ListCustomerInvoicesResponse</code></summary>
+<details><summary><code>client.customer_invoices.<a href="src/fern/customer_invoices/client.py#L30-L101">get_customer_invoices</a>(...) -> ListCustomerInvoicesResponse</code></summary>
 <dl>
 <dd>
 
@@ -2955,7 +2955,7 @@ client.customer_invoices.get_customer_invoices()
 </dl>
 </details>
 
-<details><summary><code>client.customer_invoices.<a href="src/fern/customer_invoices/client.py">get_customer_invoices_invoice_id</a>(...) -> GetCustomerInvoiceByIdResponse</code></summary>
+<details><summary><code>client.customer_invoices.<a href="src/fern/customer_invoices/client.py#L103-L133">get_customer_invoices_invoice_id</a>(...) -> GetCustomerInvoiceByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -3029,7 +3029,7 @@ client.customer_invoices.get_customer_invoices_invoice_id(
 </details>
 
 ## Customers
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">get_customers</a>(...) -> GetCustomersResponse</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py#L34-L99">get_customers</a>(...) -> GetCustomersResponse</code></summary>
 <dl>
 <dd>
 
@@ -3148,7 +3148,7 @@ Searchable fields:
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">post_customers</a>(...) -> GetCustomerByIdResponse</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py#L101-L152">post_customers</a>(...) -> GetCustomerByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -3248,7 +3248,7 @@ client.customers.post_customers(
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">get_customers_customer_id</a>(...) -> GetCustomerByIdResponse</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py#L154-L184">get_customers_customer_id</a>(...) -> GetCustomerByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -3321,7 +3321,7 @@ client.customers.get_customers_customer_id(
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">put_customers_customer_id</a>(...) -> GetCustomerByIdResponse</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py#L186-L242">put_customers_customer_id</a>(...) -> GetCustomerByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -3430,7 +3430,7 @@ client.customers.put_customers_customer_id(
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">delete_customers_customer_id</a>(...)</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py#L244-L273">delete_customers_customer_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3504,7 +3504,7 @@ client.customers.delete_customers_customer_id(
 </details>
 
 ## Sites
-<details><summary><code>client.sites.<a href="src/fern/sites/client.py">get_sites</a>(...) -> SitesResponse</code></summary>
+<details><summary><code>client.sites.<a href="src/fern/sites/client.py#L34-L105">get_sites</a>(...) -> SitesResponse</code></summary>
 <dl>
 <dd>
 
@@ -3641,7 +3641,7 @@ Searchable fields:
 </dl>
 </details>
 
-<details><summary><code>client.sites.<a href="src/fern/sites/client.py">post_sites</a>(...) -> SiteByIdResponse</code></summary>
+<details><summary><code>client.sites.<a href="src/fern/sites/client.py#L107-L164">post_sites</a>(...) -> SiteByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -3751,7 +3751,7 @@ client.sites.post_sites(
 </dl>
 </details>
 
-<details><summary><code>client.sites.<a href="src/fern/sites/client.py">get_sites_site_id</a>(...) -> SiteByIdResponse</code></summary>
+<details><summary><code>client.sites.<a href="src/fern/sites/client.py#L166-L196">get_sites_site_id</a>(...) -> SiteByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -3824,7 +3824,7 @@ client.sites.get_sites_site_id(
 </dl>
 </details>
 
-<details><summary><code>client.sites.<a href="src/fern/sites/client.py">patch_sites_site_id</a>(...) -> SiteByIdResponse</code></summary>
+<details><summary><code>client.sites.<a href="src/fern/sites/client.py#L198-L249">patch_sites_site_id</a>(...) -> SiteByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -3924,7 +3924,7 @@ client.sites.patch_sites_site_id(
 </dl>
 </details>
 
-<details><summary><code>client.sites.<a href="src/fern/sites/client.py">post_sites_site_id_archive</a>(...)</code></summary>
+<details><summary><code>client.sites.<a href="src/fern/sites/client.py#L251-L280">post_sites_site_id_archive</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3997,7 +3997,7 @@ client.sites.post_sites_site_id_archive(
 </dl>
 </details>
 
-<details><summary><code>client.sites.<a href="src/fern/sites/client.py">post_sites_site_id_restore</a>(...) -> SiteByIdResponse</code></summary>
+<details><summary><code>client.sites.<a href="src/fern/sites/client.py#L282-L312">post_sites_site_id_restore</a>(...) -> SiteByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -4071,7 +4071,7 @@ client.sites.post_sites_site_id_restore(
 </details>
 
 ## Contacts
-<details><summary><code>client.contacts.<a href="src/fern/contacts/client.py">get_contacts</a>(...) -> ContactsResponse</code></summary>
+<details><summary><code>client.contacts.<a href="src/fern/contacts/client.py#L35-L102">get_contacts</a>(...) -> ContactsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4204,7 +4204,7 @@ Searchable fields:
 </dl>
 </details>
 
-<details><summary><code>client.contacts.<a href="src/fern/contacts/client.py">post_contacts</a>(...) -> ContactByIdResponse</code></summary>
+<details><summary><code>client.contacts.<a href="src/fern/contacts/client.py#L104-L196">post_contacts</a>(...) -> ContactByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -4372,7 +4372,7 @@ client.contacts.post_contacts(
 </dl>
 </details>
 
-<details><summary><code>client.contacts.<a href="src/fern/contacts/client.py">get_contacts_contact_id</a>(...) -> ContactByIdResponse</code></summary>
+<details><summary><code>client.contacts.<a href="src/fern/contacts/client.py#L198-L228">get_contacts_contact_id</a>(...) -> ContactByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -4445,7 +4445,7 @@ client.contacts.get_contacts_contact_id(
 </dl>
 </details>
 
-<details><summary><code>client.contacts.<a href="src/fern/contacts/client.py">put_contacts_contact_id</a>(...) -> ContactByIdResponse</code></summary>
+<details><summary><code>client.contacts.<a href="src/fern/contacts/client.py#L230-L315">put_contacts_contact_id</a>(...) -> ContactByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -4596,7 +4596,7 @@ client.contacts.put_contacts_contact_id(
 </details>
 
 ## Enquiries
-<details><summary><code>client.enquiries.<a href="src/fern/enquiries/client.py">get_enquiries</a>(...) -> EnquiriesResponse</code></summary>
+<details><summary><code>client.enquiries.<a href="src/fern/enquiries/client.py#L34-L97">get_enquiries</a>(...) -> EnquiriesResponse</code></summary>
 <dl>
 <dd>
 
@@ -4721,7 +4721,7 @@ Searchable fields:
 </dl>
 </details>
 
-<details><summary><code>client.enquiries.<a href="src/fern/enquiries/client.py">post_enquiries</a>(...) -> EnquiryCreatedResponse</code></summary>
+<details><summary><code>client.enquiries.<a href="src/fern/enquiries/client.py#L99-L185">post_enquiries</a>(...) -> EnquiryCreatedResponse</code></summary>
 <dl>
 <dd>
 
@@ -4888,7 +4888,7 @@ client.enquiries.post_enquiries(
 </dl>
 </details>
 
-<details><summary><code>client.enquiries.<a href="src/fern/enquiries/client.py">get_enquiries_enquiry_id</a>(...) -> EnquiryByIdResponse</code></summary>
+<details><summary><code>client.enquiries.<a href="src/fern/enquiries/client.py#L187-L217">get_enquiries_enquiry_id</a>(...) -> EnquiryByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -4962,7 +4962,7 @@ client.enquiries.get_enquiries_enquiry_id(
 </details>
 
 ## JobsPhases
-<details><summary><code>client.jobs_phases.<a href="src/fern/jobs_phases/client.py">get_phases_job_phase_id_stock_on_hand</a>(...) -> StockOnHandListResponse</code></summary>
+<details><summary><code>client.jobs_phases.<a href="src/fern/jobs_phases/client.py#L40-L106">get_phases_job_phase_id_stock_on_hand</a>(...) -> StockOnHandListResponse</code></summary>
 <dl>
 <dd>
 
@@ -5094,7 +5094,7 @@ Searchable fields:
 </dl>
 </details>
 
-<details><summary><code>client.jobs_phases.<a href="src/fern/jobs_phases/client.py">post_phases_job_phase_id_stock_on_hand</a>(...) -> StockOnHandResponse</code></summary>
+<details><summary><code>client.jobs_phases.<a href="src/fern/jobs_phases/client.py#L108-L158">post_phases_job_phase_id_stock_on_hand</a>(...) -> StockOnHandResponse</code></summary>
 <dl>
 <dd>
 
@@ -5184,7 +5184,7 @@ client.jobs_phases.post_phases_job_phase_id_stock_on_hand(
 </dl>
 </details>
 
-<details><summary><code>client.jobs_phases.<a href="src/fern/jobs_phases/client.py">get_phases_stock_on_hand</a>(...) -> StockOnHandListResponse</code></summary>
+<details><summary><code>client.jobs_phases.<a href="src/fern/jobs_phases/client.py#L160-L220">get_phases_stock_on_hand</a>(...) -> StockOnHandListResponse</code></summary>
 <dl>
 <dd>
 
@@ -5306,7 +5306,7 @@ Searchable fields:
 </dl>
 </details>
 
-<details><summary><code>client.jobs_phases.<a href="src/fern/jobs_phases/client.py">delete_phases_job_phase_id_stock_on_hand_stock_on_hand_id</a>(...)</code></summary>
+<details><summary><code>client.jobs_phases.<a href="src/fern/jobs_phases/client.py#L222-L256">delete_phases_job_phase_id_stock_on_hand_stock_on_hand_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5388,7 +5388,7 @@ client.jobs_phases.delete_phases_job_phase_id_stock_on_hand_stock_on_hand_id(
 </dl>
 </details>
 
-<details><summary><code>client.jobs_phases.<a href="src/fern/jobs_phases/client.py">patch_phases_job_phase_id_stock_on_hand_stock_on_hand_id</a>(...) -> StockOnHandResponse</code></summary>
+<details><summary><code>client.jobs_phases.<a href="src/fern/jobs_phases/client.py#L258-L323">patch_phases_job_phase_id_stock_on_hand_stock_on_hand_id</a>(...) -> StockOnHandResponse</code></summary>
 <dl>
 <dd>
 
@@ -5519,7 +5519,7 @@ client.jobs_phases.patch_phases_job_phase_id_stock_on_hand_stock_on_hand_id(
 </details>
 
 ## StockUsed
-<details><summary><code>client.stock_used.<a href="src/fern/stock_used/client.py">get_stock_used</a>(...) -> StockUsedListResponse</code></summary>
+<details><summary><code>client.stock_used.<a href="src/fern/stock_used/client.py#L27-L72">get_stock_used</a>(...) -> StockUsedListResponse</code></summary>
 <dl>
 <dd>
 
@@ -5607,7 +5607,7 @@ client.stock_used.get_stock_used()
 </details>
 
 ## Users
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_users</a>(...) -> UsersResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L36-L101">get_users</a>(...) -> UsersResponse</code></summary>
 <dl>
 <dd>
 
@@ -5734,7 +5734,7 @@ Searchable fields:
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_users_user_id</a>(...) -> UserByIdResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L103-L133">get_users_user_id</a>(...) -> UserByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -5807,7 +5807,7 @@ client.users.get_users_user_id(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">patch_users_user_id</a>(...) -> UserByIdResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L135-L195">patch_users_user_id</a>(...) -> UserByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -5929,7 +5929,7 @@ client.users.patch_users_user_id(
 </details>
 
 ## TimeEntries
-<details><summary><code>client.time_entries.<a href="src/fern/time_entries/client.py">get_time_entries</a>(...) -> TimeEntriesResponse</code></summary>
+<details><summary><code>client.time_entries.<a href="src/fern/time_entries/client.py#L29-L123">get_time_entries</a>(...) -> TimeEntriesResponse</code></summary>
 <dl>
 <dd>
 
@@ -6092,7 +6092,7 @@ Searchable fields:
 </details>
 
 ## CalendarEvents
-<details><summary><code>client.calendar_events.<a href="src/fern/calendar_events/client.py">get_calendar_events</a>(...) -> CalendarEventsResponse</code></summary>
+<details><summary><code>client.calendar_events.<a href="src/fern/calendar_events/client.py#L56-L148">get_calendar_events</a>(...) -> CalendarEventsResponse</code></summary>
 <dl>
 <dd>
 
@@ -6256,7 +6256,7 @@ This defaults to WEEK if not provided.
 </dl>
 </details>
 
-<details><summary><code>client.calendar_events.<a href="src/fern/calendar_events/client.py">post_calendar_events</a>(...) -> CalendarEventsResponse</code></summary>
+<details><summary><code>client.calendar_events.<a href="src/fern/calendar_events/client.py#L150-L272">post_calendar_events</a>(...) -> CalendarEventsResponse</code></summary>
 <dl>
 <dd>
 
@@ -6461,7 +6461,7 @@ client.calendar_events.post_calendar_events(
 </dl>
 </details>
 
-<details><summary><code>client.calendar_events.<a href="src/fern/calendar_events/client.py">get_calendar_events_calendar_event_id</a>(...) -> CalendarEventByIdResponse</code></summary>
+<details><summary><code>client.calendar_events.<a href="src/fern/calendar_events/client.py#L274-L306">get_calendar_events_calendar_event_id</a>(...) -> CalendarEventByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -6534,7 +6534,7 @@ client.calendar_events.get_calendar_events_calendar_event_id(
 </dl>
 </details>
 
-<details><summary><code>client.calendar_events.<a href="src/fern/calendar_events/client.py">post_calendar_events_calendar_event_id</a>(...) -> CalendarEventsResponse</code></summary>
+<details><summary><code>client.calendar_events.<a href="src/fern/calendar_events/client.py#L308-L429">post_calendar_events_calendar_event_id</a>(...) -> CalendarEventsResponse</code></summary>
 <dl>
 <dd>
 
@@ -6743,7 +6743,7 @@ client.calendar_events.post_calendar_events_calendar_event_id(
 </dl>
 </details>
 
-<details><summary><code>client.calendar_events.<a href="src/fern/calendar_events/client.py">delete_calendar_events_calendar_event_id</a>(...)</code></summary>
+<details><summary><code>client.calendar_events.<a href="src/fern/calendar_events/client.py#L431-L486">delete_calendar_events_calendar_event_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6849,7 +6849,7 @@ client.calendar_events.delete_calendar_events_calendar_event_id(
 </details>
 
 ## PricingTiers
-<details><summary><code>client.pricing_tiers.<a href="src/fern/pricing_tiers/client.py">get_pricing_tiers</a>(...) -> GetPricingTiersResponse</code></summary>
+<details><summary><code>client.pricing_tiers.<a href="src/fern/pricing_tiers/client.py#L29-L75">get_pricing_tiers</a>(...) -> GetPricingTiersResponse</code></summary>
 <dl>
 <dd>
 
@@ -6944,7 +6944,7 @@ client.pricing_tiers.get_pricing_tiers()
 </dl>
 </details>
 
-<details><summary><code>client.pricing_tiers.<a href="src/fern/pricing_tiers/client.py">get_pricing_tiers_id</a>(...) -> GetPricingTierByIdResponse</code></summary>
+<details><summary><code>client.pricing_tiers.<a href="src/fern/pricing_tiers/client.py#L77-L107">get_pricing_tiers_id</a>(...) -> GetPricingTierByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -7018,7 +7018,7 @@ client.pricing_tiers.get_pricing_tiers_id(
 </details>
 
 ## Pricebooks
-<details><summary><code>client.pricebooks.<a href="src/fern/pricebooks/client.py">post_pricebooks_search</a>(...) -> SearchPricebooksResponse</code></summary>
+<details><summary><code>client.pricebooks.<a href="src/fern/pricebooks/client.py#L37-L145">post_pricebooks_search</a>(...) -> SearchPricebooksResponse</code></summary>
 <dl>
 <dd>
 
@@ -7186,7 +7186,7 @@ Search term for pricebook items (minimum 3 characters). Searches across:
 </dl>
 </details>
 
-<details><summary><code>client.pricebooks.<a href="src/fern/pricebooks/client.py">get_pricebooks</a>(...) -> GetPricebooksResponse</code></summary>
+<details><summary><code>client.pricebooks.<a href="src/fern/pricebooks/client.py#L147-L198">get_pricebooks</a>(...) -> GetPricebooksResponse</code></summary>
 <dl>
 <dd>
 
@@ -7289,7 +7289,7 @@ client.pricebooks.get_pricebooks()
 </dl>
 </details>
 
-<details><summary><code>client.pricebooks.<a href="src/fern/pricebooks/client.py">get_pricebooks_id</a>(...) -> GetPriceBookByIdResponse</code></summary>
+<details><summary><code>client.pricebooks.<a href="src/fern/pricebooks/client.py#L200-L230">get_pricebooks_id</a>(...) -> GetPriceBookByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -7362,7 +7362,7 @@ client.pricebooks.get_pricebooks_id(
 </dl>
 </details>
 
-<details><summary><code>client.pricebooks.<a href="src/fern/pricebooks/client.py">get_pricebooks_id_pricebook_items</a>(...) -> GetPricebookItemsResponse</code></summary>
+<details><summary><code>client.pricebooks.<a href="src/fern/pricebooks/client.py#L232-L276">get_pricebooks_id_pricebook_items</a>(...) -> GetPricebookItemsResponse</code></summary>
 <dl>
 <dd>
 
@@ -7459,7 +7459,7 @@ client.pricebooks.get_pricebooks_id_pricebook_items(
 </dl>
 </details>
 
-<details><summary><code>client.pricebooks.<a href="src/fern/pricebooks/client.py">get_pricebooks_id_pricebook_items_pricebook_item_id</a>(...) -> GetPricebookItemByIdResponse</code></summary>
+<details><summary><code>client.pricebooks.<a href="src/fern/pricebooks/client.py#L278-L320">get_pricebooks_id_pricebook_items_pricebook_item_id</a>(...) -> GetPricebookItemByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -7550,7 +7550,7 @@ client.pricebooks.get_pricebooks_id_pricebook_items_pricebook_item_id(
 </details>
 
 ## Notes
-<details><summary><code>client.notes.<a href="src/fern/notes/client.py">get_notes</a>(...) -> GetNotesResponse</code></summary>
+<details><summary><code>client.notes.<a href="src/fern/notes/client.py#L29-L89">get_notes</a>(...) -> GetNotesResponse</code></summary>
 <dl>
 <dd>
 
@@ -7670,7 +7670,7 @@ client.notes.get_notes()
 </details>
 
 ## Company
-<details><summary><code>client.company.<a href="src/fern/company/client.py">get_company</a>() -> GetCompanyResponse</code></summary>
+<details><summary><code>client.company.<a href="src/fern/company/client.py#L26-L50">get_company</a>() -> GetCompanyResponse</code></summary>
 <dl>
 <dd>
 

@@ -1,6 +1,6 @@
 # Reference
 ## List
-<details><summary><code>client.list_.<a href="src/fern/list_/client.py">show_all_kitties</a>() -> typing.List[Kitty]</code></summary>
+<details><summary><code>client.list_.<a href="src/fern/list_/client.py#L26-L48">show_all_kitties</a>() -> typing.List[Kitty]</code></summary>
 <dl>
 <dd>
 
@@ -62,7 +62,7 @@ client.list_.show_all_kitties()
 </dl>
 </details>
 
-<details><summary><code>client.list_.<a href="src/fern/list_/client.py">show_owned_kitties</a>() -> typing.List[Kitty]</code></summary>
+<details><summary><code>client.list_.<a href="src/fern/list_/client.py#L50-L72">show_owned_kitties</a>() -> typing.List[Kitty]</code></summary>
 <dl>
 <dd>
 
@@ -125,7 +125,7 @@ client.list_.show_owned_kitties()
 </details>
 
 ## Wallet
-<details><summary><code>client.wallet.<a href="src/fern/wallet/client.py">show_balance</a>() -> float</code></summary>
+<details><summary><code>client.wallet.<a href="src/fern/wallet/client.py#L29-L51">show_balance</a>() -> float</code></summary>
 <dl>
 <dd>
 
@@ -187,7 +187,7 @@ client.wallet.show_balance()
 </dl>
 </details>
 
-<details><summary><code>client.wallet.<a href="src/fern/wallet/client.py">buy_kitty</a>(...) -> Kitty</code></summary>
+<details><summary><code>client.wallet.<a href="src/fern/wallet/client.py#L53-L79">buy_kitty</a>(...) -> Kitty</code></summary>
 <dl>
 <dd>
 
@@ -260,7 +260,7 @@ client.wallet.buy_kitty(
 </details>
 
 ## Breeding
-<details><summary><code>client.breeding.<a href="src/fern/breeding/client.py">breed_kitty</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.breeding.<a href="src/fern/breeding/client.py#L28-L62">breed_kitty</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -339,7 +339,7 @@ client.breeding.breed_kitty()
 </details>
 
 ## Mutation
-<details><summary><code>client.mutation.<a href="src/fern/mutation/client.py">set_kitty_property</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.mutation.<a href="src/fern/mutation/client.py#L31-L102">set_kitty_property</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -410,7 +410,7 @@ client.mutation.set_kitty_property()
 </details>
 
 ## Minting
-<details><summary><code>client.minting.<a href="src/fern/minting/client.py">mint_kitty</a>(...) -> Kitty</code></summary>
+<details><summary><code>client.minting.<a href="src/fern/minting/client.py#L29-L55">mint_kitty</a>(...) -> Kitty</code></summary>
 <dl>
 <dd>
 
@@ -482,7 +482,7 @@ client.minting.mint_kitty(
 </dl>
 </details>
 
-<details><summary><code>client.minting.<a href="src/fern/minting/client.py">mint_tradable_kitty</a>(...) -> Kitty</code></summary>
+<details><summary><code>client.minting.<a href="src/fern/minting/client.py#L57-L97">mint_tradable_kitty</a>(...) -> Kitty</code></summary>
 <dl>
 <dd>
 

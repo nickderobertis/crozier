@@ -13,3 +13,10 @@ A component `anyOf`/`oneOf` of two or more members written with a 3.0 `nullable:
 The certified pair writes `SwatchOrName = typing.Union[str, Swatch]`, `SwatchOrCount = typing.Union[Swatch, int]` and `GlazeOrSwatch = typing.Union[typing.Optional[Glaze], Swatch]`. crozier wrote `typing.Union[str, typing.Optional[Swatch]]` (the alias-level `Optional` rendered on the last member) and `typing.Union[Glaze, Swatch]`. It now writes the certified pair's three aliases: the parity gap is repaired in `Builder::add_named_shape` and `Builder::variant_ref`. The corpus golden `apache.org-airflow`'s `ScheduleInterval = Union[TimeDelta, RelativeDelta, Optional[CronExpression]]`, whose `CronExpression` is itself `nullable`, is the same member rule and is unchanged.
 
 Held by `a_nullable_union_keeps_its_members_and_a_nullable_target_its_optional` in `crates/crozier-e2e/tests/e2e/union_modelling.rs`: crozier generates `openapi.yml` and the SDK must byte-match `fern-expected/` (and `literals/fern-expected/` in `literals` mode where committed) apart from the catalogued departures the ledger records for the tree, and the pre-repair spelling written back into crozier's output must fail that comparison. The unit test `nullable_unions_keep_members_and_nullable_targets_are_optional` in `src/ir.rs`'s `union_modelling_tests` drives the repaired lowering on the same document.
+
+**Regenerated at the certified pair.** The Fern goldens workflow (run
+43423270787) regenerated every `fern-expected/` tree this record holds at Fern
+CLI 5.200.0 / `fernapi/fern-python-sdk` 5.41.25, the certified pair, and
+crozier's comparison holds the record to those trees. Statements above that name Fern CLI
+5.163.1 / fern-python-sdk 5.41.3 describe the measurement as first taken, at
+the pair certified then; a digest, log or exit code they cite is that run's.

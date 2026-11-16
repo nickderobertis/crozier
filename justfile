@@ -169,8 +169,10 @@ test-e2e:
 # fern-refusals gate's `wire_test.py` condition: the `sdk-env` and `runtime`
 # projects. Promoted out of the affected tier (it reaches PyPI); CI runs it in
 # the `sdk-env` job, which `gate` requires. Needs Python (uv used when present).
+# Also checks the migration guide's option tables against the pinned generator
+# image (`migration-options`; needs Docker, else skips saying so).
 test-sdk-env:
-    @just nx run-many --targets=test --projects=sdk-env,runtime,nested-discriminator-runtime
+    @just nx run-many --targets=test --projects=sdk-env,runtime,nested-discriminator-runtime,migration-options
 
 # Runtime ("wire") test only — the `runtime` project: record the compiled
 # client's behavior via an injected httpx.MockTransport (tests/runtime/) and

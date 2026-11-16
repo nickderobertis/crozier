@@ -101,7 +101,7 @@ witness, further declarers keep their recorded screening state.
 | `combo-body-property-named-as-path-param` | `search-incomplete` | 1256 | proven: registered `paloalto-cspm-search-manager`; the paired removal moves the same files in both generators |
 | `combo-body-property-named-as-query-param` | `search-incomplete` | 509 | proven: registered `k8s-container-service-provider`; the paired removal moves the same files in both generators |
 | `combo-header-param-ref-string-enum` | `search-incomplete` | 32 | proven: registered `ecommerce-ai-skills-runtime` (corpus row 3400, registered by this search); the paired removal moves the same files in both generators |
-| `combo-path-param-ref-pattern` | `search-incomplete` | 268 | decided output-insensitive in both generators ([shared table](../output-insensitive.tsv)); not proven |
+| `combo-path-param-ref-pattern` | `search-incomplete` | 268 | undecided: at Fern CLI 5.200.0 / 5.41.25 the lighthouse control moves crozier's files but no Fern file ([below](#the-pattern-crozier-reads)); not proven |
 | `combo-path-param-ref-string-enum` | `search-incomplete` | 204 | proven: registered `ramu-shogi`; the paired removal moves the same files in both generators |
 | `combo-query-param-anyof` | `search-incomplete` | 525 | proven: registered `openfoodfacts-taxonomy-editor`; the paired removal moves the same files in both generators |
 | `combo-query-param-array-default` | `search-incomplete` | 154 | decided output-insensitive in both generators ([shared table](../output-insensitive.tsv)); not proven |
@@ -236,13 +236,20 @@ before/after maps are the `lighthouse-beacon-log-*-fern.json` and
 
 | key | documents tried, none moving either generator |
 |---|---|
-| `combo-path-param-ref-pattern` | discord-com, cyclonedx-transparency-exchange, tlon-notes and the lighthouse document; tamoss moves no crozier file |
 | `combo-query-param-array-default` | appwrite.io-client and the lighthouse document; letta, anchore.io and appwrite.io-server move no crozier file |
 
-Discord's ablated certified tree is byte-identical to its committed golden,
-although its `guild_id`-style paths are typed by the `pattern`-bearing
-`SnowflakeType`. Crozier records whether a path parameter's named type carries a
-`pattern`, but no emitter reads it, and the certified pair's output agrees.
+### The pattern crozier reads
+
+`combo-path-param-ref-pattern` was decided output-insensitive at Fern CLI
+5.163.1 / 5.41.3, where removing the `pattern` moved no file of either
+generator (discord-com, cyclonedx-transparency-exchange, tlon-notes and the
+lighthouse document). Re-measured at 5.200.0 / 5.41.25, the lighthouse control
+still moves no Fern file. It now moves crozier's `README.md`, `reference.md` and
+`src/fern/beacons/client.py`: Fern documents `beacon_code="beaconCode"`, which
+the `pattern` rejects, so crozier's `schema-rejected-name-example` departure
+writes `"AAA-00"`; without the `pattern` crozier writes Fern's value. crozier's
+output now depends on the condition, so the key left the shared table and is
+undecided. It is not proven either.
 
 [screening-removal-comparisons.json](screening-removal-comparisons.json) records
 these real and from-scratch controls. The from-scratch document and its
@@ -309,3 +316,8 @@ catalogued.
    `PATCH`.
 
 The fourth repair is the multipart refusal above (`name_refusals.rs`).
+
+**Historical.** This record was measured at Fern CLI 5.163.1 /
+`fernapi/fern-python-sdk` 5.41.3, the pair certified when it was taken; where it
+says "the certified pair" it means that pair. It has not been re-measured at
+the current certified pair, Fern CLI 5.200.0 / fern-python-sdk 5.41.25.

@@ -1,5 +1,16 @@
 # default-not-valid-for-type: refuse
 
+## At Fern CLI 5.200.0 / fern-python-sdk 5.41.25
+
+Decision: **refuse**, unchanged. The Fern goldens run 43423270787
+re-took the [probe record](fern-refusal.txt) at this pair, and Fern still refuses
+the probe as recorded. Every shape, confirmation and reduction the registry
+carries for the class was retaken at this pair (`fern-refusals.py shapes`,
+`confirm` and `reduce`, serially), each with its role's verdict, and
+`fern-refusals.py check` holds them there. crozier's behaviour is unchanged: the
+e2e gate still runs its probe in both modes. The sections below are history at
+the pairs they name.
+
 ## At Fern CLI 5.163.1 / fern-python-sdk 5.41.3
 
 Decision: **refuse**, unchanged. The [probe record](fern-refusal.txt) is measured at this pair. Its 7 probe and 7 control shapes are measured at this pair too ([`shapes.tsv`](../../openapi-surface/fern-refusals/shapes.tsv)): a `-probe` is a shape Fern refuses, a `-control` one it generates from, and each `evaluation-logs/fern-<shape>.log` holds that measurement. The population carries the class on 15 documents at this pair, as at Fern CLI 5.67.1. crozier's release build refuses 15 of the 15 retrievable ones under `--fern-strict` ([`documents.tsv`](../documents.tsv)).

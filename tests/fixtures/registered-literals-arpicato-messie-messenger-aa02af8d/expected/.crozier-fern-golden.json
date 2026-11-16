@@ -1,5 +1,5 @@
 {
-  "fern_python_sdk_version": "5.41.3",
+  "fern_python_sdk_version": "5.41.25",
   "corpus_spec_name": "registered-literals-arpicato-messie-messenger-aa02af8d",
   "corpus_spec_ref": "5590235194cb3ad6cbef8174fdc23ecc34498059",
   "corpus_spec_url": "https://raw.githubusercontent.com/arpicato/messie-messenger/5590235194cb3ad6cbef8174fdc23ecc34498059/docs/mautrix-openapi.yaml"

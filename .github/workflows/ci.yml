@@ -37,7 +37,11 @@ jobs:
   # that runs, and it holds that branch to the release tool's own edits.
   lint:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # 60, not 30: setup reaches the judged diff tier about 23 minutes in, and each
+    # ~3 MB judge batch takes about 2.5 minutes, so a broad change (the Fern 5.200.0
+    # pair move needed 5 batches) cannot finish inside 30. The cap does not lengthen
+    # CI's critical path: test-linux already runs longer.
+    timeout-minutes: 60
     permissions:
       actions: write  # cancel this run when the judge gives no verdict (the last step below)
       contents: write  # visual docs: push the pull request's gallery preview to gh-pages
@@ -408,7 +412,7 @@ jobs:
   # in run 42402692714 a whole-graph change's ci-test step alone took 84 minutes, and run
   # 42422342228 was cancelled at 90 before its SDK step (about 1153 s) and install (about 163 s),
   # so a cold whole-graph change needs about 110; on 2026-11-08 a broad one took more than 120
-  # and #792's run was cancelled there with nothing failed. 150 stands until the Mac lane has a warm
+  # and #792's run was cancelled there with nothing failed. 240 stands until the Mac lane has a warm
   # result cache (main's cache writer runs lint, Linux and Windows only; whether Mac joins it
   # is the user's open decision) or the follow-up on the cold Mac leg is resolved.
   test-macos:
@@ -416,7 +420,8 @@ jobs:
       (github.event_name == 'pull_request' && !(github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.head_ref, 'release-plz-')))
       || (github.event_name == 'workflow_dispatch' && inputs.macos-diagnostic)
     runs-on: macos-latest
-    timeout-minutes: 150
+    # 240, as test-linux (manager ruling c33.0): run 43716165831's first stage took 2h04m on macos-latest for the 5.200.0 pair move, and 150 cancelled its sdk-env stage.
+    timeout-minutes: 240
     steps:
       # Full history: the affected tier's base is a merge base, which must be in the checkout.
       - uses: actions/checkout@v4

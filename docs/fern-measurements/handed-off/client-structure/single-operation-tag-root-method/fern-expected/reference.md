@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">invoice_match</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L113-L137">invoice_match</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -58,7 +58,7 @@ client.invoice_match(
 </details>
 
 ## Expenses
-<details><summary><code>client.expenses.<a href="src/fern/expenses/client.py">list</a>() -> str</code></summary>
+<details><summary><code>client.expenses.<a href="src/fern/expenses/client.py#L25-L45">list</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -106,7 +106,7 @@ client.expenses.list()
 </dl>
 </details>
 
-<details><summary><code>client.expenses.<a href="src/fern/expenses/client.py">get</a>(...) -> str</code></summary>
+<details><summary><code>client.expenses.<a href="src/fern/expenses/client.py#L47-L71">get</a>(...) -> str</code></summary>
 <dl>
 <dd>
 

@@ -73,7 +73,7 @@ The SDK also exports an `async` client so that you can make non-blocking calls t
 import asyncio
 from fern.products import ProductRequestPostType
 
-from fern import AsyncFernApi
+from fern import AsyncFernApi, ProductCategory
 
 client = AsyncFernApi(
     token="<token>",

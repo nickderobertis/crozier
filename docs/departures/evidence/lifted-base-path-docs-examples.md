@@ -79,3 +79,8 @@ the trees' `lifted-base-path-docs-examples` rows in
 `compare_reports_the_lifted_base_path_departures_and_fails_on_any_other_difference`
 in `crates/crozier-e2e/tests/e2e/compare.rs` drives exactly that, and shows the comparison failing
 when one more line of either file differs.
+
+**Historical.** This record was measured at Fern CLI 5.163.1 /
+`fernapi/fern-python-sdk` 5.41.3, the pair certified when it was taken; where it
+says "the certified pair" it means that pair. It has not been re-measured at
+the current certified pair, Fern CLI 5.200.0 / fern-python-sdk 5.41.25.

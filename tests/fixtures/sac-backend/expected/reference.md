@@ -1,6 +1,6 @@
 # Reference
 ## Solicitudes
-<details><summary><code>client.solicitudes.<a href="src/fern/solicitudes/client.py">listar_solicitudes</a>(...) -> SolicitudesPaginadasResponse</code></summary>
+<details><summary><code>client.solicitudes.<a href="src/fern/solicitudes/client.py#L36-L108">listar_solicitudes</a>(...) -> SolicitudesPaginadasResponse</code></summary>
 <dl>
 <dd>
 
@@ -126,7 +126,7 @@ client.solicitudes.listar_solicitudes(
 </dl>
 </details>
 
-<details><summary><code>client.solicitudes.<a href="src/fern/solicitudes/client.py">crear_solicitud</a>(...) -> SolicitudResponse</code></summary>
+<details><summary><code>client.solicitudes.<a href="src/fern/solicitudes/client.py#L110-L183">crear_solicitud</a>(...) -> SolicitudResponse</code></summary>
 <dl>
 <dd>
 
@@ -254,7 +254,7 @@ client.solicitudes.crear_solicitud(
 </dl>
 </details>
 
-<details><summary><code>client.solicitudes.<a href="src/fern/solicitudes/client.py">obtener_solicitud_por_id</a>(...) -> SolicitudResponse</code></summary>
+<details><summary><code>client.solicitudes.<a href="src/fern/solicitudes/client.py#L185-L217">obtener_solicitud_por_id</a>(...) -> SolicitudResponse</code></summary>
 <dl>
 <dd>
 
@@ -328,7 +328,7 @@ client.solicitudes.obtener_solicitud_por_id(
 </dl>
 </details>
 
-<details><summary><code>client.solicitudes.<a href="src/fern/solicitudes/client.py">clasificar_solicitud</a>(...) -> SolicitudResponse</code></summary>
+<details><summary><code>client.solicitudes.<a href="src/fern/solicitudes/client.py#L219-L270">clasificar_solicitud</a>(...) -> SolicitudResponse</code></summary>
 <dl>
 <dd>
 
@@ -430,7 +430,7 @@ client.solicitudes.clasificar_solicitud(
 </dl>
 </details>
 
-<details><summary><code>client.solicitudes.<a href="src/fern/solicitudes/client.py">cambiar_estado_solicitud</a>(...) -> SolicitudResponse</code></summary>
+<details><summary><code>client.solicitudes.<a href="src/fern/solicitudes/client.py#L272-L319">cambiar_estado_solicitud</a>(...) -> SolicitudResponse</code></summary>
 <dl>
 <dd>
 
@@ -523,7 +523,7 @@ client.solicitudes.cambiar_estado_solicitud(
 </dl>
 </details>
 
-<details><summary><code>client.solicitudes.<a href="src/fern/solicitudes/client.py">asignar_responsable</a>(...) -> AsignacionResponse</code></summary>
+<details><summary><code>client.solicitudes.<a href="src/fern/solicitudes/client.py#L321-L368">asignar_responsable</a>(...) -> AsignacionResponse</code></summary>
 <dl>
 <dd>
 
@@ -615,7 +615,7 @@ client.solicitudes.asignar_responsable(
 </dl>
 </details>
 
-<details><summary><code>client.solicitudes.<a href="src/fern/solicitudes/client.py">cerrar_solicitud</a>(...) -> SolicitudResponse</code></summary>
+<details><summary><code>client.solicitudes.<a href="src/fern/solicitudes/client.py#L370-L418">cerrar_solicitud</a>(...) -> SolicitudResponse</code></summary>
 <dl>
 <dd>
 
@@ -708,7 +708,7 @@ client.solicitudes.cerrar_solicitud(
 </dl>
 </details>
 
-<details><summary><code>client.solicitudes.<a href="src/fern/solicitudes/client.py">obtener_historial_solicitud</a>(...) -> typing.List[HistorialResponse]</code></summary>
+<details><summary><code>client.solicitudes.<a href="src/fern/solicitudes/client.py#L420-L453">obtener_historial_solicitud</a>(...) -> typing.List[HistorialResponse]</code></summary>
 <dl>
 <dd>
 
@@ -784,7 +784,7 @@ client.solicitudes.obtener_historial_solicitud(
 </details>
 
 ## Usuarios
-<details><summary><code>client.usuarios.<a href="src/fern/usuarios/client.py">iniciar_sesion</a>(...) -> IniciarSesionResponse</code></summary>
+<details><summary><code>client.usuarios.<a href="src/fern/usuarios/client.py#L31-L69">iniciar_sesion</a>(...) -> IniciarSesionResponse</code></summary>
 <dl>
 <dd>
 
@@ -867,7 +867,7 @@ client.usuarios.iniciar_sesion(
 </dl>
 </details>
 
-<details><summary><code>client.usuarios.<a href="src/fern/usuarios/client.py">registrar_solicitante</a>(...) -> UsuarioResponse</code></summary>
+<details><summary><code>client.usuarios.<a href="src/fern/usuarios/client.py#L71-L127">registrar_solicitante</a>(...) -> UsuarioResponse</code></summary>
 <dl>
 <dd>
 
@@ -968,7 +968,7 @@ client.usuarios.registrar_solicitante(
 </dl>
 </details>
 
-<details><summary><code>client.usuarios.<a href="src/fern/usuarios/client.py">listar_usuarios</a>() -> typing.List[UsuarioResponse]</code></summary>
+<details><summary><code>client.usuarios.<a href="src/fern/usuarios/client.py#L129-L156">listar_usuarios</a>() -> typing.List[UsuarioResponse]</code></summary>
 <dl>
 <dd>
 
@@ -1032,7 +1032,7 @@ client.usuarios.listar_usuarios()
 </dl>
 </details>
 
-<details><summary><code>client.usuarios.<a href="src/fern/usuarios/client.py">crear_usuario</a>(...) -> UsuarioResponse</code></summary>
+<details><summary><code>client.usuarios.<a href="src/fern/usuarios/client.py#L158-L219">crear_usuario</a>(...) -> UsuarioResponse</code></summary>
 <dl>
 <dd>
 
@@ -1142,7 +1142,7 @@ client.usuarios.crear_usuario(
 </dl>
 </details>
 
-<details><summary><code>client.usuarios.<a href="src/fern/usuarios/client.py">cambiar_estado_usuario</a>(...) -> UsuarioResponse</code></summary>
+<details><summary><code>client.usuarios.<a href="src/fern/usuarios/client.py#L221-L257">cambiar_estado_usuario</a>(...) -> UsuarioResponse</code></summary>
 <dl>
 <dd>
 
@@ -1226,7 +1226,7 @@ client.usuarios.cambiar_estado_usuario(
 </details>
 
 ## IA
-<details><summary><code>client.ia.<a href="src/fern/ia/client.py">sugerir_clasificacion</a>(...) -> SugerirClasificacionResponse</code></summary>
+<details><summary><code>client.ia.<a href="src/fern/ia/client.py#L30-L68">sugerir_clasificacion</a>(...) -> SugerirClasificacionResponse</code></summary>
 <dl>
 <dd>
 
@@ -1306,7 +1306,7 @@ client.ia.sugerir_clasificacion(
 </dl>
 </details>
 
-<details><summary><code>client.ia.<a href="src/fern/ia/client.py">generar_resumen_solicitud</a>(...) -> ResumenSolicitudResponse</code></summary>
+<details><summary><code>client.ia.<a href="src/fern/ia/client.py#L70-L110">generar_resumen_solicitud</a>(...) -> ResumenSolicitudResponse</code></summary>
 <dl>
 <dd>
 

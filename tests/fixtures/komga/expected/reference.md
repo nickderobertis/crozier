@@ -1,6 +1,6 @@
 # Reference
 ## Management
-<details><summary><code>client.management.<a href="src/fern/management/client.py">get_actuator_info</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.management.<a href="src/fern/management/client.py#L25-L51">get_actuator_info</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -64,7 +64,7 @@ client.management.get_actuator_info()
 </details>
 
 ## User session
-<details><summary><code>client.user_session.<a href="src/fern/user_session/client.py">post_logout</a>()</code></summary>
+<details><summary><code>client.user_session.<a href="src/fern/user_session/client.py#L25-L48">post_logout</a>()</code></summary>
 <dl>
 <dd>
 
@@ -127,7 +127,7 @@ client.user_session.post_logout()
 </dl>
 </details>
 
-<details><summary><code>client.user_session.<a href="src/fern/user_session/client.py">post_logout1</a>()</code></summary>
+<details><summary><code>client.user_session.<a href="src/fern/user_session/client.py#L50-L73">post_logout1</a>()</code></summary>
 <dl>
 <dd>
 
@@ -190,7 +190,7 @@ client.user_session.post_logout1()
 </dl>
 </details>
 
-<details><summary><code>client.user_session.<a href="src/fern/user_session/client.py">convert_header_session_to_cookie</a>()</code></summary>
+<details><summary><code>client.user_session.<a href="src/fern/user_session/client.py#L75-L98">convert_header_session_to_cookie</a>()</code></summary>
 <dl>
 <dd>
 
@@ -254,7 +254,7 @@ client.user_session.convert_header_session_to_cookie()
 </details>
 
 ## Deprecated
-<details><summary><code>client.deprecated.<a href="src/fern/deprecated/client.py">get_age_ratings1</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.deprecated.<a href="src/fern/deprecated/client.py#L31-L67">get_age_ratings1</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -333,7 +333,7 @@ client.deprecated.get_age_ratings1()
 </dl>
 </details>
 
-<details><summary><code>client.deprecated.<a href="src/fern/deprecated/client.py">get_authors_deprecated</a>(...) -> typing.List[AuthorDto]</code></summary>
+<details><summary><code>client.deprecated.<a href="src/fern/deprecated/client.py#L69-L115">get_authors_deprecated</a>(...) -> typing.List[AuthorDto]</code></summary>
 <dl>
 <dd>
 
@@ -428,7 +428,7 @@ client.deprecated.get_authors_deprecated()
 </dl>
 </details>
 
-<details><summary><code>client.deprecated.<a href="src/fern/deprecated/client.py">get_authors_names1</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.deprecated.<a href="src/fern/deprecated/client.py#L117-L145">get_authors_names1</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -499,7 +499,7 @@ client.deprecated.get_authors_names1()
 </dl>
 </details>
 
-<details><summary><code>client.deprecated.<a href="src/fern/deprecated/client.py">get_authors_roles1</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.deprecated.<a href="src/fern/deprecated/client.py#L147-L171">get_authors_roles1</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -562,7 +562,7 @@ client.deprecated.get_authors_roles1()
 </dl>
 </details>
 
-<details><summary><code>client.deprecated.<a href="src/fern/deprecated/client.py">get_genres1</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.deprecated.<a href="src/fern/deprecated/client.py#L173-L209">get_genres1</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -641,7 +641,7 @@ client.deprecated.get_genres1()
 </dl>
 </details>
 
-<details><summary><code>client.deprecated.<a href="src/fern/deprecated/client.py">get_languages1</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.deprecated.<a href="src/fern/deprecated/client.py#L211-L247">get_languages1</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -720,7 +720,7 @@ client.deprecated.get_languages1()
 </dl>
 </details>
 
-<details><summary><code>client.deprecated.<a href="src/fern/deprecated/client.py">update_library_by_id_deprecated</a>(...)</code></summary>
+<details><summary><code>client.deprecated.<a href="src/fern/deprecated/client.py#L249-L398">update_library_by_id_deprecated</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -803,7 +803,7 @@ client.deprecated.update_library_by_id_deprecated(
 </dl>
 </details>
 
-<details><summary><code>client.deprecated.<a href="src/fern/deprecated/client.py">get_publishers1</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.deprecated.<a href="src/fern/deprecated/client.py#L400-L436">get_publishers1</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -882,7 +882,7 @@ client.deprecated.get_publishers1()
 </dl>
 </details>
 
-<details><summary><code>client.deprecated.<a href="src/fern/deprecated/client.py">get_series_release_dates</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.deprecated.<a href="src/fern/deprecated/client.py#L438-L474">get_series_release_dates</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -961,7 +961,7 @@ client.deprecated.get_series_release_dates()
 </dl>
 </details>
 
-<details><summary><code>client.deprecated.<a href="src/fern/deprecated/client.py">get_sharing_labels1</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.deprecated.<a href="src/fern/deprecated/client.py#L476-L512">get_sharing_labels1</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -1040,7 +1040,7 @@ client.deprecated.get_sharing_labels1()
 </dl>
 </details>
 
-<details><summary><code>client.deprecated.<a href="src/fern/deprecated/client.py">get_tags1</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.deprecated.<a href="src/fern/deprecated/client.py#L514-L550">get_tags1</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -1119,7 +1119,7 @@ client.deprecated.get_tags1()
 </dl>
 </details>
 
-<details><summary><code>client.deprecated.<a href="src/fern/deprecated/client.py">get_book_tags</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.deprecated.<a href="src/fern/deprecated/client.py#L552-L591">get_book_tags</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -1206,7 +1206,7 @@ client.deprecated.get_book_tags()
 </dl>
 </details>
 
-<details><summary><code>client.deprecated.<a href="src/fern/deprecated/client.py">get_series_tags</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.deprecated.<a href="src/fern/deprecated/client.py#L593-L629">get_series_tags</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -1286,7 +1286,7 @@ client.deprecated.get_series_tags()
 </details>
 
 ## Announcements
-<details><summary><code>client.announcements.<a href="src/fern/announcements/client.py">get_announcements</a>() -> JsonFeedDto</code></summary>
+<details><summary><code>client.announcements.<a href="src/fern/announcements/client.py#L29-L53">get_announcements</a>() -> JsonFeedDto</code></summary>
 <dl>
 <dd>
 
@@ -1349,7 +1349,7 @@ client.announcements.get_announcements()
 </dl>
 </details>
 
-<details><summary><code>client.announcements.<a href="src/fern/announcements/client.py">mark_announcements_read</a>(...)</code></summary>
+<details><summary><code>client.announcements.<a href="src/fern/announcements/client.py#L55-L84">mark_announcements_read</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1425,7 +1425,7 @@ client.announcements.mark_announcements_read(
 </details>
 
 ## Books
-<details><summary><code>client.books.<a href="src/fern/books/client.py">get_all_books_deprecated</a>(...) -> PageBookDto</code></summary>
+<details><summary><code>client.books.<a href="src/fern/books/client.py#L39-L121">get_all_books_deprecated</a>(...) -> PageBookDto</code></summary>
 <dl>
 <dd>
 
@@ -1568,7 +1568,7 @@ client.books.get_all_books_deprecated()
 </dl>
 </details>
 
-<details><summary><code>client.books.<a href="src/fern/books/client.py">get_books_duplicates</a>(...) -> PageBookDto</code></summary>
+<details><summary><code>client.books.<a href="src/fern/books/client.py#L123-L170">get_books_duplicates</a>(...) -> PageBookDto</code></summary>
 <dl>
 <dd>
 
@@ -1665,7 +1665,7 @@ client.books.get_books_duplicates()
 </dl>
 </details>
 
-<details><summary><code>client.books.<a href="src/fern/books/client.py">get_books_latest</a>(...) -> PageBookDto</code></summary>
+<details><summary><code>client.books.<a href="src/fern/books/client.py#L172-L213">get_books_latest</a>(...) -> PageBookDto</code></summary>
 <dl>
 <dd>
 
@@ -1752,7 +1752,7 @@ client.books.get_books_latest()
 </dl>
 </details>
 
-<details><summary><code>client.books.<a href="src/fern/books/client.py">get_books</a>(...) -> PageBookDto</code></summary>
+<details><summary><code>client.books.<a href="src/fern/books/client.py#L215-L270">get_books</a>(...) -> PageBookDto</code></summary>
 <dl>
 <dd>
 
@@ -1849,7 +1849,7 @@ client.books.get_books()
 </dl>
 </details>
 
-<details><summary><code>client.books.<a href="src/fern/books/client.py">update_book_metadata_by_batch</a>(...)</code></summary>
+<details><summary><code>client.books.<a href="src/fern/books/client.py#L272-L306">update_book_metadata_by_batch</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1926,7 +1926,7 @@ client.books.update_book_metadata_by_batch(
 </dl>
 </details>
 
-<details><summary><code>client.books.<a href="src/fern/books/client.py">get_books_on_deck</a>(...) -> PageBookDto</code></summary>
+<details><summary><code>client.books.<a href="src/fern/books/client.py#L308-L349">get_books_on_deck</a>(...) -> PageBookDto</code></summary>
 <dl>
 <dd>
 
@@ -2013,7 +2013,7 @@ client.books.get_books_on_deck()
 </dl>
 </details>
 
-<details><summary><code>client.books.<a href="src/fern/books/client.py">get_book_by_id</a>(...) -> BookDto</code></summary>
+<details><summary><code>client.books.<a href="src/fern/books/client.py#L351-L377">get_book_by_id</a>(...) -> BookDto</code></summary>
 <dl>
 <dd>
 
@@ -2072,7 +2072,7 @@ client.books.get_book_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.books.<a href="src/fern/books/client.py">book_analyze</a>(...)</code></summary>
+<details><summary><code>client.books.<a href="src/fern/books/client.py#L379-L406">book_analyze</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2145,7 +2145,7 @@ client.books.book_analyze(
 </dl>
 </details>
 
-<details><summary><code>client.books.<a href="src/fern/books/client.py">download_book_file</a>(...) -> StreamingResponseBody</code></summary>
+<details><summary><code>client.books.<a href="src/fern/books/client.py#L408-L440">download_book_file</a>(...) -> StreamingResponseBody</code></summary>
 <dl>
 <dd>
 
@@ -2220,7 +2220,7 @@ client.books.download_book_file(
 </dl>
 </details>
 
-<details><summary><code>client.books.<a href="src/fern/books/client.py">delete_book_file</a>(...)</code></summary>
+<details><summary><code>client.books.<a href="src/fern/books/client.py#L442-L469">delete_book_file</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2293,7 +2293,7 @@ client.books.delete_book_file(
 </dl>
 </details>
 
-<details><summary><code>client.books.<a href="src/fern/books/client.py">download_book_file1</a>(...) -> StreamingResponseBody</code></summary>
+<details><summary><code>client.books.<a href="src/fern/books/client.py#L471-L503">download_book_file1</a>(...) -> StreamingResponseBody</code></summary>
 <dl>
 <dd>
 
@@ -2368,7 +2368,7 @@ client.books.download_book_file1(
 </dl>
 </details>
 
-<details><summary><code>client.books.<a href="src/fern/books/client.py">update_book_metadata</a>(...)</code></summary>
+<details><summary><code>client.books.<a href="src/fern/books/client.py#L505-L614">update_book_metadata</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2451,7 +2451,7 @@ client.books.update_book_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.books.<a href="src/fern/books/client.py">book_refresh_metadata</a>(...)</code></summary>
+<details><summary><code>client.books.<a href="src/fern/books/client.py#L616-L643">book_refresh_metadata</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2524,7 +2524,7 @@ client.books.book_refresh_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.books.<a href="src/fern/books/client.py">get_book_sibling_next</a>(...) -> BookDto</code></summary>
+<details><summary><code>client.books.<a href="src/fern/books/client.py#L645-L673">get_book_sibling_next</a>(...) -> BookDto</code></summary>
 <dl>
 <dd>
 
@@ -2583,7 +2583,7 @@ client.books.get_book_sibling_next(
 </dl>
 </details>
 
-<details><summary><code>client.books.<a href="src/fern/books/client.py">get_book_sibling_previous</a>(...) -> BookDto</code></summary>
+<details><summary><code>client.books.<a href="src/fern/books/client.py#L675-L703">get_book_sibling_previous</a>(...) -> BookDto</code></summary>
 <dl>
 <dd>
 
@@ -2642,7 +2642,7 @@ client.books.get_book_sibling_previous(
 </dl>
 </details>
 
-<details><summary><code>client.books.<a href="src/fern/books/client.py">delete_book_read_progress</a>(...)</code></summary>
+<details><summary><code>client.books.<a href="src/fern/books/client.py#L705-L734">delete_book_read_progress</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2715,7 +2715,7 @@ client.books.delete_book_read_progress(
 </dl>
 </details>
 
-<details><summary><code>client.books.<a href="src/fern/books/client.py">mark_book_read_progress</a>(...)</code></summary>
+<details><summary><code>client.books.<a href="src/fern/books/client.py#L736-L776">mark_book_read_progress</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2804,7 +2804,7 @@ client.books.mark_book_read_progress(
 </dl>
 </details>
 
-<details><summary><code>client.books.<a href="src/fern/books/client.py">get_read_lists_by_book_id</a>(...) -> typing.List[ReadListDto]</code></summary>
+<details><summary><code>client.books.<a href="src/fern/books/client.py#L778-L806">get_read_lists_by_book_id</a>(...) -> typing.List[ReadListDto]</code></summary>
 <dl>
 <dd>
 
@@ -2864,7 +2864,7 @@ client.books.get_read_lists_by_book_id(
 </details>
 
 ## Import
-<details><summary><code>client.import_.<a href="src/fern/import_/client.py">books</a>(...)</code></summary>
+<details><summary><code>client.import_.<a href="src/fern/import_/client.py#L31-L74">books</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2952,7 +2952,7 @@ client.import_.books(
 </dl>
 </details>
 
-<details><summary><code>client.import_.<a href="src/fern/import_/client.py">scan_transient_books</a>(...) -> typing.List[TransientBookDto]</code></summary>
+<details><summary><code>client.import_.<a href="src/fern/import_/client.py#L76-L108">scan_transient_books</a>(...) -> typing.List[TransientBookDto]</code></summary>
 <dl>
 <dd>
 
@@ -3027,7 +3027,7 @@ client.import_.scan_transient_books(
 </dl>
 </details>
 
-<details><summary><code>client.import_.<a href="src/fern/import_/client.py">analyze_transient_book</a>(...) -> TransientBookDto</code></summary>
+<details><summary><code>client.import_.<a href="src/fern/import_/client.py#L110-L140">analyze_transient_book</a>(...) -> TransientBookDto</code></summary>
 <dl>
 <dd>
 
@@ -3100,7 +3100,7 @@ client.import_.analyze_transient_book(
 </dl>
 </details>
 
-<details><summary><code>client.import_.<a href="src/fern/import_/client.py">get_page_by_transient_book_id</a>(...) -> str</code></summary>
+<details><summary><code>client.import_.<a href="src/fern/import_/client.py#L142-L175">get_page_by_transient_book_id</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3183,7 +3183,7 @@ client.import_.get_page_by_transient_book_id(
 </details>
 
 ## Book Poster
-<details><summary><code>client.book_poster.<a href="src/fern/book_poster/client.py">books_regenerate_thumbnails</a>(...)</code></summary>
+<details><summary><code>client.book_poster.<a href="src/fern/book_poster/client.py#L30-L62">books_regenerate_thumbnails</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3254,7 +3254,7 @@ client.book_poster.books_regenerate_thumbnails()
 </dl>
 </details>
 
-<details><summary><code>client.book_poster.<a href="src/fern/book_poster/client.py">get_book_thumbnail</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.book_poster.<a href="src/fern/book_poster/client.py#L64-L92">get_book_thumbnail</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -3313,7 +3313,7 @@ client.book_poster.get_book_thumbnail(
 </dl>
 </details>
 
-<details><summary><code>client.book_poster.<a href="src/fern/book_poster/client.py">get_book_thumbnails</a>(...) -> typing.List[ThumbnailBookDto]</code></summary>
+<details><summary><code>client.book_poster.<a href="src/fern/book_poster/client.py#L94-L122">get_book_thumbnails</a>(...) -> typing.List[ThumbnailBookDto]</code></summary>
 <dl>
 <dd>
 
@@ -3372,7 +3372,7 @@ client.book_poster.get_book_thumbnails(
 </dl>
 </details>
 
-<details><summary><code>client.book_poster.<a href="src/fern/book_poster/client.py">add_user_uploaded_book_thumbnail</a>(...) -> ThumbnailBookDto</code></summary>
+<details><summary><code>client.book_poster.<a href="src/fern/book_poster/client.py#L124-L166">add_user_uploaded_book_thumbnail</a>(...) -> ThumbnailBookDto</code></summary>
 <dl>
 <dd>
 
@@ -3462,7 +3462,7 @@ client.book_poster.add_user_uploaded_book_thumbnail(
 </dl>
 </details>
 
-<details><summary><code>client.book_poster.<a href="src/fern/book_poster/client.py">get_book_thumbnail_by_id</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.book_poster.<a href="src/fern/book_poster/client.py#L168-L199">get_book_thumbnail_by_id</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -3530,7 +3530,7 @@ client.book_poster.get_book_thumbnail_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.book_poster.<a href="src/fern/book_poster/client.py">delete_user_uploaded_book_thumbnail</a>(...)</code></summary>
+<details><summary><code>client.book_poster.<a href="src/fern/book_poster/client.py#L201-L237">delete_user_uploaded_book_thumbnail</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3614,7 +3614,7 @@ client.book_poster.delete_user_uploaded_book_thumbnail(
 </dl>
 </details>
 
-<details><summary><code>client.book_poster.<a href="src/fern/book_poster/client.py">mark_book_thumbnail_selected</a>(...)</code></summary>
+<details><summary><code>client.book_poster.<a href="src/fern/book_poster/client.py#L239-L273">mark_book_thumbnail_selected</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3697,7 +3697,7 @@ client.book_poster.mark_book_thumbnail_selected(
 </details>
 
 ## WebPub Manifest
-<details><summary><code>client.web_pub_manifest.<a href="src/fern/web_pub_manifest/client.py">get_book_web_pub_manifest</a>(...) -> WpPublicationDto</code></summary>
+<details><summary><code>client.web_pub_manifest.<a href="src/fern/web_pub_manifest/client.py#L34-L62">get_book_web_pub_manifest</a>(...) -> WpPublicationDto</code></summary>
 <dl>
 <dd>
 
@@ -3756,7 +3756,7 @@ client.web_pub_manifest.get_book_web_pub_manifest(
 </dl>
 </details>
 
-<details><summary><code>client.web_pub_manifest.<a href="src/fern/web_pub_manifest/client.py">get_book_web_pub_manifest_divina</a>(...) -> WpPublicationDto</code></summary>
+<details><summary><code>client.web_pub_manifest.<a href="src/fern/web_pub_manifest/client.py#L64-L92">get_book_web_pub_manifest_divina</a>(...) -> WpPublicationDto</code></summary>
 <dl>
 <dd>
 
@@ -3815,7 +3815,7 @@ client.web_pub_manifest.get_book_web_pub_manifest_divina(
 </dl>
 </details>
 
-<details><summary><code>client.web_pub_manifest.<a href="src/fern/web_pub_manifest/client.py">get_book_web_pub_manifest_epub</a>(...) -> WpPublicationDto</code></summary>
+<details><summary><code>client.web_pub_manifest.<a href="src/fern/web_pub_manifest/client.py#L94-L122">get_book_web_pub_manifest_epub</a>(...) -> WpPublicationDto</code></summary>
 <dl>
 <dd>
 
@@ -3874,7 +3874,7 @@ client.web_pub_manifest.get_book_web_pub_manifest_epub(
 </dl>
 </details>
 
-<details><summary><code>client.web_pub_manifest.<a href="src/fern/web_pub_manifest/client.py">get_book_web_pub_manifest_pdf</a>(...) -> WpPublicationDto</code></summary>
+<details><summary><code>client.web_pub_manifest.<a href="src/fern/web_pub_manifest/client.py#L124-L152">get_book_web_pub_manifest_pdf</a>(...) -> WpPublicationDto</code></summary>
 <dl>
 <dd>
 
@@ -3933,7 +3933,7 @@ client.web_pub_manifest.get_book_web_pub_manifest_pdf(
 </dl>
 </details>
 
-<details><summary><code>client.web_pub_manifest.<a href="src/fern/web_pub_manifest/client.py">get_book_positions</a>(...) -> R2Positions</code></summary>
+<details><summary><code>client.web_pub_manifest.<a href="src/fern/web_pub_manifest/client.py#L154-L184">get_book_positions</a>(...) -> R2Positions</code></summary>
 <dl>
 <dd>
 
@@ -4006,7 +4006,7 @@ client.web_pub_manifest.get_book_positions(
 </dl>
 </details>
 
-<details><summary><code>client.web_pub_manifest.<a href="src/fern/web_pub_manifest/client.py">get_book_progression</a>(...) -> R2Progression</code></summary>
+<details><summary><code>client.web_pub_manifest.<a href="src/fern/web_pub_manifest/client.py#L186-L216">get_book_progression</a>(...) -> R2Progression</code></summary>
 <dl>
 <dd>
 
@@ -4079,7 +4079,7 @@ client.web_pub_manifest.get_book_progression(
 </dl>
 </details>
 
-<details><summary><code>client.web_pub_manifest.<a href="src/fern/web_pub_manifest/client.py">update_book_progression</a>(...)</code></summary>
+<details><summary><code>client.web_pub_manifest.<a href="src/fern/web_pub_manifest/client.py#L218-L274">update_book_progression</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4170,7 +4170,7 @@ client.web_pub_manifest.update_book_progression(
 </dl>
 </details>
 
-<details><summary><code>client.web_pub_manifest.<a href="src/fern/web_pub_manifest/client.py">get_book_epub_resource</a>(...) -> str</code></summary>
+<details><summary><code>client.web_pub_manifest.<a href="src/fern/web_pub_manifest/client.py#L276-L309">get_book_epub_resource</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4253,7 +4253,7 @@ client.web_pub_manifest.get_book_epub_resource(
 </details>
 
 ## Book Pages
-<details><summary><code>client.book_pages.<a href="src/fern/book_pages/client.py">get_book_pages</a>(...) -> typing.List[PageDto]</code></summary>
+<details><summary><code>client.book_pages.<a href="src/fern/book_pages/client.py#L28-L56">get_book_pages</a>(...) -> typing.List[PageDto]</code></summary>
 <dl>
 <dd>
 
@@ -4312,7 +4312,7 @@ client.book_pages.get_book_pages(
 </dl>
 </details>
 
-<details><summary><code>client.book_pages.<a href="src/fern/book_pages/client.py">get_book_page_by_number</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.book_pages.<a href="src/fern/book_pages/client.py#L58-L118">get_book_page_by_number</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -4426,7 +4426,7 @@ client.book_pages.get_book_page_by_number(
 </dl>
 </details>
 
-<details><summary><code>client.book_pages.<a href="src/fern/book_pages/client.py">get_book_page_raw_by_number</a>(...) -> str</code></summary>
+<details><summary><code>client.book_pages.<a href="src/fern/book_pages/client.py#L120-L155">get_book_page_raw_by_number</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4510,7 +4510,7 @@ client.book_pages.get_book_page_raw_by_number(
 </dl>
 </details>
 
-<details><summary><code>client.book_pages.<a href="src/fern/book_pages/client.py">get_book_page_thumbnail_by_number</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.book_pages.<a href="src/fern/book_pages/client.py#L157-L192">get_book_page_thumbnail_by_number</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -4593,7 +4593,7 @@ client.book_pages.get_book_page_thumbnail_by_number(
 </details>
 
 ## Claim
-<details><summary><code>client.claim.<a href="src/fern/claim/client.py">get_claim_status</a>() -> ClaimStatus</code></summary>
+<details><summary><code>client.claim.<a href="src/fern/claim/client.py#L27-L51">get_claim_status</a>() -> ClaimStatus</code></summary>
 <dl>
 <dd>
 
@@ -4656,7 +4656,7 @@ client.claim.get_claim_status()
 </dl>
 </details>
 
-<details><summary><code>client.claim.<a href="src/fern/claim/client.py">server</a>(...) -> UserDto</code></summary>
+<details><summary><code>client.claim.<a href="src/fern/claim/client.py#L53-L88">server</a>(...) -> UserDto</code></summary>
 <dl>
 <dd>
 
@@ -4739,7 +4739,7 @@ client.claim.server(
 </details>
 
 ## Client settings
-<details><summary><code>client.client_settings.<a href="src/fern/client_settings/client.py">delete_global_settings</a>(...)</code></summary>
+<details><summary><code>client.client_settings.<a href="src/fern/client_settings/client.py#L31-L62">delete_global_settings</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4817,7 +4817,7 @@ client.client_settings.delete_global_settings(
 </dl>
 </details>
 
-<details><summary><code>client.client_settings.<a href="src/fern/client_settings/client.py">save_global_setting</a>(...)</code></summary>
+<details><summary><code>client.client_settings.<a href="src/fern/client_settings/client.py#L64-L107">save_global_setting</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4901,7 +4901,7 @@ client.client_settings.save_global_setting(
 </dl>
 </details>
 
-<details><summary><code>client.client_settings.<a href="src/fern/client_settings/client.py">get_global_settings</a>() -> typing.Dict[str, ClientSettingDto]</code></summary>
+<details><summary><code>client.client_settings.<a href="src/fern/client_settings/client.py#L109-L135">get_global_settings</a>() -> typing.Dict[str, ClientSettingDto]</code></summary>
 <dl>
 <dd>
 
@@ -4964,7 +4964,7 @@ client.client_settings.get_global_settings()
 </dl>
 </details>
 
-<details><summary><code>client.client_settings.<a href="src/fern/client_settings/client.py">delete_user_settings</a>(...)</code></summary>
+<details><summary><code>client.client_settings.<a href="src/fern/client_settings/client.py#L137-L166">delete_user_settings</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5040,7 +5040,7 @@ client.client_settings.delete_user_settings(
 </dl>
 </details>
 
-<details><summary><code>client.client_settings.<a href="src/fern/client_settings/client.py">save_user_setting</a>(...)</code></summary>
+<details><summary><code>client.client_settings.<a href="src/fern/client_settings/client.py#L168-L207">save_user_setting</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5120,7 +5120,7 @@ client.client_settings.save_user_setting(
 </dl>
 </details>
 
-<details><summary><code>client.client_settings.<a href="src/fern/client_settings/client.py">get_user_settings</a>() -> typing.Dict[str, ClientSettingDto]</code></summary>
+<details><summary><code>client.client_settings.<a href="src/fern/client_settings/client.py#L209-L233">get_user_settings</a>() -> typing.Dict[str, ClientSettingDto]</code></summary>
 <dl>
 <dd>
 
@@ -5170,7 +5170,7 @@ client.client_settings.get_user_settings()
 </details>
 
 ## Collections
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">get_collections</a>(...) -> PageCollectionDto</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L30-L75">get_collections</a>(...) -> PageCollectionDto</code></summary>
 <dl>
 <dd>
 
@@ -5259,7 +5259,7 @@ client.collections.get_collections()
 </dl>
 </details>
 
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">create_collection</a>(...) -> CollectionDto</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L77-L120">create_collection</a>(...) -> CollectionDto</code></summary>
 <dl>
 <dd>
 
@@ -5352,7 +5352,7 @@ client.collections.create_collection(
 </dl>
 </details>
 
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">get_collection_by_id</a>(...) -> CollectionDto</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L122-L150">get_collection_by_id</a>(...) -> CollectionDto</code></summary>
 <dl>
 <dd>
 
@@ -5411,7 +5411,7 @@ client.collections.get_collection_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">delete_collection_by_id</a>(...)</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L152-L179">delete_collection_by_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5484,7 +5484,7 @@ client.collections.delete_collection_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">update_collection_by_id</a>(...)</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L181-L224">update_collection_by_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5582,7 +5582,7 @@ client.collections.update_collection_by_id(
 </details>
 
 ## Collection Series
-<details><summary><code>client.collection_series.<a href="src/fern/collection_series/client.py">get_series_by_collection_id</a>(...) -> PageSeriesDto</code></summary>
+<details><summary><code>client.collection_series.<a href="src/fern/collection_series/client.py#L28-L134">get_series_by_collection_id</a>(...) -> PageSeriesDto</code></summary>
 <dl>
 <dd>
 
@@ -5762,7 +5762,7 @@ client.collection_series.get_series_by_collection_id(
 </details>
 
 ## Collection Poster
-<details><summary><code>client.collection_poster.<a href="src/fern/collection_poster/client.py">get_collection_thumbnail</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.collection_poster.<a href="src/fern/collection_poster/client.py#L30-L58">get_collection_thumbnail</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -5821,7 +5821,7 @@ client.collection_poster.get_collection_thumbnail(
 </dl>
 </details>
 
-<details><summary><code>client.collection_poster.<a href="src/fern/collection_poster/client.py">get_collection_thumbnails</a>(...) -> typing.List[ThumbnailSeriesCollectionDto]</code></summary>
+<details><summary><code>client.collection_poster.<a href="src/fern/collection_poster/client.py#L60-L88">get_collection_thumbnails</a>(...) -> typing.List[ThumbnailSeriesCollectionDto]</code></summary>
 <dl>
 <dd>
 
@@ -5880,7 +5880,7 @@ client.collection_poster.get_collection_thumbnails(
 </dl>
 </details>
 
-<details><summary><code>client.collection_poster.<a href="src/fern/collection_poster/client.py">add_user_uploaded_collection_thumbnail</a>(...) -> ThumbnailSeriesCollectionDto</code></summary>
+<details><summary><code>client.collection_poster.<a href="src/fern/collection_poster/client.py#L90-L132">add_user_uploaded_collection_thumbnail</a>(...) -> ThumbnailSeriesCollectionDto</code></summary>
 <dl>
 <dd>
 
@@ -5970,7 +5970,7 @@ client.collection_poster.add_user_uploaded_collection_thumbnail(
 </dl>
 </details>
 
-<details><summary><code>client.collection_poster.<a href="src/fern/collection_poster/client.py">get_collection_thumbnail_by_id</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.collection_poster.<a href="src/fern/collection_poster/client.py#L134-L165">get_collection_thumbnail_by_id</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -6038,7 +6038,7 @@ client.collection_poster.get_collection_thumbnail_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.collection_poster.<a href="src/fern/collection_poster/client.py">delete_user_uploaded_collection_thumbnail</a>(...)</code></summary>
+<details><summary><code>client.collection_poster.<a href="src/fern/collection_poster/client.py#L167-L201">delete_user_uploaded_collection_thumbnail</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6120,7 +6120,7 @@ client.collection_poster.delete_user_uploaded_collection_thumbnail(
 </dl>
 </details>
 
-<details><summary><code>client.collection_poster.<a href="src/fern/collection_poster/client.py">mark_collection_thumbnail_selected</a>(...)</code></summary>
+<details><summary><code>client.collection_poster.<a href="src/fern/collection_poster/client.py#L203-L237">mark_collection_thumbnail_selected</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6203,7 +6203,7 @@ client.collection_poster.mark_collection_thumbnail_selected(
 </details>
 
 ## File system
-<details><summary><code>client.file_system.<a href="src/fern/file_system/client.py">get_directory_listing</a>(...) -> DirectoryListingDto</code></summary>
+<details><summary><code>client.file_system.<a href="src/fern/file_system/client.py#L29-L66">get_directory_listing</a>(...) -> DirectoryListingDto</code></summary>
 <dl>
 <dd>
 
@@ -6288,7 +6288,7 @@ client.file_system.get_directory_listing(
 </details>
 
 ## Fonts
-<details><summary><code>client.fonts.<a href="src/fern/fonts/client.py">get_fonts</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.fonts.<a href="src/fern/fonts/client.py#L25-L49">get_fonts</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -6351,7 +6351,7 @@ client.fonts.get_fonts()
 </dl>
 </details>
 
-<details><summary><code>client.fonts.<a href="src/fern/fonts/client.py">get_font_family_as_css</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.fonts.<a href="src/fern/fonts/client.py#L51-L81">get_font_family_as_css</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -6424,7 +6424,7 @@ client.fonts.get_font_family_as_css(
 </dl>
 </details>
 
-<details><summary><code>client.fonts.<a href="src/fern/fonts/client.py">get_font_file</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.fonts.<a href="src/fern/fonts/client.py#L83-L114">get_font_file</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -6493,7 +6493,7 @@ client.fonts.get_font_file(
 </details>
 
 ## History
-<details><summary><code>client.history.<a href="src/fern/history/client.py">get_historical_events</a>(...) -> PageHistoricalEventDto</code></summary>
+<details><summary><code>client.history.<a href="src/fern/history/client.py#L26-L68">get_historical_events</a>(...) -> PageHistoricalEventDto</code></summary>
 <dl>
 <dd>
 
@@ -6581,7 +6581,7 @@ client.history.get_historical_events()
 </details>
 
 ## Libraries
-<details><summary><code>client.libraries.<a href="src/fern/libraries/client.py">get_libraries</a>() -> typing.List[LibraryDto]</code></summary>
+<details><summary><code>client.libraries.<a href="src/fern/libraries/client.py#L33-L57">get_libraries</a>() -> typing.List[LibraryDto]</code></summary>
 <dl>
 <dd>
 
@@ -6644,7 +6644,7 @@ client.libraries.get_libraries()
 </dl>
 </details>
 
-<details><summary><code>client.libraries.<a href="src/fern/libraries/client.py">add_library</a>(...) -> LibraryDto</code></summary>
+<details><summary><code>client.libraries.<a href="src/fern/libraries/client.py#L59-L234">add_library</a>(...) -> LibraryDto</code></summary>
 <dl>
 <dd>
 
@@ -6962,7 +6962,7 @@ client.libraries.add_library(
 </dl>
 </details>
 
-<details><summary><code>client.libraries.<a href="src/fern/libraries/client.py">get_library_by_id</a>(...) -> LibraryDto</code></summary>
+<details><summary><code>client.libraries.<a href="src/fern/libraries/client.py#L236-L264">get_library_by_id</a>(...) -> LibraryDto</code></summary>
 <dl>
 <dd>
 
@@ -7021,7 +7021,7 @@ client.libraries.get_library_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.libraries.<a href="src/fern/libraries/client.py">delete_library_by_id</a>(...)</code></summary>
+<details><summary><code>client.libraries.<a href="src/fern/libraries/client.py#L266-L293">delete_library_by_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7094,7 +7094,7 @@ client.libraries.delete_library_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.libraries.<a href="src/fern/libraries/client.py">update_library_by_id</a>(...)</code></summary>
+<details><summary><code>client.libraries.<a href="src/fern/libraries/client.py#L295-L444">update_library_by_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7177,7 +7177,7 @@ client.libraries.update_library_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.libraries.<a href="src/fern/libraries/client.py">library_analyze</a>(...)</code></summary>
+<details><summary><code>client.libraries.<a href="src/fern/libraries/client.py#L446-L473">library_analyze</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7250,7 +7250,7 @@ client.libraries.library_analyze(
 </dl>
 </details>
 
-<details><summary><code>client.libraries.<a href="src/fern/libraries/client.py">library_empty_trash</a>(...)</code></summary>
+<details><summary><code>client.libraries.<a href="src/fern/libraries/client.py#L475-L502">library_empty_trash</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7323,7 +7323,7 @@ client.libraries.library_empty_trash(
 </dl>
 </details>
 
-<details><summary><code>client.libraries.<a href="src/fern/libraries/client.py">library_refresh_metadata</a>(...)</code></summary>
+<details><summary><code>client.libraries.<a href="src/fern/libraries/client.py#L504-L533">library_refresh_metadata</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7396,7 +7396,7 @@ client.libraries.library_refresh_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.libraries.<a href="src/fern/libraries/client.py">library_scan</a>(...)</code></summary>
+<details><summary><code>client.libraries.<a href="src/fern/libraries/client.py#L535-L570">library_scan</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7478,7 +7478,7 @@ client.libraries.library_scan(
 </details>
 
 ## OAuth2
-<details><summary><code>client.o_auth2.<a href="src/fern/o_auth2/client.py">get_o_auth2providers</a>() -> typing.List[OAuth2ClientDto]</code></summary>
+<details><summary><code>client.o_auth2.<a href="src/fern/o_auth2/client.py#L26-L50">get_o_auth2providers</a>() -> typing.List[OAuth2ClientDto]</code></summary>
 <dl>
 <dd>
 
@@ -7528,7 +7528,7 @@ client.o_auth2.get_o_auth2providers()
 </details>
 
 ## Duplicate Pages
-<details><summary><code>client.duplicate_pages.<a href="src/fern/duplicate_pages/client.py">get_known_page_hashes</a>(...) -> PagePageHashKnownDto</code></summary>
+<details><summary><code>client.duplicate_pages.<a href="src/fern/duplicate_pages/client.py#L33-L80">get_known_page_hashes</a>(...) -> PagePageHashKnownDto</code></summary>
 <dl>
 <dd>
 
@@ -7623,7 +7623,7 @@ client.duplicate_pages.get_known_page_hashes()
 </dl>
 </details>
 
-<details><summary><code>client.duplicate_pages.<a href="src/fern/duplicate_pages/client.py">create_or_update_known_page_hash</a>(...)</code></summary>
+<details><summary><code>client.duplicate_pages.<a href="src/fern/duplicate_pages/client.py#L82-L125">create_or_update_known_page_hash</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7714,7 +7714,7 @@ client.duplicate_pages.create_or_update_known_page_hash(
 </dl>
 </details>
 
-<details><summary><code>client.duplicate_pages.<a href="src/fern/duplicate_pages/client.py">get_unknown_page_hashes</a>(...) -> PagePageHashUnknownDto</code></summary>
+<details><summary><code>client.duplicate_pages.<a href="src/fern/duplicate_pages/client.py#L127-L169">get_unknown_page_hashes</a>(...) -> PagePageHashUnknownDto</code></summary>
 <dl>
 <dd>
 
@@ -7801,7 +7801,7 @@ client.duplicate_pages.get_unknown_page_hashes()
 </dl>
 </details>
 
-<details><summary><code>client.duplicate_pages.<a href="src/fern/duplicate_pages/client.py">get_unknown_page_hash_thumbnail</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.duplicate_pages.<a href="src/fern/duplicate_pages/client.py#L171-L209">get_unknown_page_hash_thumbnail</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -7882,7 +7882,7 @@ client.duplicate_pages.get_unknown_page_hash_thumbnail(
 </dl>
 </details>
 
-<details><summary><code>client.duplicate_pages.<a href="src/fern/duplicate_pages/client.py">get_page_hash_matches</a>(...) -> PagePageHashMatchDto</code></summary>
+<details><summary><code>client.duplicate_pages.<a href="src/fern/duplicate_pages/client.py#L211-L258">get_page_hash_matches</a>(...) -> PagePageHashMatchDto</code></summary>
 <dl>
 <dd>
 
@@ -7979,7 +7979,7 @@ client.duplicate_pages.get_page_hash_matches(
 </dl>
 </details>
 
-<details><summary><code>client.duplicate_pages.<a href="src/fern/duplicate_pages/client.py">delete_duplicate_pages_by_page_hash</a>(...)</code></summary>
+<details><summary><code>client.duplicate_pages.<a href="src/fern/duplicate_pages/client.py#L260-L289">delete_duplicate_pages_by_page_hash</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8052,7 +8052,7 @@ client.duplicate_pages.delete_duplicate_pages_by_page_hash(
 </dl>
 </details>
 
-<details><summary><code>client.duplicate_pages.<a href="src/fern/duplicate_pages/client.py">delete_single_match_by_page_hash</a>(...)</code></summary>
+<details><summary><code>client.duplicate_pages.<a href="src/fern/duplicate_pages/client.py#L291-L356">delete_single_match_by_page_hash</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8139,7 +8139,7 @@ client.duplicate_pages.delete_single_match_by_page_hash(
 </dl>
 </details>
 
-<details><summary><code>client.duplicate_pages.<a href="src/fern/duplicate_pages/client.py">get_known_page_hash_thumbnail</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.duplicate_pages.<a href="src/fern/duplicate_pages/client.py#L358-L388">get_known_page_hash_thumbnail</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -8213,7 +8213,7 @@ client.duplicate_pages.get_known_page_hash_thumbnail(
 </details>
 
 ## Readlists
-<details><summary><code>client.readlists.<a href="src/fern/readlists/client.py">get_read_lists</a>(...) -> PageReadListDto</code></summary>
+<details><summary><code>client.readlists.<a href="src/fern/readlists/client.py#L31-L76">get_read_lists</a>(...) -> PageReadListDto</code></summary>
 <dl>
 <dd>
 
@@ -8302,7 +8302,7 @@ client.readlists.get_read_lists()
 </dl>
 </details>
 
-<details><summary><code>client.readlists.<a href="src/fern/readlists/client.py">create_read_list</a>(...) -> ReadListDto</code></summary>
+<details><summary><code>client.readlists.<a href="src/fern/readlists/client.py#L78-L125">create_read_list</a>(...) -> ReadListDto</code></summary>
 <dl>
 <dd>
 
@@ -8404,7 +8404,7 @@ client.readlists.create_read_list(
 </dl>
 </details>
 
-<details><summary><code>client.readlists.<a href="src/fern/readlists/client.py">get_read_list_by_id</a>(...) -> ReadListDto</code></summary>
+<details><summary><code>client.readlists.<a href="src/fern/readlists/client.py#L127-L153">get_read_list_by_id</a>(...) -> ReadListDto</code></summary>
 <dl>
 <dd>
 
@@ -8463,7 +8463,7 @@ client.readlists.get_read_list_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.readlists.<a href="src/fern/readlists/client.py">delete_read_list_by_id</a>(...)</code></summary>
+<details><summary><code>client.readlists.<a href="src/fern/readlists/client.py#L155-L182">delete_read_list_by_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8536,7 +8536,7 @@ client.readlists.delete_read_list_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.readlists.<a href="src/fern/readlists/client.py">update_read_list_by_id</a>(...)</code></summary>
+<details><summary><code>client.readlists.<a href="src/fern/readlists/client.py#L184-L230">update_read_list_by_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8641,7 +8641,7 @@ client.readlists.update_read_list_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.readlists.<a href="src/fern/readlists/client.py">download_read_list_as_zip</a>(...) -> StreamingResponseBody</code></summary>
+<details><summary><code>client.readlists.<a href="src/fern/readlists/client.py#L232-L264">download_read_list_as_zip</a>(...) -> StreamingResponseBody</code></summary>
 <dl>
 <dd>
 
@@ -8717,7 +8717,7 @@ client.readlists.download_read_list_as_zip(
 </details>
 
 ## ComicRack
-<details><summary><code>client.comic_rack.<a href="src/fern/comic_rack/client.py">match_comic_rack_list</a>(...) -> ReadListRequestMatchDto</code></summary>
+<details><summary><code>client.comic_rack.<a href="src/fern/comic_rack/client.py#L30-L59">match_comic_rack_list</a>(...) -> ReadListRequestMatchDto</code></summary>
 <dl>
 <dd>
 
@@ -8791,7 +8791,7 @@ client.comic_rack.match_comic_rack_list(
 </details>
 
 ## Readlist Books
-<details><summary><code>client.readlist_books.<a href="src/fern/readlist_books/client.py">get_books_by_read_list_id</a>(...) -> PageBookDto</code></summary>
+<details><summary><code>client.readlist_books.<a href="src/fern/readlist_books/client.py#L29-L110">get_books_by_read_list_id</a>(...) -> PageBookDto</code></summary>
 <dl>
 <dd>
 
@@ -8922,7 +8922,7 @@ client.readlist_books.get_books_by_read_list_id(
 </dl>
 </details>
 
-<details><summary><code>client.readlist_books.<a href="src/fern/readlist_books/client.py">get_book_sibling_next_in_read_list</a>(...) -> BookDto</code></summary>
+<details><summary><code>client.readlist_books.<a href="src/fern/readlist_books/client.py#L112-L143">get_book_sibling_next_in_read_list</a>(...) -> BookDto</code></summary>
 <dl>
 <dd>
 
@@ -8990,7 +8990,7 @@ client.readlist_books.get_book_sibling_next_in_read_list(
 </dl>
 </details>
 
-<details><summary><code>client.readlist_books.<a href="src/fern/readlist_books/client.py">get_book_sibling_previous_in_read_list</a>(...) -> BookDto</code></summary>
+<details><summary><code>client.readlist_books.<a href="src/fern/readlist_books/client.py#L145-L178">get_book_sibling_previous_in_read_list</a>(...) -> BookDto</code></summary>
 <dl>
 <dd>
 
@@ -9059,7 +9059,7 @@ client.readlist_books.get_book_sibling_previous_in_read_list(
 </details>
 
 ## Mihon
-<details><summary><code>client.mihon.<a href="src/fern/mihon/client.py">get_mihon_read_progress_by_read_list_id</a>(...) -> TachiyomiReadProgressDto</code></summary>
+<details><summary><code>client.mihon.<a href="src/fern/mihon/client.py#L30-L60">get_mihon_read_progress_by_read_list_id</a>(...) -> TachiyomiReadProgressDto</code></summary>
 <dl>
 <dd>
 
@@ -9132,7 +9132,7 @@ client.mihon.get_mihon_read_progress_by_read_list_id(
 </dl>
 </details>
 
-<details><summary><code>client.mihon.<a href="src/fern/mihon/client.py">update_mihon_read_progress_by_read_list_id</a>(...)</code></summary>
+<details><summary><code>client.mihon.<a href="src/fern/mihon/client.py#L62-L96">update_mihon_read_progress_by_read_list_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9214,7 +9214,7 @@ client.mihon.update_mihon_read_progress_by_read_list_id(
 </dl>
 </details>
 
-<details><summary><code>client.mihon.<a href="src/fern/mihon/client.py">get_mihon_read_progress_by_series_id</a>(...) -> TachiyomiReadProgressV2Dto</code></summary>
+<details><summary><code>client.mihon.<a href="src/fern/mihon/client.py#L98-L128">get_mihon_read_progress_by_series_id</a>(...) -> TachiyomiReadProgressV2Dto</code></summary>
 <dl>
 <dd>
 
@@ -9287,7 +9287,7 @@ client.mihon.get_mihon_read_progress_by_series_id(
 </dl>
 </details>
 
-<details><summary><code>client.mihon.<a href="src/fern/mihon/client.py">update_mihon_read_progress_by_series_id</a>(...)</code></summary>
+<details><summary><code>client.mihon.<a href="src/fern/mihon/client.py#L130-L168">update_mihon_read_progress_by_series_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9370,7 +9370,7 @@ client.mihon.update_mihon_read_progress_by_series_id(
 </details>
 
 ## Readlist Poster
-<details><summary><code>client.readlist_poster.<a href="src/fern/readlist_poster/client.py">get_read_list_thumbnail</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.readlist_poster.<a href="src/fern/readlist_poster/client.py#L30-L58">get_read_list_thumbnail</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -9429,7 +9429,7 @@ client.readlist_poster.get_read_list_thumbnail(
 </dl>
 </details>
 
-<details><summary><code>client.readlist_poster.<a href="src/fern/readlist_poster/client.py">get_read_list_thumbnails</a>(...) -> typing.List[ThumbnailReadListDto]</code></summary>
+<details><summary><code>client.readlist_poster.<a href="src/fern/readlist_poster/client.py#L60-L88">get_read_list_thumbnails</a>(...) -> typing.List[ThumbnailReadListDto]</code></summary>
 <dl>
 <dd>
 
@@ -9488,7 +9488,7 @@ client.readlist_poster.get_read_list_thumbnails(
 </dl>
 </details>
 
-<details><summary><code>client.readlist_poster.<a href="src/fern/readlist_poster/client.py">add_user_uploaded_read_list_thumbnail</a>(...) -> ThumbnailReadListDto</code></summary>
+<details><summary><code>client.readlist_poster.<a href="src/fern/readlist_poster/client.py#L90-L132">add_user_uploaded_read_list_thumbnail</a>(...) -> ThumbnailReadListDto</code></summary>
 <dl>
 <dd>
 
@@ -9578,7 +9578,7 @@ client.readlist_poster.add_user_uploaded_read_list_thumbnail(
 </dl>
 </details>
 
-<details><summary><code>client.readlist_poster.<a href="src/fern/readlist_poster/client.py">get_read_list_thumbnail_by_id</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.readlist_poster.<a href="src/fern/readlist_poster/client.py#L134-L165">get_read_list_thumbnail_by_id</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -9646,7 +9646,7 @@ client.readlist_poster.get_read_list_thumbnail_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.readlist_poster.<a href="src/fern/readlist_poster/client.py">delete_user_uploaded_read_list_thumbnail</a>(...)</code></summary>
+<details><summary><code>client.readlist_poster.<a href="src/fern/readlist_poster/client.py#L167-L201">delete_user_uploaded_read_list_thumbnail</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9728,7 +9728,7 @@ client.readlist_poster.delete_user_uploaded_read_list_thumbnail(
 </dl>
 </details>
 
-<details><summary><code>client.readlist_poster.<a href="src/fern/readlist_poster/client.py">mark_read_list_thumbnail_selected</a>(...)</code></summary>
+<details><summary><code>client.readlist_poster.<a href="src/fern/readlist_poster/client.py#L203-L237">mark_read_list_thumbnail_selected</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9811,7 +9811,7 @@ client.readlist_poster.mark_read_list_thumbnail_selected(
 </details>
 
 ## Releases
-<details><summary><code>client.releases.<a href="src/fern/releases/client.py">get_releases</a>() -> typing.List[ReleaseDto]</code></summary>
+<details><summary><code>client.releases.<a href="src/fern/releases/client.py#L26-L50">get_releases</a>() -> typing.List[ReleaseDto]</code></summary>
 <dl>
 <dd>
 
@@ -9875,7 +9875,7 @@ client.releases.get_releases()
 </details>
 
 ## Series
-<details><summary><code>client.series.<a href="src/fern/series/client.py">get_series_deprecated</a>(...) -> PageSeriesDto</code></summary>
+<details><summary><code>client.series.<a href="src/fern/series/client.py#L49-L174">get_series_deprecated</a>(...) -> PageSeriesDto</code></summary>
 <dl>
 <dd>
 
@@ -10106,7 +10106,7 @@ client.series.get_series_deprecated()
 </dl>
 </details>
 
-<details><summary><code>client.series.<a href="src/fern/series/client.py">get_series_alphabetical_groups_deprecated</a>(...) -> typing.List[GroupCountDto]</code></summary>
+<details><summary><code>client.series.<a href="src/fern/series/client.py#L176-L286">get_series_alphabetical_groups_deprecated</a>(...) -> typing.List[GroupCountDto]</code></summary>
 <dl>
 <dd>
 
@@ -10305,7 +10305,7 @@ client.series.get_series_alphabetical_groups_deprecated()
 </dl>
 </details>
 
-<details><summary><code>client.series.<a href="src/fern/series/client.py">get_series_latest</a>(...) -> PageSeriesDto</code></summary>
+<details><summary><code>client.series.<a href="src/fern/series/client.py#L288-L344">get_series_latest</a>(...) -> PageSeriesDto</code></summary>
 <dl>
 <dd>
 
@@ -10416,7 +10416,7 @@ client.series.get_series_latest()
 </dl>
 </details>
 
-<details><summary><code>client.series.<a href="src/fern/series/client.py">get_series</a>(...) -> PageSeriesDto</code></summary>
+<details><summary><code>client.series.<a href="src/fern/series/client.py#L346-L401">get_series</a>(...) -> PageSeriesDto</code></summary>
 <dl>
 <dd>
 
@@ -10505,7 +10505,7 @@ client.series.get_series()
 </dl>
 </details>
 
-<details><summary><code>client.series.<a href="src/fern/series/client.py">get_series_alphabetical_groups</a>(...) -> typing.List[GroupCountDto]</code></summary>
+<details><summary><code>client.series.<a href="src/fern/series/client.py#L403-L439">get_series_alphabetical_groups</a>(...) -> typing.List[GroupCountDto]</code></summary>
 <dl>
 <dd>
 
@@ -10576,7 +10576,7 @@ client.series.get_series_alphabetical_groups()
 </dl>
 </details>
 
-<details><summary><code>client.series.<a href="src/fern/series/client.py">get_series_new</a>(...) -> PageSeriesDto</code></summary>
+<details><summary><code>client.series.<a href="src/fern/series/client.py#L441-L497">get_series_new</a>(...) -> PageSeriesDto</code></summary>
 <dl>
 <dd>
 
@@ -10687,7 +10687,7 @@ client.series.get_series_new()
 </dl>
 </details>
 
-<details><summary><code>client.series.<a href="src/fern/series/client.py">get_series_updated</a>(...) -> PageSeriesDto</code></summary>
+<details><summary><code>client.series.<a href="src/fern/series/client.py#L499-L555">get_series_updated</a>(...) -> PageSeriesDto</code></summary>
 <dl>
 <dd>
 
@@ -10798,7 +10798,7 @@ client.series.get_series_updated()
 </dl>
 </details>
 
-<details><summary><code>client.series.<a href="src/fern/series/client.py">get_series_by_id</a>(...) -> SeriesDto</code></summary>
+<details><summary><code>client.series.<a href="src/fern/series/client.py#L557-L583">get_series_by_id</a>(...) -> SeriesDto</code></summary>
 <dl>
 <dd>
 
@@ -10857,7 +10857,7 @@ client.series.get_series_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.series.<a href="src/fern/series/client.py">analyze</a>(...)</code></summary>
+<details><summary><code>client.series.<a href="src/fern/series/client.py#L585-L612">analyze</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -10930,7 +10930,7 @@ client.series.analyze(
 </dl>
 </details>
 
-<details><summary><code>client.series.<a href="src/fern/series/client.py">get_books_by_series_id</a>(...) -> PageBookDto</code></summary>
+<details><summary><code>client.series.<a href="src/fern/series/client.py#L614-L698">get_books_by_series_id</a>(...) -> PageBookDto</code></summary>
 <dl>
 <dd>
 
@@ -11075,7 +11075,7 @@ client.series.get_books_by_series_id(
 </dl>
 </details>
 
-<details><summary><code>client.series.<a href="src/fern/series/client.py">get_collections_by_series_id</a>(...) -> typing.List[CollectionDto]</code></summary>
+<details><summary><code>client.series.<a href="src/fern/series/client.py#L700-L728">get_collections_by_series_id</a>(...) -> typing.List[CollectionDto]</code></summary>
 <dl>
 <dd>
 
@@ -11134,7 +11134,7 @@ client.series.get_collections_by_series_id(
 </dl>
 </details>
 
-<details><summary><code>client.series.<a href="src/fern/series/client.py">download_series_as_zip</a>(...) -> StreamingResponseBody</code></summary>
+<details><summary><code>client.series.<a href="src/fern/series/client.py#L730-L762">download_series_as_zip</a>(...) -> StreamingResponseBody</code></summary>
 <dl>
 <dd>
 
@@ -11209,7 +11209,7 @@ client.series.download_series_as_zip(
 </dl>
 </details>
 
-<details><summary><code>client.series.<a href="src/fern/series/client.py">delete_series_file</a>(...)</code></summary>
+<details><summary><code>client.series.<a href="src/fern/series/client.py#L764-L793">delete_series_file</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11284,7 +11284,7 @@ client.series.delete_series_file(
 </dl>
 </details>
 
-<details><summary><code>client.series.<a href="src/fern/series/client.py">update_series_metadata</a>(...)</code></summary>
+<details><summary><code>client.series.<a href="src/fern/series/client.py#L795-L942">update_series_metadata</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11581,7 +11581,7 @@ client.series.update_series_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.series.<a href="src/fern/series/client.py">refresh_metadata</a>(...)</code></summary>
+<details><summary><code>client.series.<a href="src/fern/series/client.py#L944-L971">refresh_metadata</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11654,7 +11654,7 @@ client.series.refresh_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.series.<a href="src/fern/series/client.py">mark_series_as_read</a>(...)</code></summary>
+<details><summary><code>client.series.<a href="src/fern/series/client.py#L973-L1000">mark_series_as_read</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11727,7 +11727,7 @@ client.series.mark_series_as_read(
 </dl>
 </details>
 
-<details><summary><code>client.series.<a href="src/fern/series/client.py">mark_series_as_unread</a>(...)</code></summary>
+<details><summary><code>client.series.<a href="src/fern/series/client.py#L1002-L1029">mark_series_as_unread</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11801,7 +11801,7 @@ client.series.mark_series_as_unread(
 </details>
 
 ## Series Poster
-<details><summary><code>client.series_poster.<a href="src/fern/series_poster/client.py">get_series_thumbnail</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.series_poster.<a href="src/fern/series_poster/client.py#L30-L58">get_series_thumbnail</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -11860,7 +11860,7 @@ client.series_poster.get_series_thumbnail(
 </dl>
 </details>
 
-<details><summary><code>client.series_poster.<a href="src/fern/series_poster/client.py">get_series_thumbnails</a>(...) -> typing.List[ThumbnailSeriesDto]</code></summary>
+<details><summary><code>client.series_poster.<a href="src/fern/series_poster/client.py#L60-L88">get_series_thumbnails</a>(...) -> typing.List[ThumbnailSeriesDto]</code></summary>
 <dl>
 <dd>
 
@@ -11919,7 +11919,7 @@ client.series_poster.get_series_thumbnails(
 </dl>
 </details>
 
-<details><summary><code>client.series_poster.<a href="src/fern/series_poster/client.py">add_user_uploaded_series_thumbnail</a>(...) -> ThumbnailSeriesDto</code></summary>
+<details><summary><code>client.series_poster.<a href="src/fern/series_poster/client.py#L90-L132">add_user_uploaded_series_thumbnail</a>(...) -> ThumbnailSeriesDto</code></summary>
 <dl>
 <dd>
 
@@ -12009,7 +12009,7 @@ client.series_poster.add_user_uploaded_series_thumbnail(
 </dl>
 </details>
 
-<details><summary><code>client.series_poster.<a href="src/fern/series_poster/client.py">get_series_thumbnail_by_id</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.series_poster.<a href="src/fern/series_poster/client.py#L134-L165">get_series_thumbnail_by_id</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -12077,7 +12077,7 @@ client.series_poster.get_series_thumbnail_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.series_poster.<a href="src/fern/series_poster/client.py">delete_user_uploaded_series_thumbnail</a>(...)</code></summary>
+<details><summary><code>client.series_poster.<a href="src/fern/series_poster/client.py#L167-L201">delete_user_uploaded_series_thumbnail</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -12159,7 +12159,7 @@ client.series_poster.delete_user_uploaded_series_thumbnail(
 </dl>
 </details>
 
-<details><summary><code>client.series_poster.<a href="src/fern/series_poster/client.py">mark_series_thumbnail_selected</a>(...)</code></summary>
+<details><summary><code>client.series_poster.<a href="src/fern/series_poster/client.py#L203-L237">mark_series_thumbnail_selected</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -12242,7 +12242,7 @@ client.series_poster.mark_series_thumbnail_selected(
 </details>
 
 ## Server settings
-<details><summary><code>client.server_settings.<a href="src/fern/server_settings/client.py">get_server_settings</a>() -> SettingsDto</code></summary>
+<details><summary><code>client.server_settings.<a href="src/fern/server_settings/client.py#L30-L54">get_server_settings</a>() -> SettingsDto</code></summary>
 <dl>
 <dd>
 
@@ -12305,7 +12305,7 @@ client.server_settings.get_server_settings()
 </dl>
 </details>
 
-<details><summary><code>client.server_settings.<a href="src/fern/server_settings/client.py">update_server_settings</a>(...)</code></summary>
+<details><summary><code>client.server_settings.<a href="src/fern/server_settings/client.py#L56-L132">update_server_settings</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -12459,7 +12459,7 @@ client.server_settings.update_server_settings()
 </details>
 
 ## Sync points
-<details><summary><code>client.sync_points.<a href="src/fern/sync_points/client.py">delete_sync_points_for_current_user</a>(...)</code></summary>
+<details><summary><code>client.sync_points.<a href="src/fern/sync_points/client.py#L25-L55">delete_sync_points_for_current_user</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -12531,7 +12531,7 @@ client.sync_points.delete_sync_points_for_current_user()
 </details>
 
 ## Tasks
-<details><summary><code>client.tasks.<a href="src/fern/tasks/client.py">empty_task_queue</a>() -> int</code></summary>
+<details><summary><code>client.tasks.<a href="src/fern/tasks/client.py#L25-L51">empty_task_queue</a>() -> int</code></summary>
 <dl>
 <dd>
 
@@ -12597,7 +12597,7 @@ client.tasks.empty_task_queue()
 </details>
 
 ## Referential metadata
-<details><summary><code>client.referential_metadata.<a href="src/fern/referential_metadata/client.py">get_age_ratings</a>(...) -> PageInteger</code></summary>
+<details><summary><code>client.referential_metadata.<a href="src/fern/referential_metadata/client.py#L29-L81">get_age_ratings</a>(...) -> PageInteger</code></summary>
 <dl>
 <dd>
 
@@ -12700,7 +12700,7 @@ client.referential_metadata.get_age_ratings()
 </dl>
 </details>
 
-<details><summary><code>client.referential_metadata.<a href="src/fern/referential_metadata/client.py">get_authors</a>(...) -> PageAuthorDto</code></summary>
+<details><summary><code>client.referential_metadata.<a href="src/fern/referential_metadata/client.py#L83-L151">get_authors</a>(...) -> PageAuthorDto</code></summary>
 <dl>
 <dd>
 
@@ -12835,7 +12835,7 @@ client.referential_metadata.get_authors()
 </dl>
 </details>
 
-<details><summary><code>client.referential_metadata.<a href="src/fern/referential_metadata/client.py">get_authors_names</a>(...) -> PageString</code></summary>
+<details><summary><code>client.referential_metadata.<a href="src/fern/referential_metadata/client.py#L153-L221">get_authors_names</a>(...) -> PageString</code></summary>
 <dl>
 <dd>
 
@@ -12970,7 +12970,7 @@ client.referential_metadata.get_authors_names()
 </dl>
 </details>
 
-<details><summary><code>client.referential_metadata.<a href="src/fern/referential_metadata/client.py">get_authors_roles</a>(...) -> PageString</code></summary>
+<details><summary><code>client.referential_metadata.<a href="src/fern/referential_metadata/client.py#L223-L283">get_authors_roles</a>(...) -> PageString</code></summary>
 <dl>
 <dd>
 
@@ -13089,7 +13089,7 @@ client.referential_metadata.get_authors_roles()
 </dl>
 </details>
 
-<details><summary><code>client.referential_metadata.<a href="src/fern/referential_metadata/client.py">get_genres</a>(...) -> PageString</code></summary>
+<details><summary><code>client.referential_metadata.<a href="src/fern/referential_metadata/client.py#L285-L341">get_genres</a>(...) -> PageString</code></summary>
 <dl>
 <dd>
 
@@ -13200,7 +13200,7 @@ client.referential_metadata.get_genres()
 </dl>
 </details>
 
-<details><summary><code>client.referential_metadata.<a href="src/fern/referential_metadata/client.py">get_languages</a>(...) -> PageString</code></summary>
+<details><summary><code>client.referential_metadata.<a href="src/fern/referential_metadata/client.py#L343-L399">get_languages</a>(...) -> PageString</code></summary>
 <dl>
 <dd>
 
@@ -13311,7 +13311,7 @@ client.referential_metadata.get_languages()
 </dl>
 </details>
 
-<details><summary><code>client.referential_metadata.<a href="src/fern/referential_metadata/client.py">get_publishers</a>(...) -> PageString</code></summary>
+<details><summary><code>client.referential_metadata.<a href="src/fern/referential_metadata/client.py#L401-L457">get_publishers</a>(...) -> PageString</code></summary>
 <dl>
 <dd>
 
@@ -13422,7 +13422,7 @@ client.referential_metadata.get_publishers()
 </dl>
 </details>
 
-<details><summary><code>client.referential_metadata.<a href="src/fern/referential_metadata/client.py">get_series_release_years</a>(...) -> PageString</code></summary>
+<details><summary><code>client.referential_metadata.<a href="src/fern/referential_metadata/client.py#L459-L511">get_series_release_years</a>(...) -> PageString</code></summary>
 <dl>
 <dd>
 
@@ -13525,7 +13525,7 @@ client.referential_metadata.get_series_release_years()
 </dl>
 </details>
 
-<details><summary><code>client.referential_metadata.<a href="src/fern/referential_metadata/client.py">get_sharing_labels</a>(...) -> PageString</code></summary>
+<details><summary><code>client.referential_metadata.<a href="src/fern/referential_metadata/client.py#L513-L569">get_sharing_labels</a>(...) -> PageString</code></summary>
 <dl>
 <dd>
 
@@ -13636,7 +13636,7 @@ client.referential_metadata.get_sharing_labels()
 </dl>
 </details>
 
-<details><summary><code>client.referential_metadata.<a href="src/fern/referential_metadata/client.py">get_tags</a>(...) -> PageString</code></summary>
+<details><summary><code>client.referential_metadata.<a href="src/fern/referential_metadata/client.py#L571-L639">get_tags</a>(...) -> PageString</code></summary>
 <dl>
 <dd>
 
@@ -13772,7 +13772,7 @@ client.referential_metadata.get_tags()
 </details>
 
 ## Users
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_users</a>() -> typing.List[UserDto]</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L33-L57">get_users</a>() -> typing.List[UserDto]</code></summary>
 <dl>
 <dd>
 
@@ -13835,7 +13835,7 @@ client.users.get_users()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">add_user</a>(...) -> UserDto</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L59-L121">add_user</a>(...) -> UserDto</code></summary>
 <dl>
 <dd>
 
@@ -13960,7 +13960,7 @@ client.users.add_user(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_authentication_activity</a>(...) -> PageAuthenticationActivityDto</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L123-L168">get_authentication_activity</a>(...) -> PageAuthenticationActivityDto</code></summary>
 <dl>
 <dd>
 
@@ -14055,7 +14055,7 @@ client.users.get_authentication_activity()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">delete_user_by_id</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L170-L197">delete_user_by_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -14128,7 +14128,7 @@ client.users.delete_user_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">update_user_by_id</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L199-L254">update_user_by_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -14241,7 +14241,7 @@ client.users.update_user_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_latest_authentication_activity_by_user_id</a>(...) -> AuthenticationActivityDto</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L256-L294">get_latest_authentication_activity_by_user_id</a>(...) -> AuthenticationActivityDto</code></summary>
 <dl>
 <dd>
 
@@ -14322,7 +14322,7 @@ client.users.get_latest_authentication_activity_by_user_id(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">update_password_by_user_id</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L296-L328">update_password_by_user_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -14405,7 +14405,7 @@ client.users.update_password_by_user_id(
 </details>
 
 ## Current user
-<details><summary><code>client.current_user.<a href="src/fern/current_user/client.py">get_current_user</a>(...) -> UserDto</code></summary>
+<details><summary><code>client.current_user.<a href="src/fern/current_user/client.py#L30-L56">get_current_user</a>(...) -> UserDto</code></summary>
 <dl>
 <dd>
 
@@ -14462,7 +14462,7 @@ client.current_user.get_current_user()
 </dl>
 </details>
 
-<details><summary><code>client.current_user.<a href="src/fern/current_user/client.py">get_authentication_activity_for_current_user</a>(...) -> PageAuthenticationActivityDto</code></summary>
+<details><summary><code>client.current_user.<a href="src/fern/current_user/client.py#L58-L101">get_authentication_activity_for_current_user</a>(...) -> PageAuthenticationActivityDto</code></summary>
 <dl>
 <dd>
 
@@ -14543,7 +14543,7 @@ client.current_user.get_authentication_activity_for_current_user()
 </dl>
 </details>
 
-<details><summary><code>client.current_user.<a href="src/fern/current_user/client.py">update_password_for_current_user</a>(...)</code></summary>
+<details><summary><code>client.current_user.<a href="src/fern/current_user/client.py#L103-L132">update_password_for_current_user</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -14603,7 +14603,7 @@ client.current_user.update_password_for_current_user(
 </details>
 
 ## API Keys
-<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py">get_api_keys_for_current_user</a>() -> typing.List[ApiKeyDto]</code></summary>
+<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py#L29-L53">get_api_keys_for_current_user</a>() -> typing.List[ApiKeyDto]</code></summary>
 <dl>
 <dd>
 
@@ -14652,7 +14652,7 @@ client.api_keys.get_api_keys_for_current_user()
 </dl>
 </details>
 
-<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py">create_api_key_for_current_user</a>(...) -> ApiKeyDto</code></summary>
+<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py#L55-L83">create_api_key_for_current_user</a>(...) -> ApiKeyDto</code></summary>
 <dl>
 <dd>
 
@@ -14711,7 +14711,7 @@ client.api_keys.create_api_key_for_current_user(
 </dl>
 </details>
 
-<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py">delete_api_key_by_key_id</a>(...)</code></summary>
+<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py#L85-L110">delete_api_key_by_key_id</a>(...)</code></summary>
 <dl>
 <dd>
 

@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">list_gauges</a>(...) -> typing.List[Gauge]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L98-L124">list_gauges</a>(...) -> typing.List[Gauge]</code></summary>
 <dl>
 <dd>
 
@@ -54,7 +54,7 @@ client.list_gauges()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_readings</a>(...) -> typing.List[Reading]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L126-L154">list_readings</a>(...) -> typing.List[Reading]</code></summary>
 <dl>
 <dd>
 

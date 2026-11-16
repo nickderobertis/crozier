@@ -1,6 +1,6 @@
 # Reference
 ## auth
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">create_token</a>(...) -> CreateTokenResponse</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L31-L96">create_token</a>(...) -> CreateTokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -111,7 +111,7 @@ client.auth.create_token(
 </details>
 
 ## info
-<details><summary><code>client.info.<a href="src/fern/info/client.py">get_info</a>() -> ApiInfo</code></summary>
+<details><summary><code>client.info.<a href="src/fern/info/client.py#L28-L52">get_info</a>() -> ApiInfo</code></summary>
 <dl>
 <dd>
 
@@ -174,7 +174,7 @@ client.info.get_info()
 </dl>
 </details>
 
-<details><summary><code>client.info.<a href="src/fern/info/client.py">get_open_api</a>() -> ApIinfo</code></summary>
+<details><summary><code>client.info.<a href="src/fern/info/client.py#L54-L78">get_open_api</a>() -> ApIinfo</code></summary>
 <dl>
 <dd>
 
@@ -237,7 +237,7 @@ client.info.get_open_api()
 </dl>
 </details>
 
-<details><summary><code>client.info.<a href="src/fern/info/client.py">get_health</a>() -> HealthInfo</code></summary>
+<details><summary><code>client.info.<a href="src/fern/info/client.py#L80-L104">get_health</a>() -> HealthInfo</code></summary>
 <dl>
 <dd>
 
@@ -300,7 +300,7 @@ client.info.get_health()
 </dl>
 </details>
 
-<details><summary><code>client.info.<a href="src/fern/info/client.py">get_banner_message</a>() -> str</code></summary>
+<details><summary><code>client.info.<a href="src/fern/info/client.py#L106-L130">get_banner_message</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -364,7 +364,7 @@ client.info.get_banner_message()
 </details>
 
 ## Maintenance
-<details><summary><code>client.maintenance.<a href="src/fern/maintenance/client.py">initiate_maintenance</a>(...) -> Info</code></summary>
+<details><summary><code>client.maintenance.<a href="src/fern/maintenance/client.py#L30-L72">initiate_maintenance</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -452,7 +452,7 @@ client.maintenance.initiate_maintenance()
 </details>
 
 ## Admin
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">get_obligations_list</a>() -> ObligationsList</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L32-L56">get_obligations_list</a>() -> ObligationsList</code></summary>
 <dl>
 <dd>
 
@@ -515,7 +515,7 @@ client.admin.get_obligations_list()
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">get_obligations_data</a>(...) -> ObligationExtended</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L58-L89">get_obligations_data</a>(...) -> ObligationExtended</code></summary>
 <dl>
 <dd>
 
@@ -588,7 +588,7 @@ client.admin.get_obligations_data(
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">delete_obligations_data</a>(...) -> typing.List[Info]</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L91-L122">delete_obligations_data</a>(...) -> typing.List[Info]</code></summary>
 <dl>
 <dd>
 
@@ -661,7 +661,7 @@ client.admin.delete_obligations_data(
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">get_all_obligations_data</a>() -> typing.List[ObligationExtended]</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L124-L150">get_all_obligations_data</a>() -> typing.List[ObligationExtended]</code></summary>
 <dl>
 <dd>
 
@@ -724,7 +724,7 @@ client.admin.get_all_obligations_data()
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">get_customise_data</a>() -> typing.List[Customise]</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L152-L176">get_customise_data</a>() -> typing.List[Customise]</code></summary>
 <dl>
 <dd>
 
@@ -787,7 +787,7 @@ client.admin.get_customise_data()
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">update_customise_data</a>(...) -> typing.List[Info]</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L178-L214">update_customise_data</a>(...) -> typing.List[Info]</code></summary>
 <dl>
 <dd>
 
@@ -867,7 +867,7 @@ client.admin.update_customise_data()
 </details>
 
 ## License
-<details><summary><code>client.license.<a href="src/fern/license/client.py">import_obligation_csv</a>(...) -> Info</code></summary>
+<details><summary><code>client.license.<a href="src/fern/license/client.py#L39-L81">import_obligation_csv</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -956,7 +956,7 @@ client.license.import_obligation_csv(
 </dl>
 </details>
 
-<details><summary><code>client.license.<a href="src/fern/license/client.py">export_license_obligations</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.license.<a href="src/fern/license/client.py#L83-L112">export_license_obligations</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -1027,7 +1027,7 @@ client.license.export_license_obligations()
 </dl>
 </details>
 
-<details><summary><code>client.license.<a href="src/fern/license/client.py">import_obligations_from_json</a>(...) -> Info</code></summary>
+<details><summary><code>client.license.<a href="src/fern/license/client.py#L114-L145">import_obligations_from_json</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -1100,7 +1100,7 @@ client.license.import_obligations_from_json(
 </dl>
 </details>
 
-<details><summary><code>client.license.<a href="src/fern/license/client.py">export_obligations_to_json</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.license.<a href="src/fern/license/client.py#L147-L176">export_obligations_to_json</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -1171,7 +1171,7 @@ client.license.export_obligations_to_json()
 </dl>
 </details>
 
-<details><summary><code>client.license.<a href="src/fern/license/client.py">get_licenses</a>(...) -> typing.List[GetLicensesResponseItem]</code></summary>
+<details><summary><code>client.license.<a href="src/fern/license/client.py#L178-L228">get_licenses</a>(...) -> typing.List[GetLicensesResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -1274,7 +1274,7 @@ client.license.get_licenses()
 </dl>
 </details>
 
-<details><summary><code>client.license.<a href="src/fern/license/client.py">create_license</a>(...) -> Info</code></summary>
+<details><summary><code>client.license.<a href="src/fern/license/client.py#L230-L302">create_license</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -1403,7 +1403,7 @@ client.license.create_license(
 </dl>
 </details>
 
-<details><summary><code>client.license.<a href="src/fern/license/client.py">import_license</a>(...) -> Info</code></summary>
+<details><summary><code>client.license.<a href="src/fern/license/client.py#L304-L346">import_license</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -1492,7 +1492,7 @@ client.license.import_license(
 </dl>
 </details>
 
-<details><summary><code>client.license.<a href="src/fern/license/client.py">export_license</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.license.<a href="src/fern/license/client.py#L348-L377">export_license</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -1563,7 +1563,7 @@ client.license.export_license()
 </dl>
 </details>
 
-<details><summary><code>client.license.<a href="src/fern/license/client.py">handle_import_license</a>(...) -> Info</code></summary>
+<details><summary><code>client.license.<a href="src/fern/license/client.py#L379-L408">handle_import_license</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -1636,7 +1636,7 @@ client.license.handle_import_license(
 </dl>
 </details>
 
-<details><summary><code>client.license.<a href="src/fern/license/client.py">export_admin_license_to_json</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.license.<a href="src/fern/license/client.py#L410-L439">export_admin_license_to_json</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -1707,7 +1707,7 @@ client.license.export_admin_license_to_json()
 </dl>
 </details>
 
-<details><summary><code>client.license.<a href="src/fern/license/client.py">get_license_by_shortname</a>(...) -> GetLicenseByShortnameResponse</code></summary>
+<details><summary><code>client.license.<a href="src/fern/license/client.py#L441-L481">get_license_by_shortname</a>(...) -> GetLicenseByShortnameResponse</code></summary>
 <dl>
 <dd>
 
@@ -1788,7 +1788,7 @@ client.license.get_license_by_shortname(
 </dl>
 </details>
 
-<details><summary><code>client.license.<a href="src/fern/license/client.py">update_license_by_shortname</a>(...) -> Info</code></summary>
+<details><summary><code>client.license.<a href="src/fern/license/client.py#L483-L545">update_license_by_shortname</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -1901,7 +1901,7 @@ client.license.update_license_by_shortname(
 </dl>
 </details>
 
-<details><summary><code>client.license.<a href="src/fern/license/client.py">get_admin_license_candidates</a>() -> typing.List[LicenseCandidate]</code></summary>
+<details><summary><code>client.license.<a href="src/fern/license/client.py#L547-L573">get_admin_license_candidates</a>() -> typing.List[LicenseCandidate]</code></summary>
 <dl>
 <dd>
 
@@ -1964,7 +1964,7 @@ client.license.get_admin_license_candidates()
 </dl>
 </details>
 
-<details><summary><code>client.license.<a href="src/fern/license/client.py">delete_by_license_candidate_id</a>(...) -> Info</code></summary>
+<details><summary><code>client.license.<a href="src/fern/license/client.py#L575-L606">delete_by_license_candidate_id</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -2037,7 +2037,7 @@ client.license.delete_by_license_candidate_id(
 </dl>
 </details>
 
-<details><summary><code>client.license.<a href="src/fern/license/client.py">get_admin_license_acknowledgements</a>() -> typing.List[AdminLicenseAcknowledgement]</code></summary>
+<details><summary><code>client.license.<a href="src/fern/license/client.py#L608-L634">get_admin_license_acknowledgements</a>() -> typing.List[AdminLicenseAcknowledgement]</code></summary>
 <dl>
 <dd>
 
@@ -2100,7 +2100,7 @@ client.license.get_admin_license_acknowledgements()
 </dl>
 </details>
 
-<details><summary><code>client.license.<a href="src/fern/license/client.py">mutate_admin_license_acknowledgement</a>(...) -> typing.List[Info]</code></summary>
+<details><summary><code>client.license.<a href="src/fern/license/client.py#L636-L671">mutate_admin_license_acknowledgement</a>(...) -> typing.List[Info]</code></summary>
 <dl>
 <dd>
 
@@ -2175,7 +2175,7 @@ client.license.mutate_admin_license_acknowledgement(
 </dl>
 </details>
 
-<details><summary><code>client.license.<a href="src/fern/license/client.py">get_all_standard_license_comments</a>() -> typing.List[StandardComment]</code></summary>
+<details><summary><code>client.license.<a href="src/fern/license/client.py#L673-L699">get_all_standard_license_comments</a>() -> typing.List[StandardComment]</code></summary>
 <dl>
 <dd>
 
@@ -2238,7 +2238,7 @@ client.license.get_all_standard_license_comments()
 </dl>
 </details>
 
-<details><summary><code>client.license.<a href="src/fern/license/client.py">mutate_std_comments</a>(...) -> typing.List[Info]</code></summary>
+<details><summary><code>client.license.<a href="src/fern/license/client.py#L701-L731">mutate_std_comments</a>(...) -> typing.List[Info]</code></summary>
 <dl>
 <dd>
 
@@ -2313,7 +2313,7 @@ client.license.mutate_std_comments(
 </dl>
 </details>
 
-<details><summary><code>client.license.<a href="src/fern/license/client.py">verify_license</a>(...) -> Info</code></summary>
+<details><summary><code>client.license.<a href="src/fern/license/client.py#L733-L773">verify_license</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -2394,7 +2394,7 @@ client.license.verify_license(
 </dl>
 </details>
 
-<details><summary><code>client.license.<a href="src/fern/license/client.py">merge_license</a>(...) -> Info</code></summary>
+<details><summary><code>client.license.<a href="src/fern/license/client.py#L775-L815">merge_license</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -2475,7 +2475,7 @@ client.license.merge_license(
 </dl>
 </details>
 
-<details><summary><code>client.license.<a href="src/fern/license/client.py">get_suggested_license</a>(...) -> GetSuggestedLicense</code></summary>
+<details><summary><code>client.license.<a href="src/fern/license/client.py#L817-L848">get_suggested_license</a>(...) -> GetSuggestedLicense</code></summary>
 <dl>
 <dd>
 
@@ -2547,7 +2547,7 @@ client.license.get_suggested_license()
 </details>
 
 ## Upload
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">get_upload_by_id</a>(...) -> Upload</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L68-L106">get_upload_by_id</a>(...) -> Upload</code></summary>
 <dl>
 <dd>
 
@@ -2628,7 +2628,7 @@ client.upload.get_upload_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">move_upload_by_id</a>(...) -> Info</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L108-L158">move_upload_by_id</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -2727,7 +2727,7 @@ client.upload.move_upload_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">delete_upload_by_id</a>(...) -> Info</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L160-L198">delete_upload_by_id</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -2808,7 +2808,7 @@ client.upload.delete_upload_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">update_upload_by_id</a>(...) -> Info</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L200-L248">update_upload_by_id</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -2905,7 +2905,7 @@ client.upload.update_upload_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">get_uploads</a>(...) -> typing.List[Upload]</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L250-L325">get_uploads</a>(...) -> typing.List[Upload]</code></summary>
 <dl>
 <dd>
 
@@ -3040,7 +3040,7 @@ client.upload.get_uploads()
 </dl>
 </details>
 
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">create_upload</a>(...) -> Info</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L327-L397">create_upload</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -3185,7 +3185,7 @@ client.upload.create_upload(
 </dl>
 </details>
 
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">get_upload_file_by_id</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L399-L430">get_upload_file_by_id</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -3258,7 +3258,7 @@ client.upload.get_upload_file_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">get_summary_by_upload_id</a>(...) -> UploadSummary</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L432-L476">get_summary_by_upload_id</a>(...) -> UploadSummary</code></summary>
 <dl>
 <dd>
 
@@ -3347,7 +3347,7 @@ client.upload.get_summary_by_upload_id(
 </dl>
 </details>
 
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">get_item_info</a>(...) -> Fileinfo</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L478-L513">get_item_info</a>(...) -> Fileinfo</code></summary>
 <dl>
 <dd>
 
@@ -3429,7 +3429,7 @@ client.upload.get_item_info(
 </dl>
 </details>
 
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">get_licenses_by_upload_id</a>(...) -> UploadLicenses</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L515-L590">get_licenses_by_upload_id</a>(...) -> UploadLicenses</code></summary>
 <dl>
 <dd>
 
@@ -3561,7 +3561,7 @@ client.upload.get_licenses_by_upload_id(
 </dl>
 </details>
 
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">get_copyrights_by_upload_id</a>(...) -> UploadCopyrights</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L592-L623">get_copyrights_by_upload_id</a>(...) -> UploadCopyrights</code></summary>
 <dl>
 <dd>
 
@@ -3634,7 +3634,7 @@ client.upload.get_copyrights_by_upload_id(
 </dl>
 </details>
 
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">set_upload_permissions</a>(...) -> typing.List[Info]</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L625-L688">set_upload_permissions</a>(...) -> typing.List[Info]</code></summary>
 <dl>
 <dd>
 
@@ -3748,7 +3748,7 @@ client.upload.set_upload_permissions(
 </dl>
 </details>
 
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">get_groups_with_permissions</a>(...) -> UploadPermGroups</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L690-L721">get_groups_with_permissions</a>(...) -> UploadPermGroups</code></summary>
 <dl>
 <dd>
 
@@ -3821,7 +3821,7 @@ client.upload.get_groups_with_permissions(
 </dl>
 </details>
 
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">get_highlight_entries</a>(...) -> typing.List[HighlightInfo]</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L723-L786">get_highlight_entries</a>(...) -> typing.List[HighlightInfo]</code></summary>
 <dl>
 <dd>
 
@@ -3935,7 +3935,7 @@ client.upload.get_highlight_entries(
 </dl>
 </details>
 
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">view_the_content_of_the_file</a>(...) -> str</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L788-L823">view_the_content_of_the_file</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4017,7 +4017,7 @@ client.upload.view_the_content_of_the_file(
 </dl>
 </details>
 
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">set_clearing_decision</a>(...) -> Info</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L825-L881">set_clearing_decision</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -4126,7 +4126,7 @@ If true, the decision is applied to all occurrence of the file on the server!
 </dl>
 </details>
 
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">schedule_bulk_scan</a>(...) -> Info</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L883-L954">schedule_bulk_scan</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -4264,7 +4264,7 @@ client.upload.schedule_bulk_scan(
 </dl>
 </details>
 
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">get_bulk_history</a>(...) -> typing.List[GetBulkHistory]</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L956-L991">get_bulk_history</a>(...) -> typing.List[GetBulkHistory]</code></summary>
 <dl>
 <dd>
 
@@ -4346,7 +4346,7 @@ client.upload.get_bulk_history(
 </dl>
 </details>
 
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">get_license_decisions</a>(...) -> typing.List[LicenseDecision]</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L993-L1028">get_license_decisions</a>(...) -> typing.List[LicenseDecision]</code></summary>
 <dl>
 <dd>
 
@@ -4428,7 +4428,7 @@ client.upload.get_license_decisions(
 </dl>
 </details>
 
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">add_edit_delete_license_decision</a>(...) -> AddEditDeleteLicenseDecisionResponse</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L1030-L1075">add_edit_delete_license_decision</a>(...) -> AddEditDeleteLicenseDecisionResponse</code></summary>
 <dl>
 <dd>
 
@@ -4521,7 +4521,7 @@ client.upload.add_edit_delete_license_decision(
 </dl>
 </details>
 
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">get_main_licenses</a>(...) -> typing.List[License]</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L1077-L1108">get_main_licenses</a>(...) -> typing.List[License]</code></summary>
 <dl>
 <dd>
 
@@ -4594,7 +4594,7 @@ client.upload.get_main_licenses(
 </dl>
 </details>
 
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">set_main_license</a>(...) -> Info</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L1110-L1148">set_main_license</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -4675,7 +4675,7 @@ client.upload.set_main_license(
 </dl>
 </details>
 
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">delete_main_license</a>(...) -> Info</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L1150-L1185">delete_main_license</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -4757,7 +4757,7 @@ client.upload.delete_main_license(
 </dl>
 </details>
 
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">get_previous_and_next_item</a>(...) -> GetPrevNextItem</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L1187-L1232">get_previous_and_next_item</a>(...) -> GetPrevNextItem</code></summary>
 <dl>
 <dd>
 
@@ -4847,7 +4847,7 @@ client.upload.get_previous_and_next_item(
 </dl>
 </details>
 
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">get_clearing_history</a>(...) -> GetClearingHistory</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L1234-L1269">get_clearing_history</a>(...) -> GetClearingHistory</code></summary>
 <dl>
 <dd>
 
@@ -4929,7 +4929,7 @@ client.upload.get_clearing_history(
 </dl>
 </details>
 
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">get_clearing_progress_info</a>(...) -> ClearingProgressInfo</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L1271-L1302">get_clearing_progress_info</a>(...) -> ClearingProgressInfo</code></summary>
 <dl>
 <dd>
 
@@ -5002,7 +5002,7 @@ client.upload.get_clearing_progress_info(
 </dl>
 </details>
 
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">get_licenses_histogram</a>(...) -> typing.List[LicenseHistogram]</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L1304-L1338">get_licenses_histogram</a>(...) -> typing.List[LicenseHistogram]</code></summary>
 <dl>
 <dd>
 
@@ -5083,7 +5083,7 @@ client.upload.get_licenses_histogram(
 </dl>
 </details>
 
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">get_agents_by_upload_id</a>(...) -> typing.List[AgentOfUpload]</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L1340-L1371">get_agents_by_upload_id</a>(...) -> typing.List[AgentOfUpload]</code></summary>
 <dl>
 <dd>
 
@@ -5156,7 +5156,7 @@ client.upload.get_agents_by_upload_id(
 </dl>
 </details>
 
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">get_all_edited_licenses</a>(...) -> typing.List[EditedLicense]</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L1373-L1404">get_all_edited_licenses</a>(...) -> typing.List[EditedLicense]</code></summary>
 <dl>
 <dd>
 
@@ -5229,7 +5229,7 @@ client.upload.get_all_edited_licenses(
 </dl>
 </details>
 
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">get_all_scanned_licenses</a>(...) -> typing.List[ScannedLicense]</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L1406-L1440">get_all_scanned_licenses</a>(...) -> typing.List[ScannedLicense]</code></summary>
 <dl>
 <dd>
 
@@ -5310,7 +5310,7 @@ client.upload.get_all_scanned_licenses(
 </dl>
 </details>
 
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">get_item_tree_view</a>(...) -> typing.List[TreeViewModel]</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L1442-L1540">get_item_tree_view</a>(...) -> typing.List[TreeViewModel]</code></summary>
 <dl>
 <dd>
 
@@ -5480,7 +5480,7 @@ client.upload.get_item_tree_view(
 </dl>
 </details>
 
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">get_top_item_id</a>(...) -> typing.List[Info]</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L1542-L1571">get_top_item_id</a>(...) -> typing.List[Info]</code></summary>
 <dl>
 <dd>
 
@@ -5553,7 +5553,7 @@ client.upload.get_top_item_id(
 </dl>
 </details>
 
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">get_licenses_reuse_summary</a>(...) -> GetReuseReportSummary</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L1573-L1604">get_licenses_reuse_summary</a>(...) -> GetReuseReportSummary</code></summary>
 <dl>
 <dd>
 
@@ -5626,7 +5626,7 @@ client.upload.get_licenses_reuse_summary(
 </dl>
 </details>
 
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">get_revisions_for_agents</a>(...) -> typing.List[AgentsRevision]</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L1606-L1637">get_revisions_for_agents</a>(...) -> typing.List[AgentsRevision]</code></summary>
 <dl>
 <dd>
 
@@ -5699,7 +5699,7 @@ client.upload.get_revisions_for_agents(
 </dl>
 </details>
 
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">run_one_shot_nomos</a>(...) -> OneShotInfo</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L1639-L1668">run_one_shot_nomos</a>(...) -> OneShotInfo</code></summary>
 <dl>
 <dd>
 
@@ -5772,7 +5772,7 @@ client.upload.run_one_shot_nomos(
 </dl>
 </details>
 
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">run_one_shot_monk</a>(...) -> OneShotInfo</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L1670-L1699">run_one_shot_monk</a>(...) -> OneShotInfo</code></summary>
 <dl>
 <dd>
 
@@ -5845,7 +5845,7 @@ client.upload.run_one_shot_monk(
 </dl>
 </details>
 
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">run_one_shot_ceu</a>(...) -> OneShotInfo</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L1701-L1730">run_one_shot_ceu</a>(...) -> OneShotInfo</code></summary>
 <dl>
 <dd>
 
@@ -5918,7 +5918,7 @@ client.upload.run_one_shot_ceu(
 </dl>
 </details>
 
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">get_files</a>(...) -> typing.List[File]</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L1732-L1769">get_files</a>(...) -> typing.List[File]</code></summary>
 <dl>
 <dd>
 
@@ -6001,7 +6001,7 @@ client.upload.get_files(
 </dl>
 </details>
 
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">get_conf_info</a>(...) -> typing.List[ConfResponse]</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L1771-L1802">get_conf_info</a>(...) -> typing.List[ConfResponse]</code></summary>
 <dl>
 <dd>
 
@@ -6074,7 +6074,7 @@ client.upload.get_conf_info(
 </dl>
 </details>
 
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">update_conf_data</a>(...) -> typing.List[Info]</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L1804-L1847">update_conf_data</a>(...) -> typing.List[Info]</code></summary>
 <dl>
 <dd>
 
@@ -6167,7 +6167,7 @@ sent as an encoded string.
 </details>
 
 ## Search
-<details><summary><code>client.search.<a href="src/fern/search/client.py">file</a>(...) -> typing.List[SearchResults]</code></summary>
+<details><summary><code>client.search.<a href="src/fern/search/client.py#L26-L106">file</a>(...) -> typing.List[SearchResults]</code></summary>
 <dl>
 <dd>
 
@@ -6319,7 +6319,7 @@ client.search.file()
 </details>
 
 ## User
-<details><summary><code>client.user.<a href="src/fern/user/client.py">get_users</a>() -> typing.List[User]</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L40-L64">get_users</a>() -> typing.List[User]</code></summary>
 <dl>
 <dd>
 
@@ -6382,7 +6382,7 @@ client.user.get_users()
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">create_user</a>(...) -> Info</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L66-L155">create_user</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -6544,7 +6544,7 @@ client.user.create_user(
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">get_user_by_id</a>(...) -> User</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L157-L185">get_user_by_id</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -6617,7 +6617,7 @@ client.user.get_user_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">modify_user_by_id</a>(...) -> Info</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L187-L284">modify_user_by_id</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -6795,7 +6795,7 @@ client.user.modify_user_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">delete_user_by_id</a>(...) -> Info</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L286-L314">delete_user_by_id</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -6868,7 +6868,7 @@ client.user.delete_user_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">get_self</a>() -> GetSelfResponse</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L316-L340">get_self</a>() -> GetSelfResponse</code></summary>
 <dl>
 <dd>
 
@@ -6931,7 +6931,7 @@ client.user.get_self()
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">create_rest_api_token</a>(...) -> CreateRestApiTokenResponse</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L342-L392">create_rest_api_token</a>(...) -> CreateRestApiTokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -7007,7 +7007,7 @@ client.user.create_rest_api_token(
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">get_tokens_by_type</a>(...) -> GetTokensByTypeResponse</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L394-L424">get_tokens_by_type</a>(...) -> GetTokensByTypeResponse</code></summary>
 <dl>
 <dd>
 
@@ -7080,7 +7080,7 @@ client.user.get_tokens_by_type(
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">update_permission_by_group_id_and_user_id</a>(...) -> Info</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L426-L474">update_permission_by_group_id_and_user_id</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -7176,7 +7176,7 @@ New user permission in the group.
 </details>
 
 ## Copyrights
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">get_file_copyrights</a>(...) -> typing.List[GetFileCopyrights]</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L46-L100">get_file_copyrights</a>(...) -> typing.List[GetFileCopyrights]</code></summary>
 <dl>
 <dd>
 
@@ -7283,7 +7283,7 @@ client.copyrights.get_file_copyrights(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">update_file_copyrights</a>(...) -> Info</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L102-L152">update_file_copyrights</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -7382,7 +7382,7 @@ client.copyrights.update_file_copyrights(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">delete_file_copyrights</a>(...) -> Info</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L154-L193">delete_file_copyrights</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -7473,7 +7473,7 @@ client.copyrights.delete_file_copyrights(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">restore_file_copyrights</a>(...) -> Info</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L195-L234">restore_file_copyrights</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -7564,7 +7564,7 @@ client.copyrights.restore_file_copyrights(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">get_file_user_copyrights</a>(...) -> typing.List[GetFileCopyrights]</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L236-L290">get_file_user_copyrights</a>(...) -> typing.List[GetFileCopyrights]</code></summary>
 <dl>
 <dd>
 
@@ -7671,7 +7671,7 @@ client.copyrights.get_file_user_copyrights(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">update_file_user_copyright</a>(...) -> Info</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L292-L342">update_file_user_copyright</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -7770,7 +7770,7 @@ client.copyrights.update_file_user_copyright(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">delete_file_user_copyright</a>(...) -> Info</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L344-L383">delete_file_user_copyright</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -7861,7 +7861,7 @@ client.copyrights.delete_file_user_copyright(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">restore_file_user_copyright</a>(...) -> Info</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L385-L424">restore_file_user_copyright</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -7952,7 +7952,7 @@ client.copyrights.restore_file_user_copyright(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">get_file_scan_code_copyrights</a>(...) -> typing.List[GetFileCopyrights]</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L426-L480">get_file_scan_code_copyrights</a>(...) -> typing.List[GetFileCopyrights]</code></summary>
 <dl>
 <dd>
 
@@ -8059,7 +8059,7 @@ client.copyrights.get_file_scan_code_copyrights(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">update_file_scan_code_copyright</a>(...) -> Info</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L482-L532">update_file_scan_code_copyright</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -8158,7 +8158,7 @@ client.copyrights.update_file_scan_code_copyright(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">delete_file_scan_code_copyright</a>(...) -> Info</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L534-L573">delete_file_scan_code_copyright</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -8249,7 +8249,7 @@ client.copyrights.delete_file_scan_code_copyright(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">restore_file_scan_code_copyright</a>(...) -> Info</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L575-L616">restore_file_scan_code_copyright</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -8340,7 +8340,7 @@ client.copyrights.restore_file_scan_code_copyright(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">get_file_emails</a>(...) -> typing.List[GetFileCopyrights]</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L618-L672">get_file_emails</a>(...) -> typing.List[GetFileCopyrights]</code></summary>
 <dl>
 <dd>
 
@@ -8447,7 +8447,7 @@ client.copyrights.get_file_emails(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">update_file_email</a>(...) -> Info</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L674-L724">update_file_email</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -8546,7 +8546,7 @@ client.copyrights.update_file_email(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">delete_file_emails</a>(...) -> Info</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L726-L765">delete_file_emails</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -8637,7 +8637,7 @@ client.copyrights.delete_file_emails(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">restore_file_email</a>(...) -> Info</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L767-L806">restore_file_email</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -8728,7 +8728,7 @@ client.copyrights.restore_file_email(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">get_file_scan_code_email</a>(...) -> typing.List[GetFileCopyrights]</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L808-L862">get_file_scan_code_email</a>(...) -> typing.List[GetFileCopyrights]</code></summary>
 <dl>
 <dd>
 
@@ -8835,7 +8835,7 @@ client.copyrights.get_file_scan_code_email(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">update_file_scan_code_email</a>(...) -> Info</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L864-L914">update_file_scan_code_email</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -8934,7 +8934,7 @@ client.copyrights.update_file_scan_code_email(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">delete_file_scan_code_email</a>(...) -> Info</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L916-L955">delete_file_scan_code_email</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -9025,7 +9025,7 @@ client.copyrights.delete_file_scan_code_email(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">restore_file_scan_code_email</a>(...) -> Info</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L957-L996">restore_file_scan_code_email</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -9116,7 +9116,7 @@ client.copyrights.restore_file_scan_code_email(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">get_file_urls</a>(...) -> typing.List[GetFileCopyrights]</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L998-L1052">get_file_urls</a>(...) -> typing.List[GetFileCopyrights]</code></summary>
 <dl>
 <dd>
 
@@ -9223,7 +9223,7 @@ client.copyrights.get_file_urls(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">update_file_url</a>(...) -> Info</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L1054-L1104">update_file_url</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -9322,7 +9322,7 @@ client.copyrights.update_file_url(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">delete_file_url</a>(...) -> Info</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L1106-L1145">delete_file_url</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -9413,7 +9413,7 @@ client.copyrights.delete_file_url(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">restore_file_url</a>(...) -> Info</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L1147-L1186">restore_file_url</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -9504,7 +9504,7 @@ client.copyrights.restore_file_url(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">get_file_scan_code_url</a>(...) -> typing.List[GetFileCopyrights]</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L1188-L1242">get_file_scan_code_url</a>(...) -> typing.List[GetFileCopyrights]</code></summary>
 <dl>
 <dd>
 
@@ -9611,7 +9611,7 @@ client.copyrights.get_file_scan_code_url(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">update_file_scan_code_url</a>(...) -> Info</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L1244-L1294">update_file_scan_code_url</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -9710,7 +9710,7 @@ client.copyrights.update_file_scan_code_url(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">delete_file_scan_code_url</a>(...) -> Info</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L1296-L1335">delete_file_scan_code_url</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -9801,7 +9801,7 @@ client.copyrights.delete_file_scan_code_url(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">restore_file_scan_code_url</a>(...) -> Info</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L1337-L1376">restore_file_scan_code_url</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -9892,7 +9892,7 @@ client.copyrights.restore_file_scan_code_url(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">get_file_authors</a>(...) -> typing.List[GetFileCopyrights]</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L1378-L1432">get_file_authors</a>(...) -> typing.List[GetFileCopyrights]</code></summary>
 <dl>
 <dd>
 
@@ -9999,7 +9999,7 @@ client.copyrights.get_file_authors(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">update_file_author</a>(...) -> Info</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L1434-L1484">update_file_author</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -10098,7 +10098,7 @@ client.copyrights.update_file_author(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">delete_file_author</a>(...) -> Info</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L1486-L1525">delete_file_author</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -10189,7 +10189,7 @@ client.copyrights.delete_file_author(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">restore_file_author</a>(...) -> Info</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L1527-L1566">restore_file_author</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -10280,7 +10280,7 @@ client.copyrights.restore_file_author(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">get_file_scan_code_author</a>(...) -> typing.List[GetFileCopyrights]</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L1568-L1622">get_file_scan_code_author</a>(...) -> typing.List[GetFileCopyrights]</code></summary>
 <dl>
 <dd>
 
@@ -10387,7 +10387,7 @@ client.copyrights.get_file_scan_code_author(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">update_file_scan_code_author</a>(...) -> Info</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L1624-L1674">update_file_scan_code_author</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -10486,7 +10486,7 @@ client.copyrights.update_file_scan_code_author(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">delete_file_scan_code_author</a>(...) -> Info</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L1676-L1715">delete_file_scan_code_author</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -10577,7 +10577,7 @@ client.copyrights.delete_file_scan_code_author(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">restore_file_scan_code_author</a>(...) -> Info</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L1717-L1756">restore_file_scan_code_author</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -10668,7 +10668,7 @@ client.copyrights.restore_file_scan_code_author(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">get_file_eccs</a>(...) -> typing.List[GetFileCopyrights]</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L1758-L1812">get_file_eccs</a>(...) -> typing.List[GetFileCopyrights]</code></summary>
 <dl>
 <dd>
 
@@ -10775,7 +10775,7 @@ client.copyrights.get_file_eccs(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">update_file_ecc</a>(...) -> Info</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L1814-L1864">update_file_ecc</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -10874,7 +10874,7 @@ client.copyrights.update_file_ecc(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">delete_file_ecc</a>(...) -> Info</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L1866-L1905">delete_file_ecc</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -10965,7 +10965,7 @@ client.copyrights.delete_file_ecc(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">restore_file_ecc</a>(...) -> Info</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L1907-L1946">restore_file_ecc</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -11056,7 +11056,7 @@ client.copyrights.restore_file_ecc(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">get_file_keywords</a>(...) -> typing.List[GetFileCopyrights]</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L1948-L2002">get_file_keywords</a>(...) -> typing.List[GetFileCopyrights]</code></summary>
 <dl>
 <dd>
 
@@ -11163,7 +11163,7 @@ client.copyrights.get_file_keywords(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">update_file_keyword</a>(...) -> Info</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L2004-L2054">update_file_keyword</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -11262,7 +11262,7 @@ client.copyrights.update_file_keyword(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">delete_file_keyword</a>(...) -> Info</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L2056-L2095">delete_file_keyword</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -11353,7 +11353,7 @@ client.copyrights.delete_file_keyword(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">restore_file_keyword</a>(...) -> Info</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L2097-L2136">restore_file_keyword</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -11444,7 +11444,7 @@ client.copyrights.restore_file_keyword(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">get_file_ipras</a>(...) -> typing.List[GetFileCopyrights]</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L2138-L2192">get_file_ipras</a>(...) -> typing.List[GetFileCopyrights]</code></summary>
 <dl>
 <dd>
 
@@ -11551,7 +11551,7 @@ client.copyrights.get_file_ipras(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">update_file_ipra</a>(...) -> Info</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L2194-L2244">update_file_ipra</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -11650,7 +11650,7 @@ client.copyrights.update_file_ipra(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">delete_file_ipra</a>(...) -> Info</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L2246-L2285">delete_file_ipra</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -11741,7 +11741,7 @@ client.copyrights.delete_file_ipra(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">restore_file_ipra</a>(...) -> Info</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L2287-L2326">restore_file_ipra</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -11832,7 +11832,7 @@ client.copyrights.restore_file_ipra(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">get_total_file_copyrights</a>(...) -> typing.List[GetTotalFileCopyrightsResponseItem]</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L2328-L2374">get_total_file_copyrights</a>(...) -> typing.List[GetTotalFileCopyrightsResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -11923,7 +11923,7 @@ client.copyrights.get_total_file_copyrights(
 </dl>
 </details>
 
-<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py">get_total_file_user_copyrights</a>(...) -> typing.List[GetTotalFileUserCopyrightsResponseItem]</code></summary>
+<details><summary><code>client.copyrights.<a href="src/fern/copyrights/client.py#L2376-L2422">get_total_file_user_copyrights</a>(...) -> typing.List[GetTotalFileUserCopyrightsResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -12015,7 +12015,7 @@ client.copyrights.get_total_file_user_copyrights(
 </details>
 
 ## Job
-<details><summary><code>client.job.<a href="src/fern/job/client.py">get_jobs</a>(...) -> typing.List[Job]</code></summary>
+<details><summary><code>client.job.<a href="src/fern/job/client.py#L47-L104">get_jobs</a>(...) -> typing.List[Job]</code></summary>
 <dl>
 <dd>
 
@@ -12126,7 +12126,7 @@ client.job.get_jobs()
 </dl>
 </details>
 
-<details><summary><code>client.job.<a href="src/fern/job/client.py">start_jobs</a>(...) -> Info</code></summary>
+<details><summary><code>client.job.<a href="src/fern/job/client.py#L106-L168">start_jobs</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -12224,7 +12224,7 @@ client.job.start_jobs(
 </dl>
 </details>
 
-<details><summary><code>client.job.<a href="src/fern/job/client.py">get_all_jobs</a>(...) -> typing.List[Job]</code></summary>
+<details><summary><code>client.job.<a href="src/fern/job/client.py#L170-L213">get_all_jobs</a>(...) -> typing.List[Job]</code></summary>
 <dl>
 <dd>
 
@@ -12319,7 +12319,7 @@ client.job.get_all_jobs()
 </dl>
 </details>
 
-<details><summary><code>client.job.<a href="src/fern/job/client.py">get_scheduler_options_by_operation</a>(...) -> GetSchedulerOption</code></summary>
+<details><summary><code>client.job.<a href="src/fern/job/client.py#L215-L249">get_scheduler_options_by_operation</a>(...) -> GetSchedulerOption</code></summary>
 <dl>
 <dd>
 
@@ -12392,7 +12392,7 @@ client.job.get_scheduler_options_by_operation(
 </dl>
 </details>
 
-<details><summary><code>client.job.<a href="src/fern/job/client.py">handle_scheduler_run</a>(...) -> Info</code></summary>
+<details><summary><code>client.job.<a href="src/fern/job/client.py#L251-L297">handle_scheduler_run</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -12487,7 +12487,7 @@ client.job.handle_scheduler_run()
 </dl>
 </details>
 
-<details><summary><code>client.job.<a href="src/fern/job/client.py">get_job_by_id</a>(...) -> Job</code></summary>
+<details><summary><code>client.job.<a href="src/fern/job/client.py#L299-L328">get_job_by_id</a>(...) -> Job</code></summary>
 <dl>
 <dd>
 
@@ -12560,7 +12560,7 @@ client.job.get_job_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.job.<a href="src/fern/job/client.py">get_jobs_history_per_upload</a>(...) -> typing.List[ShowJob]</code></summary>
+<details><summary><code>client.job.<a href="src/fern/job/client.py#L330-L361">get_jobs_history_per_upload</a>(...) -> typing.List[ShowJob]</code></summary>
 <dl>
 <dd>
 
@@ -12633,7 +12633,7 @@ client.job.get_jobs_history_per_upload(
 </dl>
 </details>
 
-<details><summary><code>client.job.<a href="src/fern/job/client.py">get_job_statistics</a>() -> typing.List[GetJobStatistics]</code></summary>
+<details><summary><code>client.job.<a href="src/fern/job/client.py#L363-L389">get_job_statistics</a>() -> typing.List[GetJobStatistics]</code></summary>
 <dl>
 <dd>
 
@@ -12696,7 +12696,7 @@ client.job.get_job_statistics()
 </dl>
 </details>
 
-<details><summary><code>client.job.<a href="src/fern/job/client.py">get_all_server_jobs</a>() -> AllServerJobs</code></summary>
+<details><summary><code>client.job.<a href="src/fern/job/client.py#L391-L415">get_all_server_jobs</a>() -> AllServerJobs</code></summary>
 <dl>
 <dd>
 
@@ -12759,7 +12759,7 @@ client.job.get_all_server_jobs()
 </dl>
 </details>
 
-<details><summary><code>client.job.<a href="src/fern/job/client.py">delete_job</a>(...) -> Info</code></summary>
+<details><summary><code>client.job.<a href="src/fern/job/client.py#L417-L450">delete_job</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -12841,7 +12841,7 @@ client.job.delete_job(
 </dl>
 </details>
 
-<details><summary><code>client.job.<a href="src/fern/job/client.py">get_reports_by_upload</a>(...) -> Info</code></summary>
+<details><summary><code>client.job.<a href="src/fern/job/client.py#L452-L497">get_reports_by_upload</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -12931,7 +12931,7 @@ client.job.get_reports_by_upload(
 </dl>
 </details>
 
-<details><summary><code>client.job.<a href="src/fern/job/client.py">get_report_by_id</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.job.<a href="src/fern/job/client.py#L499-L537">get_report_by_id</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -13013,7 +13013,7 @@ client.job.get_report_by_id(
 </details>
 
 ## Folders
-<details><summary><code>client.folders.<a href="src/fern/folders/client.py">get_folders</a>(...) -> typing.List[Folder]</code></summary>
+<details><summary><code>client.folders.<a href="src/fern/folders/client.py#L28-L57">get_folders</a>(...) -> typing.List[Folder]</code></summary>
 <dl>
 <dd>
 
@@ -13084,7 +13084,7 @@ client.folders.get_folders()
 </dl>
 </details>
 
-<details><summary><code>client.folders.<a href="src/fern/folders/client.py">get_folder_by_id</a>(...) -> Folder</code></summary>
+<details><summary><code>client.folders.<a href="src/fern/folders/client.py#L59-L97">get_folder_by_id</a>(...) -> Folder</code></summary>
 <dl>
 <dd>
 
@@ -13165,7 +13165,7 @@ client.folders.get_folder_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.folders.<a href="src/fern/folders/client.py">unlink_content</a>(...) -> Info</code></summary>
+<details><summary><code>client.folders.<a href="src/fern/folders/client.py#L99-L128">unlink_content</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -13238,7 +13238,7 @@ client.folders.unlink_content(
 </dl>
 </details>
 
-<details><summary><code>client.folders.<a href="src/fern/folders/client.py">get_all_folder_contents</a>(...) -> typing.List[GetFolderContent]</code></summary>
+<details><summary><code>client.folders.<a href="src/fern/folders/client.py#L130-L161">get_all_folder_contents</a>(...) -> typing.List[GetFolderContent]</code></summary>
 <dl>
 <dd>
 
@@ -13311,7 +13311,7 @@ client.folders.get_all_folder_contents(
 </dl>
 </details>
 
-<details><summary><code>client.folders.<a href="src/fern/folders/client.py">get_unlinkable_contents</a>(...) -> GetFolderContent</code></summary>
+<details><summary><code>client.folders.<a href="src/fern/folders/client.py#L163-L194">get_unlinkable_contents</a>(...) -> GetFolderContent</code></summary>
 <dl>
 <dd>
 
@@ -13385,7 +13385,7 @@ client.folders.get_unlinkable_contents(
 </details>
 
 ## Organize
-<details><summary><code>client.organize.<a href="src/fern/organize/client.py">create_folder</a>(...) -> Info</code></summary>
+<details><summary><code>client.organize.<a href="src/fern/organize/client.py#L27-L80">create_folder</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -13483,7 +13483,7 @@ client.organize.create_folder(
 </dl>
 </details>
 
-<details><summary><code>client.organize.<a href="src/fern/organize/client.py">move_folder_by_id</a>(...) -> Info</code></summary>
+<details><summary><code>client.organize.<a href="src/fern/organize/client.py#L82-L132">move_folder_by_id</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -13582,7 +13582,7 @@ client.organize.move_folder_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.organize.<a href="src/fern/organize/client.py">delete_folder_by_id</a>(...) -> Info</code></summary>
+<details><summary><code>client.organize.<a href="src/fern/organize/client.py#L134-L172">delete_folder_by_id</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -13663,7 +13663,7 @@ client.organize.delete_folder_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.organize.<a href="src/fern/organize/client.py">patch_folder_by_id</a>(...) -> Info</code></summary>
+<details><summary><code>client.organize.<a href="src/fern/organize/client.py#L174-L222">patch_folder_by_id</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -13760,7 +13760,7 @@ client.organize.patch_folder_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.organize.<a href="src/fern/organize/client.py">create_group</a>(...) -> Info</code></summary>
+<details><summary><code>client.organize.<a href="src/fern/organize/client.py#L224-L253">create_group</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -13834,7 +13834,7 @@ client.organize.create_group(
 </details>
 
 ## Groups
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">get_groups</a>() -> typing.List[Group]</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L31-L55">get_groups</a>() -> typing.List[Group]</code></summary>
 <dl>
 <dd>
 
@@ -13897,7 +13897,7 @@ client.groups.get_groups()
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">delete_group_by_id</a>(...) -> Info</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L57-L86">delete_group_by_id</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -13970,7 +13970,7 @@ client.groups.delete_group_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">add_member</a>(...) -> Info</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L88-L131">add_member</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -14060,7 +14060,7 @@ client.groups.add_member(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">delete_group_member_by_group_id_and_user_id</a>(...) -> Info</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L133-L170">delete_group_member_by_group_id_and_user_id</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -14142,7 +14142,7 @@ client.groups.delete_group_member_by_group_id_and_user_id(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">deletable_groups</a>() -> typing.List[Group]</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L172-L196">deletable_groups</a>() -> typing.List[Group]</code></summary>
 <dl>
 <dd>
 
@@ -14205,7 +14205,7 @@ client.groups.deletable_groups()
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">get_group_users_with_roles</a>(...) -> typing.List[UserGroupMember]</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L198-L229">get_group_users_with_roles</a>(...) -> typing.List[UserGroupMember]</code></summary>
 <dl>
 <dd>
 
@@ -14279,7 +14279,7 @@ client.groups.get_group_users_with_roles(
 </details>
 
 ## Report
-<details><summary><code>client.report.<a href="src/fern/report/client.py">upload_report</a>(...) -> Info</code></summary>
+<details><summary><code>client.report.<a href="src/fern/report/client.py#L30-L75">upload_report</a>(...) -> Info</code></summary>
 <dl>
 <dd>
 
@@ -14370,7 +14370,7 @@ client.report.upload_report(
 </details>
 
 ## Overview
-<details><summary><code>client.overview.<a href="src/fern/overview/client.py">get_database_contents</a>() -> typing.List[GetDatabaseContent]</code></summary>
+<details><summary><code>client.overview.<a href="src/fern/overview/client.py#L30-L56">get_database_contents</a>() -> typing.List[GetDatabaseContent]</code></summary>
 <dl>
 <dd>
 
@@ -14433,7 +14433,7 @@ client.overview.get_database_contents()
 </dl>
 </details>
 
-<details><summary><code>client.overview.<a href="src/fern/overview/client.py">get_php_info</a>() -> GetPhpInfo</code></summary>
+<details><summary><code>client.overview.<a href="src/fern/overview/client.py#L58-L82">get_php_info</a>() -> GetPhpInfo</code></summary>
 <dl>
 <dd>
 
@@ -14496,7 +14496,7 @@ client.overview.get_php_info()
 </dl>
 </details>
 
-<details><summary><code>client.overview.<a href="src/fern/overview/client.py">get_disk_usage</a>() -> typing.List[DiskUsage]</code></summary>
+<details><summary><code>client.overview.<a href="src/fern/overview/client.py#L84-L108">get_disk_usage</a>() -> typing.List[DiskUsage]</code></summary>
 <dl>
 <dd>
 
@@ -14559,7 +14559,7 @@ client.overview.get_disk_usage()
 </dl>
 </details>
 
-<details><summary><code>client.overview.<a href="src/fern/overview/client.py">get_database_metrics</a>() -> typing.List[GetDatabaseMetric]</code></summary>
+<details><summary><code>client.overview.<a href="src/fern/overview/client.py#L110-L136">get_database_metrics</a>() -> typing.List[GetDatabaseMetric]</code></summary>
 <dl>
 <dd>
 
@@ -14622,7 +14622,7 @@ client.overview.get_database_metrics()
 </dl>
 </details>
 
-<details><summary><code>client.overview.<a href="src/fern/overview/client.py">get_active_queries</a>() -> typing.List[GetActiveQuery]</code></summary>
+<details><summary><code>client.overview.<a href="src/fern/overview/client.py#L138-L164">get_active_queries</a>() -> typing.List[GetActiveQuery]</code></summary>
 <dl>
 <dd>
 

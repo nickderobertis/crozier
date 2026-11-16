@@ -1,6 +1,6 @@
 # Reference
 ## Alias
-<details><summary><code>client.alias.<a href="src/fern/alias/client.py">alias_val2</a>() -> str</code></summary>
+<details><summary><code>client.alias.<a href="src/fern/alias/client.py#L25-L45">alias_val2</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -48,7 +48,7 @@ client.alias.alias_val2()
 </dl>
 </details>
 
-<details><summary><code>client.alias.<a href="src/fern/alias/client.py">list</a>() -> str</code></summary>
+<details><summary><code>client.alias.<a href="src/fern/alias/client.py#L47-L67">list</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -96,7 +96,7 @@ client.alias.list()
 </dl>
 </details>
 
-<details><summary><code>client.alias.<a href="src/fern/alias/client.py">alias_v3</a>() -> str</code></summary>
+<details><summary><code>client.alias.<a href="src/fern/alias/client.py#L69-L89">alias_v3</a>() -> str</code></summary>
 <dl>
 <dd>
 

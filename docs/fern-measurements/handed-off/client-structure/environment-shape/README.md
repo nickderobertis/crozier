@@ -27,3 +27,13 @@ pre-change form of the deciding line and requires the comparison to name the
 file. [`runtime.txt`](runtime.txt) records both SDKs sending the same requests through `httpx.MockTransport`.
 
 **Verdict.** `parity-gap-repaired`.
+
+**Regenerated at the certified pair.** The trees under this record's
+`fern-expected/` (and `expected-literals/` or `literals/`, where it has them)
+were regenerated at Fern CLI 5.200.0 / `fernapi/fern-python-sdk` 5.41.25, the
+certified pair, one Fern run at a time through
+`tools/fern-goldens/fern-references.py`'s own `generated_tree` (and
+`reduce_overlay` for an overlay), and crozier's comparison holds the record to
+them. Statements above that name Fern CLI 5.163.1 / fern-python-sdk 5.41.3
+describe the measurement as first taken, at the pair certified then; a digest,
+log or exit code they cite is that run's.

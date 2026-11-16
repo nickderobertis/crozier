@@ -151,6 +151,8 @@ MIRRORED = (
     "tools/fern-goldens/golden_overlay.py",
     "tools/fern-goldens/certified_pair.py",
     "tools/fern-refusals/fern-refusals.py",
+    # Read by fern-refusals.py at import: the unsettled-record contract.
+    "docs/fern-refusals/unsettled-contract.json",
     "tools/corpus/corpus-lib.sh",
     "tools/corpus/corpus_remote_ref_pins.py",
     "tools/corpus/fetch-corpus.sh",

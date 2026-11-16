@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_member</a>(...) -> Member</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L100-L126">get_member</a>(...) -> Member</code></summary>
 <dl>
 <dd>
 
@@ -56,7 +56,7 @@ client.get_member(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_member</a>(...) -> Member</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L128-L183">update_member</a>(...) -> Member</code></summary>
 <dl>
 <dd>
 

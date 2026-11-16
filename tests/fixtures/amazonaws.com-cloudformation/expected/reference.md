@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_activate_type</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L524-L626">get_activate_type</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -161,7 +161,7 @@ client.get_activate_type(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_activate_type</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L628-L676">post_activate_type</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -243,7 +243,7 @@ client.post_activate_type(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_batch_describe_type_configurations</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L678-L737">get_batch_describe_type_configurations</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -333,7 +333,7 @@ client.get_batch_describe_type_configurations(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_batch_describe_type_configurations</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L739-L789">post_batch_describe_type_configurations</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -415,7 +415,7 @@ client.post_batch_describe_type_configurations(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_cancel_update_stack</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L791-L853">get_cancel_update_stack</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -514,7 +514,7 @@ client.get_cancel_update_stack(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_cancel_update_stack</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L855-L904">post_cancel_update_stack</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -596,7 +596,7 @@ client.post_cancel_update_stack(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_continue_update_rollback</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L906-L979">get_continue_update_rollback</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -711,7 +711,7 @@ client.get_continue_update_rollback(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_continue_update_rollback</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L981-L1031">post_continue_update_rollback</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -793,7 +793,7 @@ client.post_continue_update_rollback(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_create_change_set</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1033-L1172">get_create_change_set</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1013,7 +1013,7 @@ client.get_create_change_set(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_create_change_set</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1174-L1224">post_create_change_set</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1095,7 +1095,7 @@ client.post_create_change_set(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_create_stack</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1226-L1364">get_create_stack</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1314,7 +1314,7 @@ client.get_create_stack(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_create_stack</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1366-L1414">post_create_stack</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1396,7 +1396,7 @@ client.post_create_stack(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_create_stack_instances</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1416-L1509">get_create_stack_instances</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1543,7 +1543,7 @@ client.get_create_stack_instances(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_create_stack_instances</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1511-L1561">post_create_stack_instances</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1625,7 +1625,7 @@ client.post_create_stack_instances(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_create_stack_set</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1563-L1691">get_create_stack_set</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1828,7 +1828,7 @@ client.get_create_stack_set(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_create_stack_set</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1693-L1743">post_create_stack_set</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1910,7 +1910,7 @@ client.post_create_stack_set(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_deactivate_type</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1745-L1807">get_deactivate_type</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2016,7 +2016,7 @@ client.get_deactivate_type(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_deactivate_type</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1809-L1859">post_deactivate_type</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2098,7 +2098,7 @@ client.post_deactivate_type(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_delete_change_set</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1861-L1924">get_delete_change_set</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2197,7 +2197,7 @@ client.get_delete_change_set(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_delete_change_set</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1926-L1976">post_delete_change_set</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2279,7 +2279,7 @@ client.post_delete_change_set(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_delete_stack</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1978-L2050">get_delete_stack</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2394,7 +2394,7 @@ client.get_delete_stack(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_delete_stack</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2052-L2099">post_delete_stack</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2476,7 +2476,7 @@ client.post_delete_stack(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_delete_stack_instances</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2101-L2195">get_delete_stack_instances</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2624,7 +2624,7 @@ client.get_delete_stack_instances(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_delete_stack_instances</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2197-L2247">post_delete_stack_instances</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2706,7 +2706,7 @@ client.post_delete_stack_instances(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_delete_stack_set</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2249-L2312">get_delete_stack_set</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2805,7 +2805,7 @@ client.get_delete_stack_set(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_delete_stack_set</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2314-L2364">post_delete_stack_set</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2887,7 +2887,7 @@ client.post_delete_stack_set(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_deregister_type</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2366-L2438">get_deregister_type</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3001,7 +3001,7 @@ client.get_deregister_type(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_deregister_type</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2440-L2490">post_deregister_type</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3083,7 +3083,7 @@ client.post_deregister_type(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_describe_account_limits</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2492-L2546">get_describe_account_limits</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3173,7 +3173,7 @@ client.get_describe_account_limits(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_describe_account_limits</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2548-L2602">post_describe_account_limits</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3263,7 +3263,7 @@ client.post_describe_account_limits(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_describe_change_set</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2604-L2672">get_describe_change_set</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3370,7 +3370,7 @@ client.get_describe_change_set(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_describe_change_set</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2674-L2724">post_describe_change_set</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3452,7 +3452,7 @@ client.post_describe_change_set(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_describe_change_set_hooks</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2726-L2799">get_describe_change_set_hooks</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3567,7 +3567,7 @@ client.get_describe_change_set_hooks(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_describe_change_set_hooks</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2801-L2851">post_describe_change_set_hooks</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3649,7 +3649,7 @@ client.post_describe_change_set_hooks(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_describe_publisher</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2853-L2907">get_describe_publisher</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3739,7 +3739,7 @@ client.get_describe_publisher(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_describe_publisher</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2909-L2959">post_describe_publisher</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3821,7 +3821,7 @@ client.post_describe_publisher(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_describe_stack_drift_detection_status</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2961-L3019">get_describe_stack_drift_detection_status</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3912,7 +3912,7 @@ client.get_describe_stack_drift_detection_status(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_describe_stack_drift_detection_status</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3021-L3071">post_describe_stack_drift_detection_status</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3994,7 +3994,7 @@ client.post_describe_stack_drift_detection_status(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_describe_stack_events</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3073-L3135">get_describe_stack_events</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4092,7 +4092,7 @@ client.get_describe_stack_events(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_describe_stack_events</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3137-L3191">post_describe_stack_events</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4182,7 +4182,7 @@ client.post_describe_stack_events(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_describe_stack_instance</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3193-L3268">get_describe_stack_instance</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4299,7 +4299,7 @@ client.get_describe_stack_instance(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_describe_stack_instance</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3270-L3320">post_describe_stack_instance</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4381,7 +4381,7 @@ client.post_describe_stack_instance(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_describe_stack_resource</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3322-L3386">get_describe_stack_resource</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4481,7 +4481,7 @@ client.get_describe_stack_resource(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_describe_stack_resource</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3388-L3438">post_describe_stack_resource</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4563,7 +4563,7 @@ client.post_describe_stack_resource(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_describe_stack_resource_drifts</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3440-L3515">get_describe_stack_resource_drifts</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4678,7 +4678,7 @@ client.get_describe_stack_resource_drifts(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_describe_stack_resource_drifts</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3517-L3579">post_describe_stack_resource_drifts</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4776,7 +4776,7 @@ client.post_describe_stack_resource_drifts(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_describe_stack_resources</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3581-L3648">get_describe_stack_resources</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4882,7 +4882,7 @@ client.get_describe_stack_resources(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_describe_stack_resources</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3650-L3700">post_describe_stack_resources</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4964,7 +4964,7 @@ client.post_describe_stack_resources(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_describe_stack_set</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3702-L3765">get_describe_stack_set</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5063,7 +5063,7 @@ client.get_describe_stack_set(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_describe_stack_set</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3767-L3817">post_describe_stack_set</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5145,7 +5145,7 @@ client.post_describe_stack_set(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_describe_stack_set_operation</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3819-L3888">get_describe_stack_set_operation</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5253,7 +5253,7 @@ client.get_describe_stack_set_operation(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_describe_stack_set_operation</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3890-L3940">post_describe_stack_set_operation</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5335,7 +5335,7 @@ client.post_describe_stack_set_operation(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_describe_stacks</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3942-L4004">get_describe_stacks</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5433,7 +5433,7 @@ client.get_describe_stacks(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_describe_stacks</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4006-L4060">post_describe_stacks</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5523,7 +5523,7 @@ client.post_describe_stacks(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_describe_type</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4062-L4144">get_describe_type</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5653,7 +5653,7 @@ client.get_describe_type(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_describe_type</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4146-L4194">post_describe_type</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5735,7 +5735,7 @@ client.post_describe_type(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_describe_type_registration</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4196-L4251">get_describe_type_registration</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5826,7 +5826,7 @@ client.get_describe_type_registration(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_describe_type_registration</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4253-L4303">post_describe_type_registration</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5908,7 +5908,7 @@ client.post_describe_type_registration(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_detect_stack_drift</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4305-L4370">get_detect_stack_drift</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -6007,7 +6007,7 @@ client.get_detect_stack_drift(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_detect_stack_drift</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4372-L4422">post_detect_stack_drift</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -6089,7 +6089,7 @@ client.post_detect_stack_drift(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_detect_stack_resource_drift</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4424-L4488">get_detect_stack_resource_drift</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -6189,7 +6189,7 @@ client.get_detect_stack_resource_drift(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_detect_stack_resource_drift</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4490-L4540">post_detect_stack_resource_drift</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -6271,7 +6271,7 @@ client.post_detect_stack_resource_drift(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_detect_stack_set_drift</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4542-L4615">get_detect_stack_set_drift</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -6386,7 +6386,7 @@ client.get_detect_stack_set_drift(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_detect_stack_set_drift</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4617-L4667">post_detect_stack_set_drift</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -6468,7 +6468,7 @@ client.post_detect_stack_set_drift(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_estimate_template_cost</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4669-L4736">get_estimate_template_cost</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -6574,7 +6574,7 @@ client.get_estimate_template_cost(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_estimate_template_cost</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4738-L4788">post_estimate_template_cost</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -6656,7 +6656,7 @@ client.post_estimate_template_cost(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_execute_change_set</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4790-L4863">get_execute_change_set</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -6771,7 +6771,7 @@ client.get_execute_change_set(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_execute_change_set</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4865-L4915">post_execute_change_set</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -6853,7 +6853,7 @@ client.post_execute_change_set(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_get_stack_policy</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4917-L4972">get_get_stack_policy</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -6944,7 +6944,7 @@ client.get_get_stack_policy(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_get_stack_policy</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4974-L5024">post_get_stack_policy</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -7026,7 +7026,7 @@ client.post_get_stack_policy(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_get_template</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L5026-L5093">get_get_template</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -7132,7 +7132,7 @@ client.get_get_template(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_get_template</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L5095-L5143">post_get_template</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -7214,7 +7214,7 @@ client.post_get_template(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_get_template_summary</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L5145-L5222">get_get_template_summary</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -7336,7 +7336,7 @@ client.get_get_template_summary(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_get_template_summary</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L5224-L5274">post_get_template_summary</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -7418,7 +7418,7 @@ client.post_get_template_summary(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_import_stacks_to_stack_set</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L5276-L5366">get_import_stacks_to_stack_set</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -7557,7 +7557,7 @@ client.get_import_stacks_to_stack_set(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_import_stacks_to_stack_set</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L5368-L5418">post_import_stacks_to_stack_set</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -7639,7 +7639,7 @@ client.post_import_stacks_to_stack_set(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_list_change_sets</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L5420-L5483">get_list_change_sets</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -7738,7 +7738,7 @@ client.get_list_change_sets(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_list_change_sets</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L5485-L5539">post_list_change_sets</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -7828,7 +7828,7 @@ client.post_list_change_sets(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_list_exports</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L5541-L5595">get_list_exports</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -7918,7 +7918,7 @@ client.get_list_exports(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_list_exports</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L5597-L5651">post_list_exports</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -8008,7 +8008,7 @@ client.post_list_exports(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_list_imports</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L5653-L5716">get_list_imports</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -8107,7 +8107,7 @@ client.get_list_imports(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_list_imports</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L5718-L5772">post_list_imports</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -8197,7 +8197,7 @@ client.post_list_imports(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_list_stack_instances</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L5774-L5862">get_list_stack_instances</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -8336,7 +8336,7 @@ client.get_list_stack_instances(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_list_stack_instances</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L5864-L5926">post_list_stack_instances</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -8434,7 +8434,7 @@ client.post_list_stack_instances(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_list_stack_resources</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L5928-L5991">get_list_stack_resources</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -8533,7 +8533,7 @@ client.get_list_stack_resources(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_list_stack_resources</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L5993-L6047">post_list_stack_resources</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -8623,7 +8623,7 @@ client.post_list_stack_resources(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_list_stack_set_operation_results</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L6049-L6133">get_list_stack_set_operation_results</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -8755,7 +8755,7 @@ client.get_list_stack_set_operation_results(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_list_stack_set_operation_results</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L6135-L6197">post_list_stack_set_operation_results</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -8853,7 +8853,7 @@ client.post_list_stack_set_operation_results(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_list_stack_set_operations</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L6199-L6272">get_list_stack_set_operations</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -8968,7 +8968,7 @@ client.get_list_stack_set_operations(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_list_stack_set_operations</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L6274-L6336">post_list_stack_set_operations</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -9066,7 +9066,7 @@ client.post_list_stack_set_operations(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_list_stack_sets</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L6338-L6410">get_list_stack_sets</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -9180,7 +9180,7 @@ client.get_list_stack_sets(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_list_stack_sets</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L6412-L6474">post_list_stack_sets</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -9278,7 +9278,7 @@ client.post_list_stack_sets(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_list_stacks</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L6476-L6538">get_list_stacks</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -9376,7 +9376,7 @@ client.get_list_stacks(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_list_stacks</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L6540-L6594">post_list_stacks</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -9466,7 +9466,7 @@ client.post_list_stacks(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_list_type_registrations</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L6596-L6678">get_list_type_registrations</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -9596,7 +9596,7 @@ client.get_list_type_registrations(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_list_type_registrations</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L6680-L6742">post_list_type_registrations</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -9694,7 +9694,7 @@ client.post_list_type_registrations(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_list_type_versions</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L6744-L6831">get_list_type_versions</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -9832,7 +9832,7 @@ client.get_list_type_versions(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_list_type_versions</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L6833-L6895">post_list_type_versions</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -9930,7 +9930,7 @@ client.post_list_type_versions(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_list_types</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L6897-L6980">get_list_types</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -10068,7 +10068,7 @@ client.get_list_types(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_list_types</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L6982-L7044">post_list_types</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -10166,7 +10166,7 @@ client.post_list_types(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_publish_type</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L7046-L7118">get_publish_type</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -10280,7 +10280,7 @@ client.get_publish_type(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_publish_type</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L7120-L7168">post_publish_type</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -10362,7 +10362,7 @@ client.post_publish_type(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_record_handler_progress</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L7170-L7260">get_record_handler_progress</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -10502,7 +10502,7 @@ client.get_record_handler_progress(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_record_handler_progress</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L7262-L7312">post_record_handler_progress</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -10584,7 +10584,7 @@ client.post_record_handler_progress(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_register_publisher</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L7314-L7376">get_register_publisher</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -10682,7 +10682,7 @@ client.get_register_publisher(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_register_publisher</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L7378-L7428">post_register_publisher</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -10764,7 +10764,7 @@ client.post_register_publisher(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_register_type</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L7430-L7514">get_register_type</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -10896,7 +10896,7 @@ client.get_register_type(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_register_type</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L7516-L7564">post_register_type</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -10978,7 +10978,7 @@ client.post_register_type(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_rollback_stack</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L7566-L7634">get_rollback_stack</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -11085,7 +11085,7 @@ client.get_rollback_stack(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_rollback_stack</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L7636-L7686">post_rollback_stack</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -11167,7 +11167,7 @@ client.post_rollback_stack(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_set_stack_policy</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L7688-L7755">get_set_stack_policy</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11274,7 +11274,7 @@ client.get_set_stack_policy(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_set_stack_policy</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L7757-L7806">post_set_stack_policy</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11356,7 +11356,7 @@ client.post_set_stack_policy(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_set_type_configuration</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L7808-L7886">get_set_type_configuration</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -11479,7 +11479,7 @@ client.get_set_type_configuration(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_set_type_configuration</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L7888-L7938">post_set_type_configuration</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -11561,7 +11561,7 @@ client.post_set_type_configuration(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_set_type_default_version</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L7940-L8012">get_set_type_default_version</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -11675,7 +11675,7 @@ client.get_set_type_default_version(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_set_type_default_version</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L8014-L8064">post_set_type_default_version</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -11757,7 +11757,7 @@ client.post_set_type_default_version(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_signal_resource</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L8066-L8142">get_signal_resource</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11875,7 +11875,7 @@ client.get_signal_resource(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_signal_resource</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L8144-L8193">post_signal_resource</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11957,7 +11957,7 @@ client.post_signal_resource(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_stop_stack_set_operation</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L8195-L8264">get_stop_stack_set_operation</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -12065,7 +12065,7 @@ client.get_stop_stack_set_operation(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_stop_stack_set_operation</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L8266-L8316">post_stop_stack_set_operation</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -12147,7 +12147,7 @@ client.post_stop_stack_set_operation(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_test_type</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L8318-L8391">get_test_type</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -12269,7 +12269,7 @@ client.get_test_type(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_test_type</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L8393-L8437">post_test_type</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -12351,7 +12351,7 @@ client.post_test_type(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_update_stack</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L8439-L8577">get_update_stack</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -12570,7 +12570,7 @@ client.get_update_stack(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_update_stack</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L8579-L8627">post_update_stack</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -12652,7 +12652,7 @@ client.post_update_stack(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_update_stack_instances</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L8629-L8722">get_update_stack_instances</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -12799,7 +12799,7 @@ client.get_update_stack_instances(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_update_stack_instances</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L8724-L8774">post_update_stack_instances</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -12881,7 +12881,7 @@ client.post_update_stack_instances(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_update_stack_set</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L8776-L8924">get_update_stack_set</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -13116,7 +13116,7 @@ client.get_update_stack_set(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_update_stack_set</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L8926-L8976">post_update_stack_set</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -13198,7 +13198,7 @@ client.post_update_stack_set(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_update_termination_protection</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L8978-L9042">get_update_termination_protection</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -13298,7 +13298,7 @@ client.get_update_termination_protection(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_update_termination_protection</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L9044-L9094">post_update_termination_protection</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -13380,7 +13380,7 @@ client.post_update_termination_protection(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_validate_template</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L9096-L9158">get_validate_template</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -13478,7 +13478,7 @@ client.get_validate_template(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_validate_template</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L9160-L9210">post_validate_template</a>(...) -> str</code></summary>
 <dl>
 <dd>
 

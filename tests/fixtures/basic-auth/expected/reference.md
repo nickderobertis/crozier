@@ -1,6 +1,6 @@
 # Reference
 ## User
-<details><summary><code>client.user.<a href="src/fern/user/client.py">whoami</a>() -> str</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L25-L49">whoami</a>() -> str</code></summary>
 <dl>
 <dd>
 

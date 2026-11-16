@@ -170,8 +170,9 @@ A fix node that makes crozier depart from Fern on purpose — correcting a Fern
 defect, say — adds it this way:
 
 1. **Show it.** Generate the smallest crozier-authored document that triggers
-   it with the certified pair (Fern CLI 5.163.1, `fernapi/fern-python-sdk`
-   5.41.3), and record the command and its result in a note under
+   it with the certified pair (Fern CLI 5.200.0, `fernapi/fern-python-sdk`
+   5.41.25, as `assets/scaffolding/metadata.json` declares), and record the
+   command and its result in a note under
    `docs/departures/evidence/<id>.md`. For a `fern-defect`, show why Fern's
    output is wrong under the defect rule — an import that fails, a call that
    does not match the signature. When a test drives the reference tree, commit
@@ -196,7 +197,7 @@ when the two differ.
 
 | Kind | Entries | Meaning |
 | --- | --- | --- |
-| `fern-defect` | 31 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
+| `fern-defect` | 40 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
 | `branding` | 1 | crozier names itself where Fern names itself. |
 | `packaging` | 1 | crozier writes the packaged SDK's publishing details from its own settings. |
 | `provenance` | 1 | crozier writes a fixed record of how the SDK was generated. |
@@ -321,6 +322,15 @@ when the two differ.
 - **Why:** The documented call fails Python compilation with an invalid decimal literal and contradicts the generated SDK method, which imports and binds correctly.
 - **Evidence:** [`docs/departures/evidence/digit-leading-method-reference-identifiers.md`](../../docs/departures/evidence/digit-leading-method-reference-identifiers.md)
 
+### `digit-leading-property-example-keyword`
+
+- **Kind:** `fern-defect`
+- **Trigger:** A request-body property whose name starts with a digit (`5gMmCauseValue`) and that declares an example: the argument passing it in the operation's client docstring examples and its `reference.md` worked call.
+- **Fern writes:** `f_5g_mm_cause_value=0` in the docstring and `f_value=0` in `reference.md`, although the method's parameter is `_5g_mm_cause_value`.
+- **crozier writes:** `_5g_mm_cause_value=0`, the parameter the method declares, with the same value. Every other byte of the line is retained.
+- **Why:** The documented call does not bind: the method takes no `f_5g_mm_cause_value` or `f_value`, so Python raises `TypeError` for the unexpected keyword.
+- **Evidence:** [`docs/departures/evidence/digit-leading-property-example-keyword.md`](../../docs/departures/evidence/digit-leading-property-example-keyword.md)
+
 ### `docstring-literal-dollar-escape`
 
 - **Kind:** `fern-defect`
@@ -344,7 +354,7 @@ when the two differ.
 - **Kind:** `fern-defect`
 - **Trigger:** Operations Fern groups under the empty namespace it calls `_`: tagged only with the empty string, or an `operationId` with an empty dotted prefix (`.GetThing`).
 - **Fern writes:** The `_` package's files written at the package root rather than under `_/`: the root `client.py`, `raw_client.py` and `__init__.py` are the `_` sub-client's and its package marker (importing `..core` from above the package), its hoisted types sit in the root `types/`, the root client is lost, and docstring examples call `client..method()`; `README.md` and `reference.md` call `client._.method()` and link `src/<package>/_/client.py`.
-- **crozier writes:** The same `_` package under `_/` (its `client.py` but for its examples, `raw_client.py`, `__init__.py` and `types/` files Fern's root copies), the root `client.py` and `__init__.py` the root client and package exporting it with a `_` property, and examples calling `client._.method()`.
+- **crozier writes:** The same `_` package under `_/` (its `client.py` but for its examples, `raw_client.py`, `__init__.py` and `types/` files Fern's root copies), the root `client.py` and `__init__.py` the root client and package exporting it with a `_` property, and examples calling `client._.method()`; `reference.md`'s links into `_/client.py`, which only crozier's tree holds, carry the `#L<start>-L<end>` range of each documented method there.
 - **Why:** The tree cannot be imported: the root package exports no client and its `client.py` imports from above the top-level package, so the documented `from <package> import <Client>` and `client._.method()` raise `ImportError`.
 - **Evidence:** [`docs/departures/evidence/empty-namespace-package.md`](../../docs/departures/evidence/empty-namespace-package.md)
 
@@ -365,6 +375,15 @@ when the two differ.
 - **crozier writes:** The one fixed metadata record crozier always writes, whose `generatorConfig` is `pydantic_config.enum_type: python_enums` whatever crozier was configured with.
 - **Why:** The block records how a generator was run, not anything the SDK does; crozier ships one fixed provenance record rather than imitating the configuration of a Fern run it did not make.
 - **Evidence:** [`docs/departures/evidence/fern-metadata-generator-config.md`](../../docs/departures/evidence/fern-metadata-generator-config.md)
+
+### `flat-reference-link-target`
+
+- **Kind:** `fern-defect`
+- **Trigger:** The flat layout (`layout: flat`): every heading link in `reference.md`.
+- **Fern writes:** The link names `src/<package>/<module>/client.py`, the packaged path, which the flat tree does not hold (its modules sit at the root), and carries no `#L<start>-L<end>` range.
+- **crozier writes:** The link names the module the flat tree holds (`<module>/client.py`) and carries the range of the documented method there, found as for every other heading. Every other byte of the line is retained.
+- **Why:** A link to a file the SDK does not contain documents nothing: following it from the generated tree's own `reference.md` finds no file, so the heading cannot lead to the method it documents.
+- **Evidence:** [`docs/departures/evidence/flat-reference-link-target.md`](../../docs/departures/evidence/flat-reference-link-target.md)
 
 ### `init-type-checking-import-order`
 
@@ -392,6 +411,15 @@ when the two differ.
 - **crozier writes:** Method snippets and parameter lists without it, and every snippet's constructor passing it first, by keyword: its default (`edition="v2"`), or the `YOUR_EDITION` placeholder Fern's own docstrings use when it has none.
 - **Why:** The examples contradict the generated code: each method call raises `TypeError` for an unexpected keyword argument, a required lifted argument left out of the constructor raises `TypeError` for the missing one, and `reference.md` documents an argument the method does not have.
 - **Evidence:** [`docs/departures/evidence/lifted-base-path-docs-examples.md`](../../docs/departures/evidence/lifted-base-path-docs-examples.md)
+
+### `list-path-parameter-example`
+
+- **Kind:** `fern-defect`
+- **Trigger:** A path parameter whose schema is an array: the worked calls of the operation in `README.md` and `reference.md`, and, where the array's items are not strings, its client docstring examples.
+- **Fern writes:** The Markdown calls leave the required argument out (`client.probe()`), and the docstring passes the parameter's string placeholder (`id="ID"`) for a `typing.Sequence[int]`.
+- **crozier writes:** Every call passes the argument: the string placeholder where the items are strings (a `str` is a `typing.Sequence[str]`), else a one-item list of the item's example (`id=[1]`). Every other byte of the call is retained.
+- **Why:** The Markdown calls do not bind, the required argument missing (`TypeError`), and the docstring's string is not a value a list of non-strings admits.
+- **Evidence:** [`docs/departures/evidence/list-path-parameter-example.md`](../../docs/departures/evidence/list-path-parameter-example.md)
 
 ### `minimal-worked-call-optional-parameter`
 
@@ -423,9 +451,9 @@ when the two differ.
 ### `non-string-client-header-example`
 
 - **Kind:** `fern-defect`
-- **Trigger:** A promoted client header the document declares boolean, integer or number, in the client construction of a client.py docstring example.
-- **Fern writes:** The constructor receives the YOUR_<NAME> string placeholder its string headers take, despite the header's bool, int or float annotation.
-- **crozier writes:** The constructor receives the generator's own placeholder for the declared type (True, 1 or 1.1); string headers keep their YOUR_<NAME> placeholder and the README and reference.md constructions stay matched.
+- **Trigger:** A promoted client header the document declares boolean, integer or number, a string header with a default that the constructor types as a one-value typing.Literal, or an array header, in the client construction of a client.py docstring example.
+- **Fern writes:** The constructor receives the YOUR_<NAME> string placeholder its string headers take, despite the header's bool, int, float, Literal or List annotation.
+- **crozier writes:** The constructor receives the generator's own placeholder for the declared type (True, 1 or 1.1), the Literal's one value, or a list of two copies of the item's placeholder (["probeParam", "probeParam"]); other string headers keep their YOUR_<NAME> placeholder and the README and reference.md constructions stay matched.
 - **Why:** A YOUR_* placeholder for a non-string type is a standing Fern defect: the certified constructor's annotations reject the string under strict validation, and the client sends it as the header's value. The typed placeholder validates and is sent as the declared value.
 - **Evidence:** [`docs/departures/evidence/non-string-client-header-example.md`](../../docs/departures/evidence/non-string-client-header-example.md)
 
@@ -465,14 +493,68 @@ when the two differ.
 - **Why:** Validating Fern's generated example value against the property's allOf schema rejects it; the replacement satisfies every constraint of it.
 - **Evidence:** [`docs/departures/evidence/pattern-narrowed-enum-example.md`](../../docs/departures/evidence/pattern-narrowed-enum-example.md)
 
+### `readme-abbreviated-call-arguments`
+
+- **Kind:** `fern-defect`
+- **Trigger:** The README's demonstrated operation takes a required header and no path, query or body argument: the abbreviated calls of its exception-handling, raw-response, retry and timeout snippets in `README.md`.
+- **Fern writes:** `client.probe()` and `client.probe(request_options={...})`, a call with no argument, as Fern writes for an operation taking none.
+- **crozier writes:** `client.probe(...)` and `client.probe(..., request_options={...})`, the elision Fern itself writes for an operation that takes arguments. Every other byte of the line is retained.
+- **Why:** The documented call does not bind: the method's required header argument is missing, so Python raises `TypeError`.
+- **Evidence:** [`docs/departures/evidence/readme-abbreviated-call-arguments.md`](../../docs/departures/evidence/readme-abbreviated-call-arguments.md)
+
 ### `readme-client-class-casing`
 
 - **Kind:** `fern-defect`
 - **Trigger:** No `client-class-name` set, and an organization (crozier's package name) with capitals inside it, such as `LanternHarbor`: `README.md`, and the environment snippet of `reference.md`.
-- **Fern writes:** Snippets naming the root client class, its async twin and its environment class with the inner capitals lowered (`LanternharborApi`, `AsyncLanternharborApi`, `LanternharborApiEnvironment`), which the package does not define.
-- **crozier writes:** The class names the package defines (`LanternHarborApi`, `AsyncLanternHarborApi`, `LanternHarborApiEnvironment`).
+- **Fern writes:** Snippets naming the root client class, its async twin and its environment class with the inner capitals lowered (`LanternharborApi`, `AsyncLanternharborApi`, `LanternharborApiEnvironment`), which the package does not define. The async snippet's import also keeps the correctly cased sync client its own snippet does not use (`from PetStore import AsyncPetstoreApi, PetStoreApi`), because Fern drops only the lowered spelling from the names it imports.
+- **crozier writes:** The class names the package defines (`LanternHarborApi`, `AsyncLanternHarborApi`, `LanternHarborApiEnvironment`), and the async snippet imports only the names it uses.
 - **Why:** An example that imports a class the generated package does not define contradicts the generated code: the import fails, so the snippet cannot run.
 - **Evidence:** [`docs/departures/evidence/readme-client-class-casing.md`](../../docs/departures/evidence/readme-client-class-casing.md)
+
+### `readme-constructor-required-header`
+
+- **Kind:** `fern-defect`
+- **Trigger:** A header on every operation, promoted to the client constructor, that is required and typed boolean, number or array: the client constructions of `README.md` and `reference.md`.
+- **Fern writes:** The construction leaves the header out (`client = FernApi()`), although the constructor requires it.
+- **crozier writes:** The construction passes it with the typed example the client docstrings give it (`probe_param=["probeParam", "probeParam"]`, `strict_mode=True`). Every other byte of the construction is retained.
+- **Why:** The documented construction does not bind: Python raises `TypeError` for the missing required keyword argument.
+- **Evidence:** [`docs/departures/evidence/readme-constructor-required-header.md`](../../docs/departures/evidence/readme-constructor-required-header.md)
+
+### `readme-environment-constructor-arguments`
+
+- **Kind:** `fern-defect`
+- **Trigger:** A client constructor taking a required argument (a credential, a required header) and a server environment: the Environments snippet of `README.md`.
+- **Fern writes:** `client = FernApi(environment=FernApiEnvironment.DEFAULT,)`, the environment alone, although the constructor requires the credential.
+- **crozier writes:** The same constructor with the arguments the README's usage snippet passes it (`api_key="<value>"`) before the environment. Every other byte of the snippet is retained.
+- **Why:** The documented construction does not bind: Python raises `TypeError` for the missing required keyword argument before the client exists.
+- **Evidence:** [`docs/departures/evidence/readme-environment-constructor-arguments.md`](../../docs/departures/evidence/readme-environment-constructor-arguments.md)
+
+### `readme-escaped-method-call`
+
+- **Kind:** `fern-defect`
+- **Trigger:** An operation whose generated method name is escaped with a trailing `_` (`all_`, `import_`): the calls of it in `README.md`'s exception-handling, raw-response, retry and timeout snippets.
+- **Fern writes:** `client.apis.all(...)`, the method name without its escape, which the client does not define.
+- **crozier writes:** `client.apis.all_(...)`, the method the client defines (through `with_raw_response` too). Every other byte of the line is retained.
+- **Why:** The documented call raises `AttributeError`: the client has no `all`. The usage snippet in the same README already calls `all_`.
+- **Evidence:** [`docs/departures/evidence/readme-escaped-method-call.md`](../../docs/departures/evidence/readme-escaped-method-call.md)
+
+### `reference-anchor-follows-corrected-client`
+
+- **Kind:** `fern-defect`
+- **Trigger:** A `reference.md` heading whose linked `client.py` carries another departure that adds or removes lines above or inside the documented method (a credential keyword Fern repeats in a docstring example, for instance).
+- **Fern writes:** The link's `#L<start>-L<end>` range counts the lines of Fern's own client, with its defect in place.
+- **crozier writes:** The range of the same method in crozier's client. Each side's range is exactly that method's `def` line through its last line in its own file, and every other byte of the heading is retained.
+- **Why:** Fern's range, applied to crozier's corrected client, links lines that are not the documented method: it starts or ends inside a neighbouring statement. The heading must link the method it documents.
+- **Evidence:** [`docs/departures/evidence/reference-anchor-follows-corrected-client.md`](../../docs/departures/evidence/reference-anchor-follows-corrected-client.md)
+
+### `reference-heading-escaped-method-name`
+
+- **Kind:** `fern-defect`
+- **Trigger:** An operation whose generated method name is escaped with a trailing `_` because it would shadow a Python keyword or builtin (`all_`, `import_`, `async_`): its heading in `reference.md`.
+- **Fern writes:** The heading names the method without its escape (`client.applicants.<a href="src/fern/applicants/client.py">all</a>(...)`), and the link has no `#L<start>-L<end>` anchor, because the linked client defines no method of that name.
+- **crozier writes:** The heading names the method the client defines (`all_`) and anchors the link at its lines, as every other heading is anchored. Every other byte of the line is retained.
+- **Why:** The heading documents a method the generated client does not have: `client.applicants.all(...)` raises `AttributeError`, and the usage example under the same heading already calls `all_`.
+- **Evidence:** [`docs/departures/evidence/reference-heading-escaped-method-name.md`](../../docs/departures/evidence/reference-heading-escaped-method-name.md)
 
 ### `repeated-credential-example-keyword`
 

@@ -1,6 +1,6 @@
 # Reference
 ## App
-<details><summary><code>client.app.<a href="src/fern/app/client.py">getapplicationapiusage</a>(...) -> AppGetApplicationApiUsageResponse</code></summary>
+<details><summary><code>client.app.<a href="src/fern/app/client.py#L28-L72">getapplicationapiusage</a>(...) -> AppGetApplicationApiUsageResponse</code></summary>
 <dl>
 <dd>
 
@@ -89,7 +89,7 @@ client.app.getapplicationapiusage(
 </dl>
 </details>
 
-<details><summary><code>client.app.<a href="src/fern/app/client.py">getbungieapplications</a>() -> AppGetBungieApplicationsResponse</code></summary>
+<details><summary><code>client.app.<a href="src/fern/app/client.py#L74-L100">getbungieapplications</a>() -> AppGetBungieApplicationsResponse</code></summary>
 <dl>
 <dd>
 
@@ -153,7 +153,7 @@ client.app.getbungieapplications()
 </details>
 
 ## CommunityContent
-<details><summary><code>client.communitycontent.<a href="src/fern/communitycontent/client.py">getcommunitycontent</a>(...) -> CommunityContentGetCommunityContentResponse</code></summary>
+<details><summary><code>client.communitycontent.<a href="src/fern/communitycontent/client.py#L26-L65">getcommunitycontent</a>(...) -> CommunityContentGetCommunityContentResponse</code></summary>
 <dl>
 <dd>
 
@@ -245,7 +245,7 @@ client.communitycontent.getcommunitycontent(
 </details>
 
 ## Content
-<details><summary><code>client.content.<a href="src/fern/content/client.py">getcontentbyid</a>(...) -> ContentGetContentByIdResponse</code></summary>
+<details><summary><code>client.content.<a href="src/fern/content/client.py#L32-L75">getcontentbyid</a>(...) -> ContentGetContentByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -335,7 +335,7 @@ client.content.getcontentbyid(
 </dl>
 </details>
 
-<details><summary><code>client.content.<a href="src/fern/content/client.py">getcontentbytagandtype</a>(...) -> ContentGetContentByTagAndTypeResponse</code></summary>
+<details><summary><code>client.content.<a href="src/fern/content/client.py#L77-L127">getcontentbytagandtype</a>(...) -> ContentGetContentByTagAndTypeResponse</code></summary>
 <dl>
 <dd>
 
@@ -434,7 +434,7 @@ client.content.getcontentbytagandtype(
 </dl>
 </details>
 
-<details><summary><code>client.content.<a href="src/fern/content/client.py">getcontenttype</a>(...) -> ContentGetContentTypeResponse</code></summary>
+<details><summary><code>client.content.<a href="src/fern/content/client.py#L129-L160">getcontenttype</a>(...) -> ContentGetContentTypeResponse</code></summary>
 <dl>
 <dd>
 
@@ -507,7 +507,7 @@ client.content.getcontenttype(
 </dl>
 </details>
 
-<details><summary><code>client.content.<a href="src/fern/content/client.py">rssnewsarticles</a>(...) -> ContentRssNewsArticlesResponse</code></summary>
+<details><summary><code>client.content.<a href="src/fern/content/client.py#L162-L206">rssnewsarticles</a>(...) -> ContentRssNewsArticlesResponse</code></summary>
 <dl>
 <dd>
 
@@ -596,7 +596,7 @@ client.content.rssnewsarticles(
 </dl>
 </details>
 
-<details><summary><code>client.content.<a href="src/fern/content/client.py">searchcontentwithtext</a>(...) -> ContentSearchContentWithTextResponse</code></summary>
+<details><summary><code>client.content.<a href="src/fern/content/client.py#L208-L275">searchcontentwithtext</a>(...) -> ContentSearchContentWithTextResponse</code></summary>
 <dl>
 <dd>
 
@@ -717,7 +717,7 @@ client.content.searchcontentwithtext(
 </dl>
 </details>
 
-<details><summary><code>client.content.<a href="src/fern/content/client.py">searchcontentbytagandtype</a>(...) -> ContentSearchContentByTagAndTypeResponse</code></summary>
+<details><summary><code>client.content.<a href="src/fern/content/client.py#L277-L341">searchcontentbytagandtype</a>(...) -> ContentSearchContentByTagAndTypeResponse</code></summary>
 <dl>
 <dd>
 
@@ -832,7 +832,7 @@ client.content.searchcontentbytagandtype(
 </dl>
 </details>
 
-<details><summary><code>client.content.<a href="src/fern/content/client.py">searchhelparticles</a>(...) -> ContentSearchHelpArticlesResponse</code></summary>
+<details><summary><code>client.content.<a href="src/fern/content/client.py#L343-L378">searchhelparticles</a>(...) -> ContentSearchHelpArticlesResponse</code></summary>
 <dl>
 <dd>
 
@@ -915,7 +915,7 @@ client.content.searchhelparticles(
 </details>
 
 ## Destiny2
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">equipitem</a>() -> Destiny2EquipItemResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L73-L97">equipitem</a>() -> Destiny2EquipItemResponse</code></summary>
 <dl>
 <dd>
 
@@ -978,7 +978,7 @@ client.destiny2.equipitem()
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">equipitems</a>() -> Destiny2EquipItemsResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L99-L123">equipitems</a>() -> Destiny2EquipItemsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1041,7 +1041,7 @@ client.destiny2.equipitems()
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">insertsocketplug</a>() -> Destiny2InsertSocketPlugResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L125-L151">insertsocketplug</a>() -> Destiny2InsertSocketPlugResponse</code></summary>
 <dl>
 <dd>
 
@@ -1104,7 +1104,7 @@ client.destiny2.insertsocketplug()
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">insertsocketplugfree</a>() -> Destiny2InsertSocketPlugFreeResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L153-L179">insertsocketplugfree</a>() -> Destiny2InsertSocketPlugFreeResponse</code></summary>
 <dl>
 <dd>
 
@@ -1167,7 +1167,7 @@ client.destiny2.insertsocketplugfree()
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">pullfrompostmaster</a>() -> Destiny2PullFromPostmasterResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L181-L207">pullfrompostmaster</a>() -> Destiny2PullFromPostmasterResponse</code></summary>
 <dl>
 <dd>
 
@@ -1230,7 +1230,7 @@ client.destiny2.pullfrompostmaster()
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">setitemlockstate</a>() -> Destiny2SetItemLockStateResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L209-L235">setitemlockstate</a>() -> Destiny2SetItemLockStateResponse</code></summary>
 <dl>
 <dd>
 
@@ -1293,7 +1293,7 @@ client.destiny2.setitemlockstate()
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">setquesttrackedstate</a>() -> Destiny2SetQuestTrackedStateResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L237-L263">setquesttrackedstate</a>() -> Destiny2SetQuestTrackedStateResponse</code></summary>
 <dl>
 <dd>
 
@@ -1356,7 +1356,7 @@ client.destiny2.setquesttrackedstate()
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">transferitem</a>() -> Destiny2TransferItemResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L265-L289">transferitem</a>() -> Destiny2TransferItemResponse</code></summary>
 <dl>
 <dd>
 
@@ -1419,7 +1419,7 @@ client.destiny2.transferitem()
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">clearloadout</a>() -> Destiny2ClearLoadoutResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L291-L315">clearloadout</a>() -> Destiny2ClearLoadoutResponse</code></summary>
 <dl>
 <dd>
 
@@ -1482,7 +1482,7 @@ client.destiny2.clearloadout()
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">equiploadout</a>() -> Destiny2EquipLoadoutResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L317-L341">equiploadout</a>() -> Destiny2EquipLoadoutResponse</code></summary>
 <dl>
 <dd>
 
@@ -1545,7 +1545,7 @@ client.destiny2.equiploadout()
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">snapshotloadout</a>() -> Destiny2SnapshotLoadoutResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L343-L369">snapshotloadout</a>() -> Destiny2SnapshotLoadoutResponse</code></summary>
 <dl>
 <dd>
 
@@ -1608,7 +1608,7 @@ client.destiny2.snapshotloadout()
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">updateloadoutidentifiers</a>() -> Destiny2UpdateLoadoutIdentifiersResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L371-L397">updateloadoutidentifiers</a>() -> Destiny2UpdateLoadoutIdentifiersResponse</code></summary>
 <dl>
 <dd>
 
@@ -1671,7 +1671,7 @@ client.destiny2.updateloadoutidentifiers()
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">searchdestinyentities</a>(...) -> Destiny2SearchDestinyEntitiesResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L399-L444">searchdestinyentities</a>(...) -> Destiny2SearchDestinyEntitiesResponse</code></summary>
 <dl>
 <dd>
 
@@ -1761,7 +1761,7 @@ client.destiny2.searchdestinyentities(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">awaprovideauthorizationresult</a>() -> Destiny2AwaProvideAuthorizationResultResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L446-L472">awaprovideauthorizationresult</a>() -> Destiny2AwaProvideAuthorizationResultResponse</code></summary>
 <dl>
 <dd>
 
@@ -1824,7 +1824,7 @@ client.destiny2.awaprovideauthorizationresult()
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">awagetactiontoken</a>(...) -> Destiny2AwaGetActionTokenResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L474-L505">awagetactiontoken</a>(...) -> Destiny2AwaGetActionTokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -1897,7 +1897,7 @@ client.destiny2.awagetactiontoken(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">awainitializerequest</a>() -> Destiny2AwaInitializeRequestResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L507-L533">awainitializerequest</a>() -> Destiny2AwaInitializeRequestResponse</code></summary>
 <dl>
 <dd>
 
@@ -1960,7 +1960,7 @@ client.destiny2.awainitializerequest()
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getclanbannersource</a>() -> Destiny2GetClanBannerSourceResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L535-L561">getclanbannersource</a>() -> Destiny2GetClanBannerSourceResponse</code></summary>
 <dl>
 <dd>
 
@@ -2023,7 +2023,7 @@ client.destiny2.getclanbannersource()
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getclanweeklyrewardstate</a>(...) -> Destiny2GetClanWeeklyRewardStateResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L563-L594">getclanweeklyrewardstate</a>(...) -> Destiny2GetClanWeeklyRewardStateResponse</code></summary>
 <dl>
 <dd>
 
@@ -2096,7 +2096,7 @@ client.destiny2.getclanweeklyrewardstate(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getdestinymanifest</a>() -> Destiny2GetDestinyManifestResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L596-L622">getdestinymanifest</a>() -> Destiny2GetDestinyManifestResponse</code></summary>
 <dl>
 <dd>
 
@@ -2159,7 +2159,7 @@ client.destiny2.getdestinymanifest()
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getdestinyentitydefinition</a>(...) -> Destiny2GetDestinyEntityDefinitionResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L624-L661">getdestinyentitydefinition</a>(...) -> Destiny2GetDestinyEntityDefinitionResponse</code></summary>
 <dl>
 <dd>
 
@@ -2241,7 +2241,7 @@ client.destiny2.getdestinyentitydefinition(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getpublicmilestones</a>() -> Destiny2GetPublicMilestonesResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L663-L689">getpublicmilestones</a>() -> Destiny2GetPublicMilestonesResponse</code></summary>
 <dl>
 <dd>
 
@@ -2304,7 +2304,7 @@ client.destiny2.getpublicmilestones()
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getpublicmilestonecontent</a>(...) -> Destiny2GetPublicMilestoneContentResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L691-L722">getpublicmilestonecontent</a>(...) -> Destiny2GetPublicMilestoneContentResponse</code></summary>
 <dl>
 <dd>
 
@@ -2377,7 +2377,7 @@ client.destiny2.getpublicmilestonecontent(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">searchdestinyplayerbybungiename</a>(...) -> Destiny2SearchDestinyPlayerByBungieNameResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L724-L755">searchdestinyplayerbybungiename</a>(...) -> Destiny2SearchDestinyPlayerByBungieNameResponse</code></summary>
 <dl>
 <dd>
 
@@ -2450,7 +2450,7 @@ client.destiny2.searchdestinyplayerbybungiename(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getclanaggregatestats</a>(...) -> Destiny2GetClanAggregateStatsResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L757-L795">getclanaggregatestats</a>(...) -> Destiny2GetClanAggregateStatsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2531,7 +2531,7 @@ client.destiny2.getclanaggregatestats(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">gethistoricalstatsdefinition</a>() -> Destiny2GetHistoricalStatsDefinitionResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L797-L823">gethistoricalstatsdefinition</a>() -> Destiny2GetHistoricalStatsDefinitionResponse</code></summary>
 <dl>
 <dd>
 
@@ -2594,7 +2594,7 @@ client.destiny2.gethistoricalstatsdefinition()
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getclanleaderboards</a>(...) -> Destiny2GetClanLeaderboardsResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L825-L873">getclanleaderboards</a>(...) -> Destiny2GetClanLeaderboardsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2691,7 +2691,7 @@ client.destiny2.getclanleaderboards(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getleaderboardsforcharacter</a>(...) -> Destiny2GetLeaderboardsForCharacterResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L875-L939">getleaderboardsforcharacter</a>(...) -> Destiny2GetLeaderboardsForCharacterResponse</code></summary>
 <dl>
 <dd>
 
@@ -2806,7 +2806,7 @@ client.destiny2.getleaderboardsforcharacter(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getpostgamecarnagereport</a>(...) -> Destiny2GetPostGameCarnageReportResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L941-L972">getpostgamecarnagereport</a>(...) -> Destiny2GetPostGameCarnageReportResponse</code></summary>
 <dl>
 <dd>
 
@@ -2879,7 +2879,7 @@ client.destiny2.getpostgamecarnagereport(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">reportoffensivepostgamecarnagereportplayer</a>(...) -> Destiny2ReportOffensivePostGameCarnageReportPlayerResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L974-L1007">reportoffensivepostgamecarnagereportplayer</a>(...) -> Destiny2ReportOffensivePostGameCarnageReportPlayerResponse</code></summary>
 <dl>
 <dd>
 
@@ -2952,7 +2952,7 @@ client.destiny2.reportoffensivepostgamecarnagereportplayer(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getpublicvendors</a>(...) -> Destiny2GetPublicVendorsResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L1009-L1043">getpublicvendors</a>(...) -> Destiny2GetPublicVendorsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3023,7 +3023,7 @@ client.destiny2.getpublicvendors()
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">gethistoricalstats</a>(...) -> Destiny2GetHistoricalStatsResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L1045-L1119">gethistoricalstats</a>(...) -> Destiny2GetHistoricalStatsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3154,7 +3154,7 @@ client.destiny2.gethistoricalstats(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getactivityhistory</a>(...) -> Destiny2GetActivityHistoryResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L1121-L1185">getactivityhistory</a>(...) -> Destiny2GetActivityHistoryResponse</code></summary>
 <dl>
 <dd>
 
@@ -3269,7 +3269,7 @@ client.destiny2.getactivityhistory(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getdestinyaggregateactivitystats</a>(...) -> Destiny2GetDestinyAggregateActivityStatsResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L1187-L1233">getdestinyaggregateactivitystats</a>(...) -> Destiny2GetDestinyAggregateActivityStatsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3360,7 +3360,7 @@ client.destiny2.getdestinyaggregateactivitystats(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getuniqueweaponhistory</a>(...) -> Destiny2GetUniqueWeaponHistoryResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L1235-L1281">getuniqueweaponhistory</a>(...) -> Destiny2GetUniqueWeaponHistoryResponse</code></summary>
 <dl>
 <dd>
 
@@ -3451,7 +3451,7 @@ client.destiny2.getuniqueweaponhistory(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">gethistoricalstatsforaccount</a>(...) -> Destiny2GetHistoricalStatsForAccountResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L1283-L1328">gethistoricalstatsforaccount</a>(...) -> Destiny2GetHistoricalStatsForAccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -3541,7 +3541,7 @@ client.destiny2.gethistoricalstatsforaccount(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getleaderboards</a>(...) -> Destiny2GetLeaderboardsResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L1330-L1388">getleaderboards</a>(...) -> Destiny2GetLeaderboardsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3647,7 +3647,7 @@ client.destiny2.getleaderboards(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getprofile</a>(...) -> Destiny2GetProfileResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L1390-L1435">getprofile</a>(...) -> Destiny2GetProfileResponse</code></summary>
 <dl>
 <dd>
 
@@ -3737,7 +3737,7 @@ client.destiny2.getprofile(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getcharacter</a>(...) -> Destiny2GetCharacterResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L1437-L1487">getcharacter</a>(...) -> Destiny2GetCharacterResponse</code></summary>
 <dl>
 <dd>
 
@@ -3836,7 +3836,7 @@ client.destiny2.getcharacter(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getcollectiblenodedetails</a>(...) -> Destiny2GetCollectibleNodeDetailsResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L1489-L1549">getcollectiblenodedetails</a>(...) -> Destiny2GetCollectibleNodeDetailsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3944,7 +3944,7 @@ client.destiny2.getcollectiblenodedetails(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getvendors</a>(...) -> Destiny2GetVendorsResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L1551-L1610">getvendors</a>(...) -> Destiny2GetVendorsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4051,7 +4051,7 @@ client.destiny2.getvendors(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getvendor</a>(...) -> Destiny2GetVendorResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L1612-L1672">getvendor</a>(...) -> Destiny2GetVendorResponse</code></summary>
 <dl>
 <dd>
 
@@ -4159,7 +4159,7 @@ client.destiny2.getvendor(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getitem</a>(...) -> Destiny2GetItemResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L1674-L1728">getitem</a>(...) -> Destiny2GetItemResponse</code></summary>
 <dl>
 <dd>
 
@@ -4258,7 +4258,7 @@ client.destiny2.getitem(
 </dl>
 </details>
 
-<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py">getlinkedprofiles</a>(...) -> Destiny2GetLinkedProfilesResponse</code></summary>
+<details><summary><code>client.destiny2.<a href="src/fern/destiny2/client.py#L1730-L1776">getlinkedprofiles</a>(...) -> Destiny2GetLinkedProfilesResponse</code></summary>
 <dl>
 <dd>
 
@@ -4349,7 +4349,7 @@ client.destiny2.getlinkedprofiles(
 </details>
 
 ## Fireteam
-<details><summary><code>client.fireteam.<a href="src/fern/fireteam/client.py">getactiveprivateclanfireteamcount</a>(...) -> FireteamGetActivePrivateClanFireteamCountResponse</code></summary>
+<details><summary><code>client.fireteam.<a href="src/fern/fireteam/client.py#L34-L65">getactiveprivateclanfireteamcount</a>(...) -> FireteamGetActivePrivateClanFireteamCountResponse</code></summary>
 <dl>
 <dd>
 
@@ -4422,7 +4422,7 @@ client.fireteam.getactiveprivateclanfireteamcount(
 </dl>
 </details>
 
-<details><summary><code>client.fireteam.<a href="src/fern/fireteam/client.py">getavailableclanfireteams</a>(...) -> FireteamGetAvailableClanFireteamsResponse</code></summary>
+<details><summary><code>client.fireteam.<a href="src/fern/fireteam/client.py#L67-L150">getavailableclanfireteams</a>(...) -> FireteamGetAvailableClanFireteamsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4565,7 +4565,7 @@ client.fireteam.getavailableclanfireteams(
 </dl>
 </details>
 
-<details><summary><code>client.fireteam.<a href="src/fern/fireteam/client.py">getmyclanfireteams</a>(...) -> FireteamGetMyClanFireteamsResponse</code></summary>
+<details><summary><code>client.fireteam.<a href="src/fern/fireteam/client.py#L152-L217">getmyclanfireteams</a>(...) -> FireteamGetMyClanFireteamsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4681,7 +4681,7 @@ client.fireteam.getmyclanfireteams(
 </dl>
 </details>
 
-<details><summary><code>client.fireteam.<a href="src/fern/fireteam/client.py">getclanfireteam</a>(...) -> FireteamGetClanFireteamResponse</code></summary>
+<details><summary><code>client.fireteam.<a href="src/fern/fireteam/client.py#L219-L254">getclanfireteam</a>(...) -> FireteamGetClanFireteamResponse</code></summary>
 <dl>
 <dd>
 
@@ -4763,7 +4763,7 @@ client.fireteam.getclanfireteam(
 </dl>
 </details>
 
-<details><summary><code>client.fireteam.<a href="src/fern/fireteam/client.py">searchpublicavailableclanfireteams</a>(...) -> FireteamSearchPublicAvailableClanFireteamsResponse</code></summary>
+<details><summary><code>client.fireteam.<a href="src/fern/fireteam/client.py#L256-L327">searchpublicavailableclanfireteams</a>(...) -> FireteamSearchPublicAvailableClanFireteamsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4889,7 +4889,7 @@ client.fireteam.searchpublicavailableclanfireteams(
 </details>
 
 ## Forum
-<details><summary><code>client.forum.<a href="src/fern/forum/client.py">getcoretopicspaged</a>(...) -> ForumGetCoreTopicsPagedResponse</code></summary>
+<details><summary><code>client.forum.<a href="src/fern/forum/client.py#L35-L90">getcoretopicspaged</a>(...) -> ForumGetCoreTopicsPagedResponse</code></summary>
 <dl>
 <dd>
 
@@ -4997,7 +4997,7 @@ client.forum.getcoretopicspaged(
 </dl>
 </details>
 
-<details><summary><code>client.forum.<a href="src/fern/forum/client.py">getforumtagsuggestions</a>(...) -> ForumGetForumTagSuggestionsResponse</code></summary>
+<details><summary><code>client.forum.<a href="src/fern/forum/client.py#L92-L121">getforumtagsuggestions</a>(...) -> ForumGetForumTagSuggestionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5068,7 +5068,7 @@ client.forum.getforumtagsuggestions()
 </dl>
 </details>
 
-<details><summary><code>client.forum.<a href="src/fern/forum/client.py">getpostandparent</a>(...) -> ForumGetPostAndParentResponse</code></summary>
+<details><summary><code>client.forum.<a href="src/fern/forum/client.py#L123-L163">getpostandparent</a>(...) -> ForumGetPostAndParentResponse</code></summary>
 <dl>
 <dd>
 
@@ -5149,7 +5149,7 @@ client.forum.getpostandparent(
 </dl>
 </details>
 
-<details><summary><code>client.forum.<a href="src/fern/forum/client.py">getpostandparentawaitingapproval</a>(...) -> ForumGetPostAndParentAwaitingApprovalResponse</code></summary>
+<details><summary><code>client.forum.<a href="src/fern/forum/client.py#L165-L205">getpostandparentawaitingapproval</a>(...) -> ForumGetPostAndParentAwaitingApprovalResponse</code></summary>
 <dl>
 <dd>
 
@@ -5230,7 +5230,7 @@ client.forum.getpostandparentawaitingapproval(
 </dl>
 </details>
 
-<details><summary><code>client.forum.<a href="src/fern/forum/client.py">getpoststhreadedpaged</a>(...) -> ForumGetPostsThreadedPagedResponse</code></summary>
+<details><summary><code>client.forum.<a href="src/fern/forum/client.py#L207-L285">getpoststhreadedpaged</a>(...) -> ForumGetPostsThreadedPagedResponse</code></summary>
 <dl>
 <dd>
 
@@ -5365,7 +5365,7 @@ client.forum.getpoststhreadedpaged(
 </dl>
 </details>
 
-<details><summary><code>client.forum.<a href="src/fern/forum/client.py">getpoststhreadedpagedfromchild</a>(...) -> ForumGetPostsThreadedPagedFromChildResponse</code></summary>
+<details><summary><code>client.forum.<a href="src/fern/forum/client.py#L287-L359">getpoststhreadedpagedfromchild</a>(...) -> ForumGetPostsThreadedPagedFromChildResponse</code></summary>
 <dl>
 <dd>
 
@@ -5491,7 +5491,7 @@ client.forum.getpoststhreadedpagedfromchild(
 </dl>
 </details>
 
-<details><summary><code>client.forum.<a href="src/fern/forum/client.py">gettopicforcontent</a>(...) -> ForumGetTopicForContentResponse</code></summary>
+<details><summary><code>client.forum.<a href="src/fern/forum/client.py#L361-L392">gettopicforcontent</a>(...) -> ForumGetTopicForContentResponse</code></summary>
 <dl>
 <dd>
 
@@ -5564,7 +5564,7 @@ client.forum.gettopicforcontent(
 </dl>
 </details>
 
-<details><summary><code>client.forum.<a href="src/fern/forum/client.py">gettopicspaged</a>(...) -> ForumGetTopicsPagedResponse</code></summary>
+<details><summary><code>client.forum.<a href="src/fern/forum/client.py#L394-L471">gettopicspaged</a>(...) -> ForumGetTopicsPagedResponse</code></summary>
 <dl>
 <dd>
 
@@ -5698,7 +5698,7 @@ client.forum.gettopicspaged(
 </dl>
 </details>
 
-<details><summary><code>client.forum.<a href="src/fern/forum/client.py">getpoll</a>(...) -> ForumGetPollResponse</code></summary>
+<details><summary><code>client.forum.<a href="src/fern/forum/client.py#L473-L504">getpoll</a>(...) -> ForumGetPollResponse</code></summary>
 <dl>
 <dd>
 
@@ -5771,7 +5771,7 @@ client.forum.getpoll(
 </dl>
 </details>
 
-<details><summary><code>client.forum.<a href="src/fern/forum/client.py">getrecruitmentthreadsummaries</a>() -> ForumGetRecruitmentThreadSummariesResponse</code></summary>
+<details><summary><code>client.forum.<a href="src/fern/forum/client.py#L506-L532">getrecruitmentthreadsummaries</a>() -> ForumGetRecruitmentThreadSummariesResponse</code></summary>
 <dl>
 <dd>
 
@@ -6096,7 +6096,7 @@ client._.getusersystemoverrides()
 </details>
 
 ## GroupV2
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getavailableavatars</a>() -> GroupV2GetAvailableAvatarsResponse</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py#L59-L85">getavailableavatars</a>() -> GroupV2GetAvailableAvatarsResponse</code></summary>
 <dl>
 <dd>
 
@@ -6159,7 +6159,7 @@ client.groupv2.getavailableavatars()
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getavailablethemes</a>() -> GroupV2GetAvailableThemesResponse</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py#L87-L113">getavailablethemes</a>() -> GroupV2GetAvailableThemesResponse</code></summary>
 <dl>
 <dd>
 
@@ -6222,7 +6222,7 @@ client.groupv2.getavailablethemes()
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getuserclaninvitesetting</a>(...) -> GroupV2GetUserClanInviteSettingResponse</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py#L115-L146">getuserclaninvitesetting</a>(...) -> GroupV2GetUserClanInviteSettingResponse</code></summary>
 <dl>
 <dd>
 
@@ -6295,7 +6295,7 @@ client.groupv2.getuserclaninvitesetting(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getgroupbyname</a>(...) -> GroupV2GetGroupByNameResponse</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py#L148-L183">getgroupbyname</a>(...) -> GroupV2GetGroupByNameResponse</code></summary>
 <dl>
 <dd>
 
@@ -6377,7 +6377,7 @@ client.groupv2.getgroupbyname(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getgroupbynamev2</a>() -> GroupV2GetGroupByNameV2Response</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py#L185-L211">getgroupbynamev2</a>() -> GroupV2GetGroupByNameV2Response</code></summary>
 <dl>
 <dd>
 
@@ -6440,7 +6440,7 @@ client.groupv2.getgroupbynamev2()
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getrecommendedgroups</a>(...) -> GroupV2GetRecommendedGroupsResponse</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py#L213-L250">getrecommendedgroups</a>(...) -> GroupV2GetRecommendedGroupsResponse</code></summary>
 <dl>
 <dd>
 
@@ -6522,7 +6522,7 @@ client.groupv2.getrecommendedgroups(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">recovergroupforfounder</a>(...) -> GroupV2RecoverGroupForFounderResponse</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py#L252-L298">recovergroupforfounder</a>(...) -> GroupV2RecoverGroupForFounderResponse</code></summary>
 <dl>
 <dd>
 
@@ -6613,7 +6613,7 @@ client.groupv2.recovergroupforfounder(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">groupsearch</a>() -> GroupV2GroupSearchResponse</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py#L300-L324">groupsearch</a>() -> GroupV2GroupSearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -6676,7 +6676,7 @@ client.groupv2.groupsearch()
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getpotentialgroupsformember</a>(...) -> GroupV2GetPotentialGroupsForMemberResponse</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py#L326-L377">getpotentialgroupsformember</a>(...) -> GroupV2GetPotentialGroupsForMemberResponse</code></summary>
 <dl>
 <dd>
 
@@ -6776,7 +6776,7 @@ client.groupv2.getpotentialgroupsformember(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getgroupsformember</a>(...) -> GroupV2GetGroupsForMemberResponse</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py#L379-L430">getgroupsformember</a>(...) -> GroupV2GetGroupsForMemberResponse</code></summary>
 <dl>
 <dd>
 
@@ -6876,7 +6876,7 @@ client.groupv2.getgroupsformember(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getgroup</a>(...) -> GroupV2GetGroupResponse</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py#L432-L463">getgroup</a>(...) -> GroupV2GetGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -6949,7 +6949,7 @@ client.groupv2.getgroup(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">abdicatefoundership</a>(...) -> GroupV2AbdicateFoundershipResponse</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py#L465-L511">abdicatefoundership</a>(...) -> GroupV2AbdicateFoundershipResponse</code></summary>
 <dl>
 <dd>
 
@@ -7040,7 +7040,7 @@ client.groupv2.abdicatefoundership(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getadminsandfounderofgroup</a>(...) -> GroupV2GetAdminsAndFounderOfGroupResponse</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py#L513-L550">getadminsandfounderofgroup</a>(...) -> GroupV2GetAdminsAndFounderOfGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -7122,7 +7122,7 @@ client.groupv2.getadminsandfounderofgroup(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getbannedmembersofgroup</a>(...) -> GroupV2GetBannedMembersOfGroupResponse</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py#L552-L589">getbannedmembersofgroup</a>(...) -> GroupV2GetBannedMembersOfGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -7204,7 +7204,7 @@ client.groupv2.getbannedmembersofgroup(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">editgroup</a>(...) -> GroupV2EditGroupResponse</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py#L591-L622">editgroup</a>(...) -> GroupV2EditGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -7277,7 +7277,7 @@ client.groupv2.editgroup(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">editclanbanner</a>(...) -> GroupV2EditClanBannerResponse</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py#L624-L655">editclanbanner</a>(...) -> GroupV2EditClanBannerResponse</code></summary>
 <dl>
 <dd>
 
@@ -7350,7 +7350,7 @@ client.groupv2.editclanbanner(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">editfounderoptions</a>(...) -> GroupV2EditFounderOptionsResponse</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py#L657-L688">editfounderoptions</a>(...) -> GroupV2EditFounderOptionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -7423,7 +7423,7 @@ client.groupv2.editfounderoptions(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getmembersofgroup</a>(...) -> GroupV2GetMembersOfGroupResponse</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py#L690-L743">getmembersofgroup</a>(...) -> GroupV2GetMembersOfGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -7521,7 +7521,7 @@ client.groupv2.getmembersofgroup(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">approvepending</a>(...) -> GroupV2ApprovePendingResponse</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py#L745-L791">approvepending</a>(...) -> GroupV2ApprovePendingResponse</code></summary>
 <dl>
 <dd>
 
@@ -7612,7 +7612,7 @@ client.groupv2.approvepending(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">approveallpending</a>(...) -> GroupV2ApproveAllPendingResponse</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py#L793-L824">approveallpending</a>(...) -> GroupV2ApproveAllPendingResponse</code></summary>
 <dl>
 <dd>
 
@@ -7685,7 +7685,7 @@ client.groupv2.approveallpending(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">approvependingforlist</a>(...) -> GroupV2ApprovePendingForListResponse</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py#L826-L857">approvependingforlist</a>(...) -> GroupV2ApprovePendingForListResponse</code></summary>
 <dl>
 <dd>
 
@@ -7758,7 +7758,7 @@ client.groupv2.approvependingforlist(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">denyallpending</a>(...) -> GroupV2DenyAllPendingResponse</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py#L859-L890">denyallpending</a>(...) -> GroupV2DenyAllPendingResponse</code></summary>
 <dl>
 <dd>
 
@@ -7831,7 +7831,7 @@ client.groupv2.denyallpending(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">denypendingforlist</a>(...) -> GroupV2DenyPendingForListResponse</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py#L892-L923">denypendingforlist</a>(...) -> GroupV2DenyPendingForListResponse</code></summary>
 <dl>
 <dd>
 
@@ -7904,7 +7904,7 @@ client.groupv2.denypendingforlist(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">individualgroupinvite</a>(...) -> GroupV2IndividualGroupInviteResponse</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py#L925-L971">individualgroupinvite</a>(...) -> GroupV2IndividualGroupInviteResponse</code></summary>
 <dl>
 <dd>
 
@@ -7995,7 +7995,7 @@ client.groupv2.individualgroupinvite(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">individualgroupinvitecancel</a>(...) -> GroupV2IndividualGroupInviteCancelResponse</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py#L973-L1019">individualgroupinvitecancel</a>(...) -> GroupV2IndividualGroupInviteCancelResponse</code></summary>
 <dl>
 <dd>
 
@@ -8086,7 +8086,7 @@ client.groupv2.individualgroupinvitecancel(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getinvitedindividuals</a>(...) -> GroupV2GetInvitedIndividualsResponse</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py#L1021-L1058">getinvitedindividuals</a>(...) -> GroupV2GetInvitedIndividualsResponse</code></summary>
 <dl>
 <dd>
 
@@ -8168,7 +8168,7 @@ client.groupv2.getinvitedindividuals(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getpendingmemberships</a>(...) -> GroupV2GetPendingMembershipsResponse</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py#L1060-L1097">getpendingmemberships</a>(...) -> GroupV2GetPendingMembershipsResponse</code></summary>
 <dl>
 <dd>
 
@@ -8250,7 +8250,7 @@ client.groupv2.getpendingmemberships(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">banmember</a>(...) -> GroupV2BanMemberResponse</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py#L1099-L1145">banmember</a>(...) -> GroupV2BanMemberResponse</code></summary>
 <dl>
 <dd>
 
@@ -8341,7 +8341,7 @@ client.groupv2.banmember(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">kickmember</a>(...) -> GroupV2KickMemberResponse</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py#L1147-L1193">kickmember</a>(...) -> GroupV2KickMemberResponse</code></summary>
 <dl>
 <dd>
 
@@ -8432,7 +8432,7 @@ client.groupv2.kickmember(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">editgroupmembership</a>(...) -> GroupV2EditGroupMembershipResponse</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py#L1195-L1246">editgroupmembership</a>(...) -> GroupV2EditGroupMembershipResponse</code></summary>
 <dl>
 <dd>
 
@@ -8532,7 +8532,7 @@ client.groupv2.editgroupmembership(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">unbanmember</a>(...) -> GroupV2UnbanMemberResponse</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py#L1248-L1294">unbanmember</a>(...) -> GroupV2UnbanMemberResponse</code></summary>
 <dl>
 <dd>
 
@@ -8623,7 +8623,7 @@ client.groupv2.unbanmember(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">getgroupoptionalconversations</a>(...) -> GroupV2GetGroupOptionalConversationsResponse</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py#L1296-L1327">getgroupoptionalconversations</a>(...) -> GroupV2GetGroupOptionalConversationsResponse</code></summary>
 <dl>
 <dd>
 
@@ -8696,7 +8696,7 @@ client.groupv2.getgroupoptionalconversations(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">addoptionalconversation</a>(...) -> GroupV2AddOptionalConversationResponse</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py#L1329-L1360">addoptionalconversation</a>(...) -> GroupV2AddOptionalConversationResponse</code></summary>
 <dl>
 <dd>
 
@@ -8769,7 +8769,7 @@ client.groupv2.addoptionalconversation(
 </dl>
 </details>
 
-<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py">editoptionalconversation</a>(...) -> GroupV2EditOptionalConversationResponse</code></summary>
+<details><summary><code>client.groupv2.<a href="src/fern/groupv2/client.py#L1362-L1399">editoptionalconversation</a>(...) -> GroupV2EditOptionalConversationResponse</code></summary>
 <dl>
 <dd>
 
@@ -8852,7 +8852,7 @@ client.groupv2.editoptionalconversation(
 </details>
 
 ## Social
-<details><summary><code>client.social.<a href="src/fern/social/client.py">getfriendlist</a>() -> SocialGetFriendListResponse</code></summary>
+<details><summary><code>client.social.<a href="src/fern/social/client.py#L33-L57">getfriendlist</a>() -> SocialGetFriendListResponse</code></summary>
 <dl>
 <dd>
 
@@ -8915,7 +8915,7 @@ client.social.getfriendlist()
 </dl>
 </details>
 
-<details><summary><code>client.social.<a href="src/fern/social/client.py">issuefriendrequest</a>(...) -> SocialIssueFriendRequestResponse</code></summary>
+<details><summary><code>client.social.<a href="src/fern/social/client.py#L59-L90">issuefriendrequest</a>(...) -> SocialIssueFriendRequestResponse</code></summary>
 <dl>
 <dd>
 
@@ -8988,7 +8988,7 @@ client.social.issuefriendrequest(
 </dl>
 </details>
 
-<details><summary><code>client.social.<a href="src/fern/social/client.py">removefriend</a>(...) -> SocialRemoveFriendResponse</code></summary>
+<details><summary><code>client.social.<a href="src/fern/social/client.py#L92-L123">removefriend</a>(...) -> SocialRemoveFriendResponse</code></summary>
 <dl>
 <dd>
 
@@ -9061,7 +9061,7 @@ client.social.removefriend(
 </dl>
 </details>
 
-<details><summary><code>client.social.<a href="src/fern/social/client.py">getfriendrequestlist</a>() -> SocialGetFriendRequestListResponse</code></summary>
+<details><summary><code>client.social.<a href="src/fern/social/client.py#L125-L151">getfriendrequestlist</a>() -> SocialGetFriendRequestListResponse</code></summary>
 <dl>
 <dd>
 
@@ -9124,7 +9124,7 @@ client.social.getfriendrequestlist()
 </dl>
 </details>
 
-<details><summary><code>client.social.<a href="src/fern/social/client.py">acceptfriendrequest</a>(...) -> SocialAcceptFriendRequestResponse</code></summary>
+<details><summary><code>client.social.<a href="src/fern/social/client.py#L153-L184">acceptfriendrequest</a>(...) -> SocialAcceptFriendRequestResponse</code></summary>
 <dl>
 <dd>
 
@@ -9197,7 +9197,7 @@ client.social.acceptfriendrequest(
 </dl>
 </details>
 
-<details><summary><code>client.social.<a href="src/fern/social/client.py">declinefriendrequest</a>(...) -> SocialDeclineFriendRequestResponse</code></summary>
+<details><summary><code>client.social.<a href="src/fern/social/client.py#L186-L217">declinefriendrequest</a>(...) -> SocialDeclineFriendRequestResponse</code></summary>
 <dl>
 <dd>
 
@@ -9270,7 +9270,7 @@ client.social.declinefriendrequest(
 </dl>
 </details>
 
-<details><summary><code>client.social.<a href="src/fern/social/client.py">removefriendrequest</a>(...) -> SocialRemoveFriendRequestResponse</code></summary>
+<details><summary><code>client.social.<a href="src/fern/social/client.py#L219-L250">removefriendrequest</a>(...) -> SocialRemoveFriendRequestResponse</code></summary>
 <dl>
 <dd>
 
@@ -9343,7 +9343,7 @@ client.social.removefriendrequest(
 </dl>
 </details>
 
-<details><summary><code>client.social.<a href="src/fern/social/client.py">getplatformfriendlist</a>(...) -> SocialGetPlatformFriendListResponse</code></summary>
+<details><summary><code>client.social.<a href="src/fern/social/client.py#L252-L287">getplatformfriendlist</a>(...) -> SocialGetPlatformFriendListResponse</code></summary>
 <dl>
 <dd>
 
@@ -9426,7 +9426,7 @@ client.social.getplatformfriendlist(
 </details>
 
 ## Tokens
-<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">applymissingpartnerofferswithoutclaim</a>(...) -> TokensApplyMissingPartnerOffersWithoutClaimResponse</code></summary>
+<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py#L35-L76">applymissingpartnerofferswithoutclaim</a>(...) -> TokensApplyMissingPartnerOffersWithoutClaimResponse</code></summary>
 <dl>
 <dd>
 
@@ -9508,7 +9508,7 @@ client.tokens.applymissingpartnerofferswithoutclaim(
 </dl>
 </details>
 
-<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">claimpartneroffer</a>() -> TokensClaimPartnerOfferResponse</code></summary>
+<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py#L78-L104">claimpartneroffer</a>() -> TokensClaimPartnerOfferResponse</code></summary>
 <dl>
 <dd>
 
@@ -9571,7 +9571,7 @@ client.tokens.claimpartneroffer()
 </dl>
 </details>
 
-<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">forcedropsrepair</a>() -> TokensForceDropsRepairResponse</code></summary>
+<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py#L106-L132">forcedropsrepair</a>() -> TokensForceDropsRepairResponse</code></summary>
 <dl>
 <dd>
 
@@ -9634,7 +9634,7 @@ client.tokens.forcedropsrepair()
 </dl>
 </details>
 
-<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">getpartnerofferskuhistory</a>(...) -> TokensGetPartnerOfferSkuHistoryResponse</code></summary>
+<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py#L134-L175">getpartnerofferskuhistory</a>(...) -> TokensGetPartnerOfferSkuHistoryResponse</code></summary>
 <dl>
 <dd>
 
@@ -9716,7 +9716,7 @@ client.tokens.getpartnerofferskuhistory(
 </dl>
 </details>
 
-<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">getpartnerrewardhistory</a>(...) -> TokensGetPartnerRewardHistoryResponse</code></summary>
+<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py#L177-L218">getpartnerrewardhistory</a>(...) -> TokensGetPartnerRewardHistoryResponse</code></summary>
 <dl>
 <dd>
 
@@ -9798,7 +9798,7 @@ client.tokens.getpartnerrewardhistory(
 </dl>
 </details>
 
-<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">getbungierewardslist</a>() -> TokensGetBungieRewardsListResponse</code></summary>
+<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py#L220-L246">getbungierewardslist</a>() -> TokensGetBungieRewardsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -9861,7 +9861,7 @@ client.tokens.getbungierewardslist()
 </dl>
 </details>
 
-<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">getbungierewardsforplatformuser</a>(...) -> TokensGetBungieRewardsForPlatformUserResponse</code></summary>
+<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py#L248-L285">getbungierewardsforplatformuser</a>(...) -> TokensGetBungieRewardsForPlatformUserResponse</code></summary>
 <dl>
 <dd>
 
@@ -9943,7 +9943,7 @@ client.tokens.getbungierewardsforplatformuser(
 </dl>
 </details>
 
-<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">getbungierewardsforuser</a>(...) -> TokensGetBungieRewardsForUserResponse</code></summary>
+<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py#L287-L318">getbungierewardsforuser</a>(...) -> TokensGetBungieRewardsForUserResponse</code></summary>
 <dl>
 <dd>
 
@@ -10017,7 +10017,7 @@ client.tokens.getbungierewardsforuser(
 </details>
 
 ## Trending
-<details><summary><code>client.trending.<a href="src/fern/trending/client.py">gettrendingcategories</a>() -> TrendingGetTrendingCategoriesResponse</code></summary>
+<details><summary><code>client.trending.<a href="src/fern/trending/client.py#L28-L54">gettrendingcategories</a>() -> TrendingGetTrendingCategoriesResponse</code></summary>
 <dl>
 <dd>
 
@@ -10080,7 +10080,7 @@ client.trending.gettrendingcategories()
 </dl>
 </details>
 
-<details><summary><code>client.trending.<a href="src/fern/trending/client.py">gettrendingcategory</a>(...) -> TrendingGetTrendingCategoryResponse</code></summary>
+<details><summary><code>client.trending.<a href="src/fern/trending/client.py#L56-L91">gettrendingcategory</a>(...) -> TrendingGetTrendingCategoryResponse</code></summary>
 <dl>
 <dd>
 
@@ -10162,7 +10162,7 @@ client.trending.gettrendingcategory(
 </dl>
 </details>
 
-<details><summary><code>client.trending.<a href="src/fern/trending/client.py">gettrendingentrydetail</a>(...) -> TrendingGetTrendingEntryDetailResponse</code></summary>
+<details><summary><code>client.trending.<a href="src/fern/trending/client.py#L93-L130">gettrendingentrydetail</a>(...) -> TrendingGetTrendingEntryDetailResponse</code></summary>
 <dl>
 <dd>
 
@@ -10245,7 +10245,7 @@ client.trending.gettrendingentrydetail(
 </details>
 
 ## User
-<details><summary><code>client.user.<a href="src/fern/user/client.py">getavailablethemes</a>() -> UserGetAvailableThemesResponse</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L36-L62">getavailablethemes</a>() -> UserGetAvailableThemesResponse</code></summary>
 <dl>
 <dd>
 
@@ -10308,7 +10308,7 @@ client.user.getavailablethemes()
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">getbungienetuserbyid</a>(...) -> UserGetBungieNetUserByIdResponse</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L64-L95">getbungienetuserbyid</a>(...) -> UserGetBungieNetUserByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -10381,7 +10381,7 @@ client.user.getbungienetuserbyid(
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">getcredentialtypesfortargetaccount</a>(...) -> UserGetCredentialTypesForTargetAccountResponse</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L97-L128">getcredentialtypesfortargetaccount</a>(...) -> UserGetCredentialTypesForTargetAccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -10454,7 +10454,7 @@ client.user.getcredentialtypesfortargetaccount(
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">getmembershipfromhardlinkedcredential</a>(...) -> UserGetMembershipFromHardLinkedCredentialResponse</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L130-L167">getmembershipfromhardlinkedcredential</a>(...) -> UserGetMembershipFromHardLinkedCredentialResponse</code></summary>
 <dl>
 <dd>
 
@@ -10536,7 +10536,7 @@ client.user.getmembershipfromhardlinkedcredential(
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">getmembershipdatabyid</a>(...) -> UserGetMembershipDataByIdResponse</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L169-L206">getmembershipdatabyid</a>(...) -> UserGetMembershipDataByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -10618,7 +10618,7 @@ client.user.getmembershipdatabyid(
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">getmembershipdataforcurrentuser</a>() -> UserGetMembershipDataForCurrentUserResponse</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L208-L234">getmembershipdataforcurrentuser</a>() -> UserGetMembershipDataForCurrentUserResponse</code></summary>
 <dl>
 <dd>
 
@@ -10681,7 +10681,7 @@ client.user.getmembershipdataforcurrentuser()
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">getsanitizedplatformdisplaynames</a>(...) -> UserGetSanitizedPlatformDisplayNamesResponse</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L236-L267">getsanitizedplatformdisplaynames</a>(...) -> UserGetSanitizedPlatformDisplayNamesResponse</code></summary>
 <dl>
 <dd>
 
@@ -10754,7 +10754,7 @@ client.user.getsanitizedplatformdisplaynames(
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">searchbyglobalnamepost</a>(...) -> UserSearchByGlobalNamePostResponse</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L269-L300">searchbyglobalnamepost</a>(...) -> UserSearchByGlobalNamePostResponse</code></summary>
 <dl>
 <dd>
 
@@ -10827,7 +10827,7 @@ client.user.searchbyglobalnamepost(
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">searchbyglobalnameprefix</a>(...) -> UserSearchByGlobalNamePrefixResponse</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L302-L339">searchbyglobalnameprefix</a>(...) -> UserSearchByGlobalNamePrefixResponse</code></summary>
 <dl>
 <dd>
 

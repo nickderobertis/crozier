@@ -2,6 +2,7 @@
 
 import datetime as dt
 import enum
+import json
 import re
 import uuid
 from dataclasses import dataclass
@@ -22,7 +23,8 @@ from typing import (
 )
 from xml.dom import minidom
 from xml.parsers.expat import ExpatError
-from xml.sax.saxutils import escape, quoteattr
+from xml.sax.saxutils import escape as _sax_escape
+from xml.sax.saxutils import quoteattr as _sax_quoteattr
 
 import pydantic
 from .pydantic_utilities import IS_PYDANTIC_V2
@@ -47,8 +49,8 @@ class XmlParsable(Protocol):
     def from_xml(cls, xml: Union[str, XmlNode]) -> Any: ...
 
 
-XmlScalar = Union[str, int, float, bool, enum.Enum, dt.datetime, dt.date, uuid.UUID]
-_SCALAR_TYPES = (str, int, float, bool, enum.Enum, dt.datetime, dt.date, uuid.UUID)
+XmlScalar = Union[str, int, float, bool, enum.Enum, dt.datetime, dt.date, uuid.UUID, Dict[str, Any]]
+_SCALAR_TYPES = (str, int, float, bool, enum.Enum, dt.datetime, dt.date, uuid.UUID, dict)
 XmlAttributeValue = Optional[Union[XmlScalar, Sequence[XmlScalar]]]
 
 XmlContent = Union[str, XmlSerializable]
@@ -75,7 +77,7 @@ class XmlChild:
 def xml_comment_text(text: str) -> str:
     """Makes text safe to place inside a comment: XML forbids `--` within a comment and a trailing `-`,
     and either would otherwise end the comment early and turn the rest into markup."""
-    safe = re.sub(r"-(?=-)", "- ", text)
+    safe = re.sub(r"-(?=-)", "- ", _INVALID_XML_CHARS.sub("", text))
     return f"{safe} " if safe.endswith("-") else safe
 
 
@@ -98,6 +100,18 @@ class XmlComment:
         return f"XmlComment({self.text!r})"
 
 
+
+_INVALID_XML_CHARS = re.compile("[^\u0009\u000a\u000d\u0020-\ud7ff\ue000-\ufffd\U00010000-\U0010ffff]")
+
+
+def escape(value: str) -> str:
+    return _sax_escape(_INVALID_XML_CHARS.sub("", value))
+
+
+def quoteattr(value: str) -> str:
+    return _sax_quoteattr(_INVALID_XML_CHARS.sub("", value))
+
+
 def serialize_xml_element(
     *,
     name: str,
@@ -112,6 +126,7 @@ def serialize_xml_element(
     namespace: Optional[str] = None,
     prefix: Optional[str] = None,
     xml_declaration: bool = False,
+    require_text_or_children: bool = False,
 ) -> str:
     """Renders an element. `text` and the `children` without a position marker come first, then `content`
     (text segments, comments and child elements, in order) followed by `additional_children`.
@@ -137,6 +152,7 @@ def serialize_xml_element(
             markers.setdefault(_local_name(item.name), []).append(item)
 
     body: List[str] = []
+    element_count = 0
     rendered_text = _join_scalars(text, text_separator)
     if rendered_text is not None:
         body.append(escape(rendered_text))
@@ -144,7 +160,9 @@ def serialize_xml_element(
     for child in children:
         child_markers = markers.get(_local_name(child.name))
         if child_markers is None:
-            body.extend(_render_child(child))
+            rendered_children = list(_render_child(child))
+            body.extend(rendered_children)
+            element_count += len(rendered_children)
         else:
             for marker, rendered in zip(child_markers, _render_wrapped_child(child, child_markers)):
                 rendered_markers[id(marker)] = rendered
@@ -153,8 +171,13 @@ def serialize_xml_element(
             body.append(escape(item))
         elif isinstance(item, XmlElement) and id(item) in rendered_markers:
             body.append(rendered_markers[id(item)])
+            element_count += 1
         else:
             body.append(item.to_xml(xml_declaration=False))
+            if not isinstance(item, XmlComment):
+                element_count += 1
+    if require_text_or_children and rendered_text is None and element_count == 0:
+        raise ValueError(f"<{name}> requires text content or child elements")
 
     if not body:
         parts.append(" />")
@@ -362,6 +385,14 @@ def xml_leading_text(node: XmlNode, *, separator: Optional[str] = None) -> Optio
     return _split(text, separator) if separator is not None else text
 
 
+def xml_require_text_or_children(node: XmlNode) -> None:
+    """An element whose required text may instead be child elements (`<Message>`) must have one or the other."""
+    if xml_leading_text(node) is None and not any(
+        child.nodeType == minidom.Node.ELEMENT_NODE for child in node.childNodes
+    ):
+        raise ValueError(f"<{_local_name(node.tagName)}> requires text content or child elements")
+
+
 def xml_content(
     node: XmlNode,
     types: Mapping[str, type] = {},
@@ -535,6 +566,37 @@ def coerce_xml_list_fields(values: Dict[str, Any], separators: Dict[str, str]) -
     return coerced
 
 
+def check_xml_extra_attributes(
+    model: type, wire_names: Mapping[str, str], fields: Dict[str, Any], extras: Dict[str, Any]
+) -> Dict[str, Any]:
+    """Merges the extra keyword arguments of an XML model constructor into its declared fields.
+
+    A key that is the wire name of a declared attribute (`numDigits` for `num_digits`) sets that field, and
+    raises if the field was also given; a key that only differs from a declared field or its wire name by case
+    (`Voice`, `speechtimeout`) raises instead of being silently dropped. Anything else stays an undeclared attribute.
+    """
+    result = dict(fields)
+    if not extras:
+        return result
+    declared: Mapping[str, Any] = (
+        getattr(model, "model_fields", {}) if IS_PYDANTIC_V2 else getattr(model, "__fields__", {})
+    )
+    casefolded = {name.casefold(): name for name in declared}
+    casefolded.update({name.casefold(): name for name in wire_names})
+    for key, value in extras.items():
+        field = wire_names.get(key)
+        if field is not None:
+            if result.get(field) is not None:
+                raise TypeError(f"{model.__name__}() got both '{key}' and '{field}' for the same attribute")
+            result[field] = value
+            continue
+        match = casefolded.get(key.casefold())
+        if match is not None and match != key:
+            raise TypeError(f"{model.__name__}() got an unexpected keyword argument '{key}'; did you mean '{match}'?")
+        result[key] = value
+    return result
+
+
 def extra_xml_attributes(model: pydantic.BaseModel) -> List[XmlAttribute]:
     """Renders fields that were passed to the model but are not declared on it as XML attributes.
 
@@ -637,4 +699,7 @@ def _scalar_to_string(value: XmlScalar) -> str:
         return str(value.value)
     if isinstance(value, (dt.datetime, dt.date)):
         return value.isoformat()
+    if isinstance(value, dict):
+
+        return json.dumps(value)
     return str(value)

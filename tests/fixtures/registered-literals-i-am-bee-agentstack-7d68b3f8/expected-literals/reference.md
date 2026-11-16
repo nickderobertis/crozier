@@ -1,6 +1,6 @@
 # Reference
 ## User
-<details><summary><code>client.user.<a href="src/fern/user/client.py">get_user</a>() -> User</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L26-L50">get_user</a>() -> User</code></summary>
 <dl>
 <dd>
 
@@ -50,7 +50,7 @@ client.user.get_user()
 </details>
 
 ## Users
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_me</a>() -> UserResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L26-L52">get_me</a>() -> UserResponse</code></summary>
 <dl>
 <dd>
 
@@ -114,7 +114,7 @@ client.users.get_me()
 </details>
 
 ## A2A
-<details><summary><code>client.a2a.<a href="src/fern/a2a/client.py">get_agent_card_api_v1a2a_provider_id_well_known_agent_card_json_get</a>(...) -> AgentCardOutput</code></summary>
+<details><summary><code>client.a2a.<a href="src/fern/a2a/client.py#L26-L58">get_agent_card_api_v1a2a_provider_id_well_known_agent_card_json_get</a>(...) -> AgentCardOutput</code></summary>
 <dl>
 <dd>
 
@@ -173,7 +173,7 @@ client.a2a.get_agent_card_api_v1a2a_provider_id_well_known_agent_card_json_get(
 </dl>
 </details>
 
-<details><summary><code>client.a2a.<a href="src/fern/a2a/client.py">a2a_proxy_jsonrpc_transport</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.a2a.<a href="src/fern/a2a/client.py#L60-L90">a2a_proxy_jsonrpc_transport</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -232,7 +232,7 @@ client.a2a.a2a_proxy_jsonrpc_transport(
 </dl>
 </details>
 
-<details><summary><code>client.a2a.<a href="src/fern/a2a/client.py">proxy_http_transport_api_v1a2a_provider_id_http_path_options</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.a2a.<a href="src/fern/a2a/client.py#L92-L127">proxy_http_transport_api_v1a2a_provider_id_http_path_options</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -300,7 +300,7 @@ client.a2a.proxy_http_transport_api_v1a2a_provider_id_http_path_options(
 </dl>
 </details>
 
-<details><summary><code>client.a2a.<a href="src/fern/a2a/client.py">proxy_http_transport_api_v1a2a_provider_id_http_options</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.a2a.<a href="src/fern/a2a/client.py#L129-L167">proxy_http_transport_api_v1a2a_provider_id_http_options</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -368,7 +368,7 @@ client.a2a.proxy_http_transport_api_v1a2a_provider_id_http_options(
 </details>
 
 ## Providers
-<details><summary><code>client.providers.<a href="src/fern/providers/client.py">list_providers</a>(...) -> PaginatedResultModelOutput</code></summary>
+<details><summary><code>client.providers.<a href="src/fern/providers/client.py#L40-L76">list_providers</a>(...) -> PaginatedResultModelOutput</code></summary>
 <dl>
 <dd>
 
@@ -433,7 +433,7 @@ client.providers.list_providers()
 </dl>
 </details>
 
-<details><summary><code>client.providers.<a href="src/fern/providers/client.py">create_provider</a>(...) -> ProviderWithState</code></summary>
+<details><summary><code>client.providers.<a href="src/fern/providers/client.py#L78-L132">create_provider</a>(...) -> ProviderWithState</code></summary>
 <dl>
 <dd>
 
@@ -492,7 +492,7 @@ client.providers.create_provider(
 </dl>
 </details>
 
-<details><summary><code>client.providers.<a href="src/fern/providers/client.py">get_provider</a>(...) -> AgentstackServerApiSchemaCommonEntityModelClassGetitemLocalsModelOutput2</code></summary>
+<details><summary><code>client.providers.<a href="src/fern/providers/client.py#L134-L164">get_provider</a>(...) -> AgentstackServerApiSchemaCommonEntityModelClassGetitemLocalsModelOutput2</code></summary>
 <dl>
 <dd>
 
@@ -551,7 +551,7 @@ client.providers.get_provider(
 </dl>
 </details>
 
-<details><summary><code>client.providers.<a href="src/fern/providers/client.py">delete_provider</a>(...)</code></summary>
+<details><summary><code>client.providers.<a href="src/fern/providers/client.py#L166-L193">delete_provider</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -610,7 +610,7 @@ client.providers.delete_provider(
 </dl>
 </details>
 
-<details><summary><code>client.providers.<a href="src/fern/providers/client.py">patch_provider</a>(...) -> ProviderWithState</code></summary>
+<details><summary><code>client.providers.<a href="src/fern/providers/client.py#L195-L253">patch_provider</a>(...) -> ProviderWithState</code></summary>
 <dl>
 <dd>
 
@@ -709,7 +709,7 @@ client.providers.patch_provider(
 </dl>
 </details>
 
-<details><summary><code>client.providers.<a href="src/fern/providers/client.py">preview_provider</a>(...) -> ProviderWithState</code></summary>
+<details><summary><code>client.providers.<a href="src/fern/providers/client.py#L255-L309">preview_provider</a>(...) -> ProviderWithState</code></summary>
 <dl>
 <dd>
 
@@ -768,7 +768,7 @@ client.providers.preview_provider(
 </dl>
 </details>
 
-<details><summary><code>client.providers.<a href="src/fern/providers/client.py">get_provider_by_location</a>(...) -> AgentstackServerApiSchemaCommonEntityModelClassGetitemLocalsModelOutput3</code></summary>
+<details><summary><code>client.providers.<a href="src/fern/providers/client.py#L311-L341">get_provider_by_location</a>(...) -> AgentstackServerApiSchemaCommonEntityModelClassGetitemLocalsModelOutput3</code></summary>
 <dl>
 <dd>
 
@@ -827,7 +827,7 @@ client.providers.get_provider_by_location(
 </dl>
 </details>
 
-<details><summary><code>client.providers.<a href="src/fern/providers/client.py">stream_logs</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.providers.<a href="src/fern/providers/client.py#L343-L371">stream_logs</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -886,7 +886,7 @@ client.providers.stream_logs(
 </dl>
 </details>
 
-<details><summary><code>client.providers.<a href="src/fern/providers/client.py">list_provider_variables</a>(...) -> ListVariablesSchema</code></summary>
+<details><summary><code>client.providers.<a href="src/fern/providers/client.py#L373-L403">list_provider_variables</a>(...) -> ListVariablesSchema</code></summary>
 <dl>
 <dd>
 
@@ -945,7 +945,7 @@ client.providers.list_provider_variables(
 </dl>
 </details>
 
-<details><summary><code>client.providers.<a href="src/fern/providers/client.py">update_provider_variables</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.providers.<a href="src/fern/providers/client.py#L405-L442">update_provider_variables</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1014,7 +1014,7 @@ client.providers.update_provider_variables(
 </details>
 
 ## ProviderDiscovery
-<details><summary><code>client.provider_discovery.<a href="src/fern/provider_discovery/client.py">create_provider_discovery</a>(...) -> ProviderDiscovery</code></summary>
+<details><summary><code>client.provider_discovery.<a href="src/fern/provider_discovery/client.py#L29-L61">create_provider_discovery</a>(...) -> ProviderDiscovery</code></summary>
 <dl>
 <dd>
 
@@ -1073,7 +1073,7 @@ client.provider_discovery.create_provider_discovery(
 </dl>
 </details>
 
-<details><summary><code>client.provider_discovery.<a href="src/fern/provider_discovery/client.py">get_provider_discovery</a>(...) -> ProviderDiscovery</code></summary>
+<details><summary><code>client.provider_discovery.<a href="src/fern/provider_discovery/client.py#L63-L93">get_provider_discovery</a>(...) -> ProviderDiscovery</code></summary>
 <dl>
 <dd>
 
@@ -1133,7 +1133,7 @@ client.provider_discovery.get_provider_discovery(
 </details>
 
 ## ProviderBuilds
-<details><summary><code>client.provider_builds.<a href="src/fern/provider_builds/client.py">list_provider_builds</a>(...) -> PaginatedResultProviderBuild</code></summary>
+<details><summary><code>client.provider_builds.<a href="src/fern/provider_builds/client.py#L34-L88">list_provider_builds</a>(...) -> PaginatedResultProviderBuild</code></summary>
 <dl>
 <dd>
 
@@ -1230,7 +1230,7 @@ client.provider_builds.list_provider_builds()
 </dl>
 </details>
 
-<details><summary><code>client.provider_builds.<a href="src/fern/provider_builds/client.py">create_provider_build</a>(...) -> ProviderBuild</code></summary>
+<details><summary><code>client.provider_builds.<a href="src/fern/provider_builds/client.py#L90-L134">create_provider_build</a>(...) -> ProviderBuild</code></summary>
 <dl>
 <dd>
 
@@ -1289,7 +1289,7 @@ client.provider_builds.create_provider_build(
 </dl>
 </details>
 
-<details><summary><code>client.provider_builds.<a href="src/fern/provider_builds/client.py">preview_provider_build</a>(...) -> ProviderBuild</code></summary>
+<details><summary><code>client.provider_builds.<a href="src/fern/provider_builds/client.py#L136-L180">preview_provider_build</a>(...) -> ProviderBuild</code></summary>
 <dl>
 <dd>
 
@@ -1348,7 +1348,7 @@ client.provider_builds.preview_provider_build(
 </dl>
 </details>
 
-<details><summary><code>client.provider_builds.<a href="src/fern/provider_builds/client.py">get_provider_build</a>(...) -> ProviderBuild</code></summary>
+<details><summary><code>client.provider_builds.<a href="src/fern/provider_builds/client.py#L182-L210">get_provider_build</a>(...) -> ProviderBuild</code></summary>
 <dl>
 <dd>
 
@@ -1407,7 +1407,7 @@ client.provider_builds.get_provider_build(
 </dl>
 </details>
 
-<details><summary><code>client.provider_builds.<a href="src/fern/provider_builds/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.provider_builds.<a href="src/fern/provider_builds/client.py#L212-L239">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1466,7 +1466,7 @@ client.provider_builds.delete(
 </dl>
 </details>
 
-<details><summary><code>client.provider_builds.<a href="src/fern/provider_builds/client.py">stream_logs</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.provider_builds.<a href="src/fern/provider_builds/client.py#L241-L269">stream_logs</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1526,7 +1526,7 @@ client.provider_builds.stream_logs(
 </details>
 
 ## ModelProviders
-<details><summary><code>client.model_providers.<a href="src/fern/model_providers/client.py">list_model_providers</a>() -> PaginatedResultModelProvider</code></summary>
+<details><summary><code>client.model_providers.<a href="src/fern/model_providers/client.py#L38-L64">list_model_providers</a>() -> PaginatedResultModelProvider</code></summary>
 <dl>
 <dd>
 
@@ -1575,7 +1575,7 @@ client.model_providers.list_model_providers()
 </dl>
 </details>
 
-<details><summary><code>client.model_providers.<a href="src/fern/model_providers/client.py">create_model_provider</a>(...) -> AgentstackServerApiSchemaCommonEntityModelClassGetitemLocalsModelOutput4</code></summary>
+<details><summary><code>client.model_providers.<a href="src/fern/model_providers/client.py#L66-L128">create_model_provider</a>(...) -> AgentstackServerApiSchemaCommonEntityModelClassGetitemLocalsModelOutput4</code></summary>
 <dl>
 <dd>
 
@@ -1684,7 +1684,7 @@ client.model_providers.create_model_provider(
 </dl>
 </details>
 
-<details><summary><code>client.model_providers.<a href="src/fern/model_providers/client.py">get_model_provider</a>(...) -> AgentstackServerApiSchemaCommonEntityModelClassGetitemLocalsModelOutput5</code></summary>
+<details><summary><code>client.model_providers.<a href="src/fern/model_providers/client.py#L130-L160">get_model_provider</a>(...) -> AgentstackServerApiSchemaCommonEntityModelClassGetitemLocalsModelOutput5</code></summary>
 <dl>
 <dd>
 
@@ -1743,7 +1743,7 @@ client.model_providers.get_model_provider(
 </dl>
 </details>
 
-<details><summary><code>client.model_providers.<a href="src/fern/model_providers/client.py">delete_model_provider</a>(...)</code></summary>
+<details><summary><code>client.model_providers.<a href="src/fern/model_providers/client.py#L162-L191">delete_model_provider</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1802,7 +1802,7 @@ client.model_providers.delete_model_provider(
 </dl>
 </details>
 
-<details><summary><code>client.model_providers.<a href="src/fern/model_providers/client.py">match</a>(...) -> PaginatedResultModelWithScore</code></summary>
+<details><summary><code>client.model_providers.<a href="src/fern/model_providers/client.py#L193-L237">match</a>(...) -> PaginatedResultModelWithScore</code></summary>
 <dl>
 <dd>
 
@@ -1878,7 +1878,7 @@ client.model_providers.match(
 </details>
 
 ## Configurations
-<details><summary><code>client.configurations.<a href="src/fern/configurations/client.py">get_configuration</a>() -> AgentstackServerApiSchemaCommonEntityModelClassGetitemLocalsModelOutput6</code></summary>
+<details><summary><code>client.configurations.<a href="src/fern/configurations/client.py#L34-L60">get_configuration</a>() -> AgentstackServerApiSchemaCommonEntityModelClassGetitemLocalsModelOutput6</code></summary>
 <dl>
 <dd>
 
@@ -1927,7 +1927,7 @@ client.configurations.get_configuration()
 </dl>
 </details>
 
-<details><summary><code>client.configurations.<a href="src/fern/configurations/client.py">update_configuration</a>(...) -> AgentstackServerApiSchemaCommonEntityModelClassGetitemLocalsModelOutput7</code></summary>
+<details><summary><code>client.configurations.<a href="src/fern/configurations/client.py#L62-L100">update_configuration</a>(...) -> AgentstackServerApiSchemaCommonEntityModelClassGetitemLocalsModelOutput7</code></summary>
 <dl>
 <dd>
 
@@ -1993,7 +1993,7 @@ client.configurations.update_configuration()
 </details>
 
 ## Files
-<details><summary><code>client.files.<a href="src/fern/files/client.py">list_files</a>(...) -> PaginatedResultFile</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L44-L80">list_files</a>(...) -> PaginatedResultFile</code></summary>
 <dl>
 <dd>
 
@@ -2060,7 +2060,7 @@ client.files.list_files(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">upload_file</a>(...) -> AgentstackServerApiSchemaCommonEntityModelClassGetitemLocalsModelOutput8</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L82-L117">upload_file</a>(...) -> AgentstackServerApiSchemaCommonEntityModelClassGetitemLocalsModelOutput8</code></summary>
 <dl>
 <dd>
 
@@ -2127,7 +2127,7 @@ client.files.upload_file(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">get_file</a>(...) -> AgentstackServerApiSchemaCommonEntityModelClassGetitemLocalsModelOutput9</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L119-L155">get_file</a>(...) -> AgentstackServerApiSchemaCommonEntityModelClassGetitemLocalsModelOutput9</code></summary>
 <dl>
 <dd>
 
@@ -2194,7 +2194,7 @@ client.files.get_file(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">delete_file</a>(...)</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L157-L192">delete_file</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2261,7 +2261,7 @@ client.files.delete_file(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">get_file_content</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L194-L230">get_file_content</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2328,7 +2328,7 @@ client.files.get_file_content(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">get_text_file_content</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L232-L270">get_text_file_content</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2395,7 +2395,7 @@ client.files.get_text_file_content(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">get_text_extraction</a>(...) -> AgentstackServerApiSchemaCommonEntityModelClassGetitemLocalsModelOutput11</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L272-L310">get_text_extraction</a>(...) -> AgentstackServerApiSchemaCommonEntityModelClassGetitemLocalsModelOutput11</code></summary>
 <dl>
 <dd>
 
@@ -2462,7 +2462,7 @@ client.files.get_text_extraction(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">create_text_extraction</a>(...) -> AgentstackServerApiSchemaCommonEntityModelClassGetitemLocalsModelOutput10</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L312-L361">create_text_extraction</a>(...) -> AgentstackServerApiSchemaCommonEntityModelClassGetitemLocalsModelOutput10</code></summary>
 <dl>
 <dd>
 
@@ -2557,7 +2557,7 @@ client.files.create_text_extraction(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">delete_text_extraction</a>(...)</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L363-L400">delete_text_extraction</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2625,7 +2625,7 @@ client.files.delete_text_extraction(
 </details>
 
 ## Variables
-<details><summary><code>client.variables.<a href="src/fern/variables/client.py">list_user_variables</a>() -> ListVariablesSchema</code></summary>
+<details><summary><code>client.variables.<a href="src/fern/variables/client.py#L29-L53">list_user_variables</a>() -> ListVariablesSchema</code></summary>
 <dl>
 <dd>
 
@@ -2674,7 +2674,7 @@ client.variables.list_user_variables()
 </dl>
 </details>
 
-<details><summary><code>client.variables.<a href="src/fern/variables/client.py">update_user_variables</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.variables.<a href="src/fern/variables/client.py#L55-L88">update_user_variables</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2734,7 +2734,7 @@ client.variables.update_user_variables(
 </details>
 
 ## Contexts
-<details><summary><code>client.contexts.<a href="src/fern/contexts/client.py">list_context</a>(...) -> PaginatedResultContext</code></summary>
+<details><summary><code>client.contexts.<a href="src/fern/contexts/client.py#L46-L100">list_context</a>(...) -> PaginatedResultContext</code></summary>
 <dl>
 <dd>
 
@@ -2831,7 +2831,7 @@ client.contexts.list_context()
 </dl>
 </details>
 
-<details><summary><code>client.contexts.<a href="src/fern/contexts/client.py">create_context</a>(...) -> AgentstackServerApiSchemaCommonEntityModelClassGetitemLocalsModelOutput12</code></summary>
+<details><summary><code>client.contexts.<a href="src/fern/contexts/client.py#L102-L144">create_context</a>(...) -> AgentstackServerApiSchemaCommonEntityModelClassGetitemLocalsModelOutput12</code></summary>
 <dl>
 <dd>
 
@@ -2903,7 +2903,7 @@ Keys are strings with a maximum length of 64 characters. Values are strings with
 </dl>
 </details>
 
-<details><summary><code>client.contexts.<a href="src/fern/contexts/client.py">get_context</a>(...) -> AgentstackServerApiSchemaCommonEntityModelClassGetitemLocalsModelOutput13</code></summary>
+<details><summary><code>client.contexts.<a href="src/fern/contexts/client.py#L146-L176">get_context</a>(...) -> AgentstackServerApiSchemaCommonEntityModelClassGetitemLocalsModelOutput13</code></summary>
 <dl>
 <dd>
 
@@ -2962,7 +2962,7 @@ client.contexts.get_context(
 </dl>
 </details>
 
-<details><summary><code>client.contexts.<a href="src/fern/contexts/client.py">update_context</a>(...) -> AgentstackServerApiSchemaCommonEntityModelClassGetitemLocalsModelOutput14</code></summary>
+<details><summary><code>client.contexts.<a href="src/fern/contexts/client.py#L178-L220">update_context</a>(...) -> AgentstackServerApiSchemaCommonEntityModelClassGetitemLocalsModelOutput14</code></summary>
 <dl>
 <dd>
 
@@ -3036,7 +3036,7 @@ Keys are strings with a maximum length of 64 characters. Values are strings with
 </dl>
 </details>
 
-<details><summary><code>client.contexts.<a href="src/fern/contexts/client.py">delete_context</a>(...)</code></summary>
+<details><summary><code>client.contexts.<a href="src/fern/contexts/client.py#L222-L249">delete_context</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3095,7 +3095,7 @@ client.contexts.delete_context(
 </dl>
 </details>
 
-<details><summary><code>client.contexts.<a href="src/fern/contexts/client.py">patch_context_metadata</a>(...) -> AgentstackServerApiSchemaCommonEntityModelClassGetitemLocalsModelOutput15</code></summary>
+<details><summary><code>client.contexts.<a href="src/fern/contexts/client.py#L251-L291">patch_context_metadata</a>(...) -> AgentstackServerApiSchemaCommonEntityModelClassGetitemLocalsModelOutput15</code></summary>
 <dl>
 <dd>
 
@@ -3163,7 +3163,7 @@ client.contexts.patch_context_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.contexts.<a href="src/fern/contexts/client.py">generate_context_token</a>(...) -> ContextTokenResponse</code></summary>
+<details><summary><code>client.contexts.<a href="src/fern/contexts/client.py#L293-L339">generate_context_token</a>(...) -> ContextTokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -3238,7 +3238,7 @@ client.contexts.generate_context_token(
 </dl>
 </details>
 
-<details><summary><code>client.contexts.<a href="src/fern/contexts/client.py">list_context_history</a>(...) -> PaginatedResultContextHistoryItem</code></summary>
+<details><summary><code>client.contexts.<a href="src/fern/contexts/client.py#L341-L393">list_context_history</a>(...) -> PaginatedResultContextHistoryItem</code></summary>
 <dl>
 <dd>
 
@@ -3329,7 +3329,7 @@ client.contexts.list_context_history(
 </dl>
 </details>
 
-<details><summary><code>client.contexts.<a href="src/fern/contexts/client.py">add_context_history_item</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.contexts.<a href="src/fern/contexts/client.py#L395-L441">add_context_history_item</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -3404,7 +3404,7 @@ client.contexts.add_context_history_item(
 </dl>
 </details>
 
-<details><summary><code>client.contexts.<a href="src/fern/contexts/client.py">delete_context_history_from_id</a>(...)</code></summary>
+<details><summary><code>client.contexts.<a href="src/fern/contexts/client.py#L443-L477">delete_context_history_from_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3473,7 +3473,7 @@ client.contexts.delete_context_history_from_id(
 </details>
 
 ## Openai
-<details><summary><code>client.openai.<a href="src/fern/openai/client.py">create_chat_completion</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.openai.<a href="src/fern/openai/client.py#L46-L209">create_chat_completion</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -3778,7 +3778,7 @@ client.openai.create_chat_completion(
 </dl>
 </details>
 
-<details><summary><code>client.openai.<a href="src/fern/openai/client.py">create_embedding</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.openai.<a href="src/fern/openai/client.py#L211-L253">create_embedding</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -3856,7 +3856,7 @@ client.openai.create_embedding(
 </dl>
 </details>
 
-<details><summary><code>client.openai.<a href="src/fern/openai/client.py">list_models</a>() -> OpenAiPageModel</code></summary>
+<details><summary><code>client.openai.<a href="src/fern/openai/client.py#L255-L279">list_models</a>() -> OpenAiPageModel</code></summary>
 <dl>
 <dd>
 
@@ -3906,7 +3906,7 @@ client.openai.list_models()
 </details>
 
 ## VectorStores
-<details><summary><code>client.vector_stores.<a href="src/fern/vector_stores/client.py">create_vector_store</a>(...) -> AgentstackServerApiSchemaCommonEntityModelClassGetitemLocalsModelOutput16</code></summary>
+<details><summary><code>client.vector_stores.<a href="src/fern/vector_stores/client.py#L37-L87">create_vector_store</a>(...) -> AgentstackServerApiSchemaCommonEntityModelClassGetitemLocalsModelOutput16</code></summary>
 <dl>
 <dd>
 
@@ -4005,7 +4005,7 @@ client.vector_stores.create_vector_store(
 </dl>
 </details>
 
-<details><summary><code>client.vector_stores.<a href="src/fern/vector_stores/client.py">get_vector_store</a>(...) -> AgentstackServerApiSchemaCommonEntityModelClassGetitemLocalsModelOutput17</code></summary>
+<details><summary><code>client.vector_stores.<a href="src/fern/vector_stores/client.py#L89-L129">get_vector_store</a>(...) -> AgentstackServerApiSchemaCommonEntityModelClassGetitemLocalsModelOutput17</code></summary>
 <dl>
 <dd>
 
@@ -4086,7 +4086,7 @@ client.vector_stores.get_vector_store(
 </dl>
 </details>
 
-<details><summary><code>client.vector_stores.<a href="src/fern/vector_stores/client.py">add_items</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.vector_stores.<a href="src/fern/vector_stores/client.py#L131-L179">add_items</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4170,7 +4170,7 @@ client.vector_stores.add_items(
 </dl>
 </details>
 
-<details><summary><code>client.vector_stores.<a href="src/fern/vector_stores/client.py">delete_vector_store</a>(...)</code></summary>
+<details><summary><code>client.vector_stores.<a href="src/fern/vector_stores/client.py#L181-L220">delete_vector_store</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4251,7 +4251,7 @@ client.vector_stores.delete_vector_store(
 </dl>
 </details>
 
-<details><summary><code>client.vector_stores.<a href="src/fern/vector_stores/client.py">search_with_vector</a>(...) -> PaginatedResultVectorStoreSearchResult</code></summary>
+<details><summary><code>client.vector_stores.<a href="src/fern/vector_stores/client.py#L222-L275">search_with_vector</a>(...) -> PaginatedResultVectorStoreSearchResult</code></summary>
 <dl>
 <dd>
 
@@ -4351,7 +4351,7 @@ client.vector_stores.search_with_vector(
 </dl>
 </details>
 
-<details><summary><code>client.vector_stores.<a href="src/fern/vector_stores/client.py">list_documents</a>(...) -> PaginatedResultVectorStoreDocument</code></summary>
+<details><summary><code>client.vector_stores.<a href="src/fern/vector_stores/client.py#L277-L317">list_documents</a>(...) -> PaginatedResultVectorStoreDocument</code></summary>
 <dl>
 <dd>
 
@@ -4432,7 +4432,7 @@ client.vector_stores.list_documents(
 </dl>
 </details>
 
-<details><summary><code>client.vector_stores.<a href="src/fern/vector_stores/client.py">delete_document</a>(...)</code></summary>
+<details><summary><code>client.vector_stores.<a href="src/fern/vector_stores/client.py#L319-L362">delete_document</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4523,7 +4523,7 @@ client.vector_stores.delete_document(
 </details>
 
 ## UserFeedback
-<details><summary><code>client.user_feedback.<a href="src/fern/user_feedback/client.py">list_user_feedback</a>(...) -> PaginatedResultUserFeedbackResponse</code></summary>
+<details><summary><code>client.user_feedback.<a href="src/fern/user_feedback/client.py#L29-L68">list_user_feedback</a>(...) -> PaginatedResultUserFeedbackResponse</code></summary>
 <dl>
 <dd>
 
@@ -4596,7 +4596,7 @@ client.user_feedback.list_user_feedback()
 </dl>
 </details>
 
-<details><summary><code>client.user_feedback.<a href="src/fern/user_feedback/client.py">user_feedback</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.user_feedback.<a href="src/fern/user_feedback/client.py#L70-L135">user_feedback</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4708,7 +4708,7 @@ client.user_feedback.user_feedback(
 </details>
 
 ## Connectors
-<details><summary><code>client.connectors.<a href="src/fern/connectors/client.py">list_presets</a>() -> PaginatedResultConnectorPresetResponse</code></summary>
+<details><summary><code>client.connectors.<a href="src/fern/connectors/client.py#L31-L57">list_presets</a>() -> PaginatedResultConnectorPresetResponse</code></summary>
 <dl>
 <dd>
 
@@ -4757,7 +4757,7 @@ client.connectors.list_presets()
 </dl>
 </details>
 
-<details><summary><code>client.connectors.<a href="src/fern/connectors/client.py">list_connectors</a>() -> PaginatedResultConnectorResponse</code></summary>
+<details><summary><code>client.connectors.<a href="src/fern/connectors/client.py#L59-L85">list_connectors</a>() -> PaginatedResultConnectorResponse</code></summary>
 <dl>
 <dd>
 
@@ -4806,7 +4806,7 @@ client.connectors.list_connectors()
 </dl>
 </details>
 
-<details><summary><code>client.connectors.<a href="src/fern/connectors/client.py">create_connector</a>(...) -> ConnectorResponse</code></summary>
+<details><summary><code>client.connectors.<a href="src/fern/connectors/client.py#L87-L145">create_connector</a>(...) -> ConnectorResponse</code></summary>
 <dl>
 <dd>
 
@@ -4904,7 +4904,7 @@ Keys are strings with a maximum length of 64 characters. Values are strings with
 </dl>
 </details>
 
-<details><summary><code>client.connectors.<a href="src/fern/connectors/client.py">read_connector</a>(...) -> ConnectorResponse</code></summary>
+<details><summary><code>client.connectors.<a href="src/fern/connectors/client.py#L147-L177">read_connector</a>(...) -> ConnectorResponse</code></summary>
 <dl>
 <dd>
 
@@ -4963,7 +4963,7 @@ client.connectors.read_connector(
 </dl>
 </details>
 
-<details><summary><code>client.connectors.<a href="src/fern/connectors/client.py">delete_connector</a>(...)</code></summary>
+<details><summary><code>client.connectors.<a href="src/fern/connectors/client.py#L179-L206">delete_connector</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5022,7 +5022,7 @@ client.connectors.delete_connector(
 </dl>
 </details>
 
-<details><summary><code>client.connectors.<a href="src/fern/connectors/client.py">connect_connector</a>(...) -> ConnectorResponse</code></summary>
+<details><summary><code>client.connectors.<a href="src/fern/connectors/client.py#L208-L249">connect_connector</a>(...) -> ConnectorResponse</code></summary>
 <dl>
 <dd>
 
@@ -5097,7 +5097,7 @@ client.connectors.connect_connector(
 </dl>
 </details>
 
-<details><summary><code>client.connectors.<a href="src/fern/connectors/client.py">disconnect_connector</a>(...) -> ConnectorResponse</code></summary>
+<details><summary><code>client.connectors.<a href="src/fern/connectors/client.py#L251-L281">disconnect_connector</a>(...) -> ConnectorResponse</code></summary>
 <dl>
 <dd>
 
@@ -5156,7 +5156,7 @@ client.connectors.disconnect_connector(
 </dl>
 </details>
 
-<details><summary><code>client.connectors.<a href="src/fern/connectors/client.py">mcp</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.connectors.<a href="src/fern/connectors/client.py#L283-L311">mcp</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -5215,7 +5215,7 @@ client.connectors.mcp(
 </dl>
 </details>
 
-<details><summary><code>client.connectors.<a href="src/fern/connectors/client.py">oauth_callback</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.connectors.<a href="src/fern/connectors/client.py#L313-L354">oauth_callback</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -5291,7 +5291,7 @@ client.connectors.oauth_callback(
 </details>
 
 ## Auth
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">protected_resource_metadata</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L25-L55">protected_resource_metadata</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -5350,7 +5350,7 @@ client.auth.protected_resource_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">jwks</a>() -> typing.Any</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L57-L81">jwks</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 

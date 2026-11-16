@@ -161,3 +161,8 @@ These ran on `ab46663f8`, the merge plus the record above, with the same
 | `cargo fmt --all --check` | exit 0, no output |
 
 The commit that adds this table changes only this file.
+
+**Historical.** This record was measured at Fern CLI 5.163.1 /
+`fernapi/fern-python-sdk` 5.41.3, the pair certified when it was taken; where it
+says "the certified pair" it means that pair. It has not been re-measured at
+the current certified pair, Fern CLI 5.200.0 / fern-python-sdk 5.41.25.

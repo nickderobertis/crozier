@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">exchange_token</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L100-L133">exchange_token</a>(...)</code></summary>
 <dl>
 <dd>
 

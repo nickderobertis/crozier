@@ -1,6 +1,6 @@
 # Reference
 ## Bells
-<details><summary><code>client.bells.<a href="src/fern/bells/client.py">tune_bell</a>(...)</code></summary>
+<details><summary><code>client.bells.<a href="src/fern/bells/client.py#L29-L66">tune_bell</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -75,7 +75,7 @@ client.bells.tune_bell(
 </dl>
 </details>
 
-<details><summary><code>client.bells.<a href="src/fern/bells/client.py">inscribe_bell</a>(...)</code></summary>
+<details><summary><code>client.bells.<a href="src/fern/bells/client.py#L68-L103">inscribe_bell</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -150,7 +150,7 @@ client.bells.inscribe_bell(
 </dl>
 </details>
 
-<details><summary><code>client.bells.<a href="src/fern/bells/client.py">create_bell</a>(...) -> Bell</code></summary>
+<details><summary><code>client.bells.<a href="src/fern/bells/client.py#L105-L138">create_bell</a>(...) -> Bell</code></summary>
 <dl>
 <dd>
 
@@ -209,7 +209,7 @@ client.bells.create_bell(
 </dl>
 </details>
 
-<details><summary><code>client.bells.<a href="src/fern/bells/client.py">get_bell</a>(...) -> Bell</code></summary>
+<details><summary><code>client.bells.<a href="src/fern/bells/client.py#L140-L164">get_bell</a>(...) -> Bell</code></summary>
 <dl>
 <dd>
 
@@ -267,7 +267,7 @@ client.bells.get_bell(
 </dl>
 </details>
 
-<details><summary><code>client.bells.<a href="src/fern/bells/client.py">replace_bell</a>(...) -> Bell</code></summary>
+<details><summary><code>client.bells.<a href="src/fern/bells/client.py#L166-L203">replace_bell</a>(...) -> Bell</code></summary>
 <dl>
 <dd>
 
@@ -336,7 +336,7 @@ client.bells.replace_bell(
 </details>
 
 ## Casts
-<details><summary><code>client.casts.<a href="src/fern/casts/client.py">order_cast</a>(...)</code></summary>
+<details><summary><code>client.casts.<a href="src/fern/casts/client.py#L30-L55">order_cast</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -396,7 +396,7 @@ client.casts.order_cast(
 </dl>
 </details>
 
-<details><summary><code>client.casts.<a href="src/fern/casts/client.py">order_recast</a>(...)</code></summary>
+<details><summary><code>client.casts.<a href="src/fern/casts/client.py#L57-L82">order_recast</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -457,7 +457,7 @@ client.casts.order_recast(
 </details>
 
 ## Notes
-<details><summary><code>client.notes.<a href="src/fern/notes/client.py">add_note</a>(...)</code></summary>
+<details><summary><code>client.notes.<a href="src/fern/notes/client.py#L28-L57">add_note</a>(...)</code></summary>
 <dl>
 <dd>
 

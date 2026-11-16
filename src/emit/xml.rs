@@ -974,9 +974,27 @@ impl<'a> XmlModel<'a> {
             .map(|field| format!("{}={}", self.attribute_name(field), field.py_name))
             .collect::<Vec<_>>()
             .join(", ");
+        // An extra keyword argument naming a declared attribute by its wire name
+        // (`schemaLocation` for `xsi_schema_location`) sets that attribute, and
+        // one differing from a declared name only by case is refused, rather
+        // than either becoming an undeclared attribute (fern-python-sdk 5.41.25).
+        let check = imports.add_core_local("xml_utilities", "check_xml_extra_attributes");
+        let wire_names = self
+            .all
+            .iter()
+            .filter(|field| is_attribute(field) && xml_name(field) != self.attribute_name(field))
+            .map(|field| {
+                format!(
+                    "{}: {}",
+                    py_repr(xml_name(field)),
+                    py_repr(&self.attribute_name(field))
+                )
+            })
+            .collect::<Vec<_>>()
+            .join(", ");
         let body = |w: &mut Writer| {
             w.line(&format!(
-                "super().__init__(**dict({arguments}), **{EXTRA_ATTRIBUTES})"
+                "super().__init__(**{check}(type(self), {{{wire_names}}}, dict({arguments}), {EXTRA_ATTRIBUTES}))"
             ));
             if !inline.is_empty() {
                 let mut extend = format!("self.{CONTENT}.extend({order}([]");
@@ -1493,7 +1511,7 @@ struct TestProperty<'f> {
     is_required: bool,
 }
 
-/// The `tests/xml/test_<module>.py` round-trip suite of every XML model.
+/// The `tests/xml/test_xml_<module>.py` round-trip suite of every XML model.
 /// `first_party` says whether Fern's import sort files the SDK's own import in a
 /// section of its own (see `scaffolding_files`): always in the packaged tree, and
 /// in the flat tree only for a package named `fern`; otherwise it joins
@@ -1514,7 +1532,7 @@ pub(super) fn test_files(pkg: &str, types: XmlTypes<'_>, first_party: bool) -> V
             };
             let suite = TestSuite::new(obj, xml, types);
             GeneratedFile {
-                path: PathBuf::from(format!("tests/xml/test_{}.py", obj.module)),
+                path: PathBuf::from(format!("tests/xml/test_xml_{}.py", obj.module)),
                 contents: suite.render(&module, first_party),
             }
         })
@@ -2190,7 +2208,8 @@ mod tests {
         let tag = &files["src/zoo/types/tag.py"];
         for expected in [
             "def __init__(\n        self, label: typing.Optional[str] = None, *, lang: typing.Optional[str] = None, **extra_attributes: str\n    ) -> None:",
-            "super().__init__(**dict(label=label, lang=lang), **extra_attributes)",
+            // `lang` is its own wire name, so no attribute is renamed.
+            "super().__init__(**check_xml_extra_attributes(type(self), {}, dict(label=label, lang=lang), extra_attributes))",
             "text=self.label,",
             "content = xml_content(node, {}, skip_leading_text=True)",
             "label=xml_leading_text(node),",
@@ -2216,12 +2235,12 @@ mod tests {
         assert_eq!(
             modules,
             [
-                "tests/xml/test_category.py",
-                "tests/xml/test_pet.py",
-                "tests/xml/test_tag.py"
+                "tests/xml/test_xml_category.py",
+                "tests/xml/test_xml_pet.py",
+                "tests/xml/test_xml_tag.py"
             ]
         );
-        let pet = &files["tests/xml/test_pet.py"];
+        let pet = &files["tests/xml/test_xml_pet.py"];
         for expected in [
             "import pytest\n\nfrom zoo.types.pet import Pet\n",
             // Required attributes and a two-item delimited list are sampled; the
@@ -2279,7 +2298,7 @@ mod tests {
         ] {
             assert!(pet.contains(expected), "missing {expected:?} in\n{pet}");
         }
-        let tests = &files["tests/xml/test_pet.py"];
+        let tests = &files["tests/xml/test_xml_pet.py"];
         for expected in [
             "def test_from_xml_keeps_unknown_enum_values() -> None:\n    parsed = Pet.from_xml('<pet size=\"bogus-value\" />')\n    assert 'size=\"bogus-value\"' in parsed.to_xml(xml_declaration=False)",
             "def test_from_xml_preserves_child_order() -> None:\n    parsed = Pet.from_xml('<pet size=\"small\"><bark /><purr /><bark /></pet>')\n    assert \"<bark /><purr /><bark />\" in parsed.to_xml(xml_declaration=False)",
@@ -2305,7 +2324,7 @@ mod tests {
             "number_: typing_extensions.Annotated[",
             "FieldMetadata(alias=\"number\")",
             "text=self.number_,",
-            "super().__init__(**dict(number_=number, numbers=numbers), **extra_attributes)",
+            "**check_xml_extra_attributes(type(self), {}, dict(number_=number, numbers=numbers), extra_attributes)",
             "number=xml_leading_text(node),",
             "def number(self, value: typing.Optional[str] = None, **extra_attributes: str) -> Number:",
         ] {

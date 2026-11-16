@@ -127,8 +127,8 @@ It runs on every pull request and every push to `main` that changes an OpenAPI
 document or a crozier config — not on a schedule — sets Fern up, writes the
 [Fern reference recipe](fern-reference.md) (an unchanged copy) to a file, and
 runs the Action with that file as the reference command. It uses the Fern
-versions crozier certifies: **Fern CLI 5.163.1** with **`fernapi/fern-python-sdk`
-5.41.3**.
+versions crozier certifies: **Fern CLI 5.200.0** with **`fernapi/fern-python-sdk`
+5.41.25**.
 
 It is committed in crozier's repository as
 [`docs/examples/migrate-from-fern.yml`](examples/migrate-from-fern.yml); copy it
@@ -140,8 +140,8 @@ to `.github/workflows/` in yours.
 # Copy this file to .github/workflows/ and adjust the `paths:` globs below.
 # See https://github.com/nickderobertis/crozier/blob/main/docs/github-action.md
 #
-# Fern versions crozier certifies: Fern CLI 5.163.1 with
-# fernapi/fern-python-sdk 5.41.3. The recipe below defaults to them.
+# Fern versions crozier certifies: Fern CLI 5.200.0 with
+# fernapi/fern-python-sdk 5.41.25. The recipe below defaults to them.
 name: crozier compare
 
 on:
@@ -186,13 +186,13 @@ jobs:
         with:
           node-version: "22"
       - name: Install the Fern CLI
-        run: npm install -g fern-api@5.163.1
+        run: npm install -g fern-api@5.200.0
       - name: Confirm the container runtime
         run: docker version
       # Pulled before the comparison, so the download is not counted in the
       # first generator's reference time.
       - name: Pull the Fern Python generator image
-        run: docker pull fernapi/fern-python-sdk:5.41.3
+        run: docker pull fernapi/fern-python-sdk:5.41.25
 
       # The Fern reference recipe, copied unchanged from
       # https://github.com/nickderobertis/crozier/blob/main/docs/fern-reference.md
@@ -206,8 +206,8 @@ jobs:
           set -euo pipefail
 
           # The Fern CLI and generator versions crozier certifies; override either here.
-          FERN_CLI_VERSION="${FERN_REFERENCE_CLI_VERSION:-5.163.1}"
-          FERN_PYTHON_SDK_VERSION="${FERN_REFERENCE_PYTHON_SDK_VERSION:-5.41.3}"
+          FERN_CLI_VERSION="${FERN_REFERENCE_CLI_VERSION:-5.200.0}"
+          FERN_PYTHON_SDK_VERSION="${FERN_REFERENCE_PYTHON_SDK_VERSION:-5.41.25}"
 
           fail() {
             echo "fern-reference: $*" >&2
@@ -239,9 +239,9 @@ jobs:
           case "$layout" in
             packaged)
               # Fern emits the packaged tree only for the `fern` organization, whose
-              # distribution is always `default_package_name`.
+              # distribution is always `default-package-name`.
               [ "$package" = fern ] || fail "package name '$package' cannot be reproduced under the packaged layout: Fern emits its packaged form only for the organization 'fern'; set package-name: fern, or compare under layout: flat"
-              [ "$project" = default_package_name ] || fail "project name '$project' cannot be reproduced under the packaged layout: Fern's packaged distribution is always 'default_package_name'"
+              [ "$project" = default-package-name ] || fail "project name '$project' cannot be reproduced under the packaged layout: Fern's packaged distribution is always 'default-package-name'"
               ;;
             flat)
               # Measured: `acme`, `acme2` and `my_api` name Fern's module as given;

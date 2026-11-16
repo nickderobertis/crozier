@@ -1,6 +1,6 @@
 # Reference
 ## Nights
-<details><summary><code>client.nights.<a href="src/fern/nights/client.py">list_nights</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.nights.<a href="src/fern/nights/client.py#L25-L45">list_nights</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -49,7 +49,7 @@ client.nights.list_nights()
 </details>
 
 ## Plates
-<details><summary><code>client.plates.<a href="src/fern/plates/client.py">list_plates</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.plates.<a href="src/fern/plates/client.py#L25-L45">list_plates</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -97,7 +97,7 @@ client.plates.list_plates()
 </dl>
 </details>
 
-<details><summary><code>client.plates.<a href="src/fern/plates/client.py">flag_plate</a>() -> str</code></summary>
+<details><summary><code>client.plates.<a href="src/fern/plates/client.py#L47-L67">flag_plate</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -146,7 +146,7 @@ client.plates.flag_plate()
 </details>
 
 ## Alerts
-<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py">list_alerts</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py#L25-L45">list_alerts</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 

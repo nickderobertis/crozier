@@ -15,6 +15,7 @@ from ..core.xml_utilities import (
     XmlElement,
     XmlNode,
     build_xml_model,
+    check_xml_extra_attributes,
     extra_xml_attributes,
     order_xml_content,
     parse_xml,
@@ -86,8 +87,12 @@ class XmlEntity(UniversalBaseModel):
             Additional XML attributes not declared in the API definition.
         """
         super().__init__(
-            **dict(project=project, result=result, xmlns_oaf=xmlns_oaf, xsi_schema_location=xsi_schema_location),
-            **extra_attributes,
+            **check_xml_extra_attributes(
+                type(self),
+                {"xmlns:oaf": "xmlns_oaf", "schemaLocation": "xsi_schema_location"},
+                dict(project=project, result=result, xmlns_oaf=xmlns_oaf, xsi_schema_location=xsi_schema_location),
+                extra_attributes,
+            )
         )
         self._content.extend(order_xml_content([], self.project, self.result))
 

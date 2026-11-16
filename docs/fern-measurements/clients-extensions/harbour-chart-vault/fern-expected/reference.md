@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">download_chart_scan</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L111-L133">download_chart_scan</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -64,7 +64,7 @@ client.download_chart_scan(...)
 </details>
 
 ## Soundings
-<details><summary><code>client.soundings.<a href="src/fern/soundings/client.py">export_soundings</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.soundings.<a href="src/fern/soundings/client.py#L25-L47">export_soundings</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 

@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">thdaction_thdaction_post</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L122-L155">thdaction_thdaction_post</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -67,7 +67,7 @@ client.thdaction_thdaction_post(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">read_index_get</a>() -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L157-L181">read_index_get</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -116,7 +116,7 @@ client.read_index_get()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">getversion_getversion_get</a>() -> VersionResp</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L183-L209">getversion_getversion_get</a>() -> VersionResp</code></summary>
 <dl>
 <dd>
 
@@ -179,7 +179,7 @@ client.getversion_getversion_get()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">getvolume_getvolume_get</a>(...) -> VolumeResp</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L211-L241">getvolume_getvolume_get</a>(...) -> VolumeResp</code></summary>
 <dl>
 <dd>
 
@@ -250,7 +250,7 @@ client.getvolume_getvolume_get()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">setvolume_setvolume_post</a>(...) -> SetVolumeResp</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L243-L279">setvolume_setvolume_post</a>(...) -> SetVolumeResp</code></summary>
 <dl>
 <dd>
 
@@ -331,7 +331,7 @@ client.setvolume_setvolume_post(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">searchmusic_searchmusic_get</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L281-L311">searchmusic_searchmusic_get</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -402,7 +402,7 @@ client.searchmusic_searchmusic_get()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">playingmusic_playingmusic_get</a>(...) -> PlayingMusicResp</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L313-L343">playingmusic_playingmusic_get</a>(...) -> PlayingMusicResp</code></summary>
 <dl>
 <dd>
 
@@ -473,7 +473,7 @@ client.playingmusic_playingmusic_get()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">do_cmd_cmd_post</a>(...) -> RetMsg</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L345-L380">do_cmd_cmd_post</a>(...) -> RetMsg</code></summary>
 <dl>
 <dd>
 
@@ -555,7 +555,7 @@ client.do_cmd_cmd_post(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">cmd_status_cmdstatus_get</a>() -> CmdStatusResp</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L382-L408">cmd_status_cmdstatus_get</a>() -> CmdStatusResp</code></summary>
 <dl>
 <dd>
 
@@ -618,7 +618,7 @@ client.cmd_status_cmdstatus_get()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">getsetting_getsetting_get</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L410-L440">getsetting_getsetting_get</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -675,7 +675,7 @@ client.getsetting_getsetting_get()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">savesetting_savesetting_post</a>() -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L442-L468">savesetting_savesetting_post</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -738,7 +738,7 @@ client.savesetting_savesetting_post()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">musiclist_musiclist_get</a>() -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L470-L494">musiclist_musiclist_get</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -787,7 +787,7 @@ client.musiclist_musiclist_get()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">musicinfo_musicinfo_get</a>(...) -> MusicInfoResp</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L496-L536">musicinfo_musicinfo_get</a>(...) -> MusicInfoResp</code></summary>
 <dl>
 <dd>
 
@@ -868,7 +868,7 @@ client.musicinfo_musicinfo_get(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">musicinfos_musicinfos_get</a>(...) -> typing.List[MusicInfoItem]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L538-L576">musicinfos_musicinfos_get</a>(...) -> typing.List[MusicInfoItem]</code></summary>
 <dl>
 <dd>
 
@@ -947,7 +947,7 @@ client.musicinfos_musicinfos_get()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">setmusictag_setmusictag_post</a>(...) -> RetMsg</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L578-L652">setmusictag_setmusictag_post</a>(...) -> RetMsg</code></summary>
 <dl>
 <dd>
 
@@ -1076,7 +1076,7 @@ client.setmusictag_setmusictag_post(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">curplaylist_curplaylist_get</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L654-L684">curplaylist_curplaylist_get</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1147,7 +1147,7 @@ client.curplaylist_curplaylist_get()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delmusic_delmusic_post</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L686-L717">delmusic_delmusic_post</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1220,7 +1220,7 @@ client.delmusic_delmusic_post(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">playmusic_playmusic_post</a>(...) -> RetMsg</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L719-L765">playmusic_playmusic_post</a>(...) -> RetMsg</code></summary>
 <dl>
 <dd>
 
@@ -1309,7 +1309,7 @@ client.playmusic_playmusic_post(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">playmusiclist_playmusiclist_post</a>(...) -> RetMsg</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L767-L813">playmusiclist_playmusiclist_post</a>(...) -> RetMsg</code></summary>
 <dl>
 <dd>
 
@@ -1398,7 +1398,7 @@ client.playmusiclist_playmusiclist_post(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">downloadjson_downloadjson_post</a>(...) -> DownloadJsonResp</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L815-L848">downloadjson_downloadjson_post</a>(...) -> DownloadJsonResp</code></summary>
 <dl>
 <dd>
 
@@ -1471,7 +1471,7 @@ client.downloadjson_downloadjson_post(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">downloadlog_downloadlog_get</a>() -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L850-L874">downloadlog_downloadlog_get</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -1520,7 +1520,7 @@ client.downloadlog_downloadlog_get()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">playurl_playurl_get</a>(...) -> typing.List[typing.Dict[str, typing.Any]]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L876-L909">playurl_playurl_get</a>(...) -> typing.List[typing.Dict[str, typing.Any]]</code></summary>
 <dl>
 <dd>
 
@@ -1588,7 +1588,7 @@ client.playurl_playurl_get(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">playtts_playtts_get</a>(...) -> RetMsg</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L911-L946">playtts_playtts_get</a>(...) -> RetMsg</code></summary>
 <dl>
 <dd>
 
@@ -1670,7 +1670,7 @@ client.playtts_playtts_get(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">refreshmusictag_refreshmusictag_post</a>() -> RetMsg</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L948-L976">refreshmusictag_refreshmusictag_post</a>() -> RetMsg</code></summary>
 <dl>
 <dd>
 
@@ -1733,7 +1733,7 @@ client.refreshmusictag_refreshmusictag_post()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">debug_play_by_music_url_debug_play_by_music_url_post</a>() -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L978-L1006">debug_play_by_music_url_debug_play_by_music_url_post</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1782,7 +1782,7 @@ client.debug_play_by_music_url_debug_play_by_music_url_post()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">latest_version_latestversion_get</a>() -> LatestVersionResp</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1008-L1036">latest_version_latestversion_get</a>() -> LatestVersionResp</code></summary>
 <dl>
 <dd>
 
@@ -1845,7 +1845,7 @@ client.latest_version_latestversion_get()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">downloadplaylist_downloadplaylist_post</a>(...) -> RetMsg</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1038-L1077">downloadplaylist_downloadplaylist_post</a>(...) -> RetMsg</code></summary>
 <dl>
 <dd>
 
@@ -1927,7 +1927,7 @@ client.downloadplaylist_downloadplaylist_post(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">downloadonemusic_downloadonemusic_post</a>(...) -> RetMsg</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1079-L1117">downloadonemusic_downloadonemusic_post</a>(...) -> RetMsg</code></summary>
 <dl>
 <dd>
 
@@ -2008,7 +2008,7 @@ client.downloadonemusic_downloadonemusic_post(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">upload_yt_dlp_cookie_uploadytdlpcookie_post</a>(...) -> UploadCookieResp</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1119-L1152">upload_yt_dlp_cookie_uploadytdlpcookie_post</a>(...) -> UploadCookieResp</code></summary>
 <dl>
 <dd>
 
@@ -2081,7 +2081,7 @@ client.upload_yt_dlp_cookie_uploadytdlpcookie_post(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">playlistadd_playlistadd_post</a>(...) -> RetMsg</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1154-L1185">playlistadd_playlistadd_post</a>(...) -> RetMsg</code></summary>
 <dl>
 <dd>
 
@@ -2152,7 +2152,7 @@ client.playlistadd_playlistadd_post()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">playlistdel_playlistdel_post</a>(...) -> RetMsg</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1187-L1218">playlistdel_playlistdel_post</a>(...) -> RetMsg</code></summary>
 <dl>
 <dd>
 
@@ -2223,7 +2223,7 @@ client.playlistdel_playlistdel_post()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">playlistupdatename_playlistupdatename_post</a>(...) -> RetMsg</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1220-L1259">playlistupdatename_playlistupdatename_post</a>(...) -> RetMsg</code></summary>
 <dl>
 <dd>
 
@@ -2305,7 +2305,7 @@ client.playlistupdatename_playlistupdatename_post(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">getplaylistnames_playlistnames_get</a>() -> PlaylistNamesResp</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1261-L1289">getplaylistnames_playlistnames_get</a>() -> PlaylistNamesResp</code></summary>
 <dl>
 <dd>
 
@@ -2368,7 +2368,7 @@ client.getplaylistnames_playlistnames_get()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">playlistaddmusic_playlistaddmusic_post</a>(...) -> RetMsg</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1291-L1333">playlistaddmusic_playlistaddmusic_post</a>(...) -> RetMsg</code></summary>
 <dl>
 <dd>
 
@@ -2443,7 +2443,7 @@ client.playlistaddmusic_playlistaddmusic_post(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">playlistdelmusic_playlistdelmusic_post</a>(...) -> RetMsg</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1335-L1377">playlistdelmusic_playlistdelmusic_post</a>(...) -> RetMsg</code></summary>
 <dl>
 <dd>
 
@@ -2518,7 +2518,7 @@ client.playlistdelmusic_playlistdelmusic_post(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">playlistupdatemusic_playlistupdatemusic_post</a>(...) -> RetMsg</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1379-L1421">playlistupdatemusic_playlistupdatemusic_post</a>(...) -> RetMsg</code></summary>
 <dl>
 <dd>
 
@@ -2593,7 +2593,7 @@ client.playlistupdatemusic_playlistupdatemusic_post(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">getplaylist_playlistmusics_get</a>(...) -> PlaylistMusicsResp</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1423-L1455">getplaylist_playlistmusics_get</a>(...) -> PlaylistMusicsResp</code></summary>
 <dl>
 <dd>
 
@@ -2666,7 +2666,7 @@ client.getplaylist_playlistmusics_get(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">updateversion_updateversion_post</a>(...) -> RetMsg</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1457-L1495">updateversion_updateversion_post</a>(...) -> RetMsg</code></summary>
 <dl>
 <dd>
 
@@ -2745,7 +2745,7 @@ client.updateversion_updateversion_post()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">music_file_music_file_path_get</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1497-L1538">music_file_music_file_path_get</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -2820,7 +2820,7 @@ client.music_file_music_file_path_get(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_picture_picture_file_path_get</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1540-L1581">get_picture_picture_file_path_get</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -2895,7 +2895,7 @@ client.get_picture_picture_file_path_get(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">proxy_proxy_get</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1583-L1615">proxy_proxy_get</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -2968,7 +2968,7 @@ client.proxy_proxy_get(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">generate_ws_token_generate_ws_token_get</a>(...) -> WsTokenResp</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1617-L1649">generate_ws_token_generate_ws_token_get</a>(...) -> WsTokenResp</code></summary>
 <dl>
 <dd>
 

@@ -1,5 +1,5 @@
 {
-  "fern_python_sdk_version": "5.41.3",
+  "fern_python_sdk_version": "5.41.25",
   "corpus_spec_name": "registered-literals-agentic-commerce-protocol-agentic-commerce-protocol-2e988128",
   "corpus_spec_ref": "7fdd78df677a94dce04c770644b0fbbb1401272b",
   "corpus_spec_url": "https://raw.githubusercontent.com/agentic-commerce-protocol/agentic-commerce-protocol/7fdd78df677a94dce04c770644b0fbbb1401272b/spec/2025-12-12/openapi/openapi.agentic_checkout.yaml"

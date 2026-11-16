@@ -1,6 +1,6 @@
 # Reference
 ## SmContextsCollection
-<details><summary><code>client.sm_contexts_collection.<a href="src/fern/sm_contexts_collection/client.py">post_sm_contexts</a>(...) -> SmContextCreatedData</code></summary>
+<details><summary><code>client.sm_contexts_collection.<a href="src/fern/sm_contexts_collection/client.py#L31-L66">post_sm_contexts</a>(...) -> SmContextCreatedData</code></summary>
 <dl>
 <dd>
 
@@ -68,7 +68,7 @@ client.sm_contexts_collection.post_sm_contexts(
 </details>
 
 ## IndividualSmContext
-<details><summary><code>client.individual_sm_context.<a href="src/fern/individual_sm_context/client.py">retrieve_sm_context</a>(...) -> SmContextRetrievedData</code></summary>
+<details><summary><code>client.individual_sm_context.<a href="src/fern/individual_sm_context/client.py#L49-L89">retrieve_sm_context</a>(...) -> SmContextRetrievedData</code></summary>
 <dl>
 <dd>
 
@@ -138,7 +138,7 @@ client.individual_sm_context.retrieve_sm_context(
 </dl>
 </details>
 
-<details><summary><code>client.individual_sm_context.<a href="src/fern/individual_sm_context/client.py">update_sm_context</a>(...) -> typing.Optional[SmContextUpdatedData]</code></summary>
+<details><summary><code>client.individual_sm_context.<a href="src/fern/individual_sm_context/client.py#L91-L529">update_sm_context</a>(...) -> typing.Optional[SmContextUpdatedData]</code></summary>
 <dl>
 <dd>
 
@@ -458,7 +458,7 @@ client.individual_sm_context.update_sm_context(
 </dl>
 </details>
 
-<details><summary><code>client.individual_sm_context.<a href="src/fern/individual_sm_context/client.py">release_sm_context</a>(...)</code></summary>
+<details><summary><code>client.individual_sm_context.<a href="src/fern/individual_sm_context/client.py#L531-L781">release_sm_context</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -692,7 +692,7 @@ client.individual_sm_context.release_sm_context(
 </details>
 
 ## PduSessionsCollection
-<details><summary><code>client.pdu_sessions_collection.<a href="src/fern/pdu_sessions_collection/client.py">post_pdu_sessions</a>(...) -> PduSessionCreatedData</code></summary>
+<details><summary><code>client.pdu_sessions_collection.<a href="src/fern/pdu_sessions_collection/client.py#L42-L456">post_pdu_sessions</a>(...) -> PduSessionCreatedData</code></summary>
 <dl>
 <dd>
 
@@ -972,7 +972,7 @@ client.pdu_sessions_collection.post_pdu_sessions(
 </details>
 
 ## IndividualPduSessionHSmf
-<details><summary><code>client.individual_pdu_session_h_smf.<a href="src/fern/individual_pdu_session_h_smf/client.py">update_pdu_session</a>(...) -> typing.Optional[HsmfUpdatedData]</code></summary>
+<details><summary><code>client.individual_pdu_session_h_smf.<a href="src/fern/individual_pdu_session_h_smf/client.py#L44-L481">update_pdu_session</a>(...) -> typing.Optional[HsmfUpdatedData]</code></summary>
 <dl>
 <dd>
 
@@ -1299,7 +1299,7 @@ client.individual_pdu_session_h_smf.update_pdu_session(
 </dl>
 </details>
 
-<details><summary><code>client.individual_pdu_session_h_smf.<a href="src/fern/individual_pdu_session_h_smf/client.py">release_pdu_session</a>(...)</code></summary>
+<details><summary><code>client.individual_pdu_session_h_smf.<a href="src/fern/individual_pdu_session_h_smf/client.py#L483-L791">release_pdu_session</a>(...)</code></summary>
 <dl>
 <dd>
 

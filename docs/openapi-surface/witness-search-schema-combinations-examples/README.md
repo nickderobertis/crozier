@@ -343,3 +343,8 @@ loader failed at the reference assertion (`None` versus the expected component
 reference); restoring the loader passed. Together with FarmVibes' complete
 byte-match and example-removal attribution, it ties the sites to this shape
 rather than to unrelated code the witness happens to execute.
+
+**Historical.** This record was measured at Fern CLI 5.163.1 /
+`fernapi/fern-python-sdk` 5.41.3, the pair certified when it was taken; where it
+says "the certified pair" it means that pair. It has not been re-measured at
+the current certified pair, Fern CLI 5.200.0 / fern-python-sdk 5.41.25.

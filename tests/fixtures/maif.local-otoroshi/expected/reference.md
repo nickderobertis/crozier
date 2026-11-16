@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">health</a>() -> OtoroshiHealth</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L149-L174">health</a>() -> OtoroshiHealth</code></summary>
 <dl>
 <dd>
 
@@ -64,7 +64,7 @@ client.health()
 </details>
 
 ## apikeys
-<details><summary><code>client.apikeys.<a href="src/fern/apikeys/client.py">all_api_keys</a>() -> typing.List[ApiKey]</code></summary>
+<details><summary><code>client.apikeys.<a href="src/fern/apikeys/client.py#L33-L58">all_api_keys</a>() -> typing.List[ApiKey]</code></summary>
 <dl>
 <dd>
 
@@ -128,7 +128,7 @@ client.apikeys.all_api_keys()
 </dl>
 </details>
 
-<details><summary><code>client.apikeys.<a href="src/fern/apikeys/client.py">api_keys_from_group</a>(...) -> typing.List[ApiKey]</code></summary>
+<details><summary><code>client.apikeys.<a href="src/fern/apikeys/client.py#L60-L92">api_keys_from_group</a>(...) -> typing.List[ApiKey]</code></summary>
 <dl>
 <dd>
 
@@ -202,7 +202,7 @@ client.apikeys.api_keys_from_group(
 </dl>
 </details>
 
-<details><summary><code>client.apikeys.<a href="src/fern/apikeys/client.py">create_api_key_from_group</a>(...) -> ApiKey</code></summary>
+<details><summary><code>client.apikeys.<a href="src/fern/apikeys/client.py#L94-L182">create_api_key_from_group</a>(...) -> ApiKey</code></summary>
 <dl>
 <dd>
 
@@ -291,7 +291,7 @@ client.apikeys.create_api_key_from_group(
 </dl>
 </details>
 
-<details><summary><code>client.apikeys.<a href="src/fern/apikeys/client.py">api_key_from_group</a>(...) -> ApiKey</code></summary>
+<details><summary><code>client.apikeys.<a href="src/fern/apikeys/client.py#L184-L220">api_key_from_group</a>(...) -> ApiKey</code></summary>
 <dl>
 <dd>
 
@@ -374,7 +374,7 @@ client.apikeys.api_key_from_group(
 </dl>
 </details>
 
-<details><summary><code>client.apikeys.<a href="src/fern/apikeys/client.py">update_api_key_from_group</a>(...) -> ApiKey</code></summary>
+<details><summary><code>client.apikeys.<a href="src/fern/apikeys/client.py#L222-L316">update_api_key_from_group</a>(...) -> ApiKey</code></summary>
 <dl>
 <dd>
 
@@ -472,7 +472,7 @@ client.apikeys.update_api_key_from_group(
 </dl>
 </details>
 
-<details><summary><code>client.apikeys.<a href="src/fern/apikeys/client.py">delete_api_key_from_group</a>(...) -> Deleted</code></summary>
+<details><summary><code>client.apikeys.<a href="src/fern/apikeys/client.py#L318-L354">delete_api_key_from_group</a>(...) -> Deleted</code></summary>
 <dl>
 <dd>
 
@@ -555,7 +555,7 @@ client.apikeys.delete_api_key_from_group(
 </dl>
 </details>
 
-<details><summary><code>client.apikeys.<a href="src/fern/apikeys/client.py">patch_api_key_from_group</a>(...) -> ApiKey</code></summary>
+<details><summary><code>client.apikeys.<a href="src/fern/apikeys/client.py#L356-L402">patch_api_key_from_group</a>(...) -> ApiKey</code></summary>
 <dl>
 <dd>
 
@@ -652,7 +652,7 @@ client.apikeys.patch_api_key_from_group(
 </dl>
 </details>
 
-<details><summary><code>client.apikeys.<a href="src/fern/apikeys/client.py">api_key_from_group_quotas</a>(...) -> Quotas</code></summary>
+<details><summary><code>client.apikeys.<a href="src/fern/apikeys/client.py#L404-L440">api_key_from_group_quotas</a>(...) -> Quotas</code></summary>
 <dl>
 <dd>
 
@@ -735,7 +735,7 @@ client.apikeys.api_key_from_group_quotas(
 </dl>
 </details>
 
-<details><summary><code>client.apikeys.<a href="src/fern/apikeys/client.py">reset_api_key_from_group_quotas</a>(...) -> Quotas</code></summary>
+<details><summary><code>client.apikeys.<a href="src/fern/apikeys/client.py#L442-L480">reset_api_key_from_group_quotas</a>(...) -> Quotas</code></summary>
 <dl>
 <dd>
 
@@ -818,7 +818,7 @@ client.apikeys.reset_api_key_from_group_quotas(
 </dl>
 </details>
 
-<details><summary><code>client.apikeys.<a href="src/fern/apikeys/client.py">api_keys</a>(...) -> typing.List[ApiKey]</code></summary>
+<details><summary><code>client.apikeys.<a href="src/fern/apikeys/client.py#L482-L514">api_keys</a>(...) -> typing.List[ApiKey]</code></summary>
 <dl>
 <dd>
 
@@ -892,7 +892,7 @@ client.apikeys.api_keys(
 </dl>
 </details>
 
-<details><summary><code>client.apikeys.<a href="src/fern/apikeys/client.py">create_api_key</a>(...) -> ApiKey</code></summary>
+<details><summary><code>client.apikeys.<a href="src/fern/apikeys/client.py#L516-L604">create_api_key</a>(...) -> ApiKey</code></summary>
 <dl>
 <dd>
 
@@ -981,7 +981,7 @@ client.apikeys.create_api_key(
 </dl>
 </details>
 
-<details><summary><code>client.apikeys.<a href="src/fern/apikeys/client.py">api_key</a>(...) -> ApiKey</code></summary>
+<details><summary><code>client.apikeys.<a href="src/fern/apikeys/client.py#L606-L642">api_key</a>(...) -> ApiKey</code></summary>
 <dl>
 <dd>
 
@@ -1064,7 +1064,7 @@ client.apikeys.api_key(
 </dl>
 </details>
 
-<details><summary><code>client.apikeys.<a href="src/fern/apikeys/client.py">update_api_key</a>(...) -> ApiKey</code></summary>
+<details><summary><code>client.apikeys.<a href="src/fern/apikeys/client.py#L644-L738">update_api_key</a>(...) -> ApiKey</code></summary>
 <dl>
 <dd>
 
@@ -1162,7 +1162,7 @@ client.apikeys.update_api_key(
 </dl>
 </details>
 
-<details><summary><code>client.apikeys.<a href="src/fern/apikeys/client.py">delete_api_key</a>(...) -> Deleted</code></summary>
+<details><summary><code>client.apikeys.<a href="src/fern/apikeys/client.py#L740-L776">delete_api_key</a>(...) -> Deleted</code></summary>
 <dl>
 <dd>
 
@@ -1245,7 +1245,7 @@ client.apikeys.delete_api_key(
 </dl>
 </details>
 
-<details><summary><code>client.apikeys.<a href="src/fern/apikeys/client.py">patch_api_key</a>(...) -> ApiKey</code></summary>
+<details><summary><code>client.apikeys.<a href="src/fern/apikeys/client.py#L778-L829">patch_api_key</a>(...) -> ApiKey</code></summary>
 <dl>
 <dd>
 
@@ -1342,7 +1342,7 @@ client.apikeys.patch_api_key(
 </dl>
 </details>
 
-<details><summary><code>client.apikeys.<a href="src/fern/apikeys/client.py">api_key_group</a>(...) -> Group</code></summary>
+<details><summary><code>client.apikeys.<a href="src/fern/apikeys/client.py#L831-L867">api_key_group</a>(...) -> Group</code></summary>
 <dl>
 <dd>
 
@@ -1425,7 +1425,7 @@ client.apikeys.api_key_group(
 </dl>
 </details>
 
-<details><summary><code>client.apikeys.<a href="src/fern/apikeys/client.py">api_key_quotas</a>(...) -> Quotas</code></summary>
+<details><summary><code>client.apikeys.<a href="src/fern/apikeys/client.py#L869-L905">api_key_quotas</a>(...) -> Quotas</code></summary>
 <dl>
 <dd>
 
@@ -1508,7 +1508,7 @@ client.apikeys.api_key_quotas(
 </dl>
 </details>
 
-<details><summary><code>client.apikeys.<a href="src/fern/apikeys/client.py">reset_api_key_quotas</a>(...) -> Quotas</code></summary>
+<details><summary><code>client.apikeys.<a href="src/fern/apikeys/client.py#L907-L943">reset_api_key_quotas</a>(...) -> Quotas</code></summary>
 <dl>
 <dd>
 
@@ -1592,7 +1592,7 @@ client.apikeys.reset_api_key_quotas(
 </details>
 
 ## auth-config
-<details><summary><code>client.auth_config.<a href="src/fern/auth_config/client.py">find_all_global_auth_modules</a>() -> typing.List[FindAllGlobalAuthModulesResponseItem]</code></summary>
+<details><summary><code>client.auth_config.<a href="src/fern/auth_config/client.py#L37-L64">find_all_global_auth_modules</a>() -> typing.List[FindAllGlobalAuthModulesResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -1656,7 +1656,7 @@ client.auth_config.find_all_global_auth_modules()
 </dl>
 </details>
 
-<details><summary><code>client.auth_config.<a href="src/fern/auth_config/client.py">create_global_auth_module</a>(...) -> CreateGlobalAuthModuleResponse</code></summary>
+<details><summary><code>client.auth_config.<a href="src/fern/auth_config/client.py#L66-L112">create_global_auth_module</a>(...) -> CreateGlobalAuthModuleResponse</code></summary>
 <dl>
 <dd>
 
@@ -1745,7 +1745,7 @@ client.auth_config.create_global_auth_module(
 </dl>
 </details>
 
-<details><summary><code>client.auth_config.<a href="src/fern/auth_config/client.py">find_global_auth_module_by_id</a>(...) -> FindGlobalAuthModuleByIdResponse</code></summary>
+<details><summary><code>client.auth_config.<a href="src/fern/auth_config/client.py#L114-L146">find_global_auth_module_by_id</a>(...) -> FindGlobalAuthModuleByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -1819,7 +1819,7 @@ client.auth_config.find_global_auth_module_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.auth_config.<a href="src/fern/auth_config/client.py">update_global_auth_module</a>(...) -> UpdateGlobalAuthModuleResponse</code></summary>
+<details><summary><code>client.auth_config.<a href="src/fern/auth_config/client.py#L148-L202">update_global_auth_module</a>(...) -> UpdateGlobalAuthModuleResponse</code></summary>
 <dl>
 <dd>
 
@@ -1917,7 +1917,7 @@ client.auth_config.update_global_auth_module(
 </dl>
 </details>
 
-<details><summary><code>client.auth_config.<a href="src/fern/auth_config/client.py">delete_global_auth_module</a>(...) -> Deleted</code></summary>
+<details><summary><code>client.auth_config.<a href="src/fern/auth_config/client.py#L204-L234">delete_global_auth_module</a>(...) -> Deleted</code></summary>
 <dl>
 <dd>
 
@@ -1991,7 +1991,7 @@ client.auth_config.delete_global_auth_module(
 </dl>
 </details>
 
-<details><summary><code>client.auth_config.<a href="src/fern/auth_config/client.py">patch_global_auth_module</a>(...) -> PatchGlobalAuthModuleResponse</code></summary>
+<details><summary><code>client.auth_config.<a href="src/fern/auth_config/client.py#L236-L276">patch_global_auth_module</a>(...) -> PatchGlobalAuthModuleResponse</code></summary>
 <dl>
 <dd>
 
@@ -2080,7 +2080,7 @@ client.auth_config.patch_global_auth_module(
 </details>
 
 ## certificates
-<details><summary><code>client.certificates.<a href="src/fern/certificates/client.py">all_certs</a>() -> typing.List[Certificate]</code></summary>
+<details><summary><code>client.certificates.<a href="src/fern/certificates/client.py#L31-L56">all_certs</a>() -> typing.List[Certificate]</code></summary>
 <dl>
 <dd>
 
@@ -2144,7 +2144,7 @@ client.certificates.all_certs()
 </dl>
 </details>
 
-<details><summary><code>client.certificates.<a href="src/fern/certificates/client.py">create_cert</a>(...) -> Certificate</code></summary>
+<details><summary><code>client.certificates.<a href="src/fern/certificates/client.py#L58-L162">create_cert</a>(...) -> Certificate</code></summary>
 <dl>
 <dd>
 
@@ -2229,7 +2229,7 @@ client.certificates.create_cert(
 </dl>
 </details>
 
-<details><summary><code>client.certificates.<a href="src/fern/certificates/client.py">one_cert</a>(...) -> Certificate</code></summary>
+<details><summary><code>client.certificates.<a href="src/fern/certificates/client.py#L164-L194">one_cert</a>(...) -> Certificate</code></summary>
 <dl>
 <dd>
 
@@ -2303,7 +2303,7 @@ client.certificates.one_cert(
 </dl>
 </details>
 
-<details><summary><code>client.certificates.<a href="src/fern/certificates/client.py">put_cert</a>(...) -> Certificate</code></summary>
+<details><summary><code>client.certificates.<a href="src/fern/certificates/client.py#L196-L306">put_cert</a>(...) -> Certificate</code></summary>
 <dl>
 <dd>
 
@@ -2397,7 +2397,7 @@ client.certificates.put_cert(
 </dl>
 </details>
 
-<details><summary><code>client.certificates.<a href="src/fern/certificates/client.py">delete_cert</a>(...) -> Deleted</code></summary>
+<details><summary><code>client.certificates.<a href="src/fern/certificates/client.py#L308-L338">delete_cert</a>(...) -> Deleted</code></summary>
 <dl>
 <dd>
 
@@ -2471,7 +2471,7 @@ client.certificates.delete_cert(
 </dl>
 </details>
 
-<details><summary><code>client.certificates.<a href="src/fern/certificates/client.py">patch_cert</a>(...) -> Certificate</code></summary>
+<details><summary><code>client.certificates.<a href="src/fern/certificates/client.py#L340-L380">patch_cert</a>(...) -> Certificate</code></summary>
 <dl>
 <dd>
 
@@ -2560,7 +2560,7 @@ client.certificates.patch_cert(
 </details>
 
 ## validation-authorities
-<details><summary><code>client.validation_authorities.<a href="src/fern/validation_authorities/client.py">find_all_client_validators</a>() -> typing.List[ValidationAuthority]</code></summary>
+<details><summary><code>client.validation_authorities.<a href="src/fern/validation_authorities/client.py#L31-L58">find_all_client_validators</a>() -> typing.List[ValidationAuthority]</code></summary>
 <dl>
 <dd>
 
@@ -2624,7 +2624,7 @@ client.validation_authorities.find_all_client_validators()
 </dl>
 </details>
 
-<details><summary><code>client.validation_authorities.<a href="src/fern/validation_authorities/client.py">create_client_validator</a>(...) -> ValidationAuthority</code></summary>
+<details><summary><code>client.validation_authorities.<a href="src/fern/validation_authorities/client.py#L60-L170">create_client_validator</a>(...) -> ValidationAuthority</code></summary>
 <dl>
 <dd>
 
@@ -2712,7 +2712,7 @@ client.validation_authorities.create_client_validator(
 </dl>
 </details>
 
-<details><summary><code>client.validation_authorities.<a href="src/fern/validation_authorities/client.py">find_client_validator_by_id</a>(...) -> ValidationAuthority</code></summary>
+<details><summary><code>client.validation_authorities.<a href="src/fern/validation_authorities/client.py#L172-L204">find_client_validator_by_id</a>(...) -> ValidationAuthority</code></summary>
 <dl>
 <dd>
 
@@ -2786,7 +2786,7 @@ client.validation_authorities.find_client_validator_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.validation_authorities.<a href="src/fern/validation_authorities/client.py">update_client_validator</a>(...) -> ValidationAuthority</code></summary>
+<details><summary><code>client.validation_authorities.<a href="src/fern/validation_authorities/client.py#L206-L322">update_client_validator</a>(...) -> ValidationAuthority</code></summary>
 <dl>
 <dd>
 
@@ -2883,7 +2883,7 @@ client.validation_authorities.update_client_validator(
 </dl>
 </details>
 
-<details><summary><code>client.validation_authorities.<a href="src/fern/validation_authorities/client.py">delete_client_validator</a>(...) -> Deleted</code></summary>
+<details><summary><code>client.validation_authorities.<a href="src/fern/validation_authorities/client.py#L324-L354">delete_client_validator</a>(...) -> Deleted</code></summary>
 <dl>
 <dd>
 
@@ -2957,7 +2957,7 @@ client.validation_authorities.delete_client_validator(
 </dl>
 </details>
 
-<details><summary><code>client.validation_authorities.<a href="src/fern/validation_authorities/client.py">patch_client_validator</a>(...) -> ValidationAuthority</code></summary>
+<details><summary><code>client.validation_authorities.<a href="src/fern/validation_authorities/client.py#L356-L396">patch_client_validator</a>(...) -> ValidationAuthority</code></summary>
 <dl>
 <dd>
 
@@ -3046,7 +3046,7 @@ client.validation_authorities.patch_client_validator(
 </details>
 
 ## data-exporter-configs
-<details><summary><code>client.data_exporter_configs.<a href="src/fern/data_exporter_configs/client.py">find_all_data_exporters</a>() -> typing.List[DataExporterConfig]</code></summary>
+<details><summary><code>client.data_exporter_configs.<a href="src/fern/data_exporter_configs/client.py#L39-L66">find_all_data_exporters</a>() -> typing.List[DataExporterConfig]</code></summary>
 <dl>
 <dd>
 
@@ -3110,7 +3110,7 @@ client.data_exporter_configs.find_all_data_exporters()
 </dl>
 </details>
 
-<details><summary><code>client.data_exporter_configs.<a href="src/fern/data_exporter_configs/client.py">create_data_exporter_config</a>(...) -> DataExporterConfig</code></summary>
+<details><summary><code>client.data_exporter_configs.<a href="src/fern/data_exporter_configs/client.py#L68-L174">create_data_exporter_config</a>(...) -> DataExporterConfig</code></summary>
 <dl>
 <dd>
 
@@ -3182,7 +3182,7 @@ client.data_exporter_configs.create_data_exporter_config()
 </dl>
 </details>
 
-<details><summary><code>client.data_exporter_configs.<a href="src/fern/data_exporter_configs/client.py">create_bulk_data_exporter_configs</a>(...) -> typing.List[CreateBulkDataExporterConfigsResponseItem]</code></summary>
+<details><summary><code>client.data_exporter_configs.<a href="src/fern/data_exporter_configs/client.py#L176-L282">create_bulk_data_exporter_configs</a>(...) -> typing.List[CreateBulkDataExporterConfigsResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -3254,7 +3254,7 @@ client.data_exporter_configs.create_bulk_data_exporter_configs()
 </dl>
 </details>
 
-<details><summary><code>client.data_exporter_configs.<a href="src/fern/data_exporter_configs/client.py">update_bulk_data_exporter_config</a>(...) -> typing.List[UpdateBulkDataExporterConfigResponseItem]</code></summary>
+<details><summary><code>client.data_exporter_configs.<a href="src/fern/data_exporter_configs/client.py#L284-L390">update_bulk_data_exporter_config</a>(...) -> typing.List[UpdateBulkDataExporterConfigResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -3326,7 +3326,7 @@ client.data_exporter_configs.update_bulk_data_exporter_config()
 </dl>
 </details>
 
-<details><summary><code>client.data_exporter_configs.<a href="src/fern/data_exporter_configs/client.py">deletebulk_data_exporter_config</a>(...) -> typing.List[DeletebulkDataExporterConfigResponseItem]</code></summary>
+<details><summary><code>client.data_exporter_configs.<a href="src/fern/data_exporter_configs/client.py#L392-L428">deletebulk_data_exporter_config</a>(...) -> typing.List[DeletebulkDataExporterConfigResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -3405,7 +3405,7 @@ client.data_exporter_configs.deletebulk_data_exporter_config(
 </dl>
 </details>
 
-<details><summary><code>client.data_exporter_configs.<a href="src/fern/data_exporter_configs/client.py">patch_bulk_data_exporter_config</a>(...) -> typing.List[PatchBulkDataExporterConfigResponseItem]</code></summary>
+<details><summary><code>client.data_exporter_configs.<a href="src/fern/data_exporter_configs/client.py#L430-L466">patch_bulk_data_exporter_config</a>(...) -> typing.List[PatchBulkDataExporterConfigResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -3484,7 +3484,7 @@ client.data_exporter_configs.patch_bulk_data_exporter_config(
 </dl>
 </details>
 
-<details><summary><code>client.data_exporter_configs.<a href="src/fern/data_exporter_configs/client.py">data_exporter_template</a>(...) -> DataExporterConfig</code></summary>
+<details><summary><code>client.data_exporter_configs.<a href="src/fern/data_exporter_configs/client.py#L468-L498">data_exporter_template</a>(...) -> DataExporterConfig</code></summary>
 <dl>
 <dd>
 
@@ -3556,7 +3556,7 @@ client.data_exporter_configs.data_exporter_template()
 </dl>
 </details>
 
-<details><summary><code>client.data_exporter_configs.<a href="src/fern/data_exporter_configs/client.py">find_data_exporter_config_by_id</a>(...) -> DataExporterConfig</code></summary>
+<details><summary><code>client.data_exporter_configs.<a href="src/fern/data_exporter_configs/client.py#L500-L534">find_data_exporter_config_by_id</a>(...) -> DataExporterConfig</code></summary>
 <dl>
 <dd>
 
@@ -3630,7 +3630,7 @@ client.data_exporter_configs.find_data_exporter_config_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.data_exporter_configs.<a href="src/fern/data_exporter_configs/client.py">update_data_exporter_config</a>(...) -> DataExporterConfig</code></summary>
+<details><summary><code>client.data_exporter_configs.<a href="src/fern/data_exporter_configs/client.py#L536-L649">update_data_exporter_config</a>(...) -> DataExporterConfig</code></summary>
 <dl>
 <dd>
 
@@ -3712,7 +3712,7 @@ client.data_exporter_configs.update_data_exporter_config(
 </dl>
 </details>
 
-<details><summary><code>client.data_exporter_configs.<a href="src/fern/data_exporter_configs/client.py">delete_data_exporter_config</a>(...) -> Deleted</code></summary>
+<details><summary><code>client.data_exporter_configs.<a href="src/fern/data_exporter_configs/client.py#L651-L685">delete_data_exporter_config</a>(...) -> Deleted</code></summary>
 <dl>
 <dd>
 
@@ -3786,7 +3786,7 @@ client.data_exporter_configs.delete_data_exporter_config(
 </dl>
 </details>
 
-<details><summary><code>client.data_exporter_configs.<a href="src/fern/data_exporter_configs/client.py">patch_data_exporter_config</a>(...) -> DataExporterConfig</code></summary>
+<details><summary><code>client.data_exporter_configs.<a href="src/fern/data_exporter_configs/client.py#L687-L729">patch_data_exporter_config</a>(...) -> DataExporterConfig</code></summary>
 <dl>
 <dd>
 
@@ -3875,7 +3875,7 @@ client.data_exporter_configs.patch_data_exporter_config(
 </details>
 
 ## configuration
-<details><summary><code>client.configuration.<a href="src/fern/configuration/client.py">global_config</a>() -> GlobalConfig</code></summary>
+<details><summary><code>client.configuration.<a href="src/fern/configuration/client.py#L36-L61">global_config</a>() -> GlobalConfig</code></summary>
 <dl>
 <dd>
 
@@ -3939,7 +3939,7 @@ client.configuration.global_config()
 </dl>
 </details>
 
-<details><summary><code>client.configuration.<a href="src/fern/configuration/client.py">put_global_config</a>(...) -> GlobalConfig</code></summary>
+<details><summary><code>client.configuration.<a href="src/fern/configuration/client.py#L63-L241">put_global_config</a>(...) -> GlobalConfig</code></summary>
 <dl>
 <dd>
 
@@ -4051,7 +4051,7 @@ client.configuration.put_global_config(
 </dl>
 </details>
 
-<details><summary><code>client.configuration.<a href="src/fern/configuration/client.py">patch_global_config</a>(...) -> GlobalConfig</code></summary>
+<details><summary><code>client.configuration.<a href="src/fern/configuration/client.py#L243-L279">patch_global_config</a>(...) -> GlobalConfig</code></summary>
 <dl>
 <dd>
 
@@ -4131,7 +4131,7 @@ client.configuration.patch_global_config(
 </details>
 
 ## groups
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">all_service_groups</a>() -> typing.List[Group]</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L31-L56">all_service_groups</a>() -> typing.List[Group]</code></summary>
 <dl>
 <dd>
 
@@ -4195,7 +4195,7 @@ client.groups.all_service_groups()
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">create_group</a>(...) -> Group</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L58-L104">create_group</a>(...) -> Group</code></summary>
 <dl>
 <dd>
 
@@ -4270,7 +4270,7 @@ client.groups.create_group(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">service_group</a>(...) -> Group</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L106-L136">service_group</a>(...) -> Group</code></summary>
 <dl>
 <dd>
 
@@ -4344,7 +4344,7 @@ client.groups.service_group(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">update_group</a>(...) -> Group</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L138-L189">update_group</a>(...) -> Group</code></summary>
 <dl>
 <dd>
 
@@ -4428,7 +4428,7 @@ client.groups.update_group(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">delete_group</a>(...) -> Deleted</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L191-L223">delete_group</a>(...) -> Deleted</code></summary>
 <dl>
 <dd>
 
@@ -4502,7 +4502,7 @@ client.groups.delete_group(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">patch_group</a>(...) -> Group</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L225-L265">patch_group</a>(...) -> Group</code></summary>
 <dl>
 <dd>
 
@@ -4591,7 +4591,7 @@ client.groups.patch_group(
 </details>
 
 ## services
-<details><summary><code>client.services.<a href="src/fern/services/client.py">service_group_services</a>(...) -> typing.List[ApiKey]</code></summary>
+<details><summary><code>client.services.<a href="src/fern/services/client.py#L46-L78">service_group_services</a>(...) -> typing.List[ApiKey]</code></summary>
 <dl>
 <dd>
 
@@ -4665,7 +4665,7 @@ client.services.service_group_services(
 </dl>
 </details>
 
-<details><summary><code>client.services.<a href="src/fern/services/client.py">all_services</a>() -> typing.List[Service]</code></summary>
+<details><summary><code>client.services.<a href="src/fern/services/client.py#L80-L105">all_services</a>() -> typing.List[Service]</code></summary>
 <dl>
 <dd>
 
@@ -4729,7 +4729,7 @@ client.services.all_services()
 </dl>
 </details>
 
-<details><summary><code>client.services.<a href="src/fern/services/client.py">create_service</a>(...) -> Service</code></summary>
+<details><summary><code>client.services.<a href="src/fern/services/client.py#L107-L366">create_service</a>(...) -> Service</code></summary>
 <dl>
 <dd>
 
@@ -4823,7 +4823,7 @@ client.services.create_service(
 </dl>
 </details>
 
-<details><summary><code>client.services.<a href="src/fern/services/client.py">service</a>(...) -> Service</code></summary>
+<details><summary><code>client.services.<a href="src/fern/services/client.py#L368-L398">service</a>(...) -> Service</code></summary>
 <dl>
 <dd>
 
@@ -4897,7 +4897,7 @@ client.services.service(
 </dl>
 </details>
 
-<details><summary><code>client.services.<a href="src/fern/services/client.py">update_service</a>(...) -> Service</code></summary>
+<details><summary><code>client.services.<a href="src/fern/services/client.py#L400-L665">update_service</a>(...) -> Service</code></summary>
 <dl>
 <dd>
 
@@ -5000,7 +5000,7 @@ client.services.update_service(
 </dl>
 </details>
 
-<details><summary><code>client.services.<a href="src/fern/services/client.py">delete_service</a>(...) -> Deleted</code></summary>
+<details><summary><code>client.services.<a href="src/fern/services/client.py#L667-L697">delete_service</a>(...) -> Deleted</code></summary>
 <dl>
 <dd>
 
@@ -5074,7 +5074,7 @@ client.services.delete_service(
 </dl>
 </details>
 
-<details><summary><code>client.services.<a href="src/fern/services/client.py">patch_service</a>(...) -> Service</code></summary>
+<details><summary><code>client.services.<a href="src/fern/services/client.py#L699-L739">patch_service</a>(...) -> Service</code></summary>
 <dl>
 <dd>
 
@@ -5162,7 +5162,7 @@ client.services.patch_service(
 </dl>
 </details>
 
-<details><summary><code>client.services.<a href="src/fern/services/client.py">service_targets</a>(...) -> typing.List[Target]</code></summary>
+<details><summary><code>client.services.<a href="src/fern/services/client.py#L741-L773">service_targets</a>(...) -> typing.List[Target]</code></summary>
 <dl>
 <dd>
 
@@ -5236,7 +5236,7 @@ client.services.service_targets(
 </dl>
 </details>
 
-<details><summary><code>client.services.<a href="src/fern/services/client.py">service_add_target</a>(...) -> typing.List[Target]</code></summary>
+<details><summary><code>client.services.<a href="src/fern/services/client.py#L775-L817">service_add_target</a>(...) -> typing.List[Target]</code></summary>
 <dl>
 <dd>
 
@@ -5320,7 +5320,7 @@ client.services.service_add_target(
 </dl>
 </details>
 
-<details><summary><code>client.services.<a href="src/fern/services/client.py">service_delete_target</a>(...) -> typing.List[Target]</code></summary>
+<details><summary><code>client.services.<a href="src/fern/services/client.py#L819-L851">service_delete_target</a>(...) -> typing.List[Target]</code></summary>
 <dl>
 <dd>
 
@@ -5394,7 +5394,7 @@ client.services.service_delete_target(
 </dl>
 </details>
 
-<details><summary><code>client.services.<a href="src/fern/services/client.py">update_service_targets</a>(...) -> typing.List[Target]</code></summary>
+<details><summary><code>client.services.<a href="src/fern/services/client.py#L853-L895">update_service_targets</a>(...) -> typing.List[Target]</code></summary>
 <dl>
 <dd>
 
@@ -5482,7 +5482,7 @@ client.services.update_service_targets(
 </dl>
 </details>
 
-<details><summary><code>client.services.<a href="src/fern/services/client.py">service_template</a>(...) -> ErrorTemplate</code></summary>
+<details><summary><code>client.services.<a href="src/fern/services/client.py#L897-L929">service_template</a>(...) -> ErrorTemplate</code></summary>
 <dl>
 <dd>
 
@@ -5556,7 +5556,7 @@ client.services.service_template(
 </dl>
 </details>
 
-<details><summary><code>client.services.<a href="src/fern/services/client.py">create_service_template</a>(...) -> ErrorTemplate</code></summary>
+<details><summary><code>client.services.<a href="src/fern/services/client.py#L931-L1005">create_service_template</a>(...) -> ErrorTemplate</code></summary>
 <dl>
 <dd>
 
@@ -5646,7 +5646,7 @@ client.services.create_service_template(
 </dl>
 </details>
 
-<details><summary><code>client.services.<a href="src/fern/services/client.py">update_service_template</a>(...) -> ErrorTemplate</code></summary>
+<details><summary><code>client.services.<a href="src/fern/services/client.py#L1007-L1081">update_service_template</a>(...) -> ErrorTemplate</code></summary>
 <dl>
 <dd>
 
@@ -5736,7 +5736,7 @@ client.services.update_service_template(
 </dl>
 </details>
 
-<details><summary><code>client.services.<a href="src/fern/services/client.py">delete_service_template</a>(...) -> Deleted</code></summary>
+<details><summary><code>client.services.<a href="src/fern/services/client.py#L1083-L1115">delete_service_template</a>(...) -> Deleted</code></summary>
 <dl>
 <dd>
 
@@ -5811,7 +5811,7 @@ client.services.delete_service_template(
 </details>
 
 ## import
-<details><summary><code>client.import_.<a href="src/fern/import_/client.py">full_import_from_file</a>(...) -> Done</code></summary>
+<details><summary><code>client.import_.<a href="src/fern/import_/client.py#L39-L247">full_import_from_file</a>(...) -> Done</code></summary>
 <dl>
 <dd>
 
@@ -6007,7 +6007,7 @@ client.import_.full_import_from_file(
 </dl>
 </details>
 
-<details><summary><code>client.import_.<a href="src/fern/import_/client.py">full_export</a>() -> ImportExport</code></summary>
+<details><summary><code>client.import_.<a href="src/fern/import_/client.py#L249-L274">full_export</a>() -> ImportExport</code></summary>
 <dl>
 <dd>
 
@@ -6071,7 +6071,7 @@ client.import_.full_export()
 </dl>
 </details>
 
-<details><summary><code>client.import_.<a href="src/fern/import_/client.py">full_import</a>(...) -> Done</code></summary>
+<details><summary><code>client.import_.<a href="src/fern/import_/client.py#L276-L484">full_import</a>(...) -> Done</code></summary>
 <dl>
 <dd>
 
@@ -6268,7 +6268,7 @@ client.import_.full_import(
 </details>
 
 ## stats
-<details><summary><code>client.stats.<a href="src/fern/stats/client.py">global_live_stats</a>() -> Stats</code></summary>
+<details><summary><code>client.stats.<a href="src/fern/stats/client.py#L26-L51">global_live_stats</a>() -> Stats</code></summary>
 <dl>
 <dd>
 
@@ -6332,7 +6332,7 @@ client.stats.global_live_stats()
 </dl>
 </details>
 
-<details><summary><code>client.stats.<a href="src/fern/stats/client.py">service_live_stats</a>(...) -> Stats</code></summary>
+<details><summary><code>client.stats.<a href="src/fern/stats/client.py#L53-L83">service_live_stats</a>(...) -> Stats</code></summary>
 <dl>
 <dd>
 
@@ -6407,7 +6407,7 @@ client.stats.service_live_stats(
 </details>
 
 ## scripts
-<details><summary><code>client.scripts.<a href="src/fern/scripts/client.py">find_all_scripts</a>() -> typing.List[Script]</code></summary>
+<details><summary><code>client.scripts.<a href="src/fern/scripts/client.py#L32-L57">find_all_scripts</a>() -> typing.List[Script]</code></summary>
 <dl>
 <dd>
 
@@ -6471,7 +6471,7 @@ client.scripts.find_all_scripts()
 </dl>
 </details>
 
-<details><summary><code>client.scripts.<a href="src/fern/scripts/client.py">create_script</a>(...) -> Script</code></summary>
+<details><summary><code>client.scripts.<a href="src/fern/scripts/client.py#L59-L111">create_script</a>(...) -> Script</code></summary>
 <dl>
 <dd>
 
@@ -6552,7 +6552,7 @@ client.scripts.create_script(
 </dl>
 </details>
 
-<details><summary><code>client.scripts.<a href="src/fern/scripts/client.py">compile_script</a>(...) -> ScriptCompilationResult</code></summary>
+<details><summary><code>client.scripts.<a href="src/fern/scripts/client.py#L113-L165">compile_script</a>(...) -> ScriptCompilationResult</code></summary>
 <dl>
 <dd>
 
@@ -6633,7 +6633,7 @@ client.scripts.compile_script(
 </dl>
 </details>
 
-<details><summary><code>client.scripts.<a href="src/fern/scripts/client.py">find_script_by_id</a>(...) -> Script</code></summary>
+<details><summary><code>client.scripts.<a href="src/fern/scripts/client.py#L167-L197">find_script_by_id</a>(...) -> Script</code></summary>
 <dl>
 <dd>
 
@@ -6707,7 +6707,7 @@ client.scripts.find_script_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.scripts.<a href="src/fern/scripts/client.py">update_script</a>(...) -> Script</code></summary>
+<details><summary><code>client.scripts.<a href="src/fern/scripts/client.py#L199-L256">update_script</a>(...) -> Script</code></summary>
 <dl>
 <dd>
 
@@ -6797,7 +6797,7 @@ client.scripts.update_script(
 </dl>
 </details>
 
-<details><summary><code>client.scripts.<a href="src/fern/scripts/client.py">delete_script</a>(...) -> Deleted</code></summary>
+<details><summary><code>client.scripts.<a href="src/fern/scripts/client.py#L258-L288">delete_script</a>(...) -> Deleted</code></summary>
 <dl>
 <dd>
 
@@ -6871,7 +6871,7 @@ client.scripts.delete_script(
 </dl>
 </details>
 
-<details><summary><code>client.scripts.<a href="src/fern/scripts/client.py">patch_script</a>(...) -> Script</code></summary>
+<details><summary><code>client.scripts.<a href="src/fern/scripts/client.py#L290-L330">patch_script</a>(...) -> Script</code></summary>
 <dl>
 <dd>
 
@@ -6960,7 +6960,7 @@ client.scripts.patch_script(
 </details>
 
 ## snowmonkey
-<details><summary><code>client.snowmonkey.<a href="src/fern/snowmonkey/client.py">start_snow_monkey</a>() -> Done</code></summary>
+<details><summary><code>client.snowmonkey.<a href="src/fern/snowmonkey/client.py#L31-L56">start_snow_monkey</a>() -> Done</code></summary>
 <dl>
 <dd>
 
@@ -7024,7 +7024,7 @@ client.snowmonkey.start_snow_monkey()
 </dl>
 </details>
 
-<details><summary><code>client.snowmonkey.<a href="src/fern/snowmonkey/client.py">stop_snow_monkey</a>() -> Done</code></summary>
+<details><summary><code>client.snowmonkey.<a href="src/fern/snowmonkey/client.py#L58-L83">stop_snow_monkey</a>() -> Done</code></summary>
 <dl>
 <dd>
 
@@ -7088,7 +7088,7 @@ client.snowmonkey.stop_snow_monkey()
 </dl>
 </details>
 
-<details><summary><code>client.snowmonkey.<a href="src/fern/snowmonkey/client.py">get_snow_monkey_config</a>() -> SnowMonkeyConfig</code></summary>
+<details><summary><code>client.snowmonkey.<a href="src/fern/snowmonkey/client.py#L85-L110">get_snow_monkey_config</a>() -> SnowMonkeyConfig</code></summary>
 <dl>
 <dd>
 
@@ -7152,7 +7152,7 @@ client.snowmonkey.get_snow_monkey_config()
 </dl>
 </details>
 
-<details><summary><code>client.snowmonkey.<a href="src/fern/snowmonkey/client.py">update_snow_monkey</a>(...) -> SnowMonkeyConfig</code></summary>
+<details><summary><code>client.snowmonkey.<a href="src/fern/snowmonkey/client.py#L112-L158">update_snow_monkey</a>(...) -> SnowMonkeyConfig</code></summary>
 <dl>
 <dd>
 
@@ -7227,7 +7227,7 @@ client.snowmonkey.update_snow_monkey(
 </dl>
 </details>
 
-<details><summary><code>client.snowmonkey.<a href="src/fern/snowmonkey/client.py">patch_snow_monkey</a>(...) -> SnowMonkeyConfig</code></summary>
+<details><summary><code>client.snowmonkey.<a href="src/fern/snowmonkey/client.py#L160-L206">patch_snow_monkey</a>(...) -> SnowMonkeyConfig</code></summary>
 <dl>
 <dd>
 
@@ -7302,7 +7302,7 @@ client.snowmonkey.patch_snow_monkey(
 </dl>
 </details>
 
-<details><summary><code>client.snowmonkey.<a href="src/fern/snowmonkey/client.py">get_snow_monkey_outages</a>() -> typing.List[Outage]</code></summary>
+<details><summary><code>client.snowmonkey.<a href="src/fern/snowmonkey/client.py#L208-L235">get_snow_monkey_outages</a>() -> typing.List[Outage]</code></summary>
 <dl>
 <dd>
 
@@ -7366,7 +7366,7 @@ client.snowmonkey.get_snow_monkey_outages()
 </dl>
 </details>
 
-<details><summary><code>client.snowmonkey.<a href="src/fern/snowmonkey/client.py">reset_snow_monkey</a>() -> Done</code></summary>
+<details><summary><code>client.snowmonkey.<a href="src/fern/snowmonkey/client.py#L237-L262">reset_snow_monkey</a>() -> Done</code></summary>
 <dl>
 <dd>
 
@@ -7431,7 +7431,7 @@ client.snowmonkey.reset_snow_monkey()
 </details>
 
 ## jwt-verifiers
-<details><summary><code>client.jwt_verifiers.<a href="src/fern/jwt_verifiers/client.py">find_all_global_jwt_verifiers</a>() -> typing.List[GlobalJwtVerifier]</code></summary>
+<details><summary><code>client.jwt_verifiers.<a href="src/fern/jwt_verifiers/client.py#L34-L61">find_all_global_jwt_verifiers</a>() -> typing.List[GlobalJwtVerifier]</code></summary>
 <dl>
 <dd>
 
@@ -7495,7 +7495,7 @@ client.jwt_verifiers.find_all_global_jwt_verifiers()
 </dl>
 </details>
 
-<details><summary><code>client.jwt_verifiers.<a href="src/fern/jwt_verifiers/client.py">create_global_jwt_verifier</a>(...) -> GlobalJwtVerifier</code></summary>
+<details><summary><code>client.jwt_verifiers.<a href="src/fern/jwt_verifiers/client.py#L63-L158">create_global_jwt_verifier</a>(...) -> GlobalJwtVerifier</code></summary>
 <dl>
 <dd>
 
@@ -7590,7 +7590,7 @@ client.jwt_verifiers.create_global_jwt_verifier(
 </dl>
 </details>
 
-<details><summary><code>client.jwt_verifiers.<a href="src/fern/jwt_verifiers/client.py">find_global_jwt_verifiers_by_id</a>(...) -> GlobalJwtVerifier</code></summary>
+<details><summary><code>client.jwt_verifiers.<a href="src/fern/jwt_verifiers/client.py#L160-L192">find_global_jwt_verifiers_by_id</a>(...) -> GlobalJwtVerifier</code></summary>
 <dl>
 <dd>
 
@@ -7664,7 +7664,7 @@ client.jwt_verifiers.find_global_jwt_verifiers_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.jwt_verifiers.<a href="src/fern/jwt_verifiers/client.py">update_global_jwt_verifier</a>(...) -> GlobalJwtVerifier</code></summary>
+<details><summary><code>client.jwt_verifiers.<a href="src/fern/jwt_verifiers/client.py#L194-L295">update_global_jwt_verifier</a>(...) -> GlobalJwtVerifier</code></summary>
 <dl>
 <dd>
 
@@ -7768,7 +7768,7 @@ client.jwt_verifiers.update_global_jwt_verifier(
 </dl>
 </details>
 
-<details><summary><code>client.jwt_verifiers.<a href="src/fern/jwt_verifiers/client.py">delete_global_jwt_verifier</a>(...) -> Deleted</code></summary>
+<details><summary><code>client.jwt_verifiers.<a href="src/fern/jwt_verifiers/client.py#L297-L329">delete_global_jwt_verifier</a>(...) -> Deleted</code></summary>
 <dl>
 <dd>
 
@@ -7842,7 +7842,7 @@ client.jwt_verifiers.delete_global_jwt_verifier(
 </dl>
 </details>
 
-<details><summary><code>client.jwt_verifiers.<a href="src/fern/jwt_verifiers/client.py">patch_global_jwt_verifier</a>(...) -> GlobalJwtVerifier</code></summary>
+<details><summary><code>client.jwt_verifiers.<a href="src/fern/jwt_verifiers/client.py#L331-L373">patch_global_jwt_verifier</a>(...) -> GlobalJwtVerifier</code></summary>
 <dl>
 <dd>
 
@@ -7931,7 +7931,7 @@ client.jwt_verifiers.patch_global_jwt_verifier(
 </details>
 
 ## environments
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">all_lines</a>() -> Environment</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L27-L52">all_lines</a>() -> Environment</code></summary>
 <dl>
 <dd>
 
@@ -7995,7 +7995,7 @@ client.environments.all_lines()
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">services_for_a_line</a>(...) -> typing.List[Service]</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L54-L86">services_for_a_line</a>(...) -> typing.List[Service]</code></summary>
 <dl>
 <dd>
 
@@ -8070,7 +8070,7 @@ client.environments.services_for_a_line(
 </details>
 
 ## templates
-<details><summary><code>client.templates.<a href="src/fern/templates/client.py">initiate_api_key</a>() -> ApiKey</code></summary>
+<details><summary><code>client.templates.<a href="src/fern/templates/client.py#L28-L53">initiate_api_key</a>() -> ApiKey</code></summary>
 <dl>
 <dd>
 
@@ -8134,7 +8134,7 @@ client.templates.initiate_api_key()
 </dl>
 </details>
 
-<details><summary><code>client.templates.<a href="src/fern/templates/client.py">initiate_service_group</a>() -> Group</code></summary>
+<details><summary><code>client.templates.<a href="src/fern/templates/client.py#L55-L80">initiate_service_group</a>() -> Group</code></summary>
 <dl>
 <dd>
 
@@ -8198,7 +8198,7 @@ client.templates.initiate_service_group()
 </dl>
 </details>
 
-<details><summary><code>client.templates.<a href="src/fern/templates/client.py">initiate_service</a>() -> Service</code></summary>
+<details><summary><code>client.templates.<a href="src/fern/templates/client.py#L82-L107">initiate_service</a>() -> Service</code></summary>
 <dl>
 <dd>
 

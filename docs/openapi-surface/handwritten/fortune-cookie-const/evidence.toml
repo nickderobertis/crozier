@@ -1,6 +1,6 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "7fa642e29dc6925fdbcb0cc62f1481144fb00eb8443458165eafafe71a775f79"
+fern_cli_version = "5.200.0"
+fern_python_sdk_version = "5.41.25"
+digest = "48c5943ea848ce3bce56d30930add3a77df4d9395c10ce036a97d32f420cf040"
 
 [[covers]]
 key = "reference-literal-single-quote-escaped"

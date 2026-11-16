@@ -1,6 +1,6 @@
 # Reference
 ## McpServer
-<details><summary><code>client.mcp_server.<a href="src/fern/mcp_server/client.py">call_server_tool</a>(...) -> CallToolResponse</code></summary>
+<details><summary><code>client.mcp_server.<a href="src/fern/mcp_server/client.py#L53-L112">call_server_tool</a>(...) -> CallToolResponse</code></summary>
 <dl>
 <dd>
 
@@ -107,7 +107,7 @@ client.mcp_server.call_server_tool(
 </dl>
 </details>
 
-<details><summary><code>client.mcp_server.<a href="src/fern/mcp_server/client.py">list_server_tools</a>(...) -> ListToolsResponse</code></summary>
+<details><summary><code>client.mcp_server.<a href="src/fern/mcp_server/client.py#L114-L170">list_server_tools</a>(...) -> ListToolsResponse</code></summary>
 <dl>
 <dd>
 
@@ -208,7 +208,7 @@ client.mcp_server.list_server_tools(
 </dl>
 </details>
 
-<details><summary><code>client.mcp_server.<a href="src/fern/mcp_server/client.py">create_strata_server</a>(...) -> StrataCreateResponse</code></summary>
+<details><summary><code>client.mcp_server.<a href="src/fern/mcp_server/client.py#L172-L228">create_strata_server</a>(...) -> StrataCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -309,7 +309,7 @@ client.mcp_server.create_strata_server(
 </dl>
 </details>
 
-<details><summary><code>client.mcp_server.<a href="src/fern/mcp_server/client.py">add_servers_to_strata</a>(...) -> StrataAddServersResponse</code></summary>
+<details><summary><code>client.mcp_server.<a href="src/fern/mcp_server/client.py#L230-L280">add_servers_to_strata</a>(...) -> StrataAddServersResponse</code></summary>
 <dl>
 <dd>
 
@@ -404,7 +404,7 @@ client.mcp_server.add_servers_to_strata(
 </dl>
 </details>
 
-<details><summary><code>client.mcp_server.<a href="src/fern/mcp_server/client.py">delete_servers_from_strata</a>(...) -> StrataDeleteServersResponse</code></summary>
+<details><summary><code>client.mcp_server.<a href="src/fern/mcp_server/client.py#L282-L336">delete_servers_from_strata</a>(...) -> StrataDeleteServersResponse</code></summary>
 <dl>
 <dd>
 
@@ -502,7 +502,7 @@ client.mcp_server.delete_servers_from_strata(
 </dl>
 </details>
 
-<details><summary><code>client.mcp_server.<a href="src/fern/mcp_server/client.py">get_strata_server</a>(...) -> StrataGetResponse</code></summary>
+<details><summary><code>client.mcp_server.<a href="src/fern/mcp_server/client.py#L338-L371">get_strata_server</a>(...) -> StrataGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -578,7 +578,7 @@ client.mcp_server.get_strata_server(
 </dl>
 </details>
 
-<details><summary><code>client.mcp_server.<a href="src/fern/mcp_server/client.py">list_strata_raw_actions</a>(...) -> StrataRawActionsResponse</code></summary>
+<details><summary><code>client.mcp_server.<a href="src/fern/mcp_server/client.py#L373-L408">list_strata_raw_actions</a>(...) -> StrataRawActionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -660,7 +660,7 @@ client.mcp_server.list_strata_raw_actions(
 </dl>
 </details>
 
-<details><summary><code>client.mcp_server.<a href="src/fern/mcp_server/client.py">get_strata_auth</a>(...) -> StrataGetAuthResponse</code></summary>
+<details><summary><code>client.mcp_server.<a href="src/fern/mcp_server/client.py#L410-L447">get_strata_auth</a>(...) -> StrataGetAuthResponse</code></summary>
 <dl>
 <dd>
 
@@ -744,7 +744,7 @@ client.mcp_server.get_strata_auth(
 </dl>
 </details>
 
-<details><summary><code>client.mcp_server.<a href="src/fern/mcp_server/client.py">delete_strata_auth</a>(...) -> StatusResponse</code></summary>
+<details><summary><code>client.mcp_server.<a href="src/fern/mcp_server/client.py#L449-L486">delete_strata_auth</a>(...) -> StatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -828,7 +828,7 @@ client.mcp_server.delete_strata_auth(
 </dl>
 </details>
 
-<details><summary><code>client.mcp_server.<a href="src/fern/mcp_server/client.py">set_strata_auth</a>(...) -> StatusResponse</code></summary>
+<details><summary><code>client.mcp_server.<a href="src/fern/mcp_server/client.py#L488-L536">set_strata_auth</a>(...) -> StatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -921,7 +921,7 @@ client.mcp_server.set_strata_auth(
 </dl>
 </details>
 
-<details><summary><code>client.mcp_server.<a href="src/fern/mcp_server/client.py">create_server_instance</a>(...) -> CreateServerResponse</code></summary>
+<details><summary><code>client.mcp_server.<a href="src/fern/mcp_server/client.py#L538-L600">create_server_instance</a>(...) -> CreateServerResponse</code></summary>
 <dl>
 <dd>
 
@@ -1031,7 +1031,7 @@ client.mcp_server.create_server_instance(
 </dl>
 </details>
 
-<details><summary><code>client.mcp_server.<a href="src/fern/mcp_server/client.py">create_self_hosted_server_instance</a>(...) -> CreateSelfHostedServerResponse</code></summary>
+<details><summary><code>client.mcp_server.<a href="src/fern/mcp_server/client.py#L602-L643">create_self_hosted_server_instance</a>(...) -> CreateSelfHostedServerResponse</code></summary>
 <dl>
 <dd>
 
@@ -1117,7 +1117,7 @@ client.mcp_server.create_self_hosted_server_instance(
 </dl>
 </details>
 
-<details><summary><code>client.mcp_server.<a href="src/fern/mcp_server/client.py">get_server_instance</a>(...) -> GetInstanceResponse</code></summary>
+<details><summary><code>client.mcp_server.<a href="src/fern/mcp_server/client.py#L645-L677">get_server_instance</a>(...) -> GetInstanceResponse</code></summary>
 <dl>
 <dd>
 
@@ -1191,7 +1191,7 @@ client.mcp_server.get_server_instance(
 </dl>
 </details>
 
-<details><summary><code>client.mcp_server.<a href="src/fern/mcp_server/client.py">delete_server_instance</a>(...) -> StatusResponse</code></summary>
+<details><summary><code>client.mcp_server.<a href="src/fern/mcp_server/client.py#L679-L711">delete_server_instance</a>(...) -> StatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -1265,7 +1265,7 @@ client.mcp_server.delete_server_instance(
 </dl>
 </details>
 
-<details><summary><code>client.mcp_server.<a href="src/fern/mcp_server/client.py">get_instance_auth_data</a>(...) -> GetAuthDataResponse</code></summary>
+<details><summary><code>client.mcp_server.<a href="src/fern/mcp_server/client.py#L713-L748">get_instance_auth_data</a>(...) -> GetAuthDataResponse</code></summary>
 <dl>
 <dd>
 
@@ -1342,7 +1342,7 @@ client.mcp_server.get_instance_auth_data(
 </dl>
 </details>
 
-<details><summary><code>client.mcp_server.<a href="src/fern/mcp_server/client.py">delete_instance_auth</a>(...) -> StatusResponse</code></summary>
+<details><summary><code>client.mcp_server.<a href="src/fern/mcp_server/client.py#L750-L781">delete_instance_auth</a>(...) -> StatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -1415,7 +1415,7 @@ client.mcp_server.delete_instance_auth(
 </dl>
 </details>
 
-<details><summary><code>client.mcp_server.<a href="src/fern/mcp_server/client.py">get_server_tools</a>(...) -> ListToolsResponse</code></summary>
+<details><summary><code>client.mcp_server.<a href="src/fern/mcp_server/client.py#L783-L827">get_server_tools</a>(...) -> ListToolsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1504,7 +1504,7 @@ client.mcp_server.get_server_tools(
 </dl>
 </details>
 
-<details><summary><code>client.mcp_server.<a href="src/fern/mcp_server/client.py">get_all_mcp_servers</a>() -> GetMcpServersResponse</code></summary>
+<details><summary><code>client.mcp_server.<a href="src/fern/mcp_server/client.py#L829-L853">get_all_mcp_servers</a>() -> GetMcpServersResponse</code></summary>
 <dl>
 <dd>
 
@@ -1567,7 +1567,7 @@ client.mcp_server.get_all_mcp_servers()
 </dl>
 </details>
 
-<details><summary><code>client.mcp_server.<a href="src/fern/mcp_server/client.py">set_instance_auth</a>(...) -> StatusResponse</code></summary>
+<details><summary><code>client.mcp_server.<a href="src/fern/mcp_server/client.py#L855-L898">set_instance_auth</a>(...) -> StatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -1652,7 +1652,7 @@ client.mcp_server.set_instance_auth(
 </details>
 
 ## WhiteLabeling
-<details><summary><code>client.white_labeling.<a href="src/fern/white_labeling/client.py">create_white_labeling</a>(...) -> WhiteLabelingResponse</code></summary>
+<details><summary><code>client.white_labeling.<a href="src/fern/white_labeling/client.py#L30-L89">create_white_labeling</a>(...) -> WhiteLabelingResponse</code></summary>
 <dl>
 <dd>
 
@@ -1759,7 +1759,7 @@ client.white_labeling.create_white_labeling(
 </dl>
 </details>
 
-<details><summary><code>client.white_labeling.<a href="src/fern/white_labeling/client.py">get_white_labeling_by_client_id</a>(...) -> WhiteLabelingResponse</code></summary>
+<details><summary><code>client.white_labeling.<a href="src/fern/white_labeling/client.py#L91-L121">get_white_labeling_by_client_id</a>(...) -> WhiteLabelingResponse</code></summary>
 <dl>
 <dd>
 
@@ -1833,7 +1833,7 @@ client.white_labeling.get_white_labeling_by_client_id(
 </details>
 
 ## User
-<details><summary><code>client.user.<a href="src/fern/user/client.py">get_user_integrations</a>(...) -> GetUserIntegrationsResponse</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L36-L68">get_user_integrations</a>(...) -> GetUserIntegrationsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1907,7 +1907,7 @@ client.user.get_user_integrations(
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">get_user_by_user_id</a>(...) -> GetUserResponse</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L70-L101">get_user_by_user_id</a>(...) -> GetUserResponse</code></summary>
 <dl>
 <dd>
 
@@ -1980,7 +1980,7 @@ client.user.get_user_by_user_id(
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">delete_user_by_user_id</a>(...) -> DeleteUserResponse</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L103-L136">delete_user_by_user_id</a>(...) -> DeleteUserResponse</code></summary>
 <dl>
 <dd>
 
@@ -2055,7 +2055,7 @@ client.user.delete_user_by_user_id(
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">get_all_users</a>(...) -> GetAllUsersResponse</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L138-L176">get_all_users</a>(...) -> GetAllUsersResponse</code></summary>
 <dl>
 <dd>
 
@@ -2134,7 +2134,7 @@ client.user.get_all_users()
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">set_user_auth</a>(...) -> StatusResponse</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L178-L227">set_user_auth</a>(...) -> StatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -2228,7 +2228,7 @@ client.user.set_user_auth(
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">get_user_auth</a>(...) -> GetUserAuthResponse</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L229-L267">get_user_auth</a>(...) -> GetUserAuthResponse</code></summary>
 <dl>
 <dd>
 
@@ -2313,7 +2313,7 @@ client.user.get_user_auth(
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">delete_user_auth</a>(...) -> StatusResponse</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L269-L306">delete_user_auth</a>(...) -> StatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -2398,7 +2398,7 @@ client.user.delete_user_auth(
 </details>
 
 ## SlackOauth
-<details><summary><code>client.slack_oauth.<a href="src/fern/slack_oauth/client.py">authorize_slack</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.slack_oauth.<a href="src/fern/slack_oauth/client.py#L25-L89">authorize_slack</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2511,7 +2511,7 @@ client.slack_oauth.authorize_slack(
 </details>
 
 ## GithubOauth
-<details><summary><code>client.github_oauth.<a href="src/fern/github_oauth/client.py">authorize_github</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.github_oauth.<a href="src/fern/github_oauth/client.py#L25-L83">authorize_github</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2615,7 +2615,7 @@ client.github_oauth.authorize_github(
 </details>
 
 ## GitlabOauth
-<details><summary><code>client.gitlab_oauth.<a href="src/fern/gitlab_oauth/client.py">authorize_gitlab</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.gitlab_oauth.<a href="src/fern/gitlab_oauth/client.py#L25-L83">authorize_gitlab</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2719,7 +2719,7 @@ client.gitlab_oauth.authorize_gitlab(
 </details>
 
 ## SupabaseOauth
-<details><summary><code>client.supabase_oauth.<a href="src/fern/supabase_oauth/client.py">authorize_supabase</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.supabase_oauth.<a href="src/fern/supabase_oauth/client.py#L25-L74">authorize_supabase</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2814,7 +2814,7 @@ client.supabase_oauth.authorize_supabase(
 </details>
 
 ## NotionOauth
-<details><summary><code>client.notion_oauth.<a href="src/fern/notion_oauth/client.py">authorize_notion</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.notion_oauth.<a href="src/fern/notion_oauth/client.py#L25-L83">authorize_notion</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2918,7 +2918,7 @@ client.notion_oauth.authorize_notion(
 </details>
 
 ## JiraOauth
-<details><summary><code>client.jira_oauth.<a href="src/fern/jira_oauth/client.py">authorize_jira</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.jira_oauth.<a href="src/fern/jira_oauth/client.py#L25-L83">authorize_jira</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -3022,7 +3022,7 @@ client.jira_oauth.authorize_jira(
 </details>
 
 ## ConfluenceOauth
-<details><summary><code>client.confluence_oauth.<a href="src/fern/confluence_oauth/client.py">authorize_confluence</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.confluence_oauth.<a href="src/fern/confluence_oauth/client.py#L25-L83">authorize_confluence</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -3126,7 +3126,7 @@ client.confluence_oauth.authorize_confluence(
 </details>
 
 ## WordpressOauth
-<details><summary><code>client.wordpress_oauth.<a href="src/fern/wordpress_oauth/client.py">authorize_wordpress</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.wordpress_oauth.<a href="src/fern/wordpress_oauth/client.py#L25-L83">authorize_wordpress</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -3230,7 +3230,7 @@ client.wordpress_oauth.authorize_wordpress(
 </details>
 
 ## GmailOauth
-<details><summary><code>client.gmail_oauth.<a href="src/fern/gmail_oauth/client.py">authorize_gmail</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.gmail_oauth.<a href="src/fern/gmail_oauth/client.py#L25-L83">authorize_gmail</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -3334,7 +3334,7 @@ client.gmail_oauth.authorize_gmail(
 </details>
 
 ## GdriveOauth
-<details><summary><code>client.gdrive_oauth.<a href="src/fern/gdrive_oauth/client.py">authorize_g_drive</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.gdrive_oauth.<a href="src/fern/gdrive_oauth/client.py#L25-L83">authorize_g_drive</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -3438,7 +3438,7 @@ client.gdrive_oauth.authorize_g_drive(
 </details>
 
 ## GcalendarOauth
-<details><summary><code>client.gcalendar_oauth.<a href="src/fern/gcalendar_oauth/client.py">authorize_g_calendar</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.gcalendar_oauth.<a href="src/fern/gcalendar_oauth/client.py#L25-L83">authorize_g_calendar</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -3542,7 +3542,7 @@ client.gcalendar_oauth.authorize_g_calendar(
 </details>
 
 ## GsheetsOauth
-<details><summary><code>client.gsheets_oauth.<a href="src/fern/gsheets_oauth/client.py">authorize_g_sheets</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.gsheets_oauth.<a href="src/fern/gsheets_oauth/client.py#L25-L83">authorize_g_sheets</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -3646,7 +3646,7 @@ client.gsheets_oauth.authorize_g_sheets(
 </details>
 
 ## GdocsOauth
-<details><summary><code>client.gdocs_oauth.<a href="src/fern/gdocs_oauth/client.py">authorize_g_docs</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.gdocs_oauth.<a href="src/fern/gdocs_oauth/client.py#L25-L83">authorize_g_docs</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -3750,7 +3750,7 @@ client.gdocs_oauth.authorize_g_docs(
 </details>
 
 ## AttioOauth
-<details><summary><code>client.attio_oauth.<a href="src/fern/attio_oauth/client.py">authorize_attio</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.attio_oauth.<a href="src/fern/attio_oauth/client.py#L25-L74">authorize_attio</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -3845,7 +3845,7 @@ client.attio_oauth.authorize_attio(
 </details>
 
 ## SalesforceOauth
-<details><summary><code>client.salesforce_oauth.<a href="src/fern/salesforce_oauth/client.py">authorize_salesforce</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.salesforce_oauth.<a href="src/fern/salesforce_oauth/client.py#L25-L89">authorize_salesforce</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -3958,7 +3958,7 @@ client.salesforce_oauth.authorize_salesforce(
 </details>
 
 ## AsanaOauth
-<details><summary><code>client.asana_oauth.<a href="src/fern/asana_oauth/client.py">authorize_asana</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.asana_oauth.<a href="src/fern/asana_oauth/client.py#L25-L83">authorize_asana</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4062,7 +4062,7 @@ client.asana_oauth.authorize_asana(
 </details>
 
 ## LinearOauth
-<details><summary><code>client.linear_oauth.<a href="src/fern/linear_oauth/client.py">authorize_linear</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.linear_oauth.<a href="src/fern/linear_oauth/client.py#L25-L83">authorize_linear</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4166,7 +4166,7 @@ client.linear_oauth.authorize_linear(
 </details>
 
 ## CloseOauth
-<details><summary><code>client.close_oauth.<a href="src/fern/close_oauth/client.py">authorize_close</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.close_oauth.<a href="src/fern/close_oauth/client.py#L25-L83">authorize_close</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4270,7 +4270,7 @@ client.close_oauth.authorize_close(
 </details>
 
 ## ClickupOauth
-<details><summary><code>client.clickup_oauth.<a href="src/fern/clickup_oauth/client.py">authorize_click_up</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.clickup_oauth.<a href="src/fern/clickup_oauth/client.py#L25-L74">authorize_click_up</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4365,7 +4365,7 @@ client.clickup_oauth.authorize_click_up(
 </details>
 
 ## AirtableOauth
-<details><summary><code>client.airtable_oauth.<a href="src/fern/airtable_oauth/client.py">authorize_airtable</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.airtable_oauth.<a href="src/fern/airtable_oauth/client.py#L25-L83">authorize_airtable</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4469,7 +4469,7 @@ client.airtable_oauth.authorize_airtable(
 </details>
 
 ## HubspotOauth
-<details><summary><code>client.hubspot_oauth.<a href="src/fern/hubspot_oauth/client.py">authorize_hubspot</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.hubspot_oauth.<a href="src/fern/hubspot_oauth/client.py#L25-L83">authorize_hubspot</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4573,7 +4573,7 @@ client.hubspot_oauth.authorize_hubspot(
 </details>
 
 ## LinkedinOauth
-<details><summary><code>client.linkedin_oauth.<a href="src/fern/linkedin_oauth/client.py">authorize_linked_in</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.linkedin_oauth.<a href="src/fern/linkedin_oauth/client.py#L25-L83">authorize_linked_in</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4677,7 +4677,7 @@ client.linkedin_oauth.authorize_linked_in(
 </details>
 
 ## CanvaOauth
-<details><summary><code>client.canva_oauth.<a href="src/fern/canva_oauth/client.py">authorize_canva</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.canva_oauth.<a href="src/fern/canva_oauth/client.py#L25-L83">authorize_canva</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4781,7 +4781,7 @@ client.canva_oauth.authorize_canva(
 </details>
 
 ## XeroOauth
-<details><summary><code>client.xero_oauth.<a href="src/fern/xero_oauth/client.py">authorize_xero</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.xero_oauth.<a href="src/fern/xero_oauth/client.py#L25-L83">authorize_xero</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4885,7 +4885,7 @@ client.xero_oauth.authorize_xero(
 </details>
 
 ## DropboxOauth
-<details><summary><code>client.dropbox_oauth.<a href="src/fern/dropbox_oauth/client.py">authorize_dropbox</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.dropbox_oauth.<a href="src/fern/dropbox_oauth/client.py#L25-L83">authorize_dropbox</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4989,7 +4989,7 @@ client.dropbox_oauth.authorize_dropbox(
 </details>
 
 ## BoxOauth
-<details><summary><code>client.box_oauth.<a href="src/fern/box_oauth/client.py">authorize_box</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.box_oauth.<a href="src/fern/box_oauth/client.py#L25-L77">authorize_box</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -5087,7 +5087,7 @@ client.box_oauth.authorize_box(
 </details>
 
 ## QuickbooksOauth
-<details><summary><code>client.quickbooks_oauth.<a href="src/fern/quickbooks_oauth/client.py">authorize_quick_books</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.quickbooks_oauth.<a href="src/fern/quickbooks_oauth/client.py#L26-L90">authorize_quick_books</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -5200,7 +5200,7 @@ client.quickbooks_oauth.authorize_quick_books(
 </details>
 
 ## ZendeskOauth
-<details><summary><code>client.zendesk_oauth.<a href="src/fern/zendesk_oauth/client.py">authorize_zendesk</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.zendesk_oauth.<a href="src/fern/zendesk_oauth/client.py#L25-L90">authorize_zendesk</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -5314,7 +5314,7 @@ client.zendesk_oauth.authorize_zendesk(
 </details>
 
 ## StripeConnectOauth
-<details><summary><code>client.stripe_connect_oauth.<a href="src/fern/stripe_connect_oauth/client.py">authorize_stripe_connect</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.stripe_connect_oauth.<a href="src/fern/stripe_connect_oauth/client.py#L25-L83">authorize_stripe_connect</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -5418,7 +5418,7 @@ client.stripe_connect_oauth.authorize_stripe_connect(
 </details>
 
 ## CalcomOauth
-<details><summary><code>client.calcom_oauth.<a href="src/fern/calcom_oauth/client.py">authorize_calcom</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.calcom_oauth.<a href="src/fern/calcom_oauth/client.py#L25-L74">authorize_calcom</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -5513,7 +5513,7 @@ client.calcom_oauth.authorize_calcom(
 </details>
 
 ## VercelOauth
-<details><summary><code>client.vercel_oauth.<a href="src/fern/vercel_oauth/client.py">authorize_vercel</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.vercel_oauth.<a href="src/fern/vercel_oauth/client.py#L25-L83">authorize_vercel</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -5617,7 +5617,7 @@ client.vercel_oauth.authorize_vercel(
 </details>
 
 ## PipedriveOauth
-<details><summary><code>client.pipedrive_oauth.<a href="src/fern/pipedrive_oauth/client.py">authorize_pipedrive</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.pipedrive_oauth.<a href="src/fern/pipedrive_oauth/client.py#L25-L83">authorize_pipedrive</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -5721,7 +5721,7 @@ client.pipedrive_oauth.authorize_pipedrive(
 </details>
 
 ## FigmaOauth
-<details><summary><code>client.figma_oauth.<a href="src/fern/figma_oauth/client.py">authorize_figma</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.figma_oauth.<a href="src/fern/figma_oauth/client.py#L25-L83">authorize_figma</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -5825,7 +5825,7 @@ client.figma_oauth.authorize_figma(
 </details>
 
 ## KlaviyoOauth
-<details><summary><code>client.klaviyo_oauth.<a href="src/fern/klaviyo_oauth/client.py">authorize_klaviyo</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.klaviyo_oauth.<a href="src/fern/klaviyo_oauth/client.py#L25-L75">authorize_klaviyo</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -5909,7 +5909,7 @@ client.klaviyo_oauth.authorize_klaviyo(
 </details>
 
 ## PagerdutyOauth
-<details><summary><code>client.pagerduty_oauth.<a href="src/fern/pagerduty_oauth/client.py">authorize_pager_duty</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.pagerduty_oauth.<a href="src/fern/pagerduty_oauth/client.py#L25-L83">authorize_pager_duty</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -6013,7 +6013,7 @@ client.pagerduty_oauth.authorize_pager_duty(
 </details>
 
 ## DocusignOauth
-<details><summary><code>client.docusign_oauth.<a href="src/fern/docusign_oauth/client.py">authorize_docu_sign</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.docusign_oauth.<a href="src/fern/docusign_oauth/client.py#L25-L83">authorize_docu_sign</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -6117,7 +6117,7 @@ client.docusign_oauth.authorize_docu_sign(
 </details>
 
 ## DialpadOauth
-<details><summary><code>client.dialpad_oauth.<a href="src/fern/dialpad_oauth/client.py">authorize_dialpad</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.dialpad_oauth.<a href="src/fern/dialpad_oauth/client.py#L25-L95">authorize_dialpad</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -6239,7 +6239,7 @@ client.dialpad_oauth.authorize_dialpad(
 </details>
 
 ## ShopifyOauth
-<details><summary><code>client.shopify_oauth.<a href="src/fern/shopify_oauth/client.py">authorize_shopify</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.shopify_oauth.<a href="src/fern/shopify_oauth/client.py#L25-L90">authorize_shopify</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -6353,7 +6353,7 @@ client.shopify_oauth.authorize_shopify(
 </details>
 
 ## OnedriveOauth
-<details><summary><code>client.onedrive_oauth.<a href="src/fern/onedrive_oauth/client.py">authorize_one_drive</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.onedrive_oauth.<a href="src/fern/onedrive_oauth/client.py#L26-L76">authorize_one_drive</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -6436,7 +6436,7 @@ client.onedrive_oauth.authorize_one_drive(
 </dl>
 </details>
 
-<details><summary><code>client.onedrive_oauth.<a href="src/fern/onedrive_oauth/client.py">refresh_token</a>(...) -> AzureAdoAuthSuccessResponse</code></summary>
+<details><summary><code>client.onedrive_oauth.<a href="src/fern/onedrive_oauth/client.py#L78-L107">refresh_token</a>(...) -> AzureAdoAuthSuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -6496,7 +6496,7 @@ client.onedrive_oauth.refresh_token(
 </details>
 
 ## OutlookOauth
-<details><summary><code>client.outlook_oauth.<a href="src/fern/outlook_oauth/client.py">authorize_outlook</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.outlook_oauth.<a href="src/fern/outlook_oauth/client.py#L26-L76">authorize_outlook</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -6579,7 +6579,7 @@ client.outlook_oauth.authorize_outlook(
 </dl>
 </details>
 
-<details><summary><code>client.outlook_oauth.<a href="src/fern/outlook_oauth/client.py">refresh_token</a>(...) -> AzureAdoAuthSuccessResponse</code></summary>
+<details><summary><code>client.outlook_oauth.<a href="src/fern/outlook_oauth/client.py#L78-L107">refresh_token</a>(...) -> AzureAdoAuthSuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -6639,7 +6639,7 @@ client.outlook_oauth.refresh_token(
 </details>
 
 ## TeamsOauth
-<details><summary><code>client.teams_oauth.<a href="src/fern/teams_oauth/client.py">authorize_teams</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.teams_oauth.<a href="src/fern/teams_oauth/client.py#L26-L76">authorize_teams</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -6722,7 +6722,7 @@ client.teams_oauth.authorize_teams(
 </dl>
 </details>
 
-<details><summary><code>client.teams_oauth.<a href="src/fern/teams_oauth/client.py">refresh_token</a>(...) -> AzureAdoAuthSuccessResponse</code></summary>
+<details><summary><code>client.teams_oauth.<a href="src/fern/teams_oauth/client.py#L78-L107">refresh_token</a>(...) -> AzureAdoAuthSuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -6782,7 +6782,7 @@ client.teams_oauth.refresh_token(
 </details>
 
 ## FathomOauth
-<details><summary><code>client.fathom_oauth.<a href="src/fern/fathom_oauth/client.py">authorize_fathom</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.fathom_oauth.<a href="src/fern/fathom_oauth/client.py#L25-L83">authorize_fathom</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -6886,7 +6886,7 @@ client.fathom_oauth.authorize_fathom(
 </details>
 
 ## MondayOauth
-<details><summary><code>client.monday_oauth.<a href="src/fern/monday_oauth/client.py">authorize_monday</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.monday_oauth.<a href="src/fern/monday_oauth/client.py#L25-L83">authorize_monday</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 

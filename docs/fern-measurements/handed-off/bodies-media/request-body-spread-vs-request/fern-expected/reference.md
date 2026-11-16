@@ -1,6 +1,6 @@
 # Reference
 ## Hives
-<details><summary><code>client.hives.<a href="src/fern/hives/client.py">register_hive</a>(...)</code></summary>
+<details><summary><code>client.hives.<a href="src/fern/hives/client.py#L29-L61">register_hive</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -67,7 +67,7 @@ client.hives.register_hive(
 </dl>
 </details>
 
-<details><summary><code>client.hives.<a href="src/fern/hives/client.py">upload_frame</a>(...)</code></summary>
+<details><summary><code>client.hives.<a href="src/fern/hives/client.py#L63-L97">upload_frame</a>(...)</code></summary>
 <dl>
 <dd>
 

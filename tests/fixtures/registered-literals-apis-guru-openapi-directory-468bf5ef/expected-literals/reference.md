@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">favico_favicon_ico_get</a>() -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L113-L133">favico_favicon_ico_get</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -47,7 +47,7 @@ client.favico_favicon_ico_get()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">pong_ping_get</a>() -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L135-L160">pong_ping_get</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -113,7 +113,7 @@ client.pong_ping_get()
 </details>
 
 ## V1
-<details><summary><code>client.v1.<a href="src/fern/v1/client.py">cities_getv1</a>(...) -> OpenAqCitiesResult</code></summary>
+<details><summary><code>client.v1.<a href="src/fern/v1/client.py#L61-L139">cities_getv1</a>(...) -> OpenAqCitiesResult</code></summary>
 <dl>
 <dd>
 
@@ -248,7 +248,7 @@ client.v1.cities_getv1()
 </dl>
 </details>
 
-<details><summary><code>client.v1.<a href="src/fern/v1/client.py">countries_getv1</a>(...) -> OpenAqCountriesResult</code></summary>
+<details><summary><code>client.v1.<a href="src/fern/v1/client.py#L141-L205">countries_getv1</a>(...) -> OpenAqCountriesResult</code></summary>
 <dl>
 <dd>
 
@@ -362,7 +362,7 @@ client.v1.countries_getv1()
 </dl>
 </details>
 
-<details><summary><code>client.v1.<a href="src/fern/v1/client.py">countries_get</a>(...) -> OpenAqCountriesResult</code></summary>
+<details><summary><code>client.v1.<a href="src/fern/v1/client.py#L207-L269">countries_get</a>(...) -> OpenAqCountriesResult</code></summary>
 <dl>
 <dd>
 
@@ -473,7 +473,7 @@ client.v1.countries_get(
 </dl>
 </details>
 
-<details><summary><code>client.v1.<a href="src/fern/v1/client.py">latest_v1get</a>(...) -> OpenAqResult</code></summary>
+<details><summary><code>client.v1.<a href="src/fern/v1/client.py#L271-L428">latest_v1get</a>(...) -> OpenAqResult</code></summary>
 <dl>
 <dd>
 
@@ -730,7 +730,7 @@ client.v1.latest_v1get(
 </dl>
 </details>
 
-<details><summary><code>client.v1.<a href="src/fern/v1/client.py">locationsv1get</a>(...) -> OpenAqResult</code></summary>
+<details><summary><code>client.v1.<a href="src/fern/v1/client.py#L430-L587">locationsv1get</a>(...) -> OpenAqResult</code></summary>
 <dl>
 <dd>
 
@@ -987,7 +987,7 @@ client.v1.locationsv1get(
 </dl>
 </details>
 
-<details><summary><code>client.v1.<a href="src/fern/v1/client.py">measurements_get_v1</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.v1.<a href="src/fern/v1/client.py#L589-L747">measurements_get_v1</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1266,7 +1266,7 @@ client.v1.measurements_get_v1()
 </dl>
 </details>
 
-<details><summary><code>client.v1.<a href="src/fern/v1/client.py">parameters_getv1</a>(...) -> OpenAqParametersResult</code></summary>
+<details><summary><code>client.v1.<a href="src/fern/v1/client.py#L749-L810">parameters_getv1</a>(...) -> OpenAqParametersResult</code></summary>
 <dl>
 <dd>
 
@@ -1378,7 +1378,7 @@ client.v1.parameters_getv1()
 </dl>
 </details>
 
-<details><summary><code>client.v1.<a href="src/fern/v1/client.py">sources_v1get</a>(...) -> OpenAqResult</code></summary>
+<details><summary><code>client.v1.<a href="src/fern/v1/client.py#L812-L865">sources_v1get</a>(...) -> OpenAqResult</code></summary>
 <dl>
 <dd>
 
@@ -1475,7 +1475,7 @@ client.v1.sources_v1get()
 </details>
 
 ## V2
-<details><summary><code>client.v2.<a href="src/fern/v2/client.py">averages_v2get</a>(...) -> OpenAqResult</code></summary>
+<details><summary><code>client.v2.<a href="src/fern/v2/client.py#L107-L225">averages_v2get</a>(...) -> OpenAqResult</code></summary>
 <dl>
 <dd>
 
@@ -1672,7 +1672,7 @@ client.v2.averages_v2get(
 </dl>
 </details>
 
-<details><summary><code>client.v2.<a href="src/fern/v2/client.py">cities_get</a>(...) -> OpenAqCitiesResult</code></summary>
+<details><summary><code>client.v2.<a href="src/fern/v2/client.py#L227-L305">cities_get</a>(...) -> OpenAqCitiesResult</code></summary>
 <dl>
 <dd>
 
@@ -1807,7 +1807,7 @@ client.v2.cities_get()
 </dl>
 </details>
 
-<details><summary><code>client.v2.<a href="src/fern/v2/client.py">countries_get</a>(...) -> OpenAqCountriesResult</code></summary>
+<details><summary><code>client.v2.<a href="src/fern/v2/client.py#L307-L369">countries_get</a>(...) -> OpenAqCountriesResult</code></summary>
 <dl>
 <dd>
 
@@ -1918,7 +1918,7 @@ client.v2.countries_get(
 </dl>
 </details>
 
-<details><summary><code>client.v2.<a href="src/fern/v2/client.py">latest_get</a>(...) -> OpenAqResult</code></summary>
+<details><summary><code>client.v2.<a href="src/fern/v2/client.py#L371-L528">latest_get</a>(...) -> OpenAqResult</code></summary>
 <dl>
 <dd>
 
@@ -2175,7 +2175,7 @@ client.v2.latest_get(
 </dl>
 </details>
 
-<details><summary><code>client.v2.<a href="src/fern/v2/client.py">locations_get</a>(...) -> OpenAqResult</code></summary>
+<details><summary><code>client.v2.<a href="src/fern/v2/client.py#L530-L687">locations_get</a>(...) -> OpenAqResult</code></summary>
 <dl>
 <dd>
 
@@ -2432,7 +2432,7 @@ client.v2.locations_get(
 </dl>
 </details>
 
-<details><summary><code>client.v2.<a href="src/fern/v2/client.py">mobilegentilejson</a>() -> TileJson</code></summary>
+<details><summary><code>client.v2.<a href="src/fern/v2/client.py#L689-L709">mobilegentilejson</a>() -> TileJson</code></summary>
 <dl>
 <dd>
 
@@ -2480,7 +2480,7 @@ client.v2.mobilegentilejson()
 </dl>
 </details>
 
-<details><summary><code>client.v2.<a href="src/fern/v2/client.py">get_mobilegentile</a>(...)</code></summary>
+<details><summary><code>client.v2.<a href="src/fern/v2/client.py#L711-L785">get_mobilegentile</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2612,7 +2612,7 @@ client.v2.get_mobilegentile(
 </dl>
 </details>
 
-<details><summary><code>client.v2.<a href="src/fern/v2/client.py">mobiletilejson</a>() -> TileJson</code></summary>
+<details><summary><code>client.v2.<a href="src/fern/v2/client.py#L787-L807">mobiletilejson</a>() -> TileJson</code></summary>
 <dl>
 <dd>
 
@@ -2660,7 +2660,7 @@ client.v2.mobiletilejson()
 </dl>
 </details>
 
-<details><summary><code>client.v2.<a href="src/fern/v2/client.py">get_mobiletile</a>(...)</code></summary>
+<details><summary><code>client.v2.<a href="src/fern/v2/client.py#L809-L895">get_mobiletile</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2811,7 +2811,7 @@ client.v2.get_mobiletile(
 </dl>
 </details>
 
-<details><summary><code>client.v2.<a href="src/fern/v2/client.py">tilejson</a>() -> TileJson</code></summary>
+<details><summary><code>client.v2.<a href="src/fern/v2/client.py#L897-L917">tilejson</a>() -> TileJson</code></summary>
 <dl>
 <dd>
 
@@ -2859,7 +2859,7 @@ client.v2.tilejson()
 </dl>
 </details>
 
-<details><summary><code>client.v2.<a href="src/fern/v2/client.py">demo</a>() -> str</code></summary>
+<details><summary><code>client.v2.<a href="src/fern/v2/client.py#L919-L939">demo</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -2907,7 +2907,7 @@ client.v2.demo()
 </dl>
 </details>
 
-<details><summary><code>client.v2.<a href="src/fern/v2/client.py">get_tile</a>(...)</code></summary>
+<details><summary><code>client.v2.<a href="src/fern/v2/client.py#L941-L1011">get_tile</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3039,7 +3039,7 @@ client.v2.get_tile(
 </dl>
 </details>
 
-<details><summary><code>client.v2.<a href="src/fern/v2/client.py">mfr_get</a>() -> OpenAqResult</code></summary>
+<details><summary><code>client.v2.<a href="src/fern/v2/client.py#L1013-L1033">mfr_get</a>() -> OpenAqResult</code></summary>
 <dl>
 <dd>
 
@@ -3087,7 +3087,7 @@ client.v2.mfr_get()
 </dl>
 </details>
 
-<details><summary><code>client.v2.<a href="src/fern/v2/client.py">measurements_get</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.v2.<a href="src/fern/v2/client.py#L1035-L1193">measurements_get</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -3366,7 +3366,7 @@ client.v2.measurements_get()
 </dl>
 </details>
 
-<details><summary><code>client.v2.<a href="src/fern/v2/client.py">model_get</a>() -> OpenAqResult</code></summary>
+<details><summary><code>client.v2.<a href="src/fern/v2/client.py#L1195-L1215">model_get</a>() -> OpenAqResult</code></summary>
 <dl>
 <dd>
 
@@ -3414,7 +3414,7 @@ client.v2.model_get()
 </dl>
 </details>
 
-<details><summary><code>client.v2.<a href="src/fern/v2/client.py">parameters_get</a>(...) -> OpenAqParametersResult</code></summary>
+<details><summary><code>client.v2.<a href="src/fern/v2/client.py#L1217-L1278">parameters_get</a>(...) -> OpenAqParametersResult</code></summary>
 <dl>
 <dd>
 
@@ -3526,7 +3526,7 @@ client.v2.parameters_get()
 </dl>
 </details>
 
-<details><summary><code>client.v2.<a href="src/fern/v2/client.py">projects_get</a>(...) -> OpenAqProjectsResult</code></summary>
+<details><summary><code>client.v2.<a href="src/fern/v2/client.py#L1280-L1397">projects_get</a>(...) -> OpenAqProjectsResult</code></summary>
 <dl>
 <dd>
 
@@ -3722,7 +3722,7 @@ client.v2.projects_get(
 </dl>
 </details>
 
-<details><summary><code>client.v2.<a href="src/fern/v2/client.py">sources_get</a>(...) -> OpenAqResult</code></summary>
+<details><summary><code>client.v2.<a href="src/fern/v2/client.py#L1399-L1460">sources_get</a>(...) -> OpenAqResult</code></summary>
 <dl>
 <dd>
 
@@ -3834,7 +3834,7 @@ client.v2.sources_get()
 </dl>
 </details>
 
-<details><summary><code>client.v2.<a href="src/fern/v2/client.py">readme_get</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.v2.<a href="src/fern/v2/client.py#L1462-L1486">readme_get</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -3892,7 +3892,7 @@ client.v2.readme_get(
 </dl>
 </details>
 
-<details><summary><code>client.v2.<a href="src/fern/v2/client.py">summary_get</a>() -> OpenAqResult</code></summary>
+<details><summary><code>client.v2.<a href="src/fern/v2/client.py#L1488-L1508">summary_get</a>() -> OpenAqResult</code></summary>
 <dl>
 <dd>
 

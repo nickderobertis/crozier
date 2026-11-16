@@ -1,6 +1,6 @@
 # Reference
 ## VectorOperationsV2
-<details><summary><code>client.vector_operations_v2.<a href="src/fern/vector_operations_v2/client.py">delete</a>(...) -> PostV2VectordbEntitiesDeleteResponse</code></summary>
+<details><summary><code>client.vector_operations_v2.<a href="src/fern/vector_operations_v2/client.py#L41-L98">delete</a>(...) -> PostV2VectordbEntitiesDeleteResponse</code></summary>
 <dl>
 <dd>
 
@@ -103,7 +103,7 @@ If specified, the data is to be deleted from the specified partition.
 </dl>
 </details>
 
-<details><summary><code>client.vector_operations_v2.<a href="src/fern/vector_operations_v2/client.py">insert</a>(...) -> PostV2VectordbEntitiesInsertResponse</code></summary>
+<details><summary><code>client.vector_operations_v2.<a href="src/fern/vector_operations_v2/client.py#L100-L161">insert</a>(...) -> PostV2VectordbEntitiesInsertResponse</code></summary>
 <dl>
 <dd>
 
@@ -207,7 +207,7 @@ If specified, the data is to be inserted into the specified partition.
 </dl>
 </details>
 
-<details><summary><code>client.vector_operations_v2.<a href="src/fern/vector_operations_v2/client.py">query</a>(...) -> PostV2VectordbEntitiesQueryResponse</code></summary>
+<details><summary><code>client.vector_operations_v2.<a href="src/fern/vector_operations_v2/client.py#L163-L222">query</a>(...) -> PostV2VectordbEntitiesQueryResponse</code></summary>
 <dl>
 <dd>
 
@@ -311,7 +311,7 @@ client.vector_operations_v2.query(
 </dl>
 </details>
 
-<details><summary><code>client.vector_operations_v2.<a href="src/fern/vector_operations_v2/client.py">upsert</a>(...) -> PostV2VectordbEntitiesUpsertResponse</code></summary>
+<details><summary><code>client.vector_operations_v2.<a href="src/fern/vector_operations_v2/client.py#L224-L285">upsert</a>(...) -> PostV2VectordbEntitiesUpsertResponse</code></summary>
 <dl>
 <dd>
 
@@ -415,7 +415,7 @@ If specified, the data is to be inserted into the specified partition.
 </dl>
 </details>
 
-<details><summary><code>client.vector_operations_v2.<a href="src/fern/vector_operations_v2/client.py">get</a>(...) -> PostV2VectordbEntitiesGetResponse</code></summary>
+<details><summary><code>client.vector_operations_v2.<a href="src/fern/vector_operations_v2/client.py#L287-L347">get</a>(...) -> PostV2VectordbEntitiesGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -520,7 +520,7 @@ client.vector_operations_v2.get(
 </dl>
 </details>
 
-<details><summary><code>client.vector_operations_v2.<a href="src/fern/vector_operations_v2/client.py">search</a>(...) -> PostV2VectordbEntitiesSearchResponse</code></summary>
+<details><summary><code>client.vector_operations_v2.<a href="src/fern/vector_operations_v2/client.py#L349-L461">search</a>(...) -> PostV2VectordbEntitiesSearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -704,7 +704,7 @@ The sum of this value and **offset** in **param** should be less than 16,384.
 </details>
 
 ## CollectionOperationsV2
-<details><summary><code>client.collection_operations_v2.<a href="src/fern/collection_operations_v2/client.py">has_collection</a>(...) -> PostV2VectordbCollectionsHasResponse</code></summary>
+<details><summary><code>client.collection_operations_v2.<a href="src/fern/collection_operations_v2/client.py#L43-L82">has_collection</a>(...) -> PostV2VectordbCollectionsHasResponse</code></summary>
 <dl>
 <dd>
 
@@ -785,7 +785,7 @@ client.collection_operations_v2.has_collection(
 </dl>
 </details>
 
-<details><summary><code>client.collection_operations_v2.<a href="src/fern/collection_operations_v2/client.py">rename_collection</a>(...) -> PostV2VectordbCollectionsRenameResponse</code></summary>
+<details><summary><code>client.collection_operations_v2.<a href="src/fern/collection_operations_v2/client.py#L84-L144">rename_collection</a>(...) -> PostV2VectordbCollectionsRenameResponse</code></summary>
 <dl>
 <dd>
 
@@ -895,7 +895,7 @@ Setting this to a non-existing database results in a **MilvusException**.
 </dl>
 </details>
 
-<details><summary><code>client.collection_operations_v2.<a href="src/fern/collection_operations_v2/client.py">get_collection_stats</a>(...) -> PostV2VectordbCollectionsGetStatsResponse</code></summary>
+<details><summary><code>client.collection_operations_v2.<a href="src/fern/collection_operations_v2/client.py#L146-L186">get_collection_stats</a>(...) -> PostV2VectordbCollectionsGetStatsResponse</code></summary>
 <dl>
 <dd>
 
@@ -979,7 +979,7 @@ Setting this to a non-existing database results in an error.
 </dl>
 </details>
 
-<details><summary><code>client.collection_operations_v2.<a href="src/fern/collection_operations_v2/client.py">load_collection</a>(...) -> PostV2VectordbCollectionsLoadResponse</code></summary>
+<details><summary><code>client.collection_operations_v2.<a href="src/fern/collection_operations_v2/client.py#L188-L240">load_collection</a>(...) -> PostV2VectordbCollectionsLoadResponse</code></summary>
 <dl>
 <dd>
 
@@ -1074,7 +1074,7 @@ Setting this to a non-existing database results in a **MilvusException**.
 </dl>
 </details>
 
-<details><summary><code>client.collection_operations_v2.<a href="src/fern/collection_operations_v2/client.py">release_collection</a>(...) -> PostV2VectordbCollectionsReleaseResponse</code></summary>
+<details><summary><code>client.collection_operations_v2.<a href="src/fern/collection_operations_v2/client.py#L242-L286">release_collection</a>(...) -> PostV2VectordbCollectionsReleaseResponse</code></summary>
 <dl>
 <dd>
 
@@ -1160,7 +1160,7 @@ Setting this to a non-existing database results in a **MilvusException**.
 </dl>
 </details>
 
-<details><summary><code>client.collection_operations_v2.<a href="src/fern/collection_operations_v2/client.py">create_collection</a>(...) -> PostV2VectordbCollectionsCreateResponse</code></summary>
+<details><summary><code>client.collection_operations_v2.<a href="src/fern/collection_operations_v2/client.py#L288-L379">create_collection</a>(...) -> PostV2VectordbCollectionsCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -1318,7 +1318,7 @@ Possible values are **L2**, **IP**, and **COSINE**.
 </dl>
 </details>
 
-<details><summary><code>client.collection_operations_v2.<a href="src/fern/collection_operations_v2/client.py">get_collection_load_state</a>(...) -> PostV2VectordbCollectionsGetLoadStateResponse</code></summary>
+<details><summary><code>client.collection_operations_v2.<a href="src/fern/collection_operations_v2/client.py#L381-L430">get_collection_load_state</a>(...) -> PostV2VectordbCollectionsGetLoadStateResponse</code></summary>
 <dl>
 <dd>
 
@@ -1406,7 +1406,7 @@ client.collection_operations_v2.get_collection_load_state(
 </dl>
 </details>
 
-<details><summary><code>client.collection_operations_v2.<a href="src/fern/collection_operations_v2/client.py">list_collections</a>(...) -> PostV2VectordbCollectionsListResponse</code></summary>
+<details><summary><code>client.collection_operations_v2.<a href="src/fern/collection_operations_v2/client.py#L432-L465">list_collections</a>(...) -> PostV2VectordbCollectionsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -1478,7 +1478,7 @@ client.collection_operations_v2.list_collections(
 </dl>
 </details>
 
-<details><summary><code>client.collection_operations_v2.<a href="src/fern/collection_operations_v2/client.py">describe_collection</a>(...) -> PostV2VectordbCollectionsDescribeResponse</code></summary>
+<details><summary><code>client.collection_operations_v2.<a href="src/fern/collection_operations_v2/client.py#L467-L506">describe_collection</a>(...) -> PostV2VectordbCollectionsDescribeResponse</code></summary>
 <dl>
 <dd>
 
@@ -1559,7 +1559,7 @@ client.collection_operations_v2.describe_collection(
 </dl>
 </details>
 
-<details><summary><code>client.collection_operations_v2.<a href="src/fern/collection_operations_v2/client.py">drop_collection</a>(...) -> PostV2VectordbCollectionsDropResponse</code></summary>
+<details><summary><code>client.collection_operations_v2.<a href="src/fern/collection_operations_v2/client.py#L508-L552">drop_collection</a>(...) -> PostV2VectordbCollectionsDropResponse</code></summary>
 <dl>
 <dd>
 
@@ -1646,7 +1646,7 @@ Setting this to a non-existing database results in a **MilvusException**.
 </details>
 
 ## PartitionOperationsV2
-<details><summary><code>client.partition_operations_v2.<a href="src/fern/partition_operations_v2/client.py">list_partitions</a>(...) -> PostV2VectordbPartitionsListResponse</code></summary>
+<details><summary><code>client.partition_operations_v2.<a href="src/fern/partition_operations_v2/client.py#L35-L74">list_partitions</a>(...) -> PostV2VectordbPartitionsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -1727,7 +1727,7 @@ client.partition_operations_v2.list_partitions(
 </dl>
 </details>
 
-<details><summary><code>client.partition_operations_v2.<a href="src/fern/partition_operations_v2/client.py">create_partition</a>(...) -> PostV2VectordbPartitionsCreateResponse</code></summary>
+<details><summary><code>client.partition_operations_v2.<a href="src/fern/partition_operations_v2/client.py#L76-L128">create_partition</a>(...) -> PostV2VectordbPartitionsCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -1822,7 +1822,7 @@ Setting this to a non-existing database results in a **MilvusException**.
 </dl>
 </details>
 
-<details><summary><code>client.partition_operations_v2.<a href="src/fern/partition_operations_v2/client.py">drop_partition</a>(...) -> PostV2VectordbPartitionsDropResponse</code></summary>
+<details><summary><code>client.partition_operations_v2.<a href="src/fern/partition_operations_v2/client.py#L130-L182">drop_partition</a>(...) -> PostV2VectordbPartitionsDropResponse</code></summary>
 <dl>
 <dd>
 
@@ -1917,7 +1917,7 @@ Setting this to a non-existing database results in a **MilvusException**.
 </dl>
 </details>
 
-<details><summary><code>client.partition_operations_v2.<a href="src/fern/partition_operations_v2/client.py">load_partitions</a>(...) -> PostV2VectordbPartitionsLoadResponse</code></summary>
+<details><summary><code>client.partition_operations_v2.<a href="src/fern/partition_operations_v2/client.py#L184-L236">load_partitions</a>(...) -> PostV2VectordbPartitionsLoadResponse</code></summary>
 <dl>
 <dd>
 
@@ -2014,7 +2014,7 @@ Setting this to a non-existing database results in a **MilvusException**.
 </dl>
 </details>
 
-<details><summary><code>client.partition_operations_v2.<a href="src/fern/partition_operations_v2/client.py">release_partitions</a>(...) -> PostV2VectordbPartitionsReleaseResponse</code></summary>
+<details><summary><code>client.partition_operations_v2.<a href="src/fern/partition_operations_v2/client.py#L238-L290">release_partitions</a>(...) -> PostV2VectordbPartitionsReleaseResponse</code></summary>
 <dl>
 <dd>
 
@@ -2111,7 +2111,7 @@ Setting this to a non-existing database results in a **MilvusException**.
 </dl>
 </details>
 
-<details><summary><code>client.partition_operations_v2.<a href="src/fern/partition_operations_v2/client.py">has_partition</a>(...) -> PostV2VectordbPartitionsHasResponse</code></summary>
+<details><summary><code>client.partition_operations_v2.<a href="src/fern/partition_operations_v2/client.py#L292-L342">has_partition</a>(...) -> PostV2VectordbPartitionsHasResponse</code></summary>
 <dl>
 <dd>
 
@@ -2200,7 +2200,7 @@ client.partition_operations_v2.has_partition(
 </dl>
 </details>
 
-<details><summary><code>client.partition_operations_v2.<a href="src/fern/partition_operations_v2/client.py">get_partition_statistics</a>(...) -> PostV2VectordbPartitionsGetStatsResponse</code></summary>
+<details><summary><code>client.partition_operations_v2.<a href="src/fern/partition_operations_v2/client.py#L344-L394">get_partition_statistics</a>(...) -> PostV2VectordbPartitionsGetStatsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2290,7 +2290,7 @@ client.partition_operations_v2.get_partition_statistics(
 </details>
 
 ## UserOperationsV2
-<details><summary><code>client.user_operations_v2.<a href="src/fern/user_operations_v2/client.py">create_user</a>(...) -> PostV2VectordbUsersCreateResponse</code></summary>
+<details><summary><code>client.user_operations_v2.<a href="src/fern/user_operations_v2/client.py#L35-L75">create_user</a>(...) -> PostV2VectordbUsersCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -2374,7 +2374,7 @@ The password must be a string of 8 to 64 characters and must include at least th
 </dl>
 </details>
 
-<details><summary><code>client.user_operations_v2.<a href="src/fern/user_operations_v2/client.py">update_user_password</a>(...) -> PostV2VectordbUsersUpdatePasswordResponse</code></summary>
+<details><summary><code>client.user_operations_v2.<a href="src/fern/user_operations_v2/client.py#L77-L126">update_user_password</a>(...) -> PostV2VectordbUsersUpdatePasswordResponse</code></summary>
 <dl>
 <dd>
 
@@ -2467,7 +2467,7 @@ The password must be a string of 8 to 64 characters and must include at least th
 </dl>
 </details>
 
-<details><summary><code>client.user_operations_v2.<a href="src/fern/user_operations_v2/client.py">drop_user</a>(...) -> PostV2VectordbUsersDropResponse</code></summary>
+<details><summary><code>client.user_operations_v2.<a href="src/fern/user_operations_v2/client.py#L128-L161">drop_user</a>(...) -> PostV2VectordbUsersDropResponse</code></summary>
 <dl>
 <dd>
 
@@ -2539,7 +2539,7 @@ client.user_operations_v2.drop_user(
 </dl>
 </details>
 
-<details><summary><code>client.user_operations_v2.<a href="src/fern/user_operations_v2/client.py">describe_user</a>(...) -> PostV2VectordbUsersDescribeResponse</code></summary>
+<details><summary><code>client.user_operations_v2.<a href="src/fern/user_operations_v2/client.py#L163-L196">describe_user</a>(...) -> PostV2VectordbUsersDescribeResponse</code></summary>
 <dl>
 <dd>
 
@@ -2611,7 +2611,7 @@ client.user_operations_v2.describe_user(
 </dl>
 </details>
 
-<details><summary><code>client.user_operations_v2.<a href="src/fern/user_operations_v2/client.py">list_users</a>() -> PostV2VectordbUsersListResponse</code></summary>
+<details><summary><code>client.user_operations_v2.<a href="src/fern/user_operations_v2/client.py#L198-L224">list_users</a>() -> PostV2VectordbUsersListResponse</code></summary>
 <dl>
 <dd>
 
@@ -2673,7 +2673,7 @@ client.user_operations_v2.list_users()
 </dl>
 </details>
 
-<details><summary><code>client.user_operations_v2.<a href="src/fern/user_operations_v2/client.py">grant_role_to_user</a>(...) -> PostV2VectordbUsersGrantRoleResponse</code></summary>
+<details><summary><code>client.user_operations_v2.<a href="src/fern/user_operations_v2/client.py#L226-L265">grant_role_to_user</a>(...) -> PostV2VectordbUsersGrantRoleResponse</code></summary>
 <dl>
 <dd>
 
@@ -2754,7 +2754,7 @@ client.user_operations_v2.grant_role_to_user(
 </dl>
 </details>
 
-<details><summary><code>client.user_operations_v2.<a href="src/fern/user_operations_v2/client.py">revoker_role_from_user</a>(...) -> PostV2VectordbUsersRevokeRoleResponse</code></summary>
+<details><summary><code>client.user_operations_v2.<a href="src/fern/user_operations_v2/client.py#L267-L308">revoker_role_from_user</a>(...) -> PostV2VectordbUsersRevokeRoleResponse</code></summary>
 <dl>
 <dd>
 
@@ -2838,7 +2838,7 @@ client.user_operations_v2.revoker_role_from_user(
 </details>
 
 ## RoleOperationsV2
-<details><summary><code>client.role_operations_v2.<a href="src/fern/role_operations_v2/client.py">list_roles</a>() -> PostV2VectordbRolesListResponse</code></summary>
+<details><summary><code>client.role_operations_v2.<a href="src/fern/role_operations_v2/client.py#L34-L60">list_roles</a>() -> PostV2VectordbRolesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -2900,7 +2900,7 @@ client.role_operations_v2.list_roles()
 </dl>
 </details>
 
-<details><summary><code>client.role_operations_v2.<a href="src/fern/role_operations_v2/client.py">describe_role</a>(...) -> PostV2VectordbRolesDescribeResponse</code></summary>
+<details><summary><code>client.role_operations_v2.<a href="src/fern/role_operations_v2/client.py#L62-L95">describe_role</a>(...) -> PostV2VectordbRolesDescribeResponse</code></summary>
 <dl>
 <dd>
 
@@ -2972,7 +2972,7 @@ client.role_operations_v2.describe_role(
 </dl>
 </details>
 
-<details><summary><code>client.role_operations_v2.<a href="src/fern/role_operations_v2/client.py">create_role</a>(...) -> PostV2VectordbRolesCreateResponse</code></summary>
+<details><summary><code>client.role_operations_v2.<a href="src/fern/role_operations_v2/client.py#L97-L130">create_role</a>(...) -> PostV2VectordbRolesCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -3044,7 +3044,7 @@ client.role_operations_v2.create_role(
 </dl>
 </details>
 
-<details><summary><code>client.role_operations_v2.<a href="src/fern/role_operations_v2/client.py">drop_role</a>(...) -> PostV2VectordbRolesDropResponse</code></summary>
+<details><summary><code>client.role_operations_v2.<a href="src/fern/role_operations_v2/client.py#L132-L165">drop_role</a>(...) -> PostV2VectordbRolesDropResponse</code></summary>
 <dl>
 <dd>
 
@@ -3116,7 +3116,7 @@ client.role_operations_v2.drop_role(
 </dl>
 </details>
 
-<details><summary><code>client.role_operations_v2.<a href="src/fern/role_operations_v2/client.py">grant_privilege_to_role</a>(...) -> PostV2VectordbRolesGrantPrivilegeResponse</code></summary>
+<details><summary><code>client.role_operations_v2.<a href="src/fern/role_operations_v2/client.py#L167-L224">grant_privilege_to_role</a>(...) -> PostV2VectordbRolesGrantPrivilegeResponse</code></summary>
 <dl>
 <dd>
 
@@ -3215,7 +3215,7 @@ client.role_operations_v2.grant_privilege_to_role(
 </dl>
 </details>
 
-<details><summary><code>client.role_operations_v2.<a href="src/fern/role_operations_v2/client.py">revoke_privilege_from_role</a>(...) -> PostV2VectordbRolesRevokePrivilegeResponse</code></summary>
+<details><summary><code>client.role_operations_v2.<a href="src/fern/role_operations_v2/client.py#L226-L283">revoke_privilege_from_role</a>(...) -> PostV2VectordbRolesRevokePrivilegeResponse</code></summary>
 <dl>
 <dd>
 
@@ -3315,7 +3315,7 @@ client.role_operations_v2.revoke_privilege_from_role(
 </details>
 
 ## IndexOperationsV2
-<details><summary><code>client.index_operations_v2.<a href="src/fern/index_operations_v2/client.py">create_index</a>(...) -> PostV2VectordbIndexesCreateResponse</code></summary>
+<details><summary><code>client.index_operations_v2.<a href="src/fern/index_operations_v2/client.py#L35-L94">create_index</a>(...) -> PostV2VectordbIndexesCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -3417,7 +3417,7 @@ Setting this to a non-existing database results in a **MilvusException**.
 </dl>
 </details>
 
-<details><summary><code>client.index_operations_v2.<a href="src/fern/index_operations_v2/client.py">drop_index</a>(...) -> PostV2VectordbIndexesDropResponse</code></summary>
+<details><summary><code>client.index_operations_v2.<a href="src/fern/index_operations_v2/client.py#L96-L145">drop_index</a>(...) -> PostV2VectordbIndexesDropResponse</code></summary>
 <dl>
 <dd>
 
@@ -3512,7 +3512,7 @@ Setting this to a non-existing database results in a **MilvusException**.
 </dl>
 </details>
 
-<details><summary><code>client.index_operations_v2.<a href="src/fern/index_operations_v2/client.py">describe_index</a>(...) -> PostV2VectordbIndexesDescribeResponse</code></summary>
+<details><summary><code>client.index_operations_v2.<a href="src/fern/index_operations_v2/client.py#L147-L194">describe_index</a>(...) -> PostV2VectordbIndexesDescribeResponse</code></summary>
 <dl>
 <dd>
 
@@ -3601,7 +3601,7 @@ client.index_operations_v2.describe_index(
 </dl>
 </details>
 
-<details><summary><code>client.index_operations_v2.<a href="src/fern/index_operations_v2/client.py">list_indexes</a>(...) -> PostV2VectordbIndexesListResponse</code></summary>
+<details><summary><code>client.index_operations_v2.<a href="src/fern/index_operations_v2/client.py#L196-L238">list_indexes</a>(...) -> PostV2VectordbIndexesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -3682,7 +3682,7 @@ client.index_operations_v2.list_indexes(
 </details>
 
 ## AliasOperationsV2
-<details><summary><code>client.alias_operations_v2.<a href="src/fern/alias_operations_v2/client.py">list_aliases</a>(...) -> PostV2VectordbAliasesListResponse</code></summary>
+<details><summary><code>client.alias_operations_v2.<a href="src/fern/alias_operations_v2/client.py#L33-L66">list_aliases</a>(...) -> PostV2VectordbAliasesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -3754,7 +3754,7 @@ client.alias_operations_v2.list_aliases(
 </dl>
 </details>
 
-<details><summary><code>client.alias_operations_v2.<a href="src/fern/alias_operations_v2/client.py">describe_alias</a>(...) -> PostV2VectordbAliasesDescribeResponse</code></summary>
+<details><summary><code>client.alias_operations_v2.<a href="src/fern/alias_operations_v2/client.py#L68-L107">describe_alias</a>(...) -> PostV2VectordbAliasesDescribeResponse</code></summary>
 <dl>
 <dd>
 
@@ -3835,7 +3835,7 @@ client.alias_operations_v2.describe_alias(
 </dl>
 </details>
 
-<details><summary><code>client.alias_operations_v2.<a href="src/fern/alias_operations_v2/client.py">alter_alias</a>(...) -> PostV2VectordbAliasesAlterResponse</code></summary>
+<details><summary><code>client.alias_operations_v2.<a href="src/fern/alias_operations_v2/client.py#L109-L156">alter_alias</a>(...) -> PostV2VectordbAliasesAlterResponse</code></summary>
 <dl>
 <dd>
 
@@ -3924,7 +3924,7 @@ client.alias_operations_v2.alter_alias(
 </dl>
 </details>
 
-<details><summary><code>client.alias_operations_v2.<a href="src/fern/alias_operations_v2/client.py">drop_alias</a>(...) -> PostV2VectordbAliasesDropResponse</code></summary>
+<details><summary><code>client.alias_operations_v2.<a href="src/fern/alias_operations_v2/client.py#L158-L206">drop_alias</a>(...) -> PostV2VectordbAliasesDropResponse</code></summary>
 <dl>
 <dd>
 
@@ -4016,7 +4016,7 @@ When dropping an alias, you do not need to provide the collection name because o
 </dl>
 </details>
 
-<details><summary><code>client.alias_operations_v2.<a href="src/fern/alias_operations_v2/client.py">create_alias</a>(...) -> PostV2VectordbAliasesCreateResponse</code></summary>
+<details><summary><code>client.alias_operations_v2.<a href="src/fern/alias_operations_v2/client.py#L208-L255">create_alias</a>(...) -> PostV2VectordbAliasesCreateResponse</code></summary>
 <dl>
 <dd>
 

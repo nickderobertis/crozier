@@ -252,10 +252,11 @@ fn tier_filter_selects(expression: &str, name: &str) -> bool {
 /// The project files of the tier projects `just test-sdk-env` runs, each also an
 /// `e2eReads` input. Read by path rather than by scanning `tests/`, so the suite
 /// reads no project the boundaries forbid it to depend on.
-const SDK_ENV_TIER_PROJECT_FILES: [&str; 3] = [
+const SDK_ENV_TIER_PROJECT_FILES: [&str; 4] = [
     "tests/sdk_env/project.json",
     "tests/runtime/project.json",
     "tests/nested-discriminator/runtime/project.json",
+    "tests/migration_options/project.json",
 ];
 
 /// Every `sdk_env_` journey this binary carries, a module-qualified one such as
@@ -382,6 +383,11 @@ use departures_ledger::{GoldenLedger, Ledger, Observed};
 /// schema rejects, held per golden beside the ledger.
 #[path = "e2e/example_values_inventory.rs"]
 mod example_values_inventory;
+
+/// The documentation audit, held over crozier's tree by every whole-tree golden
+/// comparison beside the inventory.
+#[path = "e2e/documentation_audit.rs"]
+mod documentation_audit;
 
 /// The ledger's contract, driven through the gates' own comparison.
 #[path = "e2e/departures_ledger_gate.rs"]
@@ -1619,6 +1625,7 @@ fn assert_generated_tree_matches(
         Ok(rows) => failures.extend(example_values_inventory::check(ledger, &rows, &compared)),
         Err(found) => failures.extend(found),
     }
+    failures.extend(documentation_audit::failures(out));
     assert!(failures.is_empty(), "{}", failures.join("\n"));
 
     for rel in c.unmatched {
@@ -2141,6 +2148,22 @@ fn golden_tree_failures(
     expected_root: &Path,
     out: &Path,
 ) -> Vec<String> {
+    golden_tree_failures_in(key, source, ledger, expected_root, out, &|_| true)
+}
+
+/// [`golden_tree_failures`], holding to the golden's ledger rows only the
+/// departures in the files `scope` admits: a tree assembled from the golden
+/// with a file measured apart (a literals run's own `.fern/metadata.json`)
+/// holds that file to no row of the golden's, while any difference in it that
+/// no departure explains still fails.
+fn golden_tree_failures_in(
+    key: &str,
+    source: &str,
+    ledger: &GoldenLedger,
+    expected_root: &Path,
+    out: &Path,
+    scope: &dyn Fn(&str) -> bool,
+) -> Vec<String> {
     let mut failures = Vec::new();
     let expected_files: std::collections::BTreeSet<String> =
         walk_files(expected_root).into_iter().collect();
@@ -2196,9 +2219,10 @@ fn golden_tree_failures(
             ));
         }
     }
+    observed.retain(|(rel, _, _)| scope(rel));
     failures.extend(
         ledger
-            .check(&observed, &|_| true)
+            .check(&observed, scope)
             .into_iter()
             .map(|failure| format!("{key}: {failure}")),
     );
@@ -2208,13 +2232,14 @@ fn golden_tree_failures(
         expected_root,
         out,
         &observed,
-        &|_| true,
+        scope,
     )
-    .map(|rows| example_values_inventory::check(ledger, &rows, &|_| true))
+    .map(|rows| example_values_inventory::check(ledger, &rows, scope))
     .unwrap_or_else(|found| found);
     failures.extend(
         inventory
             .into_iter()
+            .chain(documentation_audit::failures(out))
             .map(|failure| format!("{key}: {failure}")),
     );
     failures
@@ -7513,12 +7538,18 @@ fn parameter_extension_shapes_match_complete_goldens_in_both_enum_modes() {
             let ledger = departure_ledger()
                 .golden(&golden_path(&expected), &[])
                 .unwrap();
-            failures.extend(golden_tree_failures(
+            // The literals tree's `.fern/metadata.json` is the literals run's own
+            // record (generator configuration and all), not the golden's file:
+            // it is held to no row of the golden's, though any difference in it
+            // no departure explains still fails.
+            let literals = mode == "literals";
+            failures.extend(golden_tree_failures_in(
                 case,
                 &format!("{case}, enum-type={mode}"),
                 &ledger,
                 comparison_root,
                 out.path(),
+                &|rel| !literals || rel != ".fern/metadata.json",
             ));
         }
     }
@@ -15924,6 +15955,30 @@ fn golden_differences(
     ledger: Result<GoldenLedger, Vec<String>>,
     source: Option<&Path>,
 ) -> Result<Vec<(String, Difference)>, String> {
+    golden_differences_carving(
+        expected_root,
+        out,
+        file_filter,
+        include_text_diffs,
+        ledger,
+        source,
+        &[],
+    )
+}
+
+/// [`golden_differences`] for a corpus golden with `carved` files, its
+/// `unmatched` residuals: the ledger holds no row in them, so a departure the
+/// engine applies inside one is no ledger entry, as in the corpus gate
+/// ([`assert_generated_tree_matches`]); the file's differences are still reported.
+fn golden_differences_carving(
+    expected_root: &Path,
+    out: &Path,
+    file_filter: Option<&str>,
+    include_text_diffs: bool,
+    ledger: Result<GoldenLedger, Vec<String>>,
+    source: Option<&Path>,
+    carved: &[&str],
+) -> Result<Vec<(String, Difference)>, String> {
     let ledger = ledger.map_err(|failures| failures.join("\n"))?;
     // The parsed source document, as every other golden comparison supplies
     // it, so a departure whose rule reads the specification applies here too.
@@ -15941,6 +15996,7 @@ fn golden_differences(
         .departures
         .into_iter()
         .map(|departure| (departure.file, departure.location.as_number(), departure.id))
+        .filter(|(file, _, _): &Observed| !carved.contains(&file.as_str()))
         .collect();
     let mut failures = ledger.check(&observed, &|rel| {
         file_filter.is_none_or(|filter| rel.contains(filter))
@@ -15960,6 +16016,7 @@ fn golden_differences(
             Ok(rows) => failures.extend(example_values_inventory::check(&ledger, &rows, &|_| true)),
             Err(found) => failures.extend(found),
         }
+        failures.extend(documentation_audit::failures(out));
     }
     if failures.is_empty() {
         Ok(compared.differences)
@@ -16432,13 +16489,14 @@ fn report_fixture_diffs() {
             continue;
         }
         let (spec, _staged) = prepare_corpus_source(c);
-        let differences = match golden_differences(
+        let differences = match golden_differences_carving(
             &expected_root,
             out.path(),
             file_filter.as_deref(),
             false,
             corpus_golden_ledger(departure_ledger(), &golden_path(&expected_root), c),
             Some(&spec),
+            c.unmatched,
         ) {
             Ok(differences) => differences,
             Err(error) => {
@@ -19684,7 +19742,8 @@ fn marimo_output_is_valid_python() {
 #[test]
 fn default_naming_derives_package_from_title() {
     // The most common first invocation: no --package-name / --project-name, so the
-    // package dir is snake_case(title) and version.py records the same name.
+    // package dir is snake_case(title) and the distribution is that name written
+    // as Fern 5.41.25 writes a distribution name, every `_` a `-`.
     let dir = tempfile::tempdir().expect("tempdir");
     let spec = dir.path().join("api.yml");
     std::fs::write(&spec, ARBITRARY_SPEC).unwrap();
@@ -19698,13 +19757,93 @@ fn default_naming_derives_package_from_title() {
         .success()
         .stderr(predicate::str::contains("generated"));
 
-    let version = out.join("src/my_cool_api/version.py");
-    let body = std::fs::read_to_string(&version)
-        .expect("default package dir should be snake_case of the API title");
     assert!(
-        body.contains("my_cool_api"),
-        "project name should default from the title: {body}"
+        out.join("src/my_cool_api/__init__.py").is_file(),
+        "default package dir should be snake_case of the API title"
     );
+    assert_distribution_name(&out, "my_cool_api", "my-cool-api");
+}
+
+/// Every place a packaged SDK names its distribution names `distribution`, the
+/// import package `package` keeps its own spelling, and the tree still compiles.
+fn assert_distribution_name(out: &Path, package: &str, distribution: &str) {
+    let read = |rel: &str| {
+        std::fs::read_to_string(out.join(rel)).unwrap_or_else(|e| panic!("read {rel}: {e}"))
+    };
+    let pyproject = read("pyproject.toml");
+    assert_eq!(
+        pyproject
+            .matches(&format!("name = \"{distribution}\""))
+            .count(),
+        2,
+        "[project] and [tool.poetry] name the distribution: {pyproject}"
+    );
+    assert!(
+        pyproject.contains(&format!("{{ include = \"{package}\", from = \"src\"}}")),
+        "the packaged module keeps its import name: {pyproject}"
+    );
+    let version = read(&format!("src/{package}/version.py"));
+    assert!(
+        version.contains(&format!("metadata.version(\"{distribution}\")")),
+        "version.py reads the installed distribution: {version}"
+    );
+    let hint = format!("pip install {distribution}[aiohttp]");
+    let clients = read(&format!("src/{package}/_default_clients.py"));
+    assert!(
+        clients.contains(&hint),
+        "the aiohttp install hint: {clients}"
+    );
+    let autodetect = read("tests/test_aiohttp_autodetect.py");
+    assert!(
+        autodetect.contains(&hint),
+        "the aiohttp hint's test: {autodetect}"
+    );
+    assert!(
+        autodetect.contains(&format!("from {package}")),
+        "the test imports the module by its import name: {autodetect}"
+    );
+    let wrapper = read(&format!("src/{package}/core/client_wrapper.py"));
+    assert!(
+        wrapper.contains(&format!("\"X-Crozier-SDK-Name\": \"{distribution}\",")),
+        "the SDK-name header names the distribution: {wrapper}"
+    );
+    if distribution != package {
+        for (rel, text) in [("version.py", &version), ("client_wrapper.py", &wrapper)] {
+            assert!(
+                !text.contains(&format!("\"{package}\"")),
+                "{rel} names the import package where the distribution belongs: {text}"
+            );
+        }
+    }
+    assert_valid_python(out);
+}
+
+#[test]
+fn a_configured_project_name_is_written_as_fern_writes_a_distribution() {
+    // `--project-name` sets the distribution, hyphenated like Fern's
+    // (`default_package_name` packages as `default-package-name`); the package
+    // keeps its underscores, and a hyphenated name passes through unchanged.
+    for (project, distribution) in [
+        ("acme_billing_dist", "acme-billing-dist"),
+        ("acme-billing-dist", "acme-billing-dist"),
+    ] {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let spec = dir.path().join("api.yml");
+        std::fs::write(&spec, ARBITRARY_SPEC).unwrap();
+        let out = dir.path().join("out");
+        crozier()
+            .args(["generate", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&out)
+            .args(["--package-name", "acme_billing", "--project-name", project])
+            .assert()
+            .success();
+        assert_distribution_name(&out, "acme_billing", distribution);
+        let readme = std::fs::read_to_string(out.join("README.md")).unwrap();
+        assert!(readme.contains("from acme_billing import"), "{readme}");
+        assert!(!readme.contains("from acme-billing"), "{readme}");
+    }
 }
 
 #[test]
@@ -19734,10 +19873,10 @@ fn default_naming_sanitizes_title_punctuation() {
     let version = std::fs::read_to_string(package.join("version.py"))
         .expect("sanitized default package should contain version.py");
     assert!(
-        version.contains("metadata.version(\"airflow_api_stable\")"),
-        "project name should use the sanitized package default: {version}"
+        version.contains("metadata.version(\"airflow-api-stable\")"),
+        "project name should use the sanitized package default, hyphenated: {version}"
     );
-    assert_valid_python(&out);
+    assert_distribution_name(&out, "airflow_api_stable", "airflow-api-stable");
 }
 
 #[test]
@@ -23499,16 +23638,37 @@ fn refusal_class_failures(
     if !probe.is_file() {
         failures.push(format!("{id}: its probe {id}/probe.yml is missing"));
     }
+    // A class whose probe the pin did not settle keeps the refusal record of the
+    // pair it last settled at, beside an `unsettled.txt` naming the pin.
+    let unsettled = dir.join("unsettled.txt");
+    let unsettled = unsettled.is_file().then(|| {
+        let text = std::fs::read_to_string(&unsettled).unwrap_or_default();
+        (unsettled_record_failures(id, &text), text)
+    });
     match std::fs::read_to_string(&record) {
-        Ok(text) => failures.extend(refusal_record_failures(
-            id,
-            &text,
-            &class.fern_exit,
-            !retiring,
-        )),
+        Ok(text) => {
+            failures.extend(refusal_record_failures(
+                id,
+                &text,
+                &class.fern_exit,
+                !retiring && unsettled.is_none(),
+            ));
+            let (cli_pin, sdk_pin) = probe_fern_pins();
+            if unsettled.is_some()
+                && text.contains(&format!("fern_cli_version: {cli_pin}\n"))
+                && text.contains(&format!("fern_python_sdk_version: {sdk_pin}\n"))
+            {
+                failures.push(format!(
+                    "{id}: its fern-refusal.txt is at the pin, so the class is settled; remove {id}/unsettled.txt"
+                ));
+            }
+        }
         Err(_) => failures.push(format!(
             "{id}: its Fern record {id}/fern-refusal.txt is missing"
         )),
+    }
+    if let Some((unsettled_failures, _)) = unsettled {
+        failures.extend(unsettled_failures);
     }
     let wire_test = dir.join("wire_test.py");
     if class.status == "generate" && !wire_test.is_file() {
@@ -23672,6 +23832,104 @@ fn refusal_record_failures(id: &str, text: &str, fern_exit: &str, at_pin: bool) 
         failures.push(format!(
             "{id}: fern-refusal.txt records generate_exit `{exit}`, but classes.tsv's fern_exit is `{fern_exit}`"
         ));
+    }
+    failures
+}
+
+/// The `unsettled.txt` contract both of the registry's validators read,
+/// `docs/fern-refusals/unsettled-contract.json`: its fields in order (the pair
+/// whose probe ran past its bound, each stage's `timeout` and elapsed seconds,
+/// the bound, why the class is not compared there, and the follow-up that
+/// settles it), and the reach of the bound a stage cut short by it must show.
+fn unsettled_contract() -> (Vec<String>, f64) {
+    let path = repo_root().join("docs/fern-refusals/unsettled-contract.json");
+    let contract: serde_json::Value = serde_json::from_str(
+        &std::fs::read_to_string(&path)
+            .unwrap_or_else(|error| panic!("{}: {error}", path.display())),
+    )
+    .unwrap_or_else(|error| panic!("{}: {error}", path.display()));
+    let fields = contract["fields"]
+        .as_array()
+        .expect("unsettled-contract.json names its fields")
+        .iter()
+        .map(|field| field.as_str().expect("a field name").to_string())
+        .collect();
+    let reach = contract["reach"]
+        .as_f64()
+        .expect("unsettled-contract.json names its reach");
+    (fields, reach)
+}
+
+/// An `unsettled.txt` is never a silent pass: exactly its fields, the pin, both
+/// stages cut short with their seconds, a reason and a follow-up.
+fn unsettled_record_failures(id: &str, text: &str) -> Vec<String> {
+    let mut failures = Vec::new();
+    let fields: Vec<(&str, &str)> = text
+        .lines()
+        .map(|line| {
+            line.split_once(": ")
+                .unwrap_or((line.trim_end_matches(':'), ""))
+        })
+        .collect();
+    let names: Vec<&str> = fields.iter().map(|(name, _)| *name).collect();
+    let (expected_fields, reach) = unsettled_contract();
+    if names != expected_fields {
+        failures.push(format!(
+            "{id}: unsettled.txt carries fields {names:?}; it carries exactly {expected_fields:?}, in order"
+        ));
+        return failures;
+    }
+    let value = |name: &str| {
+        fields
+            .iter()
+            .find(|(field, _)| *field == name)
+            .map_or("", |(_, value)| value.trim())
+    };
+    let (cli_pin, sdk_pin) = probe_fern_pins();
+    if (value("fern_cli_version"), value("fern_python_sdk_version"))
+        != (cli_pin.as_str(), sdk_pin.as_str())
+    {
+        failures.push(format!(
+            "{id}: unsettled.txt names Fern CLI {} / fern-python-sdk {}, but the corpus pins {cli_pin} / {sdk_pin}",
+            value("fern_cli_version"),
+            value("fern_python_sdk_version")
+        ));
+    }
+    let seconds = |name: &str| {
+        value(name)
+            .parse::<f64>()
+            .ok()
+            .filter(|seconds| seconds.is_finite())
+    };
+    let bound = seconds("bound_seconds").filter(|bound| *bound > 0.0);
+    if bound.is_none() {
+        failures.push(format!(
+            "{id}: unsettled.txt's bound_seconds must be the probe's positive bound in seconds"
+        ));
+    }
+    for stage in ["check", "generate"] {
+        let elapsed = seconds(&format!("{stage}_seconds"));
+        if value(&format!("{stage}_exit")) != "timeout"
+            || elapsed.is_none_or(|elapsed| elapsed < 0.0)
+        {
+            failures.push(format!(
+                "{id}: unsettled.txt's {stage}_exit must be `timeout`, with {stage}_seconds its elapsed seconds"
+            ));
+        } else if let (Some(elapsed), Some(bound)) = (elapsed, bound) {
+            if elapsed < bound * reach {
+                failures.push(format!(
+                    "{id}: unsettled.txt's {stage}_seconds {elapsed} is short of the {bound}-second bound; \
+                     a stage the bound cut short runs to it"
+                ));
+            }
+        }
+    }
+    for name in ["reason", "follow_up"] {
+        if value(name).is_empty() {
+            failures.push(format!(
+                "{id}: unsettled.txt's {name} is empty; an unsettled class says why, and names its follow-up"
+            ));
+        }
     }
     failures
 }
@@ -24350,6 +24608,44 @@ fn sdk_env_xml_builder_name_collisions_resolve_through_the_sdk() {
         String::from_utf8_lossy(&output.stderr)
     );
 }
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This `sdk_env_*` journey runs only in the `sdk-env` project (tests/sdk_env/project.json: `tier:promoted`, `cache: false`), promoted out of the affected tier into its own required CI leg, as every other `sdk_env_*` journey is; crates/crozier-e2e/AGENTS.md makes `#[ignore]` the one mechanism that routes a journey to that project, and every_sdk_env_journey_is_selected_by_the_sdk_env_tier holds it there.
+/// An XML model's extra keyword arguments through the generated SDK
+/// (fern-python-sdk 5.41.25's `check_xml_extra_attributes`): a declared
+/// attribute's wire name (`schemaLocation` for `xsi_schema_location`) sets it,
+/// naming it twice or by a case-only variant raises `TypeError`, and any other
+/// name stays an undeclared attribute. The document is authored for it; the SDK
+/// runs under its own pins.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_xml_extra_attributes_resolve_through_the_sdk() {
+    let journeys = repo_root().join("crates/crozier-e2e/tests/e2e");
+    let dir = tempfile::tempdir().expect("tempdir");
+    let sdk = dir.path().join("sdk");
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(journeys.join("xml_extra_attributes.yml"))
+        .arg("--output")
+        .arg(&sdk)
+        .args(["--package-name", "archive"])
+        .assert()
+        .success();
+    let py = sdk_python_env(&sdk.join("pyproject.toml"))
+        .unwrap_or_else(|reason| panic!("the journey needs the SDK's Python env: {reason}"));
+    let output = std::process::Command::new(&py)
+        .arg(journeys.join("xml_extra_attributes.py"))
+        .env("PYTHONPATH", sdk.join("src"))
+        .env("PYTHONDONTWRITEBYTECODE", "1")
+        .output()
+        .expect("run the XML extra-attributes journey");
+    assert!(
+        output.status.success() && String::from_utf8_lossy(&output.stdout).trim() == "ok",
+        "the XML model's extra attributes do not resolve at run time:\n{}{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 /// No child builder shadows pydantic: over the installed pydantic's every
 /// public `BaseModel` attribute, a document whose XML model holds a list child
@@ -25705,6 +26001,161 @@ fn fern_refusal_gate_reports_a_refusal_that_wrote_output() {
             .any(|line| line.starts_with("writes-on-refusal:")
                 && line.contains("wrote 1 file(s) to the output directory (partial.py)")),
         "a refusal that wrote output was not reported:\n{}",
+        failures.join("\n")
+    );
+}
+
+/// A class whose probe the pin ran past its bound keeps its earlier pair's
+/// refusal record only beside a complete `unsettled.txt` naming the pin, and is
+/// still held to crozier refusing its probe in both modes; an unsettled record
+/// missing its follow-up or reason, naming another pair, or beside a record at
+/// the pin is a failure, never a silent pass.
+#[test]
+fn fern_refusal_gate_holds_an_unsettled_class_only_to_a_complete_record() {
+    let (cli_pin, sdk_pin) = probe_fern_pins();
+    let complete = format!(
+        "fern_cli_version: {cli_pin}\nfern_python_sdk_version: {sdk_pin}\ncheck_exit: timeout\n\
+         check_seconds: 897.7\ngenerate_exit: timeout\ngenerate_seconds: 898.8\nbound_seconds: 900\n\
+         reason: both stages ran past the bound\nfollow_up: Settle the scratch class\n"
+    );
+    let earlier = concat!(
+        "fern_cli_version: 0.0.1\n", // certified-pair: stand-in for an earlier pin
+        "fern_python_sdk_version: 0.0.2\n", // certified-pair: stand-in for an earlier pin
+        "generate_exit: 1\ndiagnostic: A scratch phrase about x\noutput_tree: none\n",
+    );
+    let at_pin = format!(
+        "fern_cli_version: {cli_pin}\nfern_python_sdk_version: {sdk_pin}\n\
+         generate_exit: 1\ndiagnostic: A scratch phrase about x\noutput_tree: none\n"
+    );
+    let refused = header_array_probe();
+    for (case, record, unsettled, expected) in [
+        ("complete", earlier.to_string(), complete.clone(), None),
+        (
+            "no follow-up",
+            earlier.to_string(),
+            complete.replace("follow_up: Settle the scratch class", "follow_up: "),
+            Some("unsettled.txt's follow_up is empty"),
+        ),
+        (
+            "no reason",
+            earlier.to_string(),
+            complete.replace("reason: both stages ran past the bound", "reason:"),
+            Some("unsettled.txt's reason is empty"),
+        ),
+        (
+            "follow-up line dropped",
+            earlier.to_string(),
+            complete.replace("follow_up: Settle the scratch class\n", ""),
+            Some("unsettled.txt carries fields"),
+        ),
+        (
+            "another pair",
+            earlier.to_string(),
+            complete.replacen(
+                &format!("fern_cli_version: {cli_pin}"),
+                "fern_cli_version: 0.0.3", // certified-pair: stand-in for another pair
+                1,
+            ),
+            Some("unsettled.txt names Fern CLI 0.0.3"),
+        ),
+        (
+            "settled at the pin",
+            at_pin.clone(),
+            complete.clone(),
+            Some("its fern-refusal.txt is at the pin, so the class is settled"),
+        ),
+        (
+            "a stage that exited",
+            earlier.to_string(),
+            complete.replace("check_exit: timeout", "check_exit: 1"),
+            Some("unsettled.txt's check_exit must be `timeout`"),
+        ),
+        (
+            "a stage short of the bound",
+            earlier.to_string(),
+            complete.replace("generate_seconds: 898.8", "generate_seconds: 12.5"),
+            Some("unsettled.txt's generate_seconds 12.5 is short of the 900-second bound"),
+        ),
+        (
+            "no bound",
+            earlier.to_string(),
+            complete.replace("bound_seconds: 900", "bound_seconds: 0"),
+            Some("unsettled.txt's bound_seconds must be the probe's positive bound"),
+        ),
+        (
+            "a repeated field",
+            earlier.to_string(),
+            complete.replace(
+                "reason: both stages ran past the bound\n",
+                "reason: both stages ran past the bound\nreason: again\n",
+            ),
+            Some("unsettled.txt carries fields"),
+        ),
+    ] {
+        let scratch = tempfile::tempdir().expect("tempdir");
+        let registry = scratch.path().join("fern-refusals");
+        write_scratch_registry(
+            &registry,
+            &[ScratchClass {
+                id: "scratch-unsettled",
+                status: "refuse",
+                crozier_diagnostic: "GET /probe header probeParam",
+                probe: &refused,
+                wire_test: None,
+                record: true,
+            }],
+            &[],
+        );
+        let dir = registry.join("scratch-unsettled");
+        std::fs::write(dir.join("fern-refusal.txt"), &record).unwrap();
+        std::fs::write(dir.join("unsettled.txt"), &unsettled).unwrap();
+        let failures = fern_refusal_failures(&registry, &crozier, WireTests::Skip);
+        let report = failures.join("\n");
+        let ours: Vec<&String> = failures
+            .iter()
+            .filter(|line| line.starts_with("scratch-unsettled:"))
+            .collect();
+        match expected {
+            None => assert!(
+                ours.is_empty(),
+                "{case}: a complete unsettled record failed:\n{report}"
+            ),
+            Some(phrase) => assert!(
+                ours.iter().any(|line| line.contains(phrase)),
+                "{case}: no failure names {phrase:?}:\n{report}"
+            ),
+        }
+        // The earlier record is never held to the pin while the class is unsettled.
+        assert!(
+            !ours
+                .iter()
+                .any(|line| line.contains("but the corpus pins `")),
+            "{case}: the kept refusal record was held to the pin:\n{report}"
+        );
+    }
+    // Without unsettled.txt the earlier record is a stale record, as before.
+    let scratch = tempfile::tempdir().expect("tempdir");
+    let registry = scratch.path().join("fern-refusals");
+    write_scratch_registry(
+        &registry,
+        &[ScratchClass {
+            id: "scratch-unsettled",
+            status: "refuse",
+            crozier_diagnostic: "GET /probe header probeParam",
+            probe: &refused,
+            wire_test: None,
+            record: true,
+        }],
+        &[],
+    );
+    std::fs::write(registry.join("scratch-unsettled/fern-refusal.txt"), earlier).unwrap();
+    let failures = fern_refusal_failures(&registry, &crozier, WireTests::Skip);
+    assert!(
+        failures
+            .iter()
+            .any(|line| line.starts_with("scratch-unsettled:")
+                && line.contains("but the corpus pins `")),
+        "{}",
         failures.join("\n")
     );
 }

@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">set_label</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L99-L124">set_label</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -56,7 +56,7 @@ client.set_label(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">set_nickname</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L126-L151">set_nickname</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -113,7 +113,7 @@ client.set_nickname(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">set_setpoint</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L153-L178">set_setpoint</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -170,7 +170,7 @@ client.set_setpoint(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">set_offset</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L180-L205">set_offset</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -227,7 +227,7 @@ client.set_offset(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">set_eco</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L207-L232">set_eco</a>(...)</code></summary>
 <dl>
 <dd>
 

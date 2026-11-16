@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">healthcheck_get</a>() -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L110-L133">healthcheck_get</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -48,7 +48,7 @@ client.healthcheck_get()
 </details>
 
 ## Auth
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">login_to_create_access_token</a>(...) -> Token</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L29-L85">login_to_create_access_token</a>(...) -> Token</code></summary>
 <dl>
 <dd>
 
@@ -108,7 +108,7 @@ client.auth.login_to_create_access_token(
 </details>
 
 ## Meta
-<details><summary><code>client.meta.<a href="src/fern/meta/client.py">get_service_metadata</a>() -> Meta</code></summary>
+<details><summary><code>client.meta.<a href="src/fern/meta/client.py#L26-L49">get_service_metadata</a>() -> Meta</code></summary>
 <dl>
 <dd>
 
@@ -157,7 +157,7 @@ client.meta.get_service_metadata()
 </details>
 
 ## Acks
-<details><summary><code>client.acks.<a href="src/fern/acks/client.py">acknowledge_payment</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.acks.<a href="src/fern/acks/client.py#L29-L111">acknowledge_payment</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -300,7 +300,7 @@ client.acks.acknowledge_payment(
 </dl>
 </details>
 
-<details><summary><code>client.acks.<a href="src/fern/acks/client.py">acknowledge_payment_method</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.acks.<a href="src/fern/acks/client.py#L113-L156">acknowledge_payment_method</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 

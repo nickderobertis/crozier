@@ -1,0 +1,40 @@
+openapi: 3.0.3
+info:
+  title: Archive Records
+  version: "1"
+paths:
+  /records/{id}:
+    get:
+      operationId: getRecord
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The record.
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/Record"
+components:
+  schemas:
+    Record:
+      type: object
+      xml:
+        name: record
+      properties:
+        title:
+          type: string
+          x-crozier-xml-text: true
+        xsiSchemaLocation:
+          type: string
+          xml:
+            name: schemaLocation
+            attribute: true
+        lang:
+          type: string
+          xml:
+            attribute: true

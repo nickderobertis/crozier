@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">latest_observation</a>() -> Observation</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L106-L126">latest_observation</a>() -> Observation</code></summary>
 <dl>
 <dd>
 

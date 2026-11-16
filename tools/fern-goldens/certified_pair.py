@@ -71,6 +71,9 @@ DELEGATED = (
     "tests/lane_inventory/",
     # llmlint: ignore-end[code_lands_in_the_domain_that_owns_it]
     "tests/live_e2e/",
+    # llmlint: ignore-block[code_lands_in_the_domain_that_owns_it] Delegation is declared here, as for every root in this tuple: migration-options is a type:tier, cost:expensive project whose definition the whole-tree check may not read (nx.json's boundaries), so it cannot discover the delegation there.
+    "tests/migration_options/",
+    # llmlint: ignore-end[code_lands_in_the_domain_that_owns_it]
     # llmlint: ignore-block[code_lands_in_the_domain_that_owns_it] Delegation is declared here, as for every root above: the whole-tree check may not read the delegated projects' definitions (nx.json's boundaries), so it cannot discover them there.
     "tests/nested-discriminator/golden/",
     "tests/nested-discriminator/runtime/",

@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">store_url</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L99-L124">store_url</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -56,7 +56,7 @@ client.store_url(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">store_file</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L126-L145">store_file</a>(...)</code></summary>
 <dl>
 <dd>
 

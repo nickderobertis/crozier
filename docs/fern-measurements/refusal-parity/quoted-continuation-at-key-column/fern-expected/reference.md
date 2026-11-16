@@ -1,6 +1,6 @@
 # Reference
 ## Beacons
-<details><summary><code>client.beacons.<a href="src/fern/beacons/client.py">get_beacon</a>(...) -> Beacon</code></summary>
+<details><summary><code>client.beacons.<a href="src/fern/beacons/client.py#L26-L56">get_beacon</a>(...) -> Beacon</code></summary>
 <dl>
 <dd>
 

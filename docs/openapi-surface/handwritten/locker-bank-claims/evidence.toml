@@ -1,6 +1,6 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "929efb2f69c253abc75c42e5813804227d7e9b190fb8b1eec0fbd58ef1f1ff88"
+fern_cli_version = "5.200.0"
+fern_python_sdk_version = "5.41.25"
+digest = "c6442d420a087ae937878dd5554a60d781ab0be432724267161c18bf268d8980"
 
 [[covers]]
 key = "operation-sdk-method-name-sequence"

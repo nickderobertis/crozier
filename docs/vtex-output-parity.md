@@ -314,3 +314,8 @@ The previous verification ran on `8584228f0` and `564e46794`, before this
 merge. That run passed the same checks, along with
 `just test-witness-search-acquisition` (33 passed), which held the two tests
 behind the first failed publication.
+
+**Historical.** This record was measured at Fern CLI 5.163.1 /
+`fernapi/fern-python-sdk` 5.41.3, the pair certified when it was taken; where it
+says "the certified pair" it means that pair. It has not been re-measured at
+the current certified pair, Fern CLI 5.200.0 / fern-python-sdk 5.41.25.

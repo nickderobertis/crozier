@@ -1,0 +1,13 @@
+fern-refusals: Fern CLI 5.200.0, fernapi/fern-python-sdk 5.41.25
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk positionData.yml -> service -> endpoints -> subscribePositions -> examples[0] -> response
+                  positionData.yml
+                  [error] Expected example to be an integer. Example is: 0.7
+                  
+[api]: python-sdk Found 1 errors and 0 warnings in <n> seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

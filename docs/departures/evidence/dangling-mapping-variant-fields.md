@@ -126,3 +126,8 @@ departure applies only where every `oneOf` member resolves, some mapping target
 names a component, and exactly one member the mapping leaves out tags itself
 with the value. Every other dangling mapping keeps the output crozier wrote
 before.
+
+**Historical.** This record was measured at Fern CLI 5.163.1 /
+`fernapi/fern-python-sdk` 5.41.3, the pair certified when it was taken; where it
+says "the certified pair" it means that pair. It has not been re-measured at
+the current certified pair, Fern CLI 5.200.0 / fern-python-sdk 5.41.25.

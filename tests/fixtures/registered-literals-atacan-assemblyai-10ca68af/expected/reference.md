@@ -1,6 +1,6 @@
 # Reference
 ## Files
-<details><summary><code>client.files.<a href="src/fern/files/client.py">upload</a>(...) -> UploadedFile</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L29-L54">upload</a>(...) -> UploadedFile</code></summary>
 <dl>
 <dd>
 
@@ -66,7 +66,7 @@ client.files.upload(...)
 </details>
 
 ## Transcripts
-<details><summary><code>client.transcripts.<a href="src/fern/transcripts/client.py">list</a>(...) -> TranscriptList</code></summary>
+<details><summary><code>client.transcripts.<a href="src/fern/transcripts/client.py#L52-L116">list</a>(...) -> TranscriptList</code></summary>
 <dl>
 <dd>
 
@@ -181,7 +181,7 @@ client.transcripts.list()
 </dl>
 </details>
 
-<details><summary><code>client.transcripts.<a href="src/fern/transcripts/client.py">submit</a>(...) -> Transcript</code></summary>
+<details><summary><code>client.transcripts.<a href="src/fern/transcripts/client.py#L118-L450">submit</a>(...) -> Transcript</code></summary>
 <dl>
 <dd>
 
@@ -689,7 +689,7 @@ One request when a transcript is completed or failed, and one request when the r
 </dl>
 </details>
 
-<details><summary><code>client.transcripts.<a href="src/fern/transcripts/client.py">get</a>(...) -> Transcript</code></summary>
+<details><summary><code>client.transcripts.<a href="src/fern/transcripts/client.py#L452-L482">get</a>(...) -> Transcript</code></summary>
 <dl>
 <dd>
 
@@ -763,7 +763,7 @@ client.transcripts.get(
 </dl>
 </details>
 
-<details><summary><code>client.transcripts.<a href="src/fern/transcripts/client.py">delete</a>(...) -> Transcript</code></summary>
+<details><summary><code>client.transcripts.<a href="src/fern/transcripts/client.py#L484-L515">delete</a>(...) -> Transcript</code></summary>
 <dl>
 <dd>
 
@@ -838,7 +838,7 @@ client.transcripts.delete(
 </dl>
 </details>
 
-<details><summary><code>client.transcripts.<a href="src/fern/transcripts/client.py">get_subtitles</a>(...) -> str</code></summary>
+<details><summary><code>client.transcripts.<a href="src/fern/transcripts/client.py#L517-L565">get_subtitles</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -930,7 +930,7 @@ client.transcripts.get_subtitles(
 </dl>
 </details>
 
-<details><summary><code>client.transcripts.<a href="src/fern/transcripts/client.py">get_sentences</a>(...) -> SentencesResponse</code></summary>
+<details><summary><code>client.transcripts.<a href="src/fern/transcripts/client.py#L567-L599">get_sentences</a>(...) -> SentencesResponse</code></summary>
 <dl>
 <dd>
 
@@ -1004,7 +1004,7 @@ client.transcripts.get_sentences(
 </dl>
 </details>
 
-<details><summary><code>client.transcripts.<a href="src/fern/transcripts/client.py">get_paragraphs</a>(...) -> ParagraphsResponse</code></summary>
+<details><summary><code>client.transcripts.<a href="src/fern/transcripts/client.py#L601-L633">get_paragraphs</a>(...) -> ParagraphsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1078,7 +1078,7 @@ client.transcripts.get_paragraphs(
 </dl>
 </details>
 
-<details><summary><code>client.transcripts.<a href="src/fern/transcripts/client.py">word_search</a>(...) -> WordSearchResponse</code></summary>
+<details><summary><code>client.transcripts.<a href="src/fern/transcripts/client.py#L635-L675">word_search</a>(...) -> WordSearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -1163,7 +1163,7 @@ client.transcripts.word_search(
 </dl>
 </details>
 
-<details><summary><code>client.transcripts.<a href="src/fern/transcripts/client.py">get_redacted_audio</a>(...) -> RedactedAudioResponse</code></summary>
+<details><summary><code>client.transcripts.<a href="src/fern/transcripts/client.py#L677-L710">get_redacted_audio</a>(...) -> RedactedAudioResponse</code></summary>
 <dl>
 <dd>
 

@@ -63,3 +63,8 @@ sides. The `*ErrorBody` lines stay a difference, so the file still fails:
 `init_import_order_admits_reordered_statements_beside_another_difference` in
 `src/parity.rs` holds both halves, and that a tag subpackage's statement moving,
 or a moved statement importing another name, is no departure.
+
+**Historical.** This record was measured at Fern CLI 5.163.1 /
+`fernapi/fern-python-sdk` 5.41.3, the pair certified when it was taken; where it
+says "the certified pair" it means that pair. It has not been re-measured at
+the current certified pair, Fern CLI 5.200.0 / fern-python-sdk 5.41.25.

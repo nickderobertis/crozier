@@ -1,6 +1,6 @@
 # Reference
 ## frontend
-<details><summary><code>client.frontend.<a href="src/fern/frontend/client.py">get_frontend_config</a>() -> FrontendConfig</code></summary>
+<details><summary><code>client.frontend.<a href="src/fern/frontend/client.py#L30-L53">get_frontend_config</a>() -> FrontendConfig</code></summary>
 <dl>
 <dd>
 
@@ -50,7 +50,7 @@ client.frontend.get_frontend_config()
 </dl>
 </details>
 
-<details><summary><code>client.frontend.<a href="src/fern/frontend/client.py">get_entity_preview_config</a>(...) -> EntityPreviewConfig</code></summary>
+<details><summary><code>client.frontend.<a href="src/fern/frontend/client.py#L55-L84">get_entity_preview_config</a>(...) -> EntityPreviewConfig</code></summary>
 <dl>
 <dd>
 
@@ -110,7 +110,7 @@ client.frontend.get_entity_preview_config(
 </dl>
 </details>
 
-<details><summary><code>client.frontend.<a href="src/fern/frontend/client.py">get_me</a>() -> Me</code></summary>
+<details><summary><code>client.frontend.<a href="src/fern/frontend/client.py#L86-L109">get_me</a>() -> Me</code></summary>
 <dl>
 <dd>
 
@@ -160,7 +160,7 @@ client.frontend.get_me()
 </dl>
 </details>
 
-<details><summary><code>client.frontend.<a href="src/fern/frontend/client.py">list_datasets</a>() -> typing.List[FrontendDatasetId]</code></summary>
+<details><summary><code>client.frontend.<a href="src/fern/frontend/client.py#L111-L136">list_datasets</a>() -> typing.List[FrontendDatasetId]</code></summary>
 <dl>
 <dd>
 
@@ -211,7 +211,7 @@ client.frontend.list_datasets()
 </details>
 
 ## concept
-<details><summary><code>client.concept.<a href="src/fern/concept/client.py">resolve_concepts</a>(...) -> ResolvedConceptsResult</code></summary>
+<details><summary><code>client.concept.<a href="src/fern/concept/client.py#L30-L65">resolve_concepts</a>(...) -> ResolvedConceptsResult</code></summary>
 <dl>
 <dd>
 
@@ -280,7 +280,7 @@ client.concept.resolve_concepts(
 </details>
 
 ## query
-<details><summary><code>client.query.<a href="src/fern/query/client.py">list_queries</a>(...) -> typing.List[QueryStatus]</code></summary>
+<details><summary><code>client.query.<a href="src/fern/query/client.py#L33-L62">list_queries</a>(...) -> typing.List[QueryStatus]</code></summary>
 <dl>
 <dd>
 
@@ -340,7 +340,7 @@ client.query.list_queries(
 </dl>
 </details>
 
-<details><summary><code>client.query.<a href="src/fern/query/client.py">post_query</a>(...) -> FullExecutionStatus</code></summary>
+<details><summary><code>client.query.<a href="src/fern/query/client.py#L64-L98">post_query</a>(...) -> FullExecutionStatus</code></summary>
 <dl>
 <dd>
 
@@ -409,7 +409,7 @@ client.query.post_query(
 </dl>
 </details>
 
-<details><summary><code>client.query.<a href="src/fern/query/client.py">get_query_status</a>(...) -> FullExecutionStatus</code></summary>
+<details><summary><code>client.query.<a href="src/fern/query/client.py#L100-L129">get_query_status</a>(...) -> FullExecutionStatus</code></summary>
 <dl>
 <dd>
 
@@ -469,7 +469,7 @@ client.query.get_query_status(
 </dl>
 </details>
 
-<details><summary><code>client.query.<a href="src/fern/query/client.py">delete_query</a>(...)</code></summary>
+<details><summary><code>client.query.<a href="src/fern/query/client.py#L131-L157">delete_query</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -529,7 +529,7 @@ client.query.delete_query(
 </dl>
 </details>
 
-<details><summary><code>client.query.<a href="src/fern/query/client.py">patch_query</a>(...) -> FullExecutionStatus</code></summary>
+<details><summary><code>client.query.<a href="src/fern/query/client.py#L159-L193">patch_query</a>(...) -> FullExecutionStatus</code></summary>
 <dl>
 <dd>
 
@@ -598,7 +598,7 @@ client.query.patch_query(
 </dl>
 </details>
 
-<details><summary><code>client.query.<a href="src/fern/query/client.py">cancel_query</a>(...)</code></summary>
+<details><summary><code>client.query.<a href="src/fern/query/client.py#L195-L221">cancel_query</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -658,7 +658,7 @@ client.query.cancel_query(
 </dl>
 </details>
 
-<details><summary><code>client.query.<a href="src/fern/query/client.py">reexecute_query</a>(...) -> FullExecutionStatus</code></summary>
+<details><summary><code>client.query.<a href="src/fern/query/client.py#L223-L252">reexecute_query</a>(...) -> FullExecutionStatus</code></summary>
 <dl>
 <dd>
 
@@ -719,7 +719,7 @@ client.query.reexecute_query(
 </details>
 
 ## entity-preview
-<details><summary><code>client.entity_preview.<a href="src/fern/entity_preview/client.py">resolve_entities</a>(...) -> typing.Dict[str, str]</code></summary>
+<details><summary><code>client.entity_preview.<a href="src/fern/entity_preview/client.py#L33-L69">resolve_entities</a>(...) -> typing.Dict[str, str]</code></summary>
 <dl>
 <dd>
 
@@ -790,7 +790,7 @@ client.entity_preview.resolve_entities(
 </dl>
 </details>
 
-<details><summary><code>client.entity_preview.<a href="src/fern/entity_preview/client.py">get_entity_preview</a>(...) -> EntityHistoryExecutionStatus</code></summary>
+<details><summary><code>client.entity_preview.<a href="src/fern/entity_preview/client.py#L71-L120">get_entity_preview</a>(...) -> EntityHistoryExecutionStatus</code></summary>
 <dl>
 <dd>
 

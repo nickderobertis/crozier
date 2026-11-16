@@ -1,6 +1,6 @@
 # Reference
 ## Firings
-<details><summary><code>client.firings.<a href="src/fern/firings/client.py">book_firing</a>(...) -> FiringBooking</code></summary>
+<details><summary><code>client.firings.<a href="src/fern/firings/client.py#L32-L92">book_firing</a>(...) -> FiringBooking</code></summary>
 <dl>
 <dd>
 
@@ -85,7 +85,7 @@ client.firings.book_firing(
 </details>
 
 ## Batches
-<details><summary><code>client.batches.<a href="src/fern/batches/client.py">mix_batch</a>(...)</code></summary>
+<details><summary><code>client.batches.<a href="src/fern/batches/client.py#L29-L56">mix_batch</a>(...)</code></summary>
 <dl>
 <dd>
 

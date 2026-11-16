@@ -1,6 +1,6 @@
 # Reference
 ## Wheels
-<details><summary><code>client.wheels.<a href="src/fern/wheels/client.py">list_wheels</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.wheels.<a href="src/fern/wheels/client.py#L26-L52">list_wheels</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 

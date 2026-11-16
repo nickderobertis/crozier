@@ -102,7 +102,7 @@ config` shows the resolved `reference.command` with its source.
   | `CROZIER_REFERENCE_CONFIG_FILE` | The config file's absolute path. |
   | `CROZIER_REFERENCE_SPEC` | The OpenAPI document's absolute path. |
   | `CROZIER_REFERENCE_PACKAGE_NAME` | The resolved package name. |
-  | `CROZIER_REFERENCE_PROJECT_NAME` | The resolved project (distribution) name. |
+  | `CROZIER_REFERENCE_PROJECT_NAME` | The resolved project (distribution) name, every `_` written `-` as the generated `pyproject.toml` names it. |
   | `CROZIER_REFERENCE_CLIENT_CLASS_NAME` | The resolved root client class name. |
   | `CROZIER_REFERENCE_AUDIENCES` | The audiences, comma-separated (empty for none). |
   | `CROZIER_REFERENCE_AUDIENCE_STRICT` | `true` or `false`. |

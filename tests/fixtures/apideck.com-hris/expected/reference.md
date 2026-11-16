@@ -99,7 +99,7 @@ client.companies.all_(
 </dl>
 </details>
 
-<details><summary><code>client.companies.<a href="src/fern/companies/client.py">add</a>(...) -> CreateHrisCompanyResponse</code></summary>
+<details><summary><code>client.companies.<a href="src/fern/companies/client.py#L96-L201">add</a>(...) -> CreateHrisCompanyResponse</code></summary>
 <dl>
 <dd>
 
@@ -182,7 +182,7 @@ client.companies.add(
 </dl>
 </details>
 
-<details><summary><code>client.companies.<a href="src/fern/companies/client.py">one</a>(...) -> GetHrisCompanyResponse</code></summary>
+<details><summary><code>client.companies.<a href="src/fern/companies/client.py#L203-L249">one</a>(...) -> GetHrisCompanyResponse</code></summary>
 <dl>
 <dd>
 
@@ -274,7 +274,7 @@ client.companies.one(
 </dl>
 </details>
 
-<details><summary><code>client.companies.<a href="src/fern/companies/client.py">delete</a>(...) -> DeleteHrisCompanyResponse</code></summary>
+<details><summary><code>client.companies.<a href="src/fern/companies/client.py#L251-L288">delete</a>(...) -> DeleteHrisCompanyResponse</code></summary>
 <dl>
 <dd>
 
@@ -357,7 +357,7 @@ client.companies.delete(
 </dl>
 </details>
 
-<details><summary><code>client.companies.<a href="src/fern/companies/client.py">update</a>(...) -> UpdateHrisCompanyResponse</code></summary>
+<details><summary><code>client.companies.<a href="src/fern/companies/client.py#L290-L401">update</a>(...) -> UpdateHrisCompanyResponse</code></summary>
 <dl>
 <dd>
 
@@ -549,7 +549,7 @@ client.departments.all_(
 </dl>
 </details>
 
-<details><summary><code>client.departments.<a href="src/fern/departments/client.py">add</a>(...) -> CreateDepartmentResponse</code></summary>
+<details><summary><code>client.departments.<a href="src/fern/departments/client.py#L91-L167">add</a>(...) -> CreateDepartmentResponse</code></summary>
 <dl>
 <dd>
 
@@ -630,7 +630,7 @@ client.departments.add()
 </dl>
 </details>
 
-<details><summary><code>client.departments.<a href="src/fern/departments/client.py">one</a>(...) -> GetDepartmentResponse</code></summary>
+<details><summary><code>client.departments.<a href="src/fern/departments/client.py#L169-L215">one</a>(...) -> GetDepartmentResponse</code></summary>
 <dl>
 <dd>
 
@@ -722,7 +722,7 @@ client.departments.one(
 </dl>
 </details>
 
-<details><summary><code>client.departments.<a href="src/fern/departments/client.py">delete</a>(...) -> DeleteDepartmentResponse</code></summary>
+<details><summary><code>client.departments.<a href="src/fern/departments/client.py#L217-L254">delete</a>(...) -> DeleteDepartmentResponse</code></summary>
 <dl>
 <dd>
 
@@ -805,7 +805,7 @@ client.departments.delete(
 </dl>
 </details>
 
-<details><summary><code>client.departments.<a href="src/fern/departments/client.py">update</a>(...) -> UpdateDepartmentResponse</code></summary>
+<details><summary><code>client.departments.<a href="src/fern/departments/client.py#L256-L339">update</a>(...) -> UpdateDepartmentResponse</code></summary>
 <dl>
 <dd>
 
@@ -1012,7 +1012,7 @@ client.employees.all_(
 </dl>
 </details>
 
-<details><summary><code>client.employees.<a href="src/fern/employees/client.py">add</a>(...) -> CreateEmployeeResponse</code></summary>
+<details><summary><code>client.employees.<a href="src/fern/employees/client.py#L134-L441">add</a>(...) -> CreateEmployeeResponse</code></summary>
 <dl>
 <dd>
 
@@ -1093,7 +1093,7 @@ client.employees.add()
 </dl>
 </details>
 
-<details><summary><code>client.employees.<a href="src/fern/employees/client.py">one</a>(...) -> GetEmployeeResponse</code></summary>
+<details><summary><code>client.employees.<a href="src/fern/employees/client.py#L443-L489">one</a>(...) -> GetEmployeeResponse</code></summary>
 <dl>
 <dd>
 
@@ -1185,7 +1185,7 @@ client.employees.one(
 </dl>
 </details>
 
-<details><summary><code>client.employees.<a href="src/fern/employees/client.py">delete</a>(...) -> DeleteEmployeeResponse</code></summary>
+<details><summary><code>client.employees.<a href="src/fern/employees/client.py#L491-L528">delete</a>(...) -> DeleteEmployeeResponse</code></summary>
 <dl>
 <dd>
 
@@ -1268,7 +1268,7 @@ client.employees.delete(
 </dl>
 </details>
 
-<details><summary><code>client.employees.<a href="src/fern/employees/client.py">update</a>(...) -> UpdateEmployeeResponse</code></summary>
+<details><summary><code>client.employees.<a href="src/fern/employees/client.py#L530-L844">update</a>(...) -> UpdateEmployeeResponse</code></summary>
 <dl>
 <dd>
 
@@ -1452,7 +1452,7 @@ client.jobs.all_(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">one</a>(...) -> GetHrisJobResponse</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L75-L126">one</a>(...) -> GetHrisJobResponse</code></summary>
 <dl>
 <dd>
 
@@ -1645,7 +1645,7 @@ client.payrolls.all_(
 </dl>
 </details>
 
-<details><summary><code>client.payrolls.<a href="src/fern/payrolls/client.py">one</a>(...) -> GetPayrollResponse</code></summary>
+<details><summary><code>client.payrolls.<a href="src/fern/payrolls/client.py#L75-L121">one</a>(...) -> GetPayrollResponse</code></summary>
 <dl>
 <dd>
 
@@ -1838,7 +1838,7 @@ client.employee_payrolls.all_(
 </dl>
 </details>
 
-<details><summary><code>client.employee_payrolls.<a href="src/fern/employee_payrolls/client.py">one</a>(...) -> GetEmployeePayrollResponse</code></summary>
+<details><summary><code>client.employee_payrolls.<a href="src/fern/employee_payrolls/client.py#L82-L135">one</a>(...) -> GetEmployeePayrollResponse</code></summary>
 <dl>
 <dd>
 
@@ -2140,7 +2140,7 @@ client.time_off_requests.all_(
 </dl>
 </details>
 
-<details><summary><code>client.time_off_requests.<a href="src/fern/time_off_requests/client.py">add</a>(...) -> CreateTimeOffRequestResponse</code></summary>
+<details><summary><code>client.time_off_requests.<a href="src/fern/time_off_requests/client.py#L100-L217">add</a>(...) -> CreateTimeOffRequestResponse</code></summary>
 <dl>
 <dd>
 
@@ -2221,7 +2221,7 @@ client.time_off_requests.add()
 </dl>
 </details>
 
-<details><summary><code>client.time_off_requests.<a href="src/fern/time_off_requests/client.py">one</a>(...) -> GetTimeOffRequestResponse</code></summary>
+<details><summary><code>client.time_off_requests.<a href="src/fern/time_off_requests/client.py#L219-L265">one</a>(...) -> GetTimeOffRequestResponse</code></summary>
 <dl>
 <dd>
 
@@ -2313,7 +2313,7 @@ client.time_off_requests.one(
 </dl>
 </details>
 
-<details><summary><code>client.time_off_requests.<a href="src/fern/time_off_requests/client.py">delete</a>(...) -> DeleteTimeOffRequestResponse</code></summary>
+<details><summary><code>client.time_off_requests.<a href="src/fern/time_off_requests/client.py#L267-L304">delete</a>(...) -> DeleteTimeOffRequestResponse</code></summary>
 <dl>
 <dd>
 
@@ -2396,7 +2396,7 @@ client.time_off_requests.delete(
 </dl>
 </details>
 
-<details><summary><code>client.time_off_requests.<a href="src/fern/time_off_requests/client.py">update</a>(...) -> UpdateTimeOffRequestResponse</code></summary>
+<details><summary><code>client.time_off_requests.<a href="src/fern/time_off_requests/client.py#L306-L430">update</a>(...) -> UpdateTimeOffRequestResponse</code></summary>
 <dl>
 <dd>
 

@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">reserve_locker</a>(...) -> Reservation</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L97-L123">reserve_locker</a>(...) -> Reservation</code></summary>
 <dl>
 <dd>
 
@@ -56,7 +56,7 @@ client.reserve_locker(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">open_locker_door</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L125-L151">open_locker_door</a>(...) -> str</code></summary>
 <dl>
 <dd>
 

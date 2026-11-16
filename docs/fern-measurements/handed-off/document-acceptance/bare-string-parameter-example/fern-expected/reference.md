@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">register_beacon</a>()</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L98-L119">register_beacon</a>()</code></summary>
 <dl>
 <dd>
 
@@ -46,7 +46,7 @@ client.register_beacon()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_beacon</a>(...) -> Beacon</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L121-L152">get_beacon</a>(...) -> Beacon</code></summary>
 <dl>
 <dd>
 

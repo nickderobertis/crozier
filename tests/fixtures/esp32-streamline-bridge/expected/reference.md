@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_recordings</a>() -> RecordingList</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L114-L137">get_recordings</a>() -> RecordingList</code></summary>
 <dl>
 <dd>
 
@@ -47,7 +47,7 @@ client.get_recordings()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">start_recording</a>(...) -> RecordingResult</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L139-L171">start_recording</a>(...) -> RecordingResult</code></summary>
 <dl>
 <dd>
 
@@ -114,7 +114,7 @@ client.start_recording(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_recording_capabilities</a>() -> RecordingCapabilities</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L173-L198">get_recording_capabilities</a>() -> RecordingCapabilities</code></summary>
 <dl>
 <dd>
 
@@ -162,7 +162,7 @@ client.get_recording_capabilities()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_recording</a>(...) -> DeleteRecordingResult</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L200-L229">delete_recording</a>(...) -> DeleteRecordingResult</code></summary>
 <dl>
 <dd>
 
@@ -220,7 +220,7 @@ client.delete_recording(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_recording_download_ticket</a>(...) -> DownloadTicket</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L231-L260">create_recording_download_ticket</a>(...) -> DownloadTicket</code></summary>
 <dl>
 <dd>
 
@@ -278,7 +278,7 @@ client.create_recording_download_ticket(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">download_recording</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L262-L291">download_recording</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -336,7 +336,7 @@ client.download_recording(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">stop_recording</a>(...) -> RecordingResult</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L293-L322">stop_recording</a>(...) -> RecordingResult</code></summary>
 <dl>
 <dd>
 
@@ -394,7 +394,7 @@ client.stop_recording(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_transport</a>() -> TransportSnapshot</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L324-L347">get_transport</a>() -> TransportSnapshot</code></summary>
 <dl>
 <dd>
 
@@ -442,7 +442,7 @@ client.get_transport()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">put_transport_key</a>(...) -> TransportKeyResult</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L349-L381">put_transport_key</a>(...) -> TransportKeyResult</code></summary>
 <dl>
 <dd>
 
@@ -509,7 +509,7 @@ client.put_transport_key(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_transport_key</a>(...) -> TransportKeyDeleteResult</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L383-L412">delete_transport_key</a>(...) -> TransportKeyDeleteResult</code></summary>
 <dl>
 <dd>
 
@@ -567,7 +567,7 @@ client.delete_transport_key(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">set_transport_mode</a>(...) -> TransportSnapshot</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L414-L443">set_transport_mode</a>(...) -> TransportSnapshot</code></summary>
 <dl>
 <dd>
 
@@ -625,7 +625,7 @@ client.set_transport_mode(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">unlock_bridge</a>() -> UnlockResult</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L445-L468">unlock_bridge</a>() -> UnlockResult</code></summary>
 <dl>
 <dd>
 
@@ -673,7 +673,7 @@ client.unlock_bridge()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_bridge_health</a>() -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L470-L493">get_bridge_health</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -721,7 +721,7 @@ client.get_bridge_health()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_bridge_status</a>() -> BridgeStatus</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L495-L518">get_bridge_status</a>() -> BridgeStatus</code></summary>
 <dl>
 <dd>
 
@@ -769,7 +769,7 @@ client.get_bridge_status()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">stream_wav</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L520-L547">stream_wav</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 

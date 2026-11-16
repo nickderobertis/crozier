@@ -27,3 +27,10 @@ An OpenAPI 3.1 boolean schema (`true` or `false`) as an `allOf`, `oneOf` or `any
 
 - `crates/crozier-e2e/tests/e2e/document_acceptance.rs`: `each_repaired_cause_generates_its_certified_pair_tree`; the narrowed refusals' controls are `narrowed_refusals_still_fire_on_their_controls`.
 - Unit tests: `openapi::document_acceptance_tests::boolean_composition_members_read_as_the_certified_pair_reads_them`, `openapi::document_acceptance_tests::a_single_scalar_all_of_loads_as_its_member`.
+
+**Regenerated at the certified pair.** The Fern goldens workflow (run
+43423270787) regenerated every `fern-expected/` tree this record holds at Fern
+CLI 5.200.0 / `fernapi/fern-python-sdk` 5.41.25, the certified pair, and
+crozier's comparison holds the record to those trees. Statements above that name Fern CLI
+5.163.1 / fern-python-sdk 5.41.3 describe the measurement as first taken, at
+the pair certified then; a digest, log or exit code they cite is that run's.

@@ -179,3 +179,10 @@ Every Fern run this record rests on held the shared generation lock
 An earlier pass held a different lock file, so it was not serialised against
 other workers. It was re-run under the shared lock, and every tree and exit
 code came out identical.
+
+**Regenerated at the certified pair.** The Fern goldens workflow (run
+43423270787) regenerated every `fern-expected/` tree this record holds at Fern
+CLI 5.200.0 / `fernapi/fern-python-sdk` 5.41.25, the certified pair, and
+crozier's comparison holds the record to those trees. Statements above that name Fern CLI
+5.163.1 / fern-python-sdk 5.41.3 describe the measurement as first taken, at
+the pair certified then; a digest, log or exit code they cite is that run's.

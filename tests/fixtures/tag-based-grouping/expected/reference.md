@@ -1,6 +1,6 @@
 # Reference
 ## Widgets
-<details><summary><code>client.widgets.<a href="src/fern/widgets/client.py">list_widgets</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.widgets.<a href="src/fern/widgets/client.py#L26-L48">list_widgets</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -47,7 +47,7 @@ client.widgets.list_widgets()
 </dl>
 </details>
 
-<details><summary><code>client.widgets.<a href="src/fern/widgets/client.py">create_widget</a>() -> CreateWidgetResponse</code></summary>
+<details><summary><code>client.widgets.<a href="src/fern/widgets/client.py#L50-L72">create_widget</a>() -> CreateWidgetResponse</code></summary>
 <dl>
 <dd>
 
@@ -95,7 +95,7 @@ client.widgets.create_widget()
 </details>
 
 ## Gadgets
-<details><summary><code>client.gadgets.<a href="src/fern/gadgets/client.py">list_gadgets</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.gadgets.<a href="src/fern/gadgets/client.py#L26-L48">list_gadgets</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -142,7 +142,7 @@ client.gadgets.list_gadgets()
 </dl>
 </details>
 
-<details><summary><code>client.gadgets.<a href="src/fern/gadgets/client.py">create_gadget</a>() -> CreateGadgetResponse</code></summary>
+<details><summary><code>client.gadgets.<a href="src/fern/gadgets/client.py#L50-L72">create_gadget</a>() -> CreateGadgetResponse</code></summary>
 <dl>
 <dd>
 

@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_tile_v2tiles_coastal_z_x_y_pbf_get</a>(...) -> GetTileV2TilesCoastalZxyPbfGetResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L100-L144">get_tile_v2tiles_coastal_z_x_y_pbf_get</a>(...) -> GetTileV2TilesCoastalZxyPbfGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -82,7 +82,7 @@ client.get_tile_v2tiles_coastal_z_x_y_pbf_get(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">read_a_b_c_d_tile</a>(...) -> ReadAbcdTileResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L146-L184">read_a_b_c_d_tile</a>(...) -> ReadAbcdTileResponse</code></summary>
 <dl>
 <dd>
 

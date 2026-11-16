@@ -1,6 +1,6 @@
 # Reference
 ## Depots
-<details><summary><code>client.depots.<a href="src/fern/depots/client.py">create_depot</a>(...) -> CreateDepotResponse</code></summary>
+<details><summary><code>client.depots.<a href="src/fern/depots/client.py#L30-L75">create_depot</a>(...) -> CreateDepotResponse</code></summary>
 <dl>
 <dd>
 
@@ -86,7 +86,7 @@ client.depots.create_depot(
 </dl>
 </details>
 
-<details><summary><code>client.depots.<a href="src/fern/depots/client.py">compare_depots</a>(...) -> CompareDepotsResponse</code></summary>
+<details><summary><code>client.depots.<a href="src/fern/depots/client.py#L77-L113">compare_depots</a>(...) -> CompareDepotsResponse</code></summary>
 <dl>
 <dd>
 
@@ -161,7 +161,7 @@ client.depots.compare_depots(
 </dl>
 </details>
 
-<details><summary><code>client.depots.<a href="src/fern/depots/client.py">purge_depots</a>(...)</code></summary>
+<details><summary><code>client.depots.<a href="src/fern/depots/client.py#L115-L140">purge_depots</a>(...)</code></summary>
 <dl>
 <dd>
 

@@ -57,3 +57,10 @@ and settles no coverage row.
 | `harbour-tide-desk` | [`harbour-tide-desk`](harbour-tide-desk/openapi.yml) | the defaults (packaged, `python_enums`) | the bearer token kept required under a root `security: [{}]` and a grouped operation's `[{}]`; root and grouped docstring separators indented under OpenAPI 3.0 where a description line ends in a backslash, with an empty return description a 12-space line; the unnamed `stream-condition` operation as the one buffered `forecasts.forecast_the_next_tide` sending `"stream": False`; and the condition field documented in its declared place in `reference.md` |
 | `harbour-chart-vault` | [`harbour-chart-vault`](harbour-chart-vault/openapi.yml) | the defaults (packaged, `python_enums`) | root and grouped `application/octet-stream` downloads whose raw and client docstring separators keep the 8-space indent where a description line ends in a backslash |
 | `lighthouse-keeper-roster` | [`lighthouse-keeper-roster`](lighthouse-keeper-roster/openapi.yml) | the defaults (packaged, `python_enums`) | optional `username`/`password` for an HTTP `basic` scheme no Security Requirement Object names |
+
+**Regenerated at the certified pair.** The Fern goldens workflow (run
+43423270787) regenerated every `fern-expected/` tree this record holds at Fern
+CLI 5.200.0 / `fernapi/fern-python-sdk` 5.41.25, the certified pair, and
+crozier's comparison holds the record to those trees. Statements above that name Fern CLI
+5.163.1 / fern-python-sdk 5.41.3 describe the measurement as first taken, at
+the pair certified then; a digest, log or exit code they cite is that run's.

@@ -47,6 +47,8 @@ SCRIPT_LOADS = (
     "tools/fern-refusals/sdk_evaluation.py",
     "tools/fern-refusals/sdk_evaluation_runtime.py",
     "assets/scaffolding/metadata.json",
+    # Read at import: the unsettled-record contract both gates share.
+    "docs/fern-refusals/unsettled-contract.json",
 )
 REGISTRY = REPO / "docs" / "fern-refusals"
 CONFIRMATIONS = REPO / "docs" / "openapi-surface" / "fern-refusals" / "confirmations.tsv"
@@ -267,6 +269,103 @@ class Drift(unittest.TestCase):
                 self.assert_check_fails_naming(f"docs/fern-refusals/{name}: the header must be exactly")
                 (self.registry / name).write_text(original, encoding="utf-8")
 
+    def edit_unsettled(self, old: str, new: str) -> None:
+        path = self.registry / "heap-exhausted" / "unsettled.txt"
+        text = path.read_text(encoding="utf-8")
+        self.assertIn(old, text)
+        path.write_text(text.replace(old, new, 1), encoding="utf-8")
+
+    def unsettled_field(self, name: str) -> str:
+        text = (self.registry / "heap-exhausted" / "unsettled.txt").read_text(encoding="utf-8")
+        return next(line for line in text.splitlines() if line.startswith(f"{name}: "))
+
+    def test_an_unsettled_class_alone_keeps_shape_logs_from_its_earlier_pair(self) -> None:
+        result = run("check", registry=self.registry)
+        self.assertNotIn("heap-exhausted", result.stderr)
+        (self.registry / "heap-exhausted" / "unsettled.txt").unlink()
+        self.assert_check_fails_naming(
+            "heap-exhausted/single-child-probe.yml: its log "
+            "docs/fern-refusals/heap-exhausted/evaluation-logs/fern-single-child.log is not one `shapes` wrote at"
+        )
+
+    def test_an_unsettled_record_without_its_follow_up_or_reason_fails(self) -> None:
+        for name in ("follow_up", "reason"):
+            with self.subTest(field=name):
+                line = self.unsettled_field(name)
+                self.edit_unsettled(line, f"{name}: ")
+                self.assert_check_fails_naming(
+                    f"docs/fern-refusals/heap-exhausted/unsettled.txt: {name} is empty; "
+                    "an unsettled class says why, and names its follow-up"
+                )
+                self.edit_unsettled(f"{name}: \n", line + "\n")
+        line = self.unsettled_field("follow_up")
+        self.edit_unsettled(line + "\n", "")
+        self.assert_check_fails_naming("docs/fern-refusals/heap-exhausted/unsettled.txt carries")
+
+    def test_an_unsettled_record_at_another_pair_or_beside_a_settled_record_fails(self) -> None:
+        line = self.unsettled_field("fern_cli_version")
+        self.edit_unsettled(line, "fern_cli_version: 5.0.0")  # certified-pair: stand-in (a stale record)
+        self.assert_check_fails_naming("heap-exhausted/unsettled.txt names Fern CLI 5.0.0")
+        self.assert_check_fails_naming("is not one `shapes` wrote at")
+        self.edit_unsettled("fern_cli_version: 5.0.0", line)  # certified-pair: stand-in
+        record = self.registry / "heap-exhausted" / "fern-refusal.txt"
+        text = record.read_text(encoding="utf-8").splitlines()
+        text[0] = f"fern_cli_version: {CERTIFIED['cliVersion']}"
+        text[1] = f"fern_python_sdk_version: {CERTIFIED['generatorVersion']}"
+        record.write_text("\n".join(text) + "\n", encoding="utf-8")
+        self.assert_check_fails_naming("its refusal record is at the certified pair, so the class is settled")
+
+    def test_an_unsettled_stage_must_have_run_to_its_bound(self) -> None:
+        self.edit_unsettled("check_exit: timeout", "check_exit: 1")
+        self.assert_check_fails_naming("check_exit must be `timeout` with check_seconds its elapsed seconds")
+        self.edit_unsettled("check_exit: 1", "check_exit: timeout")
+        line = self.unsettled_field("generate_seconds")
+        self.edit_unsettled(line, "generate_seconds: 12.5")
+        self.assert_check_fails_naming("generate_seconds 12.5 is short of the 900-second bound")
+        self.edit_unsettled("generate_seconds: 12.5", line)
+        self.edit_unsettled("bound_seconds: 900", "bound_seconds: 0")
+        self.assert_check_fails_naming("bound_seconds must be the probe's positive per-stage bound")
+        # A decimal too long for a float is no bound, not an infinite one.
+        self.edit_unsettled("bound_seconds: 0", "bound_seconds: " + "9" * 400)
+        self.assert_check_fails_naming("bound_seconds must be the probe's positive per-stage bound")
+        self.edit_unsettled("bound_seconds: " + "9" * 400, "bound_seconds: 900")
+        # A timed-out stage whose elapsed seconds are no number, or no finite one,
+        # did not run to its bound either.
+        for elapsed in ("soon", "9" * 400):
+            with self.subTest(check_seconds=elapsed):
+                line = self.unsettled_field("check_seconds")
+                self.edit_unsettled(line, f"check_seconds: {elapsed}")
+                self.assert_check_fails_naming("check_exit must be `timeout` with check_seconds its elapsed seconds")
+                self.edit_unsettled(f"check_seconds: {elapsed}", line)
+
+    def test_an_unsettled_class_keeps_only_the_logs_of_its_refusal_record_s_pair(self) -> None:
+        # The history an unsettled class keeps is its refusal record's pair, and
+        # no other: once that record names a third pair, the retained logs fail
+        # even beside a valid unsettled record.
+        record = self.registry / "heap-exhausted" / "fern-refusal.txt"
+        text = record.read_text(encoding="utf-8").splitlines()
+        self.assertTrue(text[0].startswith("fern_cli_version: "), text[0])
+        text[0] = "fern_cli_version: 5.0.0"  # certified-pair: stand-in (a third pair)
+        record.write_text("\n".join(text) + "\n", encoding="utf-8")
+        result = run("check", registry=self.registry)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn(
+            "heap-exhausted/single-child-probe.yml: its log "
+            "docs/fern-refusals/heap-exhausted/evaluation-logs/fern-single-child.log is not one `shapes` wrote at",
+            result.stderr,
+        )
+        self.assertNotIn("unsettled.txt", result.stderr)
+
+    def test_an_unsettled_record_repeating_a_field_or_beside_an_unversioned_record_fails(self) -> None:
+        line = self.unsettled_field("reason")
+        self.edit_unsettled(line + "\n", line + "\n" + line + "\n")
+        self.assert_check_fails_naming("heap-exhausted/unsettled.txt carries", "once each, in order")
+        self.edit_unsettled(line + "\n" + line + "\n", line + "\n")
+        record = self.registry / "heap-exhausted" / "fern-refusal.txt"
+        text = record.read_text(encoding="utf-8").splitlines()
+        record.write_text("\n".join(text[1:]) + "\n", encoding="utf-8")
+        self.assert_check_fails_naming("the class has no fern-refusal.txt naming the pair it last settled at")
+
     def test_a_row_short_of_the_header_fails_naming_its_line(self) -> None:
         table = rows(self.registry / "classes.tsv")
         table[2] = table[2][:-1]
@@ -462,6 +561,37 @@ class MissingInputs(unittest.TestCase):
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertNotIn("Traceback", result.stderr)
         self.assertIn(f"{missing} is missing; restore it from git", result.stderr)
+
+    def test_a_malformed_unsettled_contract_fails_naming_it(self) -> None:
+        contract = "docs/fern-refusals/unsettled-contract.json"
+        valid = json.loads((REPO / contract).read_text(encoding="utf-8"))
+        for name, text in (
+            ("zero reach", json.dumps({**valid, "reach": 0})),
+            ("negative reach", json.dumps({**valid, "reach": -0.5})),
+            ("reach above one", json.dumps({**valid, "reach": 1.5})),
+            ("NaN reach", json.dumps({**valid, "reach": float("nan")})),
+            ("boolean reach", json.dumps({**valid, "reach": True})),
+            ("no fields", json.dumps({"reach": 0.95})),
+            ("repeated field", json.dumps({**valid, "fields": ["reason", "reason"]})),
+            ("a read field dropped", json.dumps({**valid, "fields": ["reason"]})),
+            ("huge integer reach", json.dumps({**valid, "reach": 10**400})),
+            ("not JSON", "{"),
+        ):
+            with self.subTest(name), tempfile.TemporaryDirectory() as scratch:
+                root = Path(scratch)
+                for relative in SCRIPT_LOADS:
+                    (root / relative).parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy(REPO / relative, root / relative)
+                (root / contract).write_text(text, encoding="utf-8")
+                result = subprocess.run(
+                    [sys.executable, str(root / "tools" / "fern-refusals" / "fern-refusals.py"), "check"],
+                    capture_output=True,
+                    text=True,
+                    cwd=root,
+                )
+                self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+                self.assertNotIn("Traceback", result.stderr)
+                self.assertIn(contract, result.stderr)
 
     def test_a_missing_corpus_table_names_it(self) -> None:
         self.assert_select_names_missing("tests/fixtures/CORPUS.md")
@@ -1528,7 +1658,7 @@ class MeasuredAtThePair(unittest.TestCase):
             (surface / "golden-reach-witnesses" / source).mkdir(parents=True)
             (surface / "golden-reach-witnesses" / source / "candidates.jsonl").write_text("", encoding="utf-8")
         registry = root / "docs" / "fern-refusals"
-        registry.mkdir()
+        registry.mkdir(exist_ok=True)  # the script's loads put its contract there
         classes = rows(REGISTRY / "classes.tsv")
         self.class_row = next(row for row in classes[1:] if row[0] == self.CLASS)
         write_rows(registry / "classes.tsv", [classes[0], self.class_row])

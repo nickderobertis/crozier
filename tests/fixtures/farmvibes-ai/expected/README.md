@@ -78,7 +78,7 @@ The SDK also exports an `async` client so that you can make non-blocking calls t
 import asyncio
 import datetime
 
-from fern import AsyncFernApi
+from fern import AsyncFernApi, SpatioTemporalJson
 
 client = AsyncFernApi()
 

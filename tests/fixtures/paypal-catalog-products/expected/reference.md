@@ -1,6 +1,6 @@
 # Reference
 ## products
-<details><summary><code>client.products.<a href="src/fern/products/client.py">list</a>(...) -> ProductCollection</code></summary>
+<details><summary><code>client.products.<a href="src/fern/products/client.py#L33-L75">list</a>(...) -> ProductCollection</code></summary>
 <dl>
 <dd>
 
@@ -87,7 +87,7 @@ client.products.list()
 </dl>
 </details>
 
-<details><summary><code>client.products.<a href="src/fern/products/client.py">create</a>(...) -> Product</code></summary>
+<details><summary><code>client.products.<a href="src/fern/products/client.py#L77-L155">create</a>(...) -> Product</code></summary>
 <dl>
 <dd>
 
@@ -230,7 +230,7 @@ client.products.create(
 </dl>
 </details>
 
-<details><summary><code>client.products.<a href="src/fern/products/client.py">get</a>(...) -> Product</code></summary>
+<details><summary><code>client.products.<a href="src/fern/products/client.py#L157-L186">get</a>(...) -> Product</code></summary>
 <dl>
 <dd>
 
@@ -303,7 +303,7 @@ client.products.get(
 </dl>
 </details>
 
-<details><summary><code>client.products.<a href="src/fern/products/client.py">patch</a>(...)</code></summary>
+<details><summary><code>client.products.<a href="src/fern/products/client.py#L188-L227">patch</a>(...)</code></summary>
 <dl>
 <dd>
 

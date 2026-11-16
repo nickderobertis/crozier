@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">list_passages</a>(...) -> typing.List[Passage]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L100-L146">list_passages</a>(...) -> typing.List[Passage]</code></summary>
 <dl>
 <dd>
 
@@ -78,7 +78,7 @@ Upstream or downstream.
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">book_passage</a>(...) -> Passage</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L148-L193">book_passage</a>(...) -> Passage</code></summary>
 <dl>
 <dd>
 

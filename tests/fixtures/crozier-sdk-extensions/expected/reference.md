@@ -1,6 +1,6 @@
 # Reference
 ## Widgets
-<details><summary><code>client.widgets.<a href="src/fern/widgets/client.py">watch_stream</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.widgets.<a href="src/fern/widgets/client.py#L29-L57">watch_stream</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -63,7 +63,7 @@ client.widgets.watch_stream()
 </dl>
 </details>
 
-<details><summary><code>client.widgets.<a href="src/fern/widgets/client.py">watch</a>(...) -> WidgetEvent</code></summary>
+<details><summary><code>client.widgets.<a href="src/fern/widgets/client.py#L59-L85">watch</a>(...) -> WidgetEvent</code></summary>
 <dl>
 <dd>
 
@@ -127,7 +127,7 @@ client.widgets.watch_stream()
 </details>
 
 ## Catalog Widgets
-<details><summary><code>client.catalog.widgets.<a href="src/fern/catalog/widgets/client.py">list</a>(...) -> WidgetPage</code></summary>
+<details><summary><code>client.catalog.widgets.<a href="src/fern/catalog/widgets/client.py#L28-L59">list</a>(...) -> WidgetPage</code></summary>
 <dl>
 <dd>
 

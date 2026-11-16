@@ -1,6 +1,6 @@
 # Reference
 ## Keysapi
-<details><summary><code>client.keysapi.<a href="src/fern/keysapi/client.py">current</a>(...) -> typing.Optional[CurrentKey]</code></summary>
+<details><summary><code>client.keysapi.<a href="src/fern/keysapi/client.py#L28-L54">current</a>(...) -> typing.Optional[CurrentKey]</code></summary>
 <dl>
 <dd>
 
@@ -58,7 +58,7 @@ client.keysapi.current(
 </dl>
 </details>
 
-<details><summary><code>client.keysapi.<a href="src/fern/keysapi/client.py">custom</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.keysapi.<a href="src/fern/keysapi/client.py#L56-L71">custom</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -106,7 +106,7 @@ client.keysapi.custom(...)
 </dl>
 </details>
 
-<details><summary><code>client.keysapi.<a href="src/fern/keysapi/client.py">expiry</a>(...) -> typing.Optional[Expiry]</code></summary>
+<details><summary><code>client.keysapi.<a href="src/fern/keysapi/client.py#L73-L99">expiry</a>(...) -> typing.Optional[Expiry]</code></summary>
 <dl>
 <dd>
 
@@ -164,7 +164,7 @@ client.keysapi.expiry(
 </dl>
 </details>
 
-<details><summary><code>client.keysapi.<a href="src/fern/keysapi/client.py">find</a>(...) -> typing.Optional[KeyView]</code></summary>
+<details><summary><code>client.keysapi.<a href="src/fern/keysapi/client.py#L101-L125">find</a>(...) -> typing.Optional[KeyView]</code></summary>
 <dl>
 <dd>
 
@@ -223,7 +223,7 @@ client.keysapi.find(
 </details>
 
 ## Productsapi
-<details><summary><code>client.productsapi.<a href="src/fern/productsapi/client.py">patchproduct2</a>(...)</code></summary>
+<details><summary><code>client.productsapi.<a href="src/fern/productsapi/client.py#L33-L61">patchproduct2</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -281,7 +281,7 @@ client.productsapi.patchproduct2(
 </dl>
 </details>
 
-<details><summary><code>client.productsapi.<a href="src/fern/productsapi/client.py">patchproduct</a>(...)</code></summary>
+<details><summary><code>client.productsapi.<a href="src/fern/productsapi/client.py#L63-L91">patchproduct</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -339,7 +339,7 @@ client.productsapi.patchproduct(
 </dl>
 </details>
 
-<details><summary><code>client.productsapi.<a href="src/fern/productsapi/client.py">count</a>(...) -> typing.Optional[CountOf]</code></summary>
+<details><summary><code>client.productsapi.<a href="src/fern/productsapi/client.py#L93-L119">count</a>(...) -> typing.Optional[CountOf]</code></summary>
 <dl>
 <dd>
 
@@ -397,7 +397,7 @@ client.productsapi.count(
 </dl>
 </details>
 
-<details><summary><code>client.productsapi.<a href="src/fern/productsapi/client.py">find</a>(...) -> typing.Optional[ProductView]</code></summary>
+<details><summary><code>client.productsapi.<a href="src/fern/productsapi/client.py#L121-L153">find</a>(...) -> typing.Optional[ProductView]</code></summary>
 <dl>
 <dd>
 
@@ -463,7 +463,7 @@ client.productsapi.find(
 </dl>
 </details>
 
-<details><summary><code>client.productsapi.<a href="src/fern/productsapi/client.py">list</a>(...) -> typing.Optional[typing.List[ProductView]]</code></summary>
+<details><summary><code>client.productsapi.<a href="src/fern/productsapi/client.py#L155-L187">list</a>(...) -> typing.Optional[typing.List[ProductView]]</code></summary>
 <dl>
 <dd>
 
@@ -529,7 +529,7 @@ client.productsapi.list(
 </dl>
 </details>
 
-<details><summary><code>client.productsapi.<a href="src/fern/productsapi/client.py">save</a>(...) -> typing.Optional[ProductView]</code></summary>
+<details><summary><code>client.productsapi.<a href="src/fern/productsapi/client.py#L189-L218">save</a>(...) -> typing.Optional[ProductView]</code></summary>
 <dl>
 <dd>
 
@@ -587,7 +587,7 @@ client.productsapi.save(
 </dl>
 </details>
 
-<details><summary><code>client.productsapi.<a href="src/fern/productsapi/client.py">deleteproduct2</a>(...)</code></summary>
+<details><summary><code>client.productsapi.<a href="src/fern/productsapi/client.py#L220-L248">deleteproduct2</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -654,7 +654,7 @@ client.productsapi.deleteproduct2(
 </dl>
 </details>
 
-<details><summary><code>client.productsapi.<a href="src/fern/productsapi/client.py">deleteproduct</a>(...)</code></summary>
+<details><summary><code>client.productsapi.<a href="src/fern/productsapi/client.py#L250-L278">deleteproduct</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -722,7 +722,7 @@ client.productsapi.deleteproduct(
 </details>
 
 ## Subscriptionsapi
-<details><summary><code>client.subscriptionsapi.<a href="src/fern/subscriptionsapi/client.py">putsubscription2</a>(...)</code></summary>
+<details><summary><code>client.subscriptionsapi.<a href="src/fern/subscriptionsapi/client.py#L34-L65">putsubscription2</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -783,7 +783,7 @@ client.subscriptionsapi.putsubscription2(
 </dl>
 </details>
 
-<details><summary><code>client.subscriptionsapi.<a href="src/fern/subscriptionsapi/client.py">putsubscription</a>(...)</code></summary>
+<details><summary><code>client.subscriptionsapi.<a href="src/fern/subscriptionsapi/client.py#L67-L98">putsubscription</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -844,7 +844,7 @@ client.subscriptionsapi.putsubscription(
 </dl>
 </details>
 
-<details><summary><code>client.subscriptionsapi.<a href="src/fern/subscriptionsapi/client.py">count</a>(...) -> typing.Optional[CountOf]</code></summary>
+<details><summary><code>client.subscriptionsapi.<a href="src/fern/subscriptionsapi/client.py#L100-L129">count</a>(...) -> typing.Optional[CountOf]</code></summary>
 <dl>
 <dd>
 
@@ -902,7 +902,7 @@ client.subscriptionsapi.count(
 </dl>
 </details>
 
-<details><summary><code>client.subscriptionsapi.<a href="src/fern/subscriptionsapi/client.py">disable2</a>(...)</code></summary>
+<details><summary><code>client.subscriptionsapi.<a href="src/fern/subscriptionsapi/client.py#L131-L159">disable2</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -960,7 +960,7 @@ client.subscriptionsapi.disable2(
 </dl>
 </details>
 
-<details><summary><code>client.subscriptionsapi.<a href="src/fern/subscriptionsapi/client.py">disable</a>(...)</code></summary>
+<details><summary><code>client.subscriptionsapi.<a href="src/fern/subscriptionsapi/client.py#L161-L189">disable</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1018,7 +1018,7 @@ client.subscriptionsapi.disable(
 </dl>
 </details>
 
-<details><summary><code>client.subscriptionsapi.<a href="src/fern/subscriptionsapi/client.py">enable2</a>(...)</code></summary>
+<details><summary><code>client.subscriptionsapi.<a href="src/fern/subscriptionsapi/client.py#L191-L219">enable2</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1076,7 +1076,7 @@ client.subscriptionsapi.enable2(
 </dl>
 </details>
 
-<details><summary><code>client.subscriptionsapi.<a href="src/fern/subscriptionsapi/client.py">enable</a>(...)</code></summary>
+<details><summary><code>client.subscriptionsapi.<a href="src/fern/subscriptionsapi/client.py#L221-L249">enable</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1134,7 +1134,7 @@ client.subscriptionsapi.enable(
 </dl>
 </details>
 
-<details><summary><code>client.subscriptionsapi.<a href="src/fern/subscriptionsapi/client.py">find</a>(...) -> typing.Optional[SubscriptionView]</code></summary>
+<details><summary><code>client.subscriptionsapi.<a href="src/fern/subscriptionsapi/client.py#L251-L280">find</a>(...) -> typing.Optional[SubscriptionView]</code></summary>
 <dl>
 <dd>
 
@@ -1192,7 +1192,7 @@ client.subscriptionsapi.find(
 </dl>
 </details>
 
-<details><summary><code>client.subscriptionsapi.<a href="src/fern/subscriptionsapi/client.py">list</a>(...) -> typing.Optional[typing.List[SubscriptionView]]</code></summary>
+<details><summary><code>client.subscriptionsapi.<a href="src/fern/subscriptionsapi/client.py#L282-L314">list</a>(...) -> typing.Optional[typing.List[SubscriptionView]]</code></summary>
 <dl>
 <dd>
 
@@ -1258,7 +1258,7 @@ client.subscriptionsapi.list(
 </dl>
 </details>
 
-<details><summary><code>client.subscriptionsapi.<a href="src/fern/subscriptionsapi/client.py">save</a>(...) -> typing.Optional[KeyView]</code></summary>
+<details><summary><code>client.subscriptionsapi.<a href="src/fern/subscriptionsapi/client.py#L316-L348">save</a>(...) -> typing.Optional[KeyView]</code></summary>
 <dl>
 <dd>
 
@@ -1319,7 +1319,7 @@ client.subscriptionsapi.save(
 </dl>
 </details>
 
-<details><summary><code>client.subscriptionsapi.<a href="src/fern/subscriptionsapi/client.py">deletesubscription2</a>(...)</code></summary>
+<details><summary><code>client.subscriptionsapi.<a href="src/fern/subscriptionsapi/client.py#L350-L388">deletesubscription2</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1395,7 +1395,7 @@ client.subscriptionsapi.deletesubscription2(
 </dl>
 </details>
 
-<details><summary><code>client.subscriptionsapi.<a href="src/fern/subscriptionsapi/client.py">deletesubscription</a>(...)</code></summary>
+<details><summary><code>client.subscriptionsapi.<a href="src/fern/subscriptionsapi/client.py#L390-L428">deletesubscription</a>(...)</code></summary>
 <dl>
 <dd>
 

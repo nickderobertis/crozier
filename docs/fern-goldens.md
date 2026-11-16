@@ -517,6 +517,19 @@ A reference whose pinned upstream specification can no longer be fetched (a
 the rest: it keeps its committed tree, and is named in the run's summary and in
 the pull request's **Not regenerated** section, which makes the run a diff.
 
+`subsloth` and `viskit-studio` are the two such rows today: their pinned raw
+URLs answer 404, as do their repositories. At Fern CLI 5.200.0 /
+fern-python-sdk 5.41.25 their goldens were regenerated from the committed
+copies under `tests/fixtures/corpus-sources/`, after `just lint-corpus-sources`
+verified each against the SHA-256 its `corpus-sources.tsv` row records
+(`36c6ed02…` and `a28619a0…`), so the input is byte-identical to the pinned
+source. The copy was placed where `fetch-corpus --if-missing` reuses a cached
+spec, and the ordinary `fern-goldens generate --version 5.41.25 --fixture
+<row>` route did the rest (subsloth's `expected-literals` overlay through
+`fern-references.py generate overlays`). Both are compared at that pair like
+every other row. The weekly run still fetches with `--force`, so it reports them
+under **Not regenerated** until their source moves.
+
 A refusal class whose probe the candidate pair no longer refuses as recorded is
 likewise a diff, never a failure: the class keeps its record, and the pull
 request's **Refusal classes whose Fern outcome changed** section names it with
@@ -614,7 +627,7 @@ prerequisites as the workflow and writes nothing to a branch.
 Generate selected fixtures and then run the aggregate comparison:
 
 ```sh
-just fern-goldens --version 5.41.3 --fixture anchore.io
+just fern-goldens --version 5.41.25 --fixture anchore.io
 ```
 
 Repeat `--fixture` for an exact multi-fixture selection. Omit `--version` to use
@@ -624,7 +637,7 @@ corpus goldens.
 Keep generation and comparison separate when diagnosing a phase:
 
 ```sh
-just fern-goldens-generate --version 5.41.3 --fixture anchore.io
+just fern-goldens-generate --version 5.41.25 --fixture anchore.io
 just fern-goldens-compare
 ```
 

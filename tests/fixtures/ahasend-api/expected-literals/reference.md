@@ -1,6 +1,6 @@
 # Reference
 ## Utility
-<details><summary><code>client.utility.<a href="src/fern/utility/client.py">ping</a>() -> SuccessResponse</code></summary>
+<details><summary><code>client.utility.<a href="src/fern/utility/client.py#L26-L50">ping</a>() -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -64,7 +64,7 @@ client.utility.ping()
 </details>
 
 ## API Keys
-<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py">get_api_keys</a>(...) -> PaginatedApiKeysResponse</code></summary>
+<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py#L33-L81">get_api_keys</a>(...) -> PaginatedApiKeysResponse</code></summary>
 <dl>
 <dd>
 
@@ -161,7 +161,7 @@ client.api_keys.get_api_keys(
 </dl>
 </details>
 
-<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py">create_api_key</a>(...) -> CreateApiKeyResponse</code></summary>
+<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py#L83-L148">create_api_key</a>(...) -> CreateApiKeyResponse</code></summary>
 <dl>
 <dd>
 
@@ -266,7 +266,7 @@ so successful encrypted replay responses for those operations expire after 5 min
 </dl>
 </details>
 
-<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py">get_api_key</a>(...) -> ApiKey</code></summary>
+<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py#L150-L185">get_api_key</a>(...) -> ApiKey</code></summary>
 <dl>
 <dd>
 
@@ -348,7 +348,7 @@ client.api_keys.get_api_key(
 </dl>
 </details>
 
-<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py">update_api_key</a>(...) -> ApiKey</code></summary>
+<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py#L187-L234">update_api_key</a>(...) -> ApiKey</code></summary>
 <dl>
 <dd>
 
@@ -441,7 +441,7 @@ client.api_keys.update_api_key(
 </dl>
 </details>
 
-<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py">delete_api_key</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py#L236-L271">delete_api_key</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -524,7 +524,7 @@ client.api_keys.delete_api_key(
 </details>
 
 ## Domains
-<details><summary><code>client.domains.<a href="src/fern/domains/client.py">get_domains</a>(...) -> PaginatedDomainsResponse</code></summary>
+<details><summary><code>client.domains.<a href="src/fern/domains/client.py#L31-L83">get_domains</a>(...) -> PaginatedDomainsResponse</code></summary>
 <dl>
 <dd>
 
@@ -629,7 +629,7 @@ client.domains.get_domains(
 </dl>
 </details>
 
-<details><summary><code>client.domains.<a href="src/fern/domains/client.py">create_domain</a>(...) -> Domain</code></summary>
+<details><summary><code>client.domains.<a href="src/fern/domains/client.py#L85-L186">create_domain</a>(...) -> Domain</code></summary>
 <dl>
 <dd>
 
@@ -799,7 +799,7 @@ When provided, it is normalized to lowercase and must be a single DNS label: 1-6
 </dl>
 </details>
 
-<details><summary><code>client.domains.<a href="src/fern/domains/client.py">get_domain</a>(...) -> Domain</code></summary>
+<details><summary><code>client.domains.<a href="src/fern/domains/client.py#L188-L223">get_domain</a>(...) -> Domain</code></summary>
 <dl>
 <dd>
 
@@ -881,7 +881,7 @@ client.domains.get_domain(
 </dl>
 </details>
 
-<details><summary><code>client.domains.<a href="src/fern/domains/client.py">update_domain</a>(...) -> Domain</code></summary>
+<details><summary><code>client.domains.<a href="src/fern/domains/client.py#L225-L307">update_domain</a>(...) -> Domain</code></summary>
 <dl>
 <dd>
 
@@ -1022,7 +1022,7 @@ When provided, it is normalized to lowercase and must be a single DNS label: 1-6
 </dl>
 </details>
 
-<details><summary><code>client.domains.<a href="src/fern/domains/client.py">delete_domain</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.domains.<a href="src/fern/domains/client.py#L309-L344">delete_domain</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -1104,7 +1104,7 @@ client.domains.delete_domain(
 </dl>
 </details>
 
-<details><summary><code>client.domains.<a href="src/fern/domains/client.py">check_domain_dns</a>(...) -> Domain</code></summary>
+<details><summary><code>client.domains.<a href="src/fern/domains/client.py#L346-L381">check_domain_dns</a>(...) -> Domain</code></summary>
 <dl>
 <dd>
 
@@ -1187,7 +1187,7 @@ client.domains.check_domain_dns(
 </details>
 
 ## Messages
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">get_messages</a>(...) -> PaginatedMessagesResponse</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L41-L149">get_messages</a>(...) -> PaginatedMessagesResponse</code></summary>
 <dl>
 <dd>
 
@@ -1361,7 +1361,7 @@ and `Sandbox Suppressed`.
 </dl>
 </details>
 
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">create_message</a>(...) -> CreateMessageResponse</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L151-L306">create_message</a>(...) -> CreateMessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -1608,7 +1608,7 @@ so successful encrypted replay responses for those operations expire after 5 min
 </dl>
 </details>
 
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">create_conversation_message</a>(...) -> CreateMessageResponse</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L308-L484">create_conversation_message</a>(...) -> CreateMessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -1877,7 +1877,7 @@ so successful encrypted replay responses for those operations expire after 5 min
 </dl>
 </details>
 
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">get_message</a>(...) -> Message</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L486-L523">get_message</a>(...) -> Message</code></summary>
 <dl>
 <dd>
 
@@ -1961,7 +1961,7 @@ client.messages.get_message(
 </dl>
 </details>
 
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">cancel_message</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L525-L561">cancel_message</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -2045,7 +2045,7 @@ client.messages.cancel_message(
 </details>
 
 ## Accounts
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">get_account</a>(...) -> Account</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L33-L62">get_account</a>(...) -> Account</code></summary>
 <dl>
 <dd>
 
@@ -2118,7 +2118,7 @@ client.accounts.get_account(
 </dl>
 </details>
 
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">update_account</a>(...) -> Account</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L64-L155">update_account</a>(...) -> Account</code></summary>
 <dl>
 <dd>
 
@@ -2272,7 +2272,7 @@ client.accounts.update_account(
 </dl>
 </details>
 
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">get_account_members</a>(...) -> AccountMembersResponse</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L157-L188">get_account_members</a>(...) -> AccountMembersResponse</code></summary>
 <dl>
 <dd>
 
@@ -2345,7 +2345,7 @@ client.accounts.get_account_members(
 </dl>
 </details>
 
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">add_account_member</a>(...) -> UserAccount</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L190-L259">add_account_member</a>(...) -> UserAccount</code></summary>
 <dl>
 <dd>
 
@@ -2464,7 +2464,7 @@ so successful encrypted replay responses for those operations expire after 5 min
 </dl>
 </details>
 
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">remove_account_member</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L261-L300">remove_account_member</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -2551,7 +2551,7 @@ client.accounts.remove_account_member(
 </details>
 
 ## SubAccounts
-<details><summary><code>client.sub_accounts.<a href="src/fern/sub_accounts/client.py">list_sub_accounts</a>(...) -> PaginatedSubAccountsResponse</code></summary>
+<details><summary><code>client.sub_accounts.<a href="src/fern/sub_accounts/client.py#L37-L85">list_sub_accounts</a>(...) -> PaginatedSubAccountsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2648,7 +2648,7 @@ client.sub_accounts.list_sub_accounts(
 </dl>
 </details>
 
-<details><summary><code>client.sub_accounts.<a href="src/fern/sub_accounts/client.py">create_sub_account</a>(...) -> SubAccount</code></summary>
+<details><summary><code>client.sub_accounts.<a href="src/fern/sub_accounts/client.py#L87-L152">create_sub_account</a>(...) -> SubAccount</code></summary>
 <dl>
 <dd>
 
@@ -2763,7 +2763,7 @@ so successful encrypted replay responses for those operations expire after 5 min
 </dl>
 </details>
 
-<details><summary><code>client.sub_accounts.<a href="src/fern/sub_accounts/client.py">get_sub_accounts_usage</a>(...) -> SubAccountUsageResponse</code></summary>
+<details><summary><code>client.sub_accounts.<a href="src/fern/sub_accounts/client.py#L154-L185">get_sub_accounts_usage</a>(...) -> SubAccountUsageResponse</code></summary>
 <dl>
 <dd>
 
@@ -2836,7 +2836,7 @@ client.sub_accounts.get_sub_accounts_usage(
 </dl>
 </details>
 
-<details><summary><code>client.sub_accounts.<a href="src/fern/sub_accounts/client.py">get_sub_account</a>(...) -> SubAccount</code></summary>
+<details><summary><code>client.sub_accounts.<a href="src/fern/sub_accounts/client.py#L187-L222">get_sub_account</a>(...) -> SubAccount</code></summary>
 <dl>
 <dd>
 
@@ -2918,7 +2918,7 @@ client.sub_accounts.get_sub_account(
 </dl>
 </details>
 
-<details><summary><code>client.sub_accounts.<a href="src/fern/sub_accounts/client.py">update_sub_account</a>(...) -> SubAccount</code></summary>
+<details><summary><code>client.sub_accounts.<a href="src/fern/sub_accounts/client.py#L224-L271">update_sub_account</a>(...) -> SubAccount</code></summary>
 <dl>
 <dd>
 
@@ -3011,7 +3011,7 @@ client.sub_accounts.update_sub_account(
 </dl>
 </details>
 
-<details><summary><code>client.sub_accounts.<a href="src/fern/sub_accounts/client.py">delete_sub_account</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.sub_accounts.<a href="src/fern/sub_accounts/client.py#L273-L308">delete_sub_account</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -3093,7 +3093,7 @@ client.sub_accounts.delete_sub_account(
 </dl>
 </details>
 
-<details><summary><code>client.sub_accounts.<a href="src/fern/sub_accounts/client.py">suspend_sub_account</a>(...) -> SubAccount</code></summary>
+<details><summary><code>client.sub_accounts.<a href="src/fern/sub_accounts/client.py#L310-L356">suspend_sub_account</a>(...) -> SubAccount</code></summary>
 <dl>
 <dd>
 
@@ -3184,7 +3184,7 @@ client.sub_accounts.suspend_sub_account(
 </dl>
 </details>
 
-<details><summary><code>client.sub_accounts.<a href="src/fern/sub_accounts/client.py">unsuspend_sub_account</a>(...) -> SubAccount</code></summary>
+<details><summary><code>client.sub_accounts.<a href="src/fern/sub_accounts/client.py#L358-L393">unsuspend_sub_account</a>(...) -> SubAccount</code></summary>
 <dl>
 <dd>
 
@@ -3266,7 +3266,7 @@ client.sub_accounts.unsuspend_sub_account(
 </dl>
 </details>
 
-<details><summary><code>client.sub_accounts.<a href="src/fern/sub_accounts/client.py">list_sub_account_api_keys</a>(...) -> PaginatedApiKeysResponse</code></summary>
+<details><summary><code>client.sub_accounts.<a href="src/fern/sub_accounts/client.py#L395-L448">list_sub_account_api_keys</a>(...) -> PaginatedApiKeysResponse</code></summary>
 <dl>
 <dd>
 
@@ -3372,7 +3372,7 @@ client.sub_accounts.list_sub_account_api_keys(
 </dl>
 </details>
 
-<details><summary><code>client.sub_accounts.<a href="src/fern/sub_accounts/client.py">create_sub_account_api_key</a>(...) -> CreateSubAccountApiKeyResponse</code></summary>
+<details><summary><code>client.sub_accounts.<a href="src/fern/sub_accounts/client.py#L450-L526">create_sub_account_api_key</a>(...) -> CreateSubAccountApiKeyResponse</code></summary>
 <dl>
 <dd>
 
@@ -3488,7 +3488,7 @@ so successful encrypted replay responses for those operations expire after 5 min
 </dl>
 </details>
 
-<details><summary><code>client.sub_accounts.<a href="src/fern/sub_accounts/client.py">get_sub_account_api_key</a>(...) -> ApiKey</code></summary>
+<details><summary><code>client.sub_accounts.<a href="src/fern/sub_accounts/client.py#L528-L574">get_sub_account_api_key</a>(...) -> ApiKey</code></summary>
 <dl>
 <dd>
 
@@ -3579,7 +3579,7 @@ client.sub_accounts.get_sub_account_api_key(
 </dl>
 </details>
 
-<details><summary><code>client.sub_accounts.<a href="src/fern/sub_accounts/client.py">update_sub_account_api_key</a>(...) -> ApiKey</code></summary>
+<details><summary><code>client.sub_accounts.<a href="src/fern/sub_accounts/client.py#L576-L628">update_sub_account_api_key</a>(...) -> ApiKey</code></summary>
 <dl>
 <dd>
 
@@ -3681,7 +3681,7 @@ client.sub_accounts.update_sub_account_api_key(
 </dl>
 </details>
 
-<details><summary><code>client.sub_accounts.<a href="src/fern/sub_accounts/client.py">delete_sub_account_api_key</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.sub_accounts.<a href="src/fern/sub_accounts/client.py#L630-L676">delete_sub_account_api_key</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -3773,7 +3773,7 @@ client.sub_accounts.delete_sub_account_api_key(
 </details>
 
 ## Suppressions
-<details><summary><code>client.suppressions.<a href="src/fern/suppressions/client.py">get_suppressions</a>(...) -> PaginatedSuppressionsResponse</code></summary>
+<details><summary><code>client.suppressions.<a href="src/fern/suppressions/client.py#L32-L113">get_suppressions</a>(...) -> PaginatedSuppressionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3911,7 +3911,7 @@ client.suppressions.get_suppressions(
 </dl>
 </details>
 
-<details><summary><code>client.suppressions.<a href="src/fern/suppressions/client.py">create_suppression</a>(...) -> CreateSuppressionResponse</code></summary>
+<details><summary><code>client.suppressions.<a href="src/fern/suppressions/client.py#L115-L195">create_suppression</a>(...) -> CreateSuppressionResponse</code></summary>
 <dl>
 <dd>
 
@@ -4041,7 +4041,7 @@ so successful encrypted replay responses for those operations expire after 5 min
 </dl>
 </details>
 
-<details><summary><code>client.suppressions.<a href="src/fern/suppressions/client.py">delete_suppression</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.suppressions.<a href="src/fern/suppressions/client.py#L197-L246">delete_suppression</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -4135,7 +4135,7 @@ client.suppressions.delete_suppression(
 </dl>
 </details>
 
-<details><summary><code>client.suppressions.<a href="src/fern/suppressions/client.py">delete_all_suppressions</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.suppressions.<a href="src/fern/suppressions/client.py#L248-L289">delete_all_suppressions</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -4220,7 +4220,7 @@ client.suppressions.delete_all_suppressions(
 </details>
 
 ## Routes
-<details><summary><code>client.routes.<a href="src/fern/routes/client.py">get_routes</a>(...) -> PaginatedRoutesResponse</code></summary>
+<details><summary><code>client.routes.<a href="src/fern/routes/client.py#L32-L86">get_routes</a>(...) -> PaginatedRoutesResponse</code></summary>
 <dl>
 <dd>
 
@@ -4327,7 +4327,7 @@ client.routes.get_routes(
 </dl>
 </details>
 
-<details><summary><code>client.routes.<a href="src/fern/routes/client.py">create_route</a>(...) -> CreatedRoute</code></summary>
+<details><summary><code>client.routes.<a href="src/fern/routes/client.py#L88-L181">create_route</a>(...) -> CreatedRoute</code></summary>
 <dl>
 <dd>
 
@@ -4485,7 +4485,7 @@ so successful encrypted replay responses for those operations expire after 5 min
 </dl>
 </details>
 
-<details><summary><code>client.routes.<a href="src/fern/routes/client.py">get_route</a>(...) -> Route</code></summary>
+<details><summary><code>client.routes.<a href="src/fern/routes/client.py#L183-L219">get_route</a>(...) -> Route</code></summary>
 <dl>
 <dd>
 
@@ -4568,7 +4568,7 @@ client.routes.get_route(
 </dl>
 </details>
 
-<details><summary><code>client.routes.<a href="src/fern/routes/client.py">update_route</a>(...) -> Route</code></summary>
+<details><summary><code>client.routes.<a href="src/fern/routes/client.py#L221-L308">update_route</a>(...) -> Route</code></summary>
 <dl>
 <dd>
 
@@ -4718,7 +4718,7 @@ client.routes.update_route(
 </dl>
 </details>
 
-<details><summary><code>client.routes.<a href="src/fern/routes/client.py">delete_route</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.routes.<a href="src/fern/routes/client.py#L310-L346">delete_route</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -4802,7 +4802,7 @@ client.routes.delete_route(
 </details>
 
 ## Webhooks
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">get_webhooks</a>(...) -> PaginatedWebhooksResponse</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L34-L151">get_webhooks</a>(...) -> PaginatedWebhooksResponse</code></summary>
 <dl>
 <dd>
 
@@ -4997,7 +4997,7 @@ client.webhooks.get_webhooks(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">create_webhook</a>(...) -> CreatedWebhook</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L153-L286">create_webhook</a>(...) -> CreatedWebhook</code></summary>
 <dl>
 <dd>
 
@@ -5218,7 +5218,7 @@ but ignored.
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">get_webhook</a>(...) -> Webhook</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L288-L324">get_webhook</a>(...) -> Webhook</code></summary>
 <dl>
 <dd>
 
@@ -5301,7 +5301,7 @@ client.webhooks.get_webhook(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">update_webhook</a>(...) -> Webhook</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L326-L459">update_webhook</a>(...) -> Webhook</code></summary>
 <dl>
 <dd>
 
@@ -5520,7 +5520,7 @@ supplied domains are ignored when the resulting scope is global.
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">delete_webhook</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L461-L497">delete_webhook</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -5604,7 +5604,7 @@ client.webhooks.delete_webhook(
 </details>
 
 ## SMTP Credentials
-<details><summary><code>client.smtp_credentials.<a href="src/fern/smtp_credentials/client.py">get_smtp_credentials</a>(...) -> PaginatedSmtpCredentialsResponse</code></summary>
+<details><summary><code>client.smtp_credentials.<a href="src/fern/smtp_credentials/client.py#L33-L83">get_smtp_credentials</a>(...) -> PaginatedSmtpCredentialsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5703,7 +5703,7 @@ client.smtp_credentials.get_smtp_credentials(
 </dl>
 </details>
 
-<details><summary><code>client.smtp_credentials.<a href="src/fern/smtp_credentials/client.py">create_smtp_credential</a>(...) -> CreatedSmtpCredential</code></summary>
+<details><summary><code>client.smtp_credentials.<a href="src/fern/smtp_credentials/client.py#L85-L161">create_smtp_credential</a>(...) -> CreatedSmtpCredential</code></summary>
 <dl>
 <dd>
 
@@ -5834,7 +5834,7 @@ but ignored.
 </dl>
 </details>
 
-<details><summary><code>client.smtp_credentials.<a href="src/fern/smtp_credentials/client.py">get_smtp_credential</a>(...) -> SmtpCredential</code></summary>
+<details><summary><code>client.smtp_credentials.<a href="src/fern/smtp_credentials/client.py#L163-L201">get_smtp_credential</a>(...) -> SmtpCredential</code></summary>
 <dl>
 <dd>
 
@@ -5917,7 +5917,7 @@ client.smtp_credentials.get_smtp_credential(
 </dl>
 </details>
 
-<details><summary><code>client.smtp_credentials.<a href="src/fern/smtp_credentials/client.py">delete_smtp_credential</a>(...) -> SuccessResponse</code></summary>
+<details><summary><code>client.smtp_credentials.<a href="src/fern/smtp_credentials/client.py#L203-L241">delete_smtp_credential</a>(...) -> SuccessResponse</code></summary>
 <dl>
 <dd>
 
@@ -6001,7 +6001,7 @@ client.smtp_credentials.delete_smtp_credential(
 </details>
 
 ## Statistics
-<details><summary><code>client.statistics.<a href="src/fern/statistics/client.py">get_deliverability_statistics</a>(...) -> DeliverabilityStatisticsResponse</code></summary>
+<details><summary><code>client.statistics.<a href="src/fern/statistics/client.py#L32-L112">get_deliverability_statistics</a>(...) -> DeliverabilityStatisticsResponse</code></summary>
 <dl>
 <dd>
 
@@ -6135,7 +6135,7 @@ client.statistics.get_deliverability_statistics(
 </dl>
 </details>
 
-<details><summary><code>client.statistics.<a href="src/fern/statistics/client.py">get_bounce_statistics</a>(...) -> BounceStatisticsResponse</code></summary>
+<details><summary><code>client.statistics.<a href="src/fern/statistics/client.py#L114-L194">get_bounce_statistics</a>(...) -> BounceStatisticsResponse</code></summary>
 <dl>
 <dd>
 
@@ -6269,7 +6269,7 @@ client.statistics.get_bounce_statistics(
 </dl>
 </details>
 
-<details><summary><code>client.statistics.<a href="src/fern/statistics/client.py">get_delivery_time_statistics</a>(...) -> DeliveryTimeStatisticsResponse</code></summary>
+<details><summary><code>client.statistics.<a href="src/fern/statistics/client.py#L196-L276">get_delivery_time_statistics</a>(...) -> DeliveryTimeStatisticsResponse</code></summary>
 <dl>
 <dd>
 

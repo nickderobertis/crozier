@@ -1,6 +1,6 @@
 # Reference
 ## Users
-<details><summary><code>client.users.<a href="src/fern/users/client.py">upsert</a>(...) -> User</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L30-L87">upsert</a>(...) -> User</code></summary>
 <dl>
 <dd>
 

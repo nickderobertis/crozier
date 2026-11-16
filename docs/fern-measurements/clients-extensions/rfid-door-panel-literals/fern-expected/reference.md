@@ -1,6 +1,6 @@
 # Reference
 ## Rfid
-<details><summary><code>client.rfid.<a href="src/fern/rfid/client.py">r_f_i_d_scan</a>(...) -> Decision</code></summary>
+<details><summary><code>client.rfid.<a href="src/fern/rfid/client.py#L29-L59">r_f_i_d_scan</a>(...) -> Decision</code></summary>
 <dl>
 <dd>
 
@@ -67,7 +67,7 @@ client.rfid.r_f_i_d_scan(
 </dl>
 </details>
 
-<details><summary><code>client.rfid.<a href="src/fern/rfid/client.py">list</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.rfid.<a href="src/fern/rfid/client.py#L61-L81">list</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -116,7 +116,7 @@ client.rfid.list()
 </details>
 
 ## BadgeReaders
-<details><summary><code>client.badge_readers.<a href="src/fern/badge_readers/client.py">badge_readers_get</a>(...) -> Reader</code></summary>
+<details><summary><code>client.badge_readers.<a href="src/fern/badge_readers/client.py#L26-L50">badge_readers_get</a>(...) -> Reader</code></summary>
 <dl>
 <dd>
 
@@ -175,7 +175,7 @@ client.badge_readers.badge_readers_get(
 </details>
 
 ## DoorsDoorgroups
-<details><summary><code>client.doors_doorgroups.<a href="src/fern/doors_doorgroups/client.py">list</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.doors_doorgroups.<a href="src/fern/doors_doorgroups/client.py#L25-L45">list</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 

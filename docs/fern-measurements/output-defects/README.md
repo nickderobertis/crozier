@@ -42,3 +42,8 @@ The issues stay at Proposal. This index records the decision and closes none.
 | [#615](https://github.com/nickderobertis/crozier/issues/615) | yes: an empty composition member beside a reference changes the generated model's identity | parity-gap-repaired | [`615-empty-composition-member-reference/`](615-empty-composition-member-reference/README.md) | crozier types an `allOf` of a reference and an empty `{}` member as the referenced model itself, as Fern does, rather than copying it into a new one. |
 | [#616](https://github.com/nickderobertis/crozier/issues/616) | no: the surface census's YAML reader is coverage tooling, not the generator's parser | not-generated-output | — | Left to its own repair. |
 | [#617](https://github.com/nickderobertis/crozier/issues/617) | yes: an annotated copy of an inheritance-spelled union generates as a plain object | parity-gap-repaired | [`617-annotated-inherited-union/`](617-annotated-inherited-union/README.md) | crozier copies an annotated reference to an inheritance-spelled union as a discriminated union of its own, as Fern does, so variant payloads parse into their variant classes. |
+
+**Historical.** This record was measured at Fern CLI 5.163.1 /
+`fernapi/fern-python-sdk` 5.41.3, the pair certified when it was taken; where it
+says "the certified pair" it means that pair. It has not been re-measured at
+the current certified pair, Fern CLI 5.200.0 / fern-python-sdk 5.41.25.

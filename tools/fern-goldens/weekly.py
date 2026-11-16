@@ -1173,11 +1173,15 @@ def certified_at_base(base: Path) -> Pair:
 
 
 def set_pair(base: Path, pair: Pair) -> None:
-    """Move `metadata.json`, the pair's one declaration, to `pair`."""
+    """Move `metadata.json`, the pair's one declaration, to `pair`. crozier
+    writes it verbatim as every SDK's `.fern/metadata.json`, which Fern ends
+    without a final newline, so the record keeps the ending it had."""
     path = base / METADATA
-    record = metadata_record(path.read_text(encoding="utf-8"), str(METADATA))
+    text = path.read_text(encoding="utf-8")
+    record = metadata_record(text, str(METADATA))
     record["cliVersion"], record["generatorVersion"] = pair.cli, pair.generator
-    path.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8", newline="\n")
+    ending = "\n" if text.endswith("\n") else ""
+    path.write_text(json.dumps(record, indent=2) + ending, encoding="utf-8", newline="\n")
 
 
 def summarize(path: str | None, lines: Iterable[str]) -> None:

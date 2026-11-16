@@ -16,6 +16,7 @@ from ..core.xml_utilities import (
     XmlNode,
     append_xml_child,
     build_xml_model,
+    check_xml_extra_attributes,
     extra_xml_attributes,
     order_xml_content,
     parse_xml,
@@ -103,8 +104,12 @@ class Pet(UniversalBaseModel):
             Additional XML attributes not declared in the API definition.
         """
         super().__init__(
-            **dict(id=id, name=name, category=category, photo_urls=photo_urls, tags=tags, status=status),
-            **extra_attributes,
+            **check_xml_extra_attributes(
+                type(self),
+                {},
+                dict(id=id, name=name, category=category, photo_urls=photo_urls, tags=tags, status=status),
+                extra_attributes,
+            )
         )
         self._content.extend(order_xml_content([], self.category))
 

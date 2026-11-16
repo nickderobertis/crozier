@@ -11,3 +11,13 @@ Operations `get_tile_v2_tiles_coastal__z___x___y__pbf_get` and `read__a_b___c_d_
 **Verdict: `parity-gap-repaired`.** crozier differed from the certified pair; it now byte-matches the committed tree.
 
 The verdict rests on the generated files alone (names, types, docstrings, `reference.md` lines), not on behaviour, so no `runtime.txt` is owed. `handed_off_type_declarations_match_the_certified_pair` in `crates/crozier-e2e/tests/e2e/handed_off_type_declarations.rs` runs the real `crozier` binary on `openapi.yml` and compares its SDK with this tree file for file, and shows the comparison failing once the rule's bytes are written back the way crozier wrote them before; the `handed_off_type_declarations_tests` unit tests in `src/ir.rs` drive the repaired functions on this document.
+
+**Regenerated at the certified pair.** The trees under this record's
+`fern-expected/` (and `expected-literals/` or `literals/`, where it has them)
+were regenerated at Fern CLI 5.200.0 / `fernapi/fern-python-sdk` 5.41.25, the
+certified pair, one Fern run at a time through
+`tools/fern-goldens/fern-references.py`'s own `generated_tree` (and
+`reduce_overlay` for an overlay), and crozier's comparison holds the record to
+them. Statements above that name Fern CLI 5.163.1 / fern-python-sdk 5.41.3
+describe the measurement as first taken, at the pair certified then; a digest,
+log or exit code they cite is that run's.

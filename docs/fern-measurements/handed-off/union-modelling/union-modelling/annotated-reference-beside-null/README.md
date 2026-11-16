@@ -13,3 +13,10 @@ A property `anyOf: [allOf: [$ref Target, annotation], null]` is the use-site cop
 The certified pair declares `BatchTotals` restating `Totals`' fields; crozier wrote `class BatchTotals(Totals)` (and, on OpenResponses, `class FunctionCallItemParamStatus(FunctionCallStatus)` over an enum). Repaired in `Builder::field_type_ref`. crozier now byte-matches `fern-expected/` in both enum modes.
 
 Held by `union_modelling_document_sub_rules_match_the_certified_pair` in `crates/crozier-e2e/tests/e2e/union_modelling.rs`, which byte-compares crozier's SDK for this document with the committed tree (apart from the catalogued departures the ledger records) and requires the pre-repair spelling to fail that comparison, and by the unit test `an_annotated_reference_beside_null_is_a_use_site_copy` in `src/ir.rs`'s `union_modelling_tests`.
+
+**Regenerated at the certified pair.** The Fern goldens workflow (run
+43423270787) regenerated every `fern-expected/` tree this record holds at Fern
+CLI 5.200.0 / `fernapi/fern-python-sdk` 5.41.25, the certified pair, and
+crozier's comparison holds the record to those trees. Statements above that name Fern CLI
+5.163.1 / fern-python-sdk 5.41.3 describe the measurement as first taken, at
+the pair certified then; a digest, log or exit code they cite is that run's.

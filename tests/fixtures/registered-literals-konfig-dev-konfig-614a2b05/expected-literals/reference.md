@@ -1,6 +1,6 @@
 # Reference
 ## Workflows
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">list_all_workflows</a>(...) -> ListAllWorkflowsResponse</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L55-L130">list_all_workflows</a>(...) -> ListAllWorkflowsResponse</code></summary>
 <dl>
 <dd>
 
@@ -128,7 +128,7 @@ For more information on writing formulas, please refer to
 </dl>
 </details>
 
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">launch_a_new_workflow</a>(...) -> LaunchedWorkflowModel</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L132-L177">launch_a_new_workflow</a>(...) -> LaunchedWorkflowModel</code></summary>
 <dl>
 <dd>
 
@@ -205,7 +205,7 @@ client.workflows.launch_a_new_workflow(
 </dl>
 </details>
 
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">create_a_new_workflow_async</a>(...) -> CreateANewWorkflowAsyncResponse</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L179-L224">create_a_new_workflow_async</a>(...) -> CreateANewWorkflowAsyncResponse</code></summary>
 <dl>
 <dd>
 
@@ -282,7 +282,7 @@ client.workflows.create_a_new_workflow_async(
 </dl>
 </details>
 
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">retrieve_asynchronous_workflow_status</a>(...) -> RetrieveAsynchronousWorkflowStatusResponse</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L226-L259">retrieve_asynchronous_workflow_status</a>(...) -> RetrieveAsynchronousWorkflowStatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -355,7 +355,7 @@ client.workflows.retrieve_asynchronous_workflow_status(
 </dl>
 </details>
 
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">retrieve_a_workflow</a>(...) -> WorkflowResponseModel</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L261-L292">retrieve_a_workflow</a>(...) -> WorkflowResponseModel</code></summary>
 <dl>
 <dd>
 
@@ -428,7 +428,7 @@ client.workflows.retrieve_a_workflow(
 </dl>
 </details>
 
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">list_all_workflow_approvals</a>(...) -> ListAllWorkflowApprovalsResponse</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L294-L325">list_all_workflow_approvals</a>(...) -> ListAllWorkflowApprovalsResponse</code></summary>
 <dl>
 <dd>
 
@@ -501,7 +501,7 @@ client.workflows.list_all_workflow_approvals(
 </dl>
 </details>
 
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">approval_requests</a>(...) -> ApprovalRequestsResponse</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L327-L376">approval_requests</a>(...) -> ApprovalRequestsResponse</code></summary>
 <dl>
 <dd>
 
@@ -599,7 +599,7 @@ client.workflows.approval_requests(
 </dl>
 </details>
 
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">update_workflow_approval</a>(...) -> bool</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L378-L431">update_workflow_approval</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -700,7 +700,7 @@ client.workflows.update_workflow_approval(
 </dl>
 </details>
 
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">turn_history</a>(...) -> TurnHistoryResponse</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L433-L475">turn_history</a>(...) -> TurnHistoryResponse</code></summary>
 <dl>
 <dd>
 
@@ -789,7 +789,7 @@ client.workflows.turn_history(
 </dl>
 </details>
 
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">list_all_workflow_signers</a>(...) -> ListAllWorkflowSignersResponse</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L477-L508">list_all_workflow_signers</a>(...) -> ListAllWorkflowSignersResponse</code></summary>
 <dl>
 <dd>
 
@@ -862,7 +862,7 @@ client.workflows.list_all_workflow_signers(
 </dl>
 </details>
 
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">list_all_workflow_participants</a>(...) -> ListAllWorkflowParticipantsResponse</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L510-L558">list_all_workflow_participants</a>(...) -> ListAllWorkflowParticipantsResponse</code></summary>
 <dl>
 <dd>
 
@@ -959,7 +959,7 @@ client.workflows.list_all_workflow_participants(
 </dl>
 </details>
 
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">revert_to_review</a>(...)</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L560-L612">revert_to_review</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1060,7 +1060,7 @@ client.workflows.revert_to_review(
 </dl>
 </details>
 
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">deprecated_create_a_comment_on_a_workflow</a>(...) -> DeprecatedCreateACommentOnAWorkflowResponse</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L614-L672">deprecated_create_a_comment_on_a_workflow</a>(...) -> DeprecatedCreateACommentOnAWorkflowResponse</code></summary>
 <dl>
 <dd>
 
@@ -1167,7 +1167,7 @@ client.workflows.deprecated_create_a_comment_on_a_workflow(
 </dl>
 </details>
 
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">create_a_comment_on_a_workflow</a>(...) -> CommentActivityModel</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L674-L732">create_a_comment_on_a_workflow</a>(...) -> CommentActivityModel</code></summary>
 <dl>
 <dd>
 
@@ -1274,7 +1274,7 @@ client.workflows.create_a_comment_on_a_workflow(
 </dl>
 </details>
 
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">update_workflow_metadata</a>(...) -> UpdateWorkflowMetadataResponse</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L734-L800">update_workflow_metadata</a>(...) -> UpdateWorkflowMetadataResponse</code></summary>
 <dl>
 <dd>
 
@@ -1388,7 +1388,7 @@ client.workflows.update_workflow_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">retrieve_a_workflow_document</a>(...) -> RetrieveAWorkflowDocumentResponse</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L802-L837">retrieve_a_workflow_document</a>(...) -> RetrieveAWorkflowDocumentResponse</code></summary>
 <dl>
 <dd>
 
@@ -1470,7 +1470,7 @@ client.workflows.retrieve_a_workflow_document(
 </dl>
 </details>
 
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">retrieve_email_threads_from_workflow</a>(...) -> RetrieveEmailThreadsFromWorkflowResponse</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L839-L883">retrieve_email_threads_from_workflow</a>(...) -> RetrieveEmailThreadsFromWorkflowResponse</code></summary>
 <dl>
 <dd>
 
@@ -1559,7 +1559,7 @@ client.workflows.retrieve_email_threads_from_workflow(
 </dl>
 </details>
 
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">retrieve_email_thread_from_workflow</a>(...) -> EmailResponseModel</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L885-L922">retrieve_email_thread_from_workflow</a>(...) -> EmailResponseModel</code></summary>
 <dl>
 <dd>
 
@@ -1641,7 +1641,7 @@ client.workflows.retrieve_email_thread_from_workflow(
 </dl>
 </details>
 
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">retrieve_attachment_from_email_thread</a>(...) -> RetrieveAttachmentFromEmailThreadResponse</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L924-L970">retrieve_attachment_from_email_thread</a>(...) -> RetrieveAttachmentFromEmailThreadResponse</code></summary>
 <dl>
 <dd>
 
@@ -1732,7 +1732,7 @@ client.workflows.retrieve_attachment_from_email_thread(
 </dl>
 </details>
 
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">list_all_workflow_schemas</a>(...) -> ListAllWorkflowSchemasResponse</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L972-L1018">list_all_workflow_schemas</a>(...) -> ListAllWorkflowSchemasResponse</code></summary>
 <dl>
 <dd>
 
@@ -1823,7 +1823,7 @@ client.workflows.list_all_workflow_schemas(
 </dl>
 </details>
 
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">retrieve_a_workflow_schema</a>(...) -> RetrieveAWorkflowSchemaResponse</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L1020-L1069">retrieve_a_workflow_schema</a>(...) -> RetrieveAWorkflowSchemaResponse</code></summary>
 <dl>
 <dd>
 
@@ -1923,7 +1923,7 @@ client.workflows.retrieve_a_workflow_schema(
 </details>
 
 ## Records
-<details><summary><code>client.records.<a href="src/fern/records/client.py">list_all_records</a>(...) -> ListAllRecordsResponse</code></summary>
+<details><summary><code>client.records.<a href="src/fern/records/client.py#L49-L118">list_all_records</a>(...) -> ListAllRecordsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2046,7 +2046,7 @@ client.records.list_all_records(
 </dl>
 </details>
 
-<details><summary><code>client.records.<a href="src/fern/records/client.py">create_a_record</a>(...) -> RecordModel</code></summary>
+<details><summary><code>client.records.<a href="src/fern/records/client.py#L120-L185">create_a_record</a>(...) -> RecordModel</code></summary>
 <dl>
 <dd>
 
@@ -2162,7 +2162,7 @@ client.records.create_a_record(
 </dl>
 </details>
 
-<details><summary><code>client.records.<a href="src/fern/records/client.py">retrieve_import_predictions</a>(...) -> RetrieveImportPredictionsResponse</code></summary>
+<details><summary><code>client.records.<a href="src/fern/records/client.py#L187-L225">retrieve_import_predictions</a>(...) -> RetrieveImportPredictionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2241,7 +2241,7 @@ client.records.retrieve_import_predictions()
 </dl>
 </details>
 
-<details><summary><code>client.records.<a href="src/fern/records/client.py">create_a_smart_import_record</a>(...) -> CreateASmartImportRecordResponse</code></summary>
+<details><summary><code>client.records.<a href="src/fern/records/client.py#L227-L277">create_a_smart_import_record</a>(...) -> CreateASmartImportRecordResponse</code></summary>
 <dl>
 <dd>
 
@@ -2338,7 +2338,7 @@ client.records.create_a_smart_import_record(
 </dl>
 </details>
 
-<details><summary><code>client.records.<a href="src/fern/records/client.py">create_a_smart_import_record_to_import</a>(...) -> CreateASmartImportRecordToImportResponse</code></summary>
+<details><summary><code>client.records.<a href="src/fern/records/client.py#L279-L337">create_a_smart_import_record_to_import</a>(...) -> CreateASmartImportRecordToImportResponse</code></summary>
 <dl>
 <dd>
 
@@ -2445,7 +2445,7 @@ client.records.create_a_smart_import_record_to_import(
 </dl>
 </details>
 
-<details><summary><code>client.records.<a href="src/fern/records/client.py">retrieve_a_record</a>(...) -> RecordModel</code></summary>
+<details><summary><code>client.records.<a href="src/fern/records/client.py#L339-L368">retrieve_a_record</a>(...) -> RecordModel</code></summary>
 <dl>
 <dd>
 
@@ -2518,7 +2518,7 @@ client.records.retrieve_a_record(
 </dl>
 </details>
 
-<details><summary><code>client.records.<a href="src/fern/records/client.py">replace_a_record</a>(...) -> RecordModel</code></summary>
+<details><summary><code>client.records.<a href="src/fern/records/client.py#L370-L437">replace_a_record</a>(...) -> RecordModel</code></summary>
 <dl>
 <dd>
 
@@ -2635,7 +2635,7 @@ client.records.replace_a_record(
 </dl>
 </details>
 
-<details><summary><code>client.records.<a href="src/fern/records/client.py">delete_a_record</a>(...) -> DeleteARecordResponse</code></summary>
+<details><summary><code>client.records.<a href="src/fern/records/client.py#L439-L470">delete_a_record</a>(...) -> DeleteARecordResponse</code></summary>
 <dl>
 <dd>
 
@@ -2708,7 +2708,7 @@ client.records.delete_a_record(
 </dl>
 </details>
 
-<details><summary><code>client.records.<a href="src/fern/records/client.py">update_record_metadata</a>(...) -> RecordModel</code></summary>
+<details><summary><code>client.records.<a href="src/fern/records/client.py#L472-L588">update_record_metadata</a>(...) -> RecordModel</code></summary>
 <dl>
 <dd>
 
@@ -2887,7 +2887,7 @@ client.records.update_record_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.records.<a href="src/fern/records/client.py">list_all_records_metadata</a>() -> ListAllRecordsMetadataResponse</code></summary>
+<details><summary><code>client.records.<a href="src/fern/records/client.py#L590-L616">list_all_records_metadata</a>() -> ListAllRecordsMetadataResponse</code></summary>
 <dl>
 <dd>
 
@@ -2950,7 +2950,7 @@ client.records.list_all_records_metadata()
 </dl>
 </details>
 
-<details><summary><code>client.records.<a href="src/fern/records/client.py">retrieve_an_attachment_on_a_record</a>(...) -> RetrieveAnAttachmentOnARecordResponse</code></summary>
+<details><summary><code>client.records.<a href="src/fern/records/client.py#L618-L653">retrieve_an_attachment_on_a_record</a>(...) -> RetrieveAnAttachmentOnARecordResponse</code></summary>
 <dl>
 <dd>
 
@@ -3032,7 +3032,7 @@ client.records.retrieve_an_attachment_on_a_record(
 </dl>
 </details>
 
-<details><summary><code>client.records.<a href="src/fern/records/client.py">create_an_attachment_on_a_record</a>(...) -> CreateAnAttachmentOnARecordResponse</code></summary>
+<details><summary><code>client.records.<a href="src/fern/records/client.py#L655-L704">create_an_attachment_on_a_record</a>(...) -> CreateAnAttachmentOnARecordResponse</code></summary>
 <dl>
 <dd>
 
@@ -3131,7 +3131,7 @@ client.records.create_an_attachment_on_a_record(
 </dl>
 </details>
 
-<details><summary><code>client.records.<a href="src/fern/records/client.py">delete_an_attachment_on_a_record</a>(...)</code></summary>
+<details><summary><code>client.records.<a href="src/fern/records/client.py#L706-L740">delete_an_attachment_on_a_record</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3213,7 +3213,7 @@ client.records.delete_an_attachment_on_a_record(
 </dl>
 </details>
 
-<details><summary><code>client.records.<a href="src/fern/records/client.py">retrieve_xlsx_export_file_of_all_records</a>(...) -> RetrieveXlsxExportFileOfAllRecordsResponse</code></summary>
+<details><summary><code>client.records.<a href="src/fern/records/client.py#L742-L780">retrieve_xlsx_export_file_of_all_records</a>(...) -> RetrieveXlsxExportFileOfAllRecordsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3293,7 +3293,7 @@ client.records.retrieve_xlsx_export_file_of_all_records()
 </details>
 
 ## Webhooks
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">list_all_webhooks</a>(...) -> ListAllWebhooksResponse</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L34-L70">list_all_webhooks</a>(...) -> ListAllWebhooksResponse</code></summary>
 <dl>
 <dd>
 
@@ -3372,7 +3372,7 @@ client.webhooks.list_all_webhooks()
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">create_a_webhook</a>(...) -> CreateAWebhookResponse</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L72-L113">create_a_webhook</a>(...) -> CreateAWebhookResponse</code></summary>
 <dl>
 <dd>
 
@@ -3456,7 +3456,7 @@ client.webhooks.create_a_webhook(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">retrieve_a_webhook</a>(...) -> RetrieveAWebhookResponse</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L115-L146">retrieve_a_webhook</a>(...) -> RetrieveAWebhookResponse</code></summary>
 <dl>
 <dd>
 
@@ -3529,7 +3529,7 @@ client.webhooks.retrieve_a_webhook(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">delete_a_webhook</a>(...) -> DeleteAWebhookResponse</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L148-L179">delete_a_webhook</a>(...) -> DeleteAWebhookResponse</code></summary>
 <dl>
 <dd>
 
@@ -3602,7 +3602,7 @@ client.webhooks.delete_a_webhook(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">update_a_webhook</a>(...) -> UpdateAWebhookResponse</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L181-L225">update_a_webhook</a>(...) -> UpdateAWebhookResponse</code></summary>
 <dl>
 <dd>
 
@@ -3691,7 +3691,7 @@ client.webhooks.update_a_webhook(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">retrieve_webhook_verification_key</a>() -> str</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L227-L251">retrieve_webhook_verification_key</a>() -> str</code></summary>
 <dl>
 <dd>
 

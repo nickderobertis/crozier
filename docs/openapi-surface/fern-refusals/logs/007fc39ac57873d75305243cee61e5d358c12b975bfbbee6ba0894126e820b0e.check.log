@@ -1,4 +1,4 @@
-fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
+fern-refusals: Fern CLI 5.200.0, fernapi/fern-python-sdk 5.41.25
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
 [api]: Discriminated union "HyperdriveHyperdriveCaching (hyperdrive_hyperdrive-caching)" lists "#/components/schemas/hyperdrive_hyperdrive-caching-disabled" in its oneOf/anyOf, but it is not present in the discriminator mapping. This variant will be omitted from the generated union, so payloads using it will fail to serialize or deserialize. Add it to the discriminator mapping to include it.

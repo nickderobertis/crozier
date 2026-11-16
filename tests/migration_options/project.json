@@ -1,0 +1,58 @@
+{
+  "name": "migration-options",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "tags": [
+    "type:tier",
+    "cost:expensive",
+    "tier:promoted",
+    "lang:rust",
+    "lane:sdk-env"
+  ],
+  "targets": {
+    "test": {
+      "metadata": {
+        "description": "docs/migrating-from-fern.md's generator-option tables against the config models of the fernapi/fern-python-sdk image assets/scaffolding/metadata.json pins, read with Docker (crozier-tool-journeys' migration_options). A project of its own so only the guide, the pin and the check select it, not the sdk-env tier's generator and corpus inputs; skips naming the image when Docker or the image is absent."
+      },
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo nextest run --locked -p crozier-tool-journeys --run-ignored only -E \"test(=migration_options::sdk_env_the_migration_guide_lists_every_option_the_pinned_generator_accepts)\""
+      },
+      "cache": false,
+      "inputs": [
+        "{workspaceRoot}/docs/migrating-from-fern.md",
+        "{workspaceRoot}/assets/scaffolding/metadata.json",
+        "{workspaceRoot}/crates/crozier-tool-journeys/tests/tool_journeys/migration_options.rs"
+      ]
+    },
+    "lint": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "lint-certified-pair",
+        "lint-boundaries"
+      ]
+    },
+    "lint-boundaries": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/check-project-boundaries.mjs migration-options"
+      },
+      "cache": true,
+      "inputs": [
+        "boundaries"
+      ]
+    },
+    "lint-certified-pair": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python3 tools/fern-goldens/certified_pair.py check --within tests/migration_options"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "{workspaceRoot}/assets/scaffolding/metadata.json",
+        "{workspaceRoot}/tools/fern-goldens/certified_pair.py"
+      ]
+    }
+  }
+}

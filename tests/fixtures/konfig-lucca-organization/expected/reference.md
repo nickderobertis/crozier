@@ -1,6 +1,6 @@
 # Reference
 ## Axis-sections
-<details><summary><code>client.axis_sections.<a href="src/fern/axis_sections/client.py">get_api_v3axes</a>(...) -> GetApiV3AxesResponse</code></summary>
+<details><summary><code>client.axis_sections.<a href="src/fern/axis_sections/client.py#L35-L79">get_api_v3axes</a>(...) -> GetApiV3AxesResponse</code></summary>
 <dl>
 <dd>
 
@@ -89,7 +89,7 @@ client.axis_sections.get_api_v3axes(
 </dl>
 </details>
 
-<details><summary><code>client.axis_sections.<a href="src/fern/axis_sections/client.py">get_api_v3axissections</a>(...) -> GetApiV3AxissectionsResponse</code></summary>
+<details><summary><code>client.axis_sections.<a href="src/fern/axis_sections/client.py#L81-L129">get_api_v3axissections</a>(...) -> GetApiV3AxissectionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -186,7 +186,7 @@ client.axis_sections.get_api_v3axissections(
 </dl>
 </details>
 
-<details><summary><code>client.axis_sections.<a href="src/fern/axis_sections/client.py">post_api_v3axis_sections</a>(...) -> PostApiV3AxisSectionsResponse</code></summary>
+<details><summary><code>client.axis_sections.<a href="src/fern/axis_sections/client.py#L131-L217">post_api_v3axis_sections</a>(...) -> PostApiV3AxisSectionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -261,7 +261,7 @@ client.axis_sections.post_api_v3axis_sections(
 </dl>
 </details>
 
-<details><summary><code>client.axis_sections.<a href="src/fern/axis_sections/client.py">get_api_v3axis_sections_axis_section_id</a>(...) -> GetApiV3AxisSectionsAxisSectionIdResponse</code></summary>
+<details><summary><code>client.axis_sections.<a href="src/fern/axis_sections/client.py#L219-L251">get_api_v3axis_sections_axis_section_id</a>(...) -> GetApiV3AxisSectionsAxisSectionIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -334,7 +334,7 @@ client.axis_sections.get_api_v3axis_sections_axis_section_id(
 </dl>
 </details>
 
-<details><summary><code>client.axis_sections.<a href="src/fern/axis_sections/client.py">put_api_v3axis_sections_axis_section_id</a>(...) -> PutApiV3AxisSectionsAxisSectionIdResponse</code></summary>
+<details><summary><code>client.axis_sections.<a href="src/fern/axis_sections/client.py#L253-L344">put_api_v3axis_sections_axis_section_id</a>(...) -> PutApiV3AxisSectionsAxisSectionIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -418,7 +418,7 @@ client.axis_sections.put_api_v3axis_sections_axis_section_id(
 </dl>
 </details>
 
-<details><summary><code>client.axis_sections.<a href="src/fern/axis_sections/client.py">delete_api_v3axis_sections_axis_section_id</a>(...)</code></summary>
+<details><summary><code>client.axis_sections.<a href="src/fern/axis_sections/client.py#L346-L377">delete_api_v3axis_sections_axis_section_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -492,7 +492,7 @@ client.axis_sections.delete_api_v3axis_sections_axis_section_id(
 </details>
 
 ## Departments
-<details><summary><code>client.departments.<a href="src/fern/departments/client.py">get_api_v3departments</a>(...) -> GetApiV3DepartmentsResponse</code></summary>
+<details><summary><code>client.departments.<a href="src/fern/departments/client.py#L28-L70">get_api_v3departments</a>(...) -> GetApiV3DepartmentsResponse</code></summary>
 <dl>
 <dd>
 
@@ -581,7 +581,7 @@ client.departments.get_api_v3departments(
 </dl>
 </details>
 
-<details><summary><code>client.departments.<a href="src/fern/departments/client.py">get_api_v3departments_tree</a>() -> GetApiV3DepartmentsTreeResponse</code></summary>
+<details><summary><code>client.departments.<a href="src/fern/departments/client.py#L72-L99">get_api_v3departments_tree</a>() -> GetApiV3DepartmentsTreeResponse</code></summary>
 <dl>
 <dd>
 
@@ -645,7 +645,7 @@ client.departments.get_api_v3departments_tree()
 </dl>
 </details>
 
-<details><summary><code>client.departments.<a href="src/fern/departments/client.py">get_api_v3departments_department_id</a>(...) -> GetApiV3DepartmentsDepartmentIdResponse</code></summary>
+<details><summary><code>client.departments.<a href="src/fern/departments/client.py#L101-L131">get_api_v3departments_department_id</a>(...) -> GetApiV3DepartmentsDepartmentIdResponse</code></summary>
 <dl>
 <dd>
 

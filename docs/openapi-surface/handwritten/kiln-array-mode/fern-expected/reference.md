@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">create_stream</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L101-L126">create_stream</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -54,7 +54,7 @@ client.create_stream()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_inline_stream</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L128-L156">create_inline_stream</a>(...)</code></summary>
 <dl>
 <dd>
 

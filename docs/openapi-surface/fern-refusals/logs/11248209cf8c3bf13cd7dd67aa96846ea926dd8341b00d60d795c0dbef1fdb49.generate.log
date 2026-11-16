@@ -1,0 +1,67 @@
+fern-refusals: Fern CLI 5.200.0, fernapi/fern-python-sdk 5.41.25
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk itemSearch.yml -> service -> endpoints -> getItemSearch -> request -> query-parameters -> intersects
+                  itemSearch.yml
+                  [error] optional<root.GeometryGeoJson> is not a valid type for a query parameter
+                  
+[api]: python-sdk itemSearch.yml -> service -> endpoints -> postItemSearch -> request -> body
+                  itemSearch.yml
+                  [error] Object has multiple properties named "bbox":
+                    - <Inlined Request> -> bbox
+                    - <Inlined Request> -> (extends) root.SchemasSearchBody -> (extends) BboxFilter -> bbox
+                  [error] Object has multiple properties named "datetime":
+                    - <Inlined Request> -> datetime
+                    - <Inlined Request> -> (extends) root.SchemasSearchBody -> (extends) DatetimeFilter -> datetime
+                  [error] Object has multiple properties named "intersects":
+                    - <Inlined Request> -> intersects
+                    - <Inlined Request> -> (extends) root.SchemasSearchBody -> (extends) IntersectsFilter -> intersects
+                  [error] Object has multiple properties named "collections":
+                    - <Inlined Request> -> collections
+                    - <Inlined Request> -> (extends) root.SchemasSearchBody -> (extends) CollectionsFilter -> collections
+                  [error] Object has multiple properties named "ids":
+                    - <Inlined Request> -> ids
+                    - <Inlined Request> -> (extends) root.SchemasSearchBody -> (extends) IdsFilter -> ids
+                  [error] Object has multiple properties named "limit":
+                    - <Inlined Request> -> limit
+                    - <Inlined Request> -> (extends) root.SchemasSearchBody -> (extends) SchemasLimitFilter -> limit
+                  
+[api]: python-sdk itemSearch.yml -> service -> endpoints -> postItemSearch
+                  itemSearch.yml
+                  [error] Multiple request properties have the name bbox. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+                    - Body property: <Request Body> -> bbox
+                    - Body property: <Request Body> -> (extends) root.SchemasSearchBody -> (extends) BboxFilter -> bbox
+                  [error] Multiple request properties have the name datetime. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+                    - Body property: <Request Body> -> datetime
+                    - Body property: <Request Body> -> (extends) root.SchemasSearchBody -> (extends) DatetimeFilter -> datetime
+                  [error] Multiple request properties have the name intersects. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+                    - Body property: <Request Body> -> intersects
+                    - Body property: <Request Body> -> (extends) root.SchemasSearchBody -> (extends) IntersectsFilter -> intersects
+                  [error] Multiple request properties have the name collections. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+                    - Body property: <Request Body> -> collections
+                    - Body property: <Request Body> -> (extends) root.SchemasSearchBody -> (extends) CollectionsFilter -> collections
+                  [error] Multiple request properties have the name ids. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+                    - Body property: <Request Body> -> ids
+                    - Body property: <Request Body> -> (extends) root.SchemasSearchBody -> (extends) IdsFilter -> ids
+                  [error] Multiple request properties have the name limit. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+                    - Body property: <Request Body> -> limit
+                    - Body property: <Request Body> -> (extends) root.SchemasSearchBody -> (extends) SchemasLimitFilter -> limit
+                  
+[api]: python-sdk __package__.yml -> types -> ArithmeticExpressionOp
+                  __package__.yml
+                  [error] Enum name  for value + is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  
+[api]: python-sdk __package__.yml -> types -> BinaryComparisonPredicateOp
+                  __package__.yml
+                  [error] Enum name  for value <> is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  
+[api]: python-sdk __package__.yml -> types -> IntervalArrayItemOne
+                  __package__.yml
+                  [error] Enum name  for value .. is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  
+[api]: python-sdk Found 16 errors and 0 warnings in <n> seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

@@ -1,6 +1,6 @@
 # Reference
 ## Lamps
-<details><summary><code>client.lamps.<a href="src/fern/lamps/client.py">log_check</a>(...)</code></summary>
+<details><summary><code>client.lamps.<a href="src/fern/lamps/client.py#L28-L53">log_check</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -60,7 +60,7 @@ client.lamps.log_check(
 </dl>
 </details>
 
-<details><summary><code>client.lamps.<a href="src/fern/lamps/client.py">log_trim</a>(...)</code></summary>
+<details><summary><code>client.lamps.<a href="src/fern/lamps/client.py#L55-L78">log_trim</a>(...)</code></summary>
 <dl>
 <dd>
 

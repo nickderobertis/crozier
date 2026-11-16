@@ -1,6 +1,6 @@
 # Reference
 ## Arboretum
-<details><summary><code>client.arboretum.<a href="src/fern/arboretum/client.py">plant_tree</a>(...) -> Tree</code></summary>
+<details><summary><code>client.arboretum.<a href="src/fern/arboretum/client.py#L30-L62">plant_tree</a>(...) -> Tree</code></summary>
 <dl>
 <dd>
 
@@ -67,7 +67,7 @@ client.arboretum.plant_tree(
 </details>
 
 ## YewWalk
-<details><summary><code>client.yew_walk.<a href="src/fern/yew_walk/client.py">trim_hedge</a>(...) -> TrimHedgeResponse</code></summary>
+<details><summary><code>client.yew_walk.<a href="src/fern/yew_walk/client.py#L30-L62">trim_hedge</a>(...) -> TrimHedgeResponse</code></summary>
 <dl>
 <dd>
 

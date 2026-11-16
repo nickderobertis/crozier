@@ -131,3 +131,8 @@ under `docs/fern-measurements/union-literals/orchard-dispatch-schemas/`.
 `union_shapes_match_complete_goldens_in_both_enum_modes` gate those references.
 No generated reference was edited to fit crozier. Only the existing SDK-identity,
 type-import-order and generator-configuration metadata departures apply.
+
+**Historical.** This record was measured at Fern CLI 5.163.1 /
+`fernapi/fern-python-sdk` 5.41.3, the pair certified when it was taken; where it
+says "the certified pair" it means that pair. It has not been re-measured at
+the current certified pair, Fern CLI 5.200.0 / fern-python-sdk 5.41.25.

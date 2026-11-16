@@ -167,8 +167,23 @@ class RealPlanTests(unittest.TestCase):
         corpus = [seconds for (family, _item), seconds in table.items() if family == "corpus"]
         self.assertTrue(corpus, "the table is seeded with corpus timings")
         self.assertAlmostEqual(sum(corpus) / len(corpus), default)
-        handwritten = self.plan.families["handwritten"]
-        self.assertAlmostEqual(handwritten.seconds, round(handwritten.items * default, 1), delta=1)
+        for shard in self.plan.shards:
+            for entry in shard.items:
+                with self.subTest(item=entry.key()):
+                    self.assertAlmostEqual(entry.seconds, round(table.get(entry.key(), default), 1))
+        # The real table with one hand-written row dropped: that item, now
+        # untimed, is planned at the corpus rate.
+        lines = (REPO / weekly.TIMINGS).read_text(encoding="utf-8").splitlines(keepends=True)
+        dropped = next(line for line in lines if line.startswith("handwritten\t"))
+        item = dropped.split("\t")[1]
+        self.assertNotAlmostEqual(table[("handwritten", item)], default, places=1)
+        with tempfile.TemporaryDirectory() as scratch:
+            timings = Path(scratch) / "generation-seconds.tsv"
+            timings.write_text("".join(line for line in lines if line is not dropped), encoding="utf-8")
+            with unittest.mock.patch.object(weekly, "TIMINGS", timings):
+                plan = weekly.make_plan(REPO, "", weekly.Pair("1.0.0", "1.0.0"))
+        priced = {entry.key(): entry.seconds for shard in plan.shards for entry in shard.items}
+        self.assertAlmostEqual(priced[("handwritten", item)], round(default, 1))
 
     def test_the_budget_the_planner_sizes_against_is_the_registered_one(self) -> None:
         budgets = (REPO / ".github/budgets.yaml").read_text(encoding="utf-8")
@@ -589,8 +604,23 @@ class AssemblyTests(unittest.TestCase):
         timings = (bundle / "files" / weekly.TIMINGS).read_text(encoding="utf-8")
         self.assertTrue(timings.startswith("# Seconds each Fern reference"))
         self.assertIn("family\titem\tseconds\ncorpus\ta\t4.2\ncorpus\tb\t4.2\n", timings)
-        metadata = json.loads((bundle / "files" / weekly.METADATA).read_text(encoding="utf-8"))
+        moved = (bundle / "files" / weekly.METADATA).read_text(encoding="utf-8")
+        metadata = json.loads(moved)
         self.assertEqual(("2.0.0", "3.0.0"), (metadata["cliVersion"], metadata["generatorVersion"]))
+        # crozier writes the record as every SDK's `.fern/metadata.json`, which
+        # Fern ends without a newline: moving the pair keeps that ending.
+        self.assertFalse(moved.endswith("\n"), repr(moved[-5:]))
+
+    def test_moving_the_pair_keeps_a_record_s_final_newline_too(self) -> None:
+        stand_in = '{"cliVersion": "1.0.0"}\n'  # certified-pair: stand-in
+        (self.root / "assets/scaffolding/metadata.json").write_text(stand_in, encoding="utf-8")
+        self.shard(0, "a", ["tests/fixtures/a/expected/x.py"])
+        self.shard(1, "b", ["tests/fixtures/b/expected/x.py"])
+        result = self.assemble()
+        self.assertEqual(0, result.returncode, result.stderr)
+        moved = (self.scratch / "bundle" / "files" / weekly.METADATA).read_text(encoding="utf-8")
+        self.assertEqual(("2.0.0", "3.0.0"), (json.loads(moved)["cliVersion"], json.loads(moved)["generatorVersion"]))
+        self.assertTrue(moved.endswith("}\n") and not moved.endswith("\n\n"), repr(moved[-5:]))
 
     def test_two_shards_writing_one_file_is_a_failure(self) -> None:
         self.shard(0, "a", ["docs/shared.tsv"])

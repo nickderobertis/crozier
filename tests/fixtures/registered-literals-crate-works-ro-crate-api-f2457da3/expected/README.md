@@ -100,7 +100,7 @@ The SDK also exports an `async` client so that you can make non-blocking calls t
 import asyncio
 from fern.search import SearchEntitiesRequestSearchType, SearchEntitiesRequestBoundingBox, SearchEntitiesRequestBoundingBoxTopRight, SearchEntitiesRequestBoundingBoxBottomLeft
 
-from fern import AsyncFernApi
+from fern import AsyncFernApi, FilterRange, Order
 
 client = AsyncFernApi(
     api_key="<value>",

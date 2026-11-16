@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">patch_shelf_links</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L100-L130">patch_shelf_links</a>(...)</code></summary>
 <dl>
 <dd>
 

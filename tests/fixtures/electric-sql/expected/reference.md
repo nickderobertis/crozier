@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_shape</a>(...) -> GetV1ShapeResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L114-L408">get_shape</a>(...) -> GetV1ShapeResponse</code></summary>
 <dl>
 <dd>
 
@@ -430,7 +430,7 @@ Will be removed in v2.
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_shape_with_subset_post</a>(...) -> PostV1ShapeResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L410-L544">get_shape_with_subset_post</a>(...) -> PostV1ShapeResponse</code></summary>
 <dl>
 <dd>
 
@@ -657,7 +657,7 @@ ORDER BY clause for the subset snapshot. Required when using
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_shape</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L546-L615">delete_shape</a>(...)</code></summary>
 <dl>
 <dd>
 

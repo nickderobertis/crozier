@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_basket</a>() -> Basket</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L106-L126">get_basket</a>() -> Basket</code></summary>
 <dl>
 <dd>
 

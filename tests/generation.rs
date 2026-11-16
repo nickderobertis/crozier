@@ -948,13 +948,21 @@ components:
     );
 
     let client = &files["src/acme/contexts/client.py"];
-    assert!(client.contains("f_5g_cause_value=0"), "{client}");
+    // The example passes the keyword the method declares
+    // (`digit-leading-property-example-keyword`), not Fern's `f_5g_cause_value`.
+    assert!(
+        client.contains("_5g_cause_value=0") && !client.contains("f_5g_cause_value=0"),
+        "{client}"
+    );
     assert!(
         client.contains("bearer_setup=[\"bearerSetup\", \"bearerSetup\"]"),
         "{client}"
     );
     let reference = &files["reference.md"];
-    assert!(reference.contains("f_value=0"), "{reference}");
+    assert!(
+        reference.contains("_5g_cause_value=0") && !reference.contains("f_value"),
+        "{reference}"
+    );
 
     let root_stream = render(
         r#"
@@ -4481,14 +4489,21 @@ components:
             && !raw_example.contains("request=b\"string\""),
         "Fern's high-level bytes contract keeps its string example: {raw_example}"
     );
-    // At fern-python-sdk 5.41.3 the reference writer types an inline `*/*`
-    // binary body as `bytes`, as the `apideck.com-file-storage` 5.41.3 golden
-    // documents `files.upload`'s request.
+    // At the certified pair the reference writer types an inline `*/*` binary
+    // body as `bytes`, as the `apideck.com-file-storage` golden documents
+    // `files.upload`'s request.
     let reference = &files["reference.md"];
-    let raw_reference = reference
-        .split("src/acme/widgets/client.py\">raw</a>")
-        .nth(1)
+    // The heading links the method's lines (`client.py#L<start>-L<end>`), as Fern 5.41.25 does.
+    let (before_raw, raw_reference) = reference
+        .split_once("\">raw</a>")
         .expect("raw reference entry");
+    assert!(
+        before_raw
+            .rsplit("href=")
+            .next()
+            .is_some_and(|link| link.contains("src/acme/widgets/client.py#L")),
+        "{reference}"
+    );
     assert!(
         raw_reference.contains("**request:** `bytes`")
             && !raw_reference.contains("**request:** `str`"),
@@ -7541,7 +7556,7 @@ fn default_package_name_sanitizes_title_punctuation_in_process() {
         .find(|file| file.path.as_path() == Path::new("pyproject.toml"))
         .expect("pyproject emitted");
     assert!(
-        pyproject.contents.contains("name = \"airflow_api_stable\""),
+        pyproject.contents.contains("name = \"airflow-api-stable\""),
         "{}",
         pyproject.contents
     );
@@ -7552,7 +7567,7 @@ fn default_package_name_sanitizes_title_punctuation_in_process() {
     assert!(
         version
             .contents
-            .contains("metadata.version(\"airflow_api_stable\")"),
+            .contains("metadata.version(\"airflow-api-stable\")"),
         "{}",
         version.contents
     );
@@ -14720,7 +14735,8 @@ fn aiohttp_hint_follows_ruffs_layout_for_the_name_length() {
         "            raise RuntimeError(\"To use the aiohttp client, install the aiohttp extra: pip install acme[aiohttp]\")\n"
     ));
     // Packaged keeps the three-line call it has always written, for any name
-    // that fits it, so the layout setting changes no packaged output.
+    // that fits it, so the layout setting changes no packaged output. Its
+    // distribution is the project name hyphenated, as Fern 5.41.25 writes it.
     let packaged = |project: &str| {
         hint(
             &render_layout("acme", project, Layout::Packaged),
@@ -14728,12 +14744,12 @@ fn aiohttp_hint_follows_ruffs_layout_for_the_name_length() {
         )
     };
     assert!(packaged("acme").contains(&three_lines("acme")));
-    assert!(packaged("default_package_name").contains(&three_lines("default_package_name")));
+    assert!(packaged("default_package_name").contains(&three_lines("default-package-name")));
 
     // A name too long even for the split call splits the string too.
     let long = packaged("navigation_instrument_archive");
     assert!(long.contains(
-        "                \"To use the aiohttp client, install the aiohttp extra: \"\n                \"pip install navigation_instrument_archive[aiohttp]\"\n"
+        "                \"To use the aiohttp client, install the aiohttp extra: \"\n                \"pip install navigation-instrument-archive[aiohttp]\"\n"
     ));
     assert!(long.lines().all(|line| line.len() <= 120));
 }

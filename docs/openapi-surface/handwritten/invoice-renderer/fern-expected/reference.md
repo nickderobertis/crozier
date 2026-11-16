@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">render_invoice</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L99-L138">render_invoice</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -72,7 +72,7 @@ client.render_invoice(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">render_receipt</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L140-L178">render_receipt</a>(...) -> str</code></summary>
 <dl>
 <dd>
 

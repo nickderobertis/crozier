@@ -1,5 +1,36 @@
 # heap-exhausted: refuse
 
+## At Fern CLI 5.200.0 / fern-python-sdk 5.41.25: not compared
+
+**Not compared at the certified pair; no refusal is certified here.** The class
+does not count toward the certified pair, and everything under the 5.163.1
+heading below is history at that pair.
+
+- **Probe: unsettled.** The Fern goldens run 43423270787 and one serial bounded
+  rerun (`fern-refusals.py probe heap-exhausted --jobs 1 --timeout 900`, with
+  `NODE_OPTIONS=--max-old-space-size=16384`, node v26.8.2, a 94 GiB host with no
+  cgroup memory limit, load average about 63 on 20 CPUs) each ran `fern check`
+  to its 900-second bound (897.7 s) and `fern generate` to its bound (898.8 s),
+  printing nothing. A run cut short says nothing about whether Fern refuses
+  given more time or memory, so [`fern-refusal.txt`](fern-refusal.txt) stays
+  the 5.163.1 / 5.41.3 record. [`unsettled.txt`](unsettled.txt) records the
+  timings and the reason, and the registry's checks
+  (`fern-refusals.py check`, `crozier-e2e::fern_refusal_classes_hold`) accept
+  the older record only beside it.
+- **Shapes: not retaken.** The 2 probe and 5 control shapes keep their 5.163.1
+  logs.
+- **Real documents: corroboration only.** `confirm` retook both
+  [`confirmations.tsv`](../../openapi-surface/fern-refusals/confirmations.tsv)
+  rows at this pair (jakemannix `0117d8bf…` and Wiremock `94e583d7…`): each
+  generation exits 1 with `FATAL ERROR: Ineffective mark-compacts near heap limit
+  … JavaScript heap out of memory`. That is two real documents, not the probe,
+  and does not settle the class.
+- **crozier's behaviour is unchanged**: it refuses the probe in both modes, as
+  the e2e gate still checks.
+- **Follow-up:** *Settle crozier's heap-exhausted refusal class at Fern CLI
+  5.200.0 / fern-python-sdk 5.41.25* (drafted by the `upstream-evidence` node;
+  whether to spend the long one-at-a-time re-measure is an open question).
+
 ## At Fern CLI 5.163.1 / fern-python-sdk 5.41.3
 
 Decision: **refuse**, unchanged. The [probe record](fern-refusal.txt) is measured at this pair. Its 2 probe and 5 control shapes are measured at this pair too ([`shapes.tsv`](../../openapi-surface/fern-refusals/shapes.tsv)): a `-probe` is a shape Fern refuses, a `-control` one it generates from, and each `evaluation-logs/fern-<shape>.log` holds that measurement. The population carries the class on 2 documents at this pair, as at Fern CLI 5.67.1. crozier's release build refuses both under `--fern-strict` ([`documents.tsv`](../documents.tsv)).

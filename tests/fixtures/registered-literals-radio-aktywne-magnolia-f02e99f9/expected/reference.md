@@ -1,6 +1,6 @@
 # Reference
 ## Ping
-<details><summary><code>client.ping.<a href="src/fern/ping/client.py">ping_ping</a>()</code></summary>
+<details><summary><code>client.ping.<a href="src/fern/ping/client.py#L25-L48">ping_ping</a>()</code></summary>
 <dl>
 <dd>
 
@@ -61,7 +61,7 @@ client.ping.ping_ping()
 </dl>
 </details>
 
-<details><summary><code>client.ping.<a href="src/fern/ping/client.py">ping_headping</a>()</code></summary>
+<details><summary><code>client.ping.<a href="src/fern/ping/client.py#L50-L73">ping_headping</a>()</code></summary>
 <dl>
 <dd>
 
@@ -123,7 +123,7 @@ client.ping.ping_headping()
 </details>
 
 ## Recordings
-<details><summary><code>client.recordings.<a href="src/fern/recordings/client.py">recordings_event_start_download</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.recordings.<a href="src/fern/recordings/client.py#L43-L85">recordings_event_start_download</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -204,7 +204,7 @@ client.recordings.recordings_event_start_download(
 </dl>
 </details>
 
-<details><summary><code>client.recordings.<a href="src/fern/recordings/client.py">recordings_event_start_upload</a>(...)</code></summary>
+<details><summary><code>client.recordings.<a href="src/fern/recordings/client.py#L87-L134">recordings_event_start_upload</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -294,7 +294,7 @@ client.recordings.recordings_event_start_upload(
 </dl>
 </details>
 
-<details><summary><code>client.recordings.<a href="src/fern/recordings/client.py">recordings_event_start_delete</a>(...)</code></summary>
+<details><summary><code>client.recordings.<a href="src/fern/recordings/client.py#L136-L177">recordings_event_start_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -375,7 +375,7 @@ client.recordings.recordings_event_start_delete(
 </dl>
 </details>
 
-<details><summary><code>client.recordings.<a href="src/fern/recordings/client.py">recordings_event_start_headdownload</a>(...)</code></summary>
+<details><summary><code>client.recordings.<a href="src/fern/recordings/client.py#L179-L220">recordings_event_start_headdownload</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -456,7 +456,7 @@ client.recordings.recordings_event_start_headdownload(
 </dl>
 </details>
 
-<details><summary><code>client.recordings.<a href="src/fern/recordings/client.py">recordings_event_list</a>(...) -> ListResponseResults</code></summary>
+<details><summary><code>client.recordings.<a href="src/fern/recordings/client.py#L222-L277">recordings_event_list</a>(...) -> ListResponseResults</code></summary>
 <dl>
 <dd>
 
@@ -568,7 +568,7 @@ client.recordings.recordings_event_list(
 </details>
 
 ## Sse
-<details><summary><code>client.sse.<a href="src/fern/sse/client.py">sse_subscribe</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.sse.<a href="src/fern/sse/client.py#L26-L60">sse_subscribe</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -638,7 +638,7 @@ client.sse.sse_subscribe()
 </details>
 
 ## Test
-<details><summary><code>client.test.<a href="src/fern/test/client.py">test_test</a>(...) -> TestResponseResult</code></summary>
+<details><summary><code>client.test.<a href="src/fern/test/client.py#L27-L59">test_test</a>(...) -> TestResponseResult</code></summary>
 <dl>
 <dd>
 

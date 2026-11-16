@@ -1,6 +1,6 @@
 # Reference
 ## Widgets
-<details><summary><code>client.widgets.<a href="src/fern/widgets/client.py">update_widget</a>(...)</code></summary>
+<details><summary><code>client.widgets.<a href="src/fern/widgets/client.py#L29-L62">update_widget</a>(...)</code></summary>
 <dl>
 <dd>
 

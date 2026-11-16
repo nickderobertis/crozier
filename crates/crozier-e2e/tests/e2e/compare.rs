@@ -577,12 +577,13 @@ fn compare_hands_the_config_files_settings_to_the_reference_command() {
             generator,
             "CROZIER_REFERENCE_LAYOUT=packaged".to_string(),
             "CROZIER_REFERENCE_PACKAGE_NAME=fern".to_string(),
-            "CROZIER_REFERENCE_PROJECT_NAME=default_package_name".to_string(),
+            "CROZIER_REFERENCE_PROJECT_NAME=default-package-name".to_string(),
             spec.clone(),
         ])
     );
     // crozier's defaults are passed resolved: the package from the title
-    // `Widget API`, the project from the package, the client from both.
+    // `Widget API`, the project from the package (hyphenated, as the
+    // generated pyproject.toml names it), the client from both.
     let [config_file, generator] = common("defaults");
     assert_eq!(
         vars("defaults"),
@@ -597,7 +598,7 @@ fn compare_hands_the_config_files_settings_to_the_reference_command() {
             generator,
             "CROZIER_REFERENCE_LAYOUT=packaged".to_string(),
             "CROZIER_REFERENCE_PACKAGE_NAME=widget_api".to_string(),
-            "CROZIER_REFERENCE_PROJECT_NAME=widget_api".to_string(),
+            "CROZIER_REFERENCE_PROJECT_NAME=widget-api".to_string(),
             spec,
         ])
     );
@@ -1949,7 +1950,7 @@ fn compare_applies_the_packaging_and_metadata_departures_exactly() {
     write(root, &format!("refs/released/{wrapper}"), &released);
     let unpackaged = edited_golden(
         wrapper,
-        "            \"X-Fern-SDK-Name\": \"default_package_name\",\n            \"X-Fern-SDK-Version\": \"0.0.0\",\n",
+        "            \"X-Fern-SDK-Name\": \"default-package-name\",\n            \"X-Fern-SDK-Version\": \"0.0.0\",\n",
         "",
     );
     write(root, &format!("refs/unpackaged/{wrapper}"), &unpackaged);
@@ -2164,5 +2165,109 @@ fn compare_validates_pattern_narrowed_examples_and_rejects_adjacent_changes() {
             .args(["--json", "-", "crozier.yml"])
             .assert()
             .success();
+    }
+}
+
+/// Each `reference.md` heading departure the link ranges brought, through
+/// `crozier compare` over the real golden: matched, the departure reported at
+/// its heading; and refused when Fern's heading is edited into a different
+/// defect on the same line, so the rule takes its own shape and nothing looser.
+#[cfg(unix)]
+#[test]
+fn compare_holds_each_reference_link_departure_to_its_own_shape() {
+    let manifest = crate::repo_root();
+    for (spec, golden, layout, id, from, to) in [
+        (
+            "tests/fixtures/corpus-sources/apideck.com-ats/openapi.json",
+            "tests/fixtures/apideck.com-ats/expected",
+            "packaged",
+            "reference-heading-escaped-method-name",
+            "applicants/client.py\">all</a>",
+            "applicants/client.py\">al</a>",
+        ),
+        (
+            "tests/fixtures/corpus-sources/swagger-petstore/openapi.yaml",
+            "tests/fixtures/swagger-petstore/expected-flat",
+            "flat",
+            "flat-reference-link-target",
+            "src/fern/pet/client.py\">add_pet</a>",
+            "src/fern/store/client.py\">add_pet</a>",
+        ),
+        (
+            "docs/openapi-surface/handwritten/lamp-room-log/openapi.yml",
+            "docs/openapi-surface/handwritten/lamp-room-log/fern-expected",
+            "packaged",
+            "empty-namespace-package",
+            "_/client.py\">list_lamps</a>",
+            "_/client.py\">list_lamp</a>",
+        ),
+    ] {
+        let reference =
+            std::fs::read_to_string(manifest.join(golden).join("reference.md")).unwrap();
+        assert!(
+            reference.contains(from),
+            "{golden}/reference.md holds no {from:?}"
+        );
+        let repo = tempfile::tempdir().expect("repo tempdir");
+        let root = repo.path();
+        git(root, &["init", "-q"]);
+        let extension = spec.rsplit_once('.').unwrap().1;
+        write(
+            root,
+            &format!("openapi.{extension}"),
+            &std::fs::read_to_string(manifest.join(spec)).unwrap(),
+        );
+        // `reference.sh [edited]`: copy the committed Fern tree, then rewrite the
+        // heading's link or name into another defect than the departure's.
+        write_script(
+            root,
+            "scripts/reference.sh",
+            &format!(
+                "out=\"$CROZIER_REFERENCE_OUTPUT\"\n\
+                 cp -R '{}'/. \"$out\"\n\
+                 [ \"${{1:-}}\" = edited ] || exit 0\n\
+                 awk -v from='{from}' -v to='{to}' '{{ i = index($0, from); if (i) $0 = substr($0, 1, i - 1) to substr($0, i + length(from)) }} {{ print }}' \"$out/reference.md\" > \"$out/edited.tmp\"\n\
+                 mv \"$out/edited.tmp\" \"$out/reference.md\"\n",
+                manifest.join(golden).display(),
+            ),
+        );
+        let config = |argument: &str| {
+            format!(
+                "spec: ./openapi.{extension}\nlayout: {layout}\npackage-name: fern\n\
+                 project-name: default_package_name\ngenerators:\n  python:\n    reference:\n      \
+                 command: ./scripts/reference.sh{argument}\n"
+            )
+        };
+        write(root, "crozier.yml", &config(""));
+        let assert = compare_cmd(root)
+            .args(["--json", "-", "crozier.yml"])
+            .assert()
+            .code(0);
+        let report: serde_json::Value =
+            serde_json::from_slice(&assert.get_output().stdout).unwrap();
+        let python = result(&report, "crozier.yml", "python");
+        assert_eq!(python["status"], "matched", "{golden}: {python:#}");
+        let applied = python["comparison"]["departures"].as_array().unwrap();
+        assert!(
+            applied
+                .iter()
+                .any(|departure| departure["id"] == id && departure["file"] == "reference.md"),
+            "{golden}: no {id} reported in reference.md: {python:#}"
+        );
+
+        write(root, "crozier.yml", &config(" edited"));
+        let assert = compare_cmd(root)
+            .args(["--json", "-", "crozier.yml"])
+            .assert()
+            .code(3);
+        let report: serde_json::Value =
+            serde_json::from_slice(&assert.get_output().stdout).unwrap();
+        let python = result(&report, "crozier.yml", "python");
+        assert_eq!(python["status"], "mismatched", "{golden}: {python:#}");
+        assert_eq!(
+            python["comparison"]["differing"],
+            serde_json::json!(["reference.md"]),
+            "{golden}: {python:#}"
+        );
     }
 }
