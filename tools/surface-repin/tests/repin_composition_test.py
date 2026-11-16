@@ -654,6 +654,25 @@ def exercise(root: Path, tmp_path: Path) -> None:
             assert "0 test(s) run, 2 carried, 1 fixture(s) run, 0 carried" in measured.stdout
             assert f"its fixture changed ({path})" in measured.stderr
 
+    # Issue #840 through `just handwritten-reach`: over the committed fixtures it
+    # steps the local store, so a step carrying every golden test is complete and
+    # published; with no local store it holds the fixtures alone and is not, and
+    # the earlier complete base is kept.
+    write(root, "src/lib.rs", (root / "src/lib.rs").read_text(encoding="utf-8") + "\npub fn idle_one() {}\n")
+    carried_at = commit(root, "a change no measured function owns")
+    run("just", "handwritten-reach")
+    assert set(store(root)["tests"]) == {ALPHA, BETA}
+    assert (tmp_path / "bases" / carried_at / "base.json.gz").is_file(), "a complete step is published"
+    write(root, "src/lib.rs", (root / "src/lib.rs").read_text(encoding="utf-8") + "\npub fn idle_two() {}\n")
+    alone_at = commit(root, "another change no measured function owns")
+    (root / ".local/golden-reach/store.json.gz").unlink()
+    published = sorted(path.name for path in (tmp_path / "bases").iterdir())
+    run("just", "handwritten-reach")
+    assert store(root)["tests"] == {}, "with no local store the fixtures are measured alone"
+    assert not (tmp_path / "bases" / alone_at).exists(), "a fixtures-only step is no shared base"
+    assert sorted(path.name for path in (tmp_path / "bases").iterdir()) == published
+    assert (tmp_path / "bases" / carried_at / "base.json.gz").is_file(), "the complete base is kept"
+
 
 def test_measure_refuses_incomplete_compiler_identity_before_building(tmp_path: Path) -> None:
     """A real executable supplies malformed rustc output at the process boundary."""

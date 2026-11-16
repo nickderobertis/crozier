@@ -213,6 +213,11 @@ class RecipeEndToEndTests(unittest.TestCase):
         )
         self.assertTrue((out / "golden-only.json").is_file())
 
+    def test_a_stale_workspace_binary_is_cleared_before_any_export(self) -> None:
+        """Every export reads only binaries this run built: a stale one is removed first."""
+        self.scoped_run()
+        self.assertFalse(STALE_BINARY.exists(), f"{STALE_BINARY} survived the recipe's clean")
+
     def test_cfg_test_regions_are_excluded_from_the_denominator(self) -> None:
         _completed, out = self.scoped_run()
 
@@ -605,12 +610,27 @@ class CfgTestSpanTests(unittest.TestCase):
 _SCOPED: tuple | None = None
 
 
+# Where cargo-llvm-cov builds, under the per-clone target directory.
+STALE_BINARY = (
+    Path(os.environ.get("CARGO_TARGET_DIR") or REPO / "target")
+    / "llvm-cov-target"
+    / "debug"
+    / "deps"
+    / ("crozier-0123456789abcdef" + (".exe" if os.name == "nt" else ""))
+)
+
+
 def _scoped_run():
     """One offline-scoped run of the real recipe, shared by every case that reads
     its exports — the recipe is deterministic here, and re-running it per test
     would triple this file's contribution to `just check`."""
     global _SCOPED
     if _SCOPED is None:
+        # A workspace test binary an earlier build left under another hash: the
+        # recipe must clear it, or `cargo llvm-cov report` reads its stale mapping.
+        STALE_BINARY.parent.mkdir(parents=True, exist_ok=True)
+        STALE_BINARY.write_bytes(b"a binary an earlier build of crozier left behind\n")
+        STALE_BINARY.chmod(0o755)
         directory = tempfile.TemporaryDirectory()
         atexit.register(directory.cleanup)
         out = Path(directory.name) / "out"

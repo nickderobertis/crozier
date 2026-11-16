@@ -41,6 +41,22 @@ pub const DISCOVER_ENV: &str = "CROZIER_DISCOVER_CONTRIBUTORS";
 /// The `OLD=NEW` golden-tree renames to apply, space-separated.
 pub const RENAME_ENV: &str = "CROZIER_RENAME_GOLDENS";
 
+/// Where the contributor check reads (and discovery writes) the inventory;
+/// unset, the committed [`CONTRIBUTORS`]. The script never sets it.
+pub const INVENTORY_PATH_ENV: &str = "CROZIER_CONTRIBUTOR_INVENTORY";
+
+/// The compared goldens no recording run records: each is compared only by an
+/// `#[ignore]`d `sdk_env_*` journey (a PyPI install), which neither the whole
+/// suite nor the selected run starts, so its ledger rows are kept as they are.
+pub const JOURNEY_ONLY_GOLDENS: [&str; 6] = [
+    "docs/fern-measurements/superseded-fixtures/depot-bin-ledger/fern-expected",
+    "docs/fern-measurements/superseded-fixtures/described-scalar-bodies/fern-expected",
+    "docs/fern-measurements/superseded-fixtures/event-stream-event-dispatch/fern-expected",
+    "docs/fern-measurements/superseded-fixtures/ferry-berth-desk/fern-expected",
+    "docs/fern-measurements/superseded-fixtures/request-example-deprecated/fern-expected",
+    "docs/fern-measurements/superseded-fixtures/request-example-nulls/fern-expected",
+];
+
 /// One test recording one golden.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Contributor {
@@ -239,7 +255,9 @@ fn verify_departure_contributors() {
         std::env::var_os(name).unwrap_or_else(|| panic!("set {name} to the run's directory"))
     };
     let observed = recorded(Path::new(&env(CONTRIBUTOR_ENV))).unwrap_or_else(|e| panic!("{e}"));
-    let path = root.join(CONTRIBUTORS);
+    let path = std::env::var_os(INVENTORY_PATH_ENV)
+        .map(std::path::PathBuf::from)
+        .unwrap_or_else(|| root.join(CONTRIBUTORS));
     if std::env::var(DISCOVER_ENV).as_deref() == Ok("1") {
         // Replaced whole, never truncated in place: other tests read it meanwhile.
         let mut staged =
@@ -603,6 +621,8 @@ struct Recording {
     examples: tempfile::TempDir,
     /// Whether the check runs as discovery's, rewriting the inventory first.
     discover: bool,
+    /// The inventory the check reads and discovery writes; the committed one if None.
+    inventory: Option<std::path::PathBuf>,
 }
 
 impl Recording {
@@ -613,6 +633,7 @@ impl Recording {
             ledger: tempfile::tempdir().expect("ledger records"),
             examples: tempfile::tempdir().expect("example records"),
             discover: false,
+            inventory: None,
         };
         let notes: String = rows.iter().map(|row| row.render() + "\n").collect();
         std::fs::write(recording.noted.path().join("run.tsv"), notes).expect("notes");
@@ -629,7 +650,8 @@ impl Recording {
     /// the repository's committed inventories — for `selection`; its stdout
     /// when it refuses.
     fn check(&self, selection: &str) -> Result<(), String> {
-        let output = std::process::Command::new(std::env::current_exe().expect("this suite"))
+        let mut command = std::process::Command::new(std::env::current_exe().expect("this suite"));
+        command
             .args([
                 "departure_contributors::verify_departure_contributors",
                 "--exact",
@@ -640,9 +662,13 @@ impl Recording {
             .env(departures_ledger::RECORD_ENV, self.ledger.path())
             .env(example_values_inventory::RECORD_ENV, self.examples.path())
             .env(SELECTION_ENV, selection)
-            .env(DISCOVER_ENV, if self.discover { "1" } else { "0" })
-            .output()
-            .expect("run the check");
+            .env(DISCOVER_ENV, if self.discover { "1" } else { "0" });
+        if let Some(inventory) = &self.inventory {
+            command.env(INVENTORY_PATH_ENV, inventory);
+        } else {
+            command.env_remove(INVENTORY_PATH_ENV);
+        }
+        let output = command.output().expect("run the check");
         let said = format!(
             "{}{}",
             String::from_utf8_lossy(&output.stdout),
@@ -741,28 +767,71 @@ fn the_contributor_check_holds_a_run_to_the_inventory() {
     }
 }
 
-/// Issue #820: discovery's own step rewrites the committed inventory from what
-/// the whole run recorded, then holds the run to it. A run recording exactly the
-/// committed rows rewrites it to the same bytes, through the real verifier.
+/// Issue #820: discovery's own step replaces the inventory with what the whole
+/// run recorded — a test it no longer lists dropped, a new one added — and then
+/// holds the run to it, through the real verifier, over a scratch copy.
 #[test]
 fn discovery_rewrites_the_inventory_from_what_the_run_recorded() {
     let root = crate::repo_root();
-    let path = root.join(CONTRIBUTORS);
-    let committed = std::fs::read_to_string(&path).expect("the inventory");
-    let rows = parse(&committed).expect("the committed inventory parses");
+    let committed =
+        parse(&std::fs::read_to_string(root.join(CONTRIBUTORS)).expect("the inventory"))
+            .expect("parses");
+    let mut rows = committed.clone();
+    let dropped = rows.pop_first().expect("a row");
+    rows.insert(Contributor {
+        test: "a_comparison_added_since".to_owned(),
+        ..dropped.clone()
+    });
+    let scratch = tempfile::tempdir().expect("scratch");
+    let inventory = scratch.path().join("departures-contributors.tsv");
+    std::fs::write(&inventory, render(&committed)).expect("the copy");
     let mut recording = Recording::of(&rows);
     recording.discover = true;
+    recording.inventory = Some(inventory.clone());
     if let Err(said) = recording.check("") {
-        panic!("discovery over exactly the committed rows was refused:\n{said}");
+        panic!("discovery was refused:\n{said}");
     }
+    let written = std::fs::read_to_string(&inventory).expect("the rewritten inventory");
     assert_eq!(
-        std::fs::read_to_string(&path).expect("the rewritten inventory"),
+        written,
         render(&rows),
-        "discovery writes the rows the run recorded"
+        "discovery writes exactly the rows the run recorded"
     );
+    assert!(written.contains("a_comparison_added_since"));
+    // Without discovery the same run is held to the inventory it differs from.
+    let mut held = Recording::of(&rows);
+    held.inventory = Some(scratch.path().join("held.tsv"));
+    std::fs::write(held.inventory.as_ref().expect("set"), render(&committed)).expect("the copy");
+    let said = held
+        .check("")
+        .expect_err("a run the inventory does not describe");
+    assert!(
+        said.contains("`a_comparison_added_since` recorded"),
+        "{said}"
+    );
+}
+
+/// Every compared golden has an inventoried contributor, except those only an
+/// ignored journey compares ([`JOURNEY_ONLY_GOLDENS`]): a new comparison
+/// missing from the inventory would never run in a selected regeneration, so
+/// its golden fails here until `just departures-ledger --discover-contributors`.
+#[test]
+fn every_compared_golden_has_a_contributor_or_is_journey_only() {
+    let root = crate::repo_root();
+    let inventory =
+        parse(&std::fs::read_to_string(root.join(CONTRIBUTORS)).expect("the inventory"))
+            .expect("parses");
+    let inventoried: BTreeSet<&str> = inventory.iter().map(|row| row.golden.as_str()).collect();
+    let compared = Inventory::read(root).expect("the compared goldens");
+    let uncovered: Vec<&str> = compared
+        .goldens
+        .keys()
+        .map(String::as_str)
+        .filter(|golden| !inventoried.contains(golden))
+        .collect();
     assert_eq!(
-        render(&rows),
-        committed,
-        "the committed inventory is in its rendered form"
+        uncovered,
+        JOURNEY_ONLY_GOLDENS.to_vec(),
+        "a compared golden no inventoried test records: rederive the inventory with `{DISCOVER}`"
     );
 }

@@ -270,11 +270,18 @@ def test_a_closed_key_leaves_the_record_when_it_is_rewritten(tmp_path: Path) -> 
         "inputs_digest": "0" * 64,
     }
     path.write_text(json.dumps({"version": 1, "rows": [*saved["rows"], stale]}), encoding="utf-8")
+    # A key no case measures any more (its row survives from an earlier CASES).
+    obsolete = {**stale, "key": "retired-residual-key"}
     script = root / "tools/surface-census" / SCRIPT.name
-    # A scoped rewrite and a whole-population one: each prunes the closed key.
-    for argv in (["--key", "boolean-schema-true"], ["--real-witnesses-only"]):
+    # A scoped rewrite and a whole-population one: each prunes the closed key;
+    # only the whole-population one, which rebuilds every row, drops the retired key.
+    for argv, kept in (
+        (["--key", "boolean-schema-true"], ["boolean-schema-true", "retired-residual-key"]),
+        (["--real-witnesses-only"], ["boolean-schema-true"]),
+    ):
         with_stale = json.loads(path.read_text(encoding="utf-8"))
-        with_stale["rows"] = [row for row in with_stale["rows"] if row["key"] != stale["key"]] + [stale]
+        with_stale["rows"] = [row for row in with_stale["rows"] if row["key"] not in (stale["key"], obsolete["key"])]
+        with_stale["rows"] += [stale, obsolete]
         path.write_text(json.dumps(with_stale), encoding="utf-8")
         run = subprocess.run(
             [sys.executable, str(script), *argv, "--write-record"],
@@ -286,7 +293,7 @@ def test_a_closed_key_leaves_the_record_when_it_is_rewritten(tmp_path: Path) -> 
         )
         assert run.returncode == 0, (argv, run.stderr)
         rows = json.loads(path.read_text(encoding="utf-8"))["rows"]
-        assert [row["key"] for row in rows] == ["boolean-schema-true"], argv
+        assert [row["key"] for row in rows] == kept, argv
         record_model.require(root, "boolean-schema-true", "webflow-v2", record_model.read(root))
 
 
