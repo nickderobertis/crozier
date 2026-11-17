@@ -9083,6 +9083,12 @@ tests/fixtures/go-kratos-casbin-admin/expected	src/fern/core/client_wrapper.py	3
 tests/fixtures/go-kratos-casbin-admin/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/go-kratos-casbin-admin/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/go-kratos-casbin-admin/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+tests/fixtures/go-kratos-examples-blog/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+tests/fixtures/go-kratos-examples-blog/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+tests/fixtures/go-kratos-examples-blog/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+tests/fixtures/go-kratos-examples-blog/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+tests/fixtures/go-kratos-examples-blog/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+tests/fixtures/go-kratos-examples-blog/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
 tests/fixtures/googleapis-monitoring-v1/expected	README.md	58	readme-environment-constructor-arguments
 tests/fixtures/googleapis-monitoring-v1/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/googleapis-monitoring-v1/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
