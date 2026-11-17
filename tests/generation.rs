@@ -14110,10 +14110,11 @@ components:
 /// eNanoMapper's `getInvestigationResults` requires an inline-enum `type`
 /// exampled `bystudytype`, a later member: Fern's worked call passes the
 /// enum's first member all the same. Its `getSubstanceByUUID` takes a
-/// `property_uris[]` query parameter, which the Python signature names
-/// `property_uris` while `reference.md` spells the bracket out.
+/// `property_uris[]` query parameter, which the Python signature and
+/// `reference.md`'s parameter list both name `property_uris` (Fern's list spells
+/// the bracket out as `property_uris_array`, `bracket-query-parameter-call-keyword`).
 #[test]
-fn a_required_enum_query_parameter_is_exampled_by_its_first_member_and_a_bracketed_name_is_documented_as_an_array(
+fn a_required_enum_query_parameter_is_exampled_by_its_first_member_and_a_bracketed_name_is_documented_by_its_argument(
 ) {
     let files = render(
         r#"openapi: 3.0.0
@@ -14169,7 +14170,7 @@ paths:
         .map(|(_, contents)| contents)
         .expect("reference.md");
     assert!(
-        reference.contains("**property_uris_array:** `typing.Optional[str]` — Property URIs"),
+        reference.contains("**property_uris:** `typing.Optional[str]` — Property URIs"),
         "{reference}"
     );
 }

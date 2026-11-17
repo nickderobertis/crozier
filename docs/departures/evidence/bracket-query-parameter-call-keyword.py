@@ -1,10 +1,12 @@
 # llmlint: ignore-file[new_code_lands_in_a_project] Departure evidence stays beside its note in docs/departures/evidence, as request-alias-reference-parameters.py does; crozier-e2e runs it and reads this folder through its e2eReads input.
-"""Bind reference.md's worked calls for `[]` query parameters to the actual SDK.
+"""Bind reference.md's worked calls and parameter lists for `[]` query parameters
+to the actual SDK.
 
 Each worked call's keyword arguments are bound to the actual sync and async
-methods; then each method is called with the argument it declares, through the
-public client over a socket to a local HTTP server, which records the query
-string it receives.
+methods, and each name the method's parameter list documents is looked up in
+those methods' signatures; then each method is called with the argument it
+declares, through the public client over a socket to a local HTTP server, which
+records the query string it receives.
 
 Exit 0 prints one JSON proof result; exit 1 means the proof or SDK import failed;
 exit 2 reports invalid CLI arguments on stderr.
@@ -54,6 +56,13 @@ def worked_call(method: str) -> dict[str, object]:
     return {keyword.arg or "": ast.literal_eval(keyword.value) for keyword in call.keywords}
 
 
+def listed_parameters(method: str) -> list[str]:
+    """The names reference.md's parameter list documents for `method`."""
+    match = re.search(rf"<summary><code>client\.berths\.<a [^>]*>{method}</a>(.*?)</details>", reference, re.DOTALL)
+    assert match, f"reference.md has no entry for {method}"
+    return re.findall(r"^\*\*(\w+):\*\*", match.group(1), re.MULTILINE)
+
+
 @contextlib.contextmanager
 def local_server() -> Iterator[tuple[str, list[list[tuple[str, str]]]]]:
     """A local HTTP server answering a `GET` with `[]` and a `DELETE` with
@@ -89,6 +98,18 @@ def local_server() -> Iterator[tuple[str, list[list[tuple[str, str]]]]]:
 
 
 bindings: dict[str, str] = {}
+# Each parameter-list name the generated methods do not declare.
+undeclared: dict[str, list[str]] = {}
+for method in CALLS:
+    listed = listed_parameters(method)
+    assert "request_options" in listed, (method, listed)
+    for class_name in ("FernApi", "AsyncFernApi"):
+        client = getattr(sdk, class_name)(base_url="http://127.0.0.1", **HEADERS)
+        declared = inspect.signature(getattr(client.berths, method)).parameters
+        missing = [name for name in listed if name not in declared]
+        if missing:
+            undeclared[f"{class_name}.{method}"] = missing
+assert bool(undeclared) == (args.expected == "invalid"), undeclared
 with local_server() as (base_url, queries):
     for method, wire in CALLS.items():
         arguments = worked_call(method)
@@ -119,4 +140,4 @@ with local_server() as (base_url, queries):
 
     asyncio.run(async_call())
     assert queries[-1] == [("ids[]", "B-7")], queries
-print(json.dumps({"bindings": bindings, "requests": len(queries)}, sort_keys=True))
+print(json.dumps({"bindings": bindings, "requests": len(queries), "undeclared": undeclared}, sort_keys=True))

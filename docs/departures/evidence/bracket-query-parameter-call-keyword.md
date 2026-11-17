@@ -1,4 +1,4 @@
-# A `[]` query parameter's worked call names no argument
+# A `[]` argument's worked call and parameter list name no argument
 
 **Kind:** `fern-defect`. The independently authored
 [Harbor Ledger document](../../fern-measurements/handed-off/snippet-rendering/snippet-rendering/openapi.yml)
@@ -20,6 +20,18 @@ spelling reaches a real document: arawa/workspace's `uids[]` is
 (the handed-off comparison in
 [`../../fern-measurements/handed-off/snippet-rendering/README.md`](../../fern-measurements/handed-off/snippet-rendering/README.md)).
 
+The parameter lists carry the same name: the certified `reference.md` documents
+`**codes_array:**` (line 117) and `**ids_array:**` (line 178), names neither
+method declares. A form property is listed the same way: DaniWeb Connect's
+`POST /users/invites` form body declares `emails[]`, the certified
+`users/client.py` declares `emails: typing.Optional[typing.List[str]] = OMIT`
+(line 87), and the certified
+[`reference.md`](../../../tests/fixtures/daniweb-connect/expected/reference.md)
+lists `**emails_array:**` (line 4617) beside it; its `metadata0values[]` …
+`metadata2values[]` properties are listed `metadata0values_array` … on every
+operation taking them. crozier lists each one under the argument its method
+declares (#829).
+
 ## Executed certified-output evidence
 
 With the SDK's HTTPX and Pydantic dependencies installed, execute the committed
@@ -33,30 +45,36 @@ python docs/departures/evidence/bracket-query-parameter-call-keyword.py \
   --expected invalid
 ```
 
-Run on 2026-11-03 (Python 3.14, HTTPX 0.28.1, Pydantic 2.14.0), it exited 0 and
-printed:
+Run on 2026-11-17 (Python 3.14.7, HTTPX 0.28.1, Pydantic 2.13.5), it exited 0
+and printed:
 
 ```text
-{"bindings": {"AsyncFernApi.list_berths": "got an unexpected keyword argument 'codes_array'", "AsyncFernApi.release_berths": "got an unexpected keyword argument 'ids_array'", "FernApi.list_berths": "got an unexpected keyword argument 'codes_array'", "FernApi.release_berths": "got an unexpected keyword argument 'ids_array'"}, "requests": 3}
+{"bindings": {"AsyncFernApi.list_berths": "got an unexpected keyword argument 'codes_array'", "AsyncFernApi.release_berths": "got an unexpected keyword argument 'ids_array'", "FernApi.list_berths": "got an unexpected keyword argument 'codes_array'", "FernApi.release_berths": "got an unexpected keyword argument 'ids_array'"}, "requests": 3, "undeclared": {"AsyncFernApi.list_berths": ["codes_array"], "AsyncFernApi.release_berths": ["ids_array"], "FernApi.list_berths": ["codes_array"], "FernApi.release_berths": ["ids_array"]}}
 ```
 
 The script imports the actual certified package, parses each worked call out of
 `reference.md` with Python's AST, and binds its keyword arguments to
 `inspect.signature` of the actual sync and async methods: every binding raises
-`TypeError`. It then calls each method with the argument it does declare, through the
+`TypeError`. It looks up each name the method's parameter list documents in
+the same signatures: `codes_array` and `ids_array` are not there
+(`undeclared`). It then calls each method with the argument it does declare, through the
 public client over a socket to a local HTTP server, and asserts the request the
 server receives carries the values under the `codes[]` and `ids[]` wire names, so the defect is the documentation's alone.
 Run the same way over crozier's generated tree with `--expected valid`, every
-binding succeeds (`codes binds`, `ids binds`) and the same requests are sent.
+binding succeeds (`codes binds`, `ids binds`), every listed name is declared
+(`"undeclared": {}`), and the same requests are sent.
 
 ## The rule
 
 `bracket_query_parameter_call_keyword` admits only a README or `reference.md`
 line whose sole change replaces `<name>_array=` with `<name>=`, for a query
-parameter `<name>[]` the source document declares. A header with a `[]` name,
-an undeclared name, a changed indentation or value, and every code file still
-fail. `reference.md`'s parameter list keeps the certified `**<name>_array:**`
-spelling, matched byte for byte. The unit test
-`bracket_query_call_keywords_admit_only_the_declared_parameter_spelled_out`
-holds those cases; the measurement's crozier-e2e journey compares the whole tree
+parameter `<name>[]` the source document declares, and a `reference.md`
+parameter-list line whose sole change replaces `**<name>_array:**` with
+`**<name>:**`, for such a query parameter or a form-encoded or multipart body
+property `<name>[]`. A header with a `[]` name, a JSON body property, an
+undeclared name, a changed indentation, value or annotation, and every code file
+still fail. The unit tests
+`bracket_query_call_keywords_admit_only_the_declared_parameter_spelled_out` and
+`bracket_parameter_list_entries_admit_only_a_declared_query_parameter_or_form_property`
+hold those cases; the measurement's crozier-e2e journey compares the whole tree
 with this departure applied and fails an unexplained byte beside it.

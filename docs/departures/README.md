@@ -251,10 +251,10 @@ when the two differ.
 ### `bracket-query-parameter-call-keyword`
 
 - **Kind:** `fern-defect`
-- **Trigger:** A query parameter whose wire name ends in [], passed in a README or reference.md worked call.
-- **Fern writes:** The call passes the argument as <name>_array=, a keyword the generated sync and async methods do not declare; their argument is <name>.
-- **crozier writes:** The same call with the generated method's own <name>= keyword, every other byte of the line unchanged; reference.md's parameter list and the method signature stay matched.
-- **Why:** Binding the documented call to the actual certified methods raises TypeError for an unexpected keyword argument. The corrected keyword binds and sends the values under the [] wire name.
+- **Trigger:** A query parameter whose wire name ends in [], passed in a README or reference.md worked call; or such a query parameter or a form-encoded or multipart body property, listed in reference.md's parameter list.
+- **Fern writes:** The call passes the argument as <name>_array=, and the parameter list documents **<name>_array:**, a name the generated sync and async methods do not declare; their argument is <name>.
+- **crozier writes:** The same call with the generated method's own <name>= keyword, and the parameter list entry **<name>:**, every other byte of each line unchanged, so the worked call, the parameter list and the method signature agree.
+- **Why:** Binding the documented call to the actual certified methods raises TypeError for an unexpected keyword argument, and the parameter list names an argument no method declares. The corrected keyword binds and sends the values under the [] wire name, and every listed name is a parameter of the method it documents.
 - **Evidence:** [`docs/departures/evidence/bracket-query-parameter-call-keyword.md`](../../docs/departures/evidence/bracket-query-parameter-call-keyword.md)
 
 ### `closed-empty-object-example`

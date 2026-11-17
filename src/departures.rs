@@ -5949,11 +5949,14 @@ fn emoji_tag_reference_identifiers(pair: &Pair<'_>, fern: &str, crozier: &str) -
         })
 }
 
-/// `bracket-query-parameter-call-keyword`: in a README or `reference.md` worked
-/// call, the keyword of a query parameter whose wire name ends in `[]`. Fern's
-/// Markdown writes `<name>_array=`, which the generated method does not take;
-/// crozier writes the method's own `<name>=`. The source document must declare
-/// such a query parameter, and every other byte of the line is the same.
+/// `bracket-query-parameter-call-keyword`: an argument whose wire name ends in
+/// `[]`, named in Markdown. In a README or `reference.md` worked call, the
+/// keyword of such a query parameter: Fern writes `<name>_array=`, which the
+/// generated method does not take, and crozier the method's own `<name>=`. In a
+/// `reference.md` parameter list, the `**<name>_array:**` entry of such a query
+/// parameter or form property, where crozier lists the argument the method
+/// declares, `**<name>:**`. The source document must declare the parameter or
+/// property, and every other byte of the line is the same.
 fn bracket_query_parameter_call_keyword(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
     if !DOCS_FILES.contains(&pair.rel) || fern == crozier {
         return false;
@@ -5961,6 +5964,21 @@ fn bracket_query_parameter_call_keyword(pair: &Pair<'_>, fern: &str, crozier: &s
     let Some(source) = pair.context.source_document.as_ref() else {
         return false;
     };
+    if let Some((keyword, rest)) = crozier
+        .strip_prefix("**")
+        .and_then(|entry| entry.split_once(":**"))
+    {
+        return pair.rel == "reference.md"
+            && python_identifier(keyword)
+            && bracket_stems(source).iter().any(|stem| {
+                crate::naming::field_name(stem) == keyword
+                    && fern
+                        == format!(
+                            "**{}:**{rest}",
+                            crate::naming::field_name(&format!("{stem}_array"))
+                        )
+            });
+    }
     let argument = crozier.trim_start();
     let indent = &crozier[..crozier.len() - argument.len()];
     let Some((keyword, value)) = argument.split_once('=') else {
@@ -5982,6 +6000,45 @@ fn bracket_query_parameter_call_keyword(pair: &Pair<'_>, fern: &str, crozier: &s
             })
         })
     })
+}
+
+/// The stem before `[]` of every query parameter, and every form-encoded or
+/// multipart request-body property, whose wire name ends in `[]`. A body schema
+/// named by `$ref` is read from `components.schemas`.
+fn bracket_stems(source: &crate::openapi::OpenApi) -> BTreeSet<&str> {
+    let mut stems = BTreeSet::new();
+    for (operation, parameters) in source_operations(source) {
+        stems.extend(
+            parameters
+                .iter()
+                .filter(|parameter| is_query(parameter))
+                .filter_map(|parameter| parameter.name.strip_suffix("[]")),
+        );
+        let forms = operation.request_body.iter().flat_map(|body| {
+            body.content
+                .iter()
+                .filter(|(media, _)| {
+                    media.starts_with("application/x-www-form-urlencoded")
+                        || media.starts_with("multipart/form-data")
+                })
+                .filter_map(|(_, media)| media.schema.as_ref())
+        });
+        for schema in forms {
+            let schema = schema
+                .reference
+                .as_deref()
+                .and_then(|reference| reference.strip_prefix("#/components/schemas/"))
+                .and_then(|name| source.components.schemas.get(name))
+                .unwrap_or(schema);
+            stems.extend(
+                schema
+                    .properties
+                    .keys()
+                    .filter_map(|name| name.strip_suffix("[]")),
+            );
+        }
+    }
+    stems
 }
 
 /// `non-string-client-header-example`: in a `client.py` docstring's client
@@ -6613,6 +6670,74 @@ mod tests {
             "    codes_array=[",
             "    codes=["
         ));
+    }
+
+    #[test]
+    fn bracket_parameter_list_entries_admit_only_a_declared_query_parameter_or_form_property() {
+        let document = serde_json::json!({
+            "paths": {
+                "/berths": {"get": {
+                    "parameters": [
+                        {"name": "codes[]", "in": "query", "schema": {"type": "array", "items": {"type": "string"}}},
+                        {"name": "zone[]", "in": "header", "schema": {"type": "string"}}
+                    ],
+                    "responses": {}
+                }},
+                "/invites": {"post": {
+                    "requestBody": {"content": {"application/x-www-form-urlencoded": {
+                        "schema": {"$ref": "#/components/schemas/Invite"}
+                    }}},
+                    "responses": {}
+                }},
+                "/notes": {"post": {
+                    "requestBody": {"content": {"application/json": {
+                        "schema": {"type": "object", "properties": {"tags[]": {"type": "string"}}}
+                    }}},
+                    "responses": {}
+                }}
+            },
+            "components": {"schemas": {"Invite": {
+                "type": "object",
+                "properties": {"emails[]": {"type": "array", "items": {"type": "string"}}}
+            }}}
+        });
+        let context = source_context(document, &[]);
+        let rule: LineRule = bracket_query_parameter_call_keyword;
+        for (fern, crozier) in [
+            (
+                "**codes_array:** `typing.Optional[typing.Union[str, typing.Sequence[str]]]` ",
+                "**codes:** `typing.Optional[typing.Union[str, typing.Sequence[str]]]` ",
+            ),
+            (
+                "**emails_array:** `typing.Optional[typing.List[str]]` ",
+                "**emails:** `typing.Optional[typing.List[str]]` ",
+            ),
+        ] {
+            assert!(
+                line_holds(rule, "reference.md", &context, fern, crozier),
+                "{crozier}"
+            );
+            // Only reference.md lists parameters.
+            assert!(!line_holds(rule, "README.md", &context, fern, crozier));
+            // Any other change on the line still fails.
+            assert!(!line_holds(
+                rule,
+                "reference.md",
+                &context,
+                fern,
+                &crozier.replace("typing.Optional[", "typing.List[")
+            ));
+        }
+        // A header, a JSON body property or an undeclared name is no departure.
+        for stem in ["zone", "tags", "ids"] {
+            assert!(!line_holds(
+                rule,
+                "reference.md",
+                &context,
+                &format!("**{stem}_array:** `typing.Optional[str]` "),
+                &format!("**{stem}:** `typing.Optional[str]` ")
+            ));
+        }
     }
 
     // End-to-end rejection proof declined: `crozier compare` refuses only against a
