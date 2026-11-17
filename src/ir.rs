@@ -7623,9 +7623,8 @@ fn resolve_request_body(
     // `application/x-www-form-urlencoded` on five request bodies, all three
     // `$ref`ing one component schema, and Fern's golden sends `json=` with no
     // content-type header override — so the whole body stays the named component
-    // rather than being flattened into form fields. `multipart/form-data` keeps
-    // priority: no registered source offers it beside JSON, so nothing measures
-    // Fern there and this preference is not extended to it on a guess.
+    // rather than being flattened into form fields. `multipart/form-data` loses to
+    // JSON the same way (`discord-com`, below).
     for (media_type, multipart) in [
         ("multipart/form-data", true),
         ("application/x-www-form-urlencoded", false),
