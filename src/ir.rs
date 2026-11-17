@@ -9501,9 +9501,17 @@ impl InlineHoister<'_> {
                 }
                 if value.reference.is_none() && is_inline_struct(value) {
                     self.hoist_object(&name, value);
+                    // A nullable value is optional, as at a component's map
+                    // (`Builder::field_type_ref`): Vercel's `updateProject`
+                    // response is `Dict[str, Optional[UpdateProjectResponseTargetsValue]]`.
+                    let named = TypeRef::Named(name);
                     return TypeRef::Dict(
                         Box::new(TypeRef::Primitive(Prim::Str)),
-                        Box::new(TypeRef::Named(name)),
+                        Box::new(if is_optional(value) {
+                            optional_type_ref(named)
+                        } else {
+                            named
+                        }),
                     );
                 }
             }
@@ -16835,9 +16843,18 @@ impl Builder<'_> {
                             value,
                             clean_doc(value.description.as_deref()),
                         );
+                        // A nullable value is an optional one: Vercel's
+                        // `updateProject` response `targets` maps to `{type:
+                        // [object, null], properties: …}`, and the certified pair
+                        // types it `Dict[str, Optional[UpdateProjectResponseTargetsValue]]`.
+                        let named = TypeRef::Named(value_name);
                         return TypeRef::Dict(
                             Box::new(TypeRef::Primitive(Prim::Str)),
-                            Box::new(TypeRef::Named(value_name)),
+                            Box::new(if is_optional(value) {
+                                optional_type_ref(named)
+                            } else {
+                                named
+                            }),
                         );
                     }
                     // A map of *arrays* of an inline object names the element:
@@ -17817,7 +17834,7 @@ impl Builder<'_> {
                 values,
                 clean_doc(variant.description.as_deref()),
             )));
-            return TypeRef::Named(name);
+            return own_nullability(variant, TypeRef::Named(name));
         }
         if variant.ty.as_ref().and_then(TypeField::primary) == Some("array") {
             if let Some(item) = variant.items.as_deref() {
@@ -17977,7 +17994,7 @@ impl Builder<'_> {
                 variant,
                 clean_doc(variant.description.as_deref()),
             );
-            return TypeRef::Named(name);
+            return own_nullability(variant, TypeRef::Named(name));
         }
         // A member that declares nothing but `nullable: true` is Fern's
         // unknown-and-optional. Probed at Fern 5.20.0 (not re-measured at the
@@ -20958,6 +20975,19 @@ fn is_nullable_annotation(member: &Schema) -> bool {
 /// `$ref RecurringTransfer`, and Fern's model extends `RecurringTransfer`.
 fn flattens_on_nullable_annotation(member: &Schema) -> bool {
     is_nullable_annotation(member) && member.nullable != Some(true)
+}
+
+/// A hoisted union member keeps its own 3.0 `nullable: true`, as a scalar member
+/// does ([`Builder::variant_ref`]): Hookdeck's `EventAttempt.body` offers `anyOf:
+/// [{type: object, properties: {}, nullable: true}, {type: string, nullable:
+/// true}]`, and the certified pair's alias is `Union[Optional[EventAttemptBodyZero],
+/// Optional[str]]`; a nullable enum member is `Optional[…Zero]` the same way.
+fn own_nullability(variant: &Schema, member: TypeRef) -> TypeRef {
+    if variant.reference.is_none() && variant.nullable == Some(true) {
+        optional_type_ref(member)
+    } else {
+        member
+    }
 }
 
 /// Is this schema the explicit `type: null` alternative of a composition? Fern

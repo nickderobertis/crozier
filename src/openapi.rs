@@ -3205,6 +3205,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     normalize_schema_pointer_refs(&mut doc);
     normalize_empty_compositions(&mut doc);
     normalize_single_scalar_all_of(&mut doc);
+    normalize_null_typed_compositions(&mut doc);
     normalize_null_only_compositions(&mut doc);
     normalize_sibling_one_of_constraints(&mut doc);
     normalize_any_of_all_of_members(&mut doc);
@@ -3516,6 +3517,27 @@ fn normalize_empty_compositions(doc: &mut OpenApi) {
                 }
             }
         });
+    });
+}
+
+/// Drop the sibling `type: "null"` of a `oneOf`/`anyOf`, which the certified
+/// pair (Fern CLI 5.200.0, fern-python-sdk 5.41.25) reads as no type at all:
+/// Vercel's `EdgeConfigItemValue` is `{oneOf: [string, number, boolean,
+/// object, array of EdgeConfigItemValue], type: "null"}`, and Fern's alias is
+/// `Union[str, float, bool, Dict[str, Any], List["EdgeConfigItemValue"]]`, its
+/// required `EdgeConfigItem.value` and `AuthUser`'s
+/// `gitNamespaceId: {oneOf: [string, number], type: "null"}` neither optional.
+/// Only the composition's own alternatives can make it nullable.
+fn normalize_null_typed_compositions(doc: &mut OpenApi) {
+    for_each_root_schema(doc, &mut |schema| {
+        for_each_schema_in(schema, &mut |node| {
+            let composed = node.one_of.as_ref().or(node.any_of.as_ref());
+            if composed.is_some_and(|members| !members.is_empty())
+                && matches!(&node.ty, Some(TypeField::Single(ty)) if ty == "null")
+            {
+                node.ty = None;
+            }
+        })
     });
 }
 
