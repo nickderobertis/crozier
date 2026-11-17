@@ -9054,6 +9054,12 @@ class GoldenSourcePopulationTests(unittest.TestCase):
             # revision segments are its identity, the rest is where it sits.
             "blob-sample": "https://github.com/acme/api/blob/" + "d" * 40 + "/samples/openapi.yaml",
             "raw-tests-repository": "https://github.com/acme/tests/raw/" + "e" * 40 + "/spec/openapi.yaml",
+            # A directory's case and the underscores around it do not change what it names.
+            "case-folded": "https://raw.githubusercontent.com/acme/api/" + "f" * 40 + "/Tests/openapi.yaml",
+            "underscore-wrapped": "https://raw.githubusercontent.com/acme/web/" + "1" * 40 + "/src/__mocks__/api.yaml",
+            # Another host's URL path is read whole, its first segment included.
+            "other-host-fixture": "https://specs.example.org/fixtures/v2/openapi.yaml",
+            "other-host-publisher": "https://specs.example.org/acme/v2/openapi.yaml",
         }
         with tempfile.TemporaryDirectory() as directory:
             fixtures, corpus = self.write_population(
@@ -9080,6 +9086,10 @@ class GoldenSourcePopulationTests(unittest.TestCase):
                     "examples-repository": "real-world",
                     "blob-sample": "tooling-resource",
                     "raw-tests-repository": "real-world",
+                    "case-folded": "tooling-resource",
+                    "underscore-wrapped": "tooling-resource",
+                    "other-host-fixture": "tooling-resource",
+                    "other-host-publisher": "real-world",
                 },
                 witnesses,
             )

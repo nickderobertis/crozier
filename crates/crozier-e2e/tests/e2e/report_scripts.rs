@@ -722,8 +722,6 @@ fn a_changed_or_copied_golden_is_refused_as_a_rename() {
         "{}",
         malformed.stderr
     );
-    // A pair naming no tree HEAD has, or a destination that is not there, and a
-    // malformed command line (which also prints the usage), are each refused.
     let missing = format!("--rename=docs/nowhere/fern-expected={NEW}");
     let elsewhere = format!("--rename={OLD}=docs/elsewhere/fern-expected");
     for (args, says, usage) in [

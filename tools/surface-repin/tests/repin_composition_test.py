@@ -18,6 +18,7 @@ import shutil
 import subprocess
 import sys
 import textwrap
+import threading
 from pathlib import Path
 from typing import Any
 
@@ -61,6 +62,15 @@ fn every_feature_target_has_its_own_golden_test() {
 }
 #[test]
 fn alpha_matches_fern_output() {
+    // With the gate set, finish only once the driver has read beta's completion.
+    if let Ok(gate) = std::env::var("CROZIER_COMPLETION_GATE") {
+        let release = std::path::Path::new(&gate).join("release");
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(120);
+        while !release.exists() {
+            assert!(std::time::Instant::now() < deadline, "beta's completion was never reported while alpha ran");
+            std::thread::sleep(std::time::Duration::from_millis(50));
+        }
+    }
     assert_committed_corpus_matches(&ALPHA);
 }
 #[test]
@@ -672,6 +682,44 @@ def exercise(root: Path, tmp_path: Path) -> None:
     assert not (tmp_path / "bases" / alone_at).exists(), "a fixtures-only step is no shared base"
     assert sorted(path.name for path in (tmp_path / "bases").iterdir()) == published
     assert (tmp_path / "bases" / carried_at / "base.json.gz").is_file(), "the complete base is kept"
+
+    # Issue #841 with two workers: alpha, submitted first, finishes only after
+    # this driver has read beta's completion from the live stream, so beta's
+    # line can only arrive mid-measurement and ahead of alpha's.
+    library = root / "src/lib.rs"
+    text = library.read_text(encoding="utf-8")
+    for name in ("alpha", "beta"):
+        header = f"fn {name}() -> usize {{"
+        assert header in text
+        text = text.replace(header, header + "\n    std::hint::black_box(());", 1)
+    library.write_text(text, encoding="utf-8")
+    commit(root, "change both measured functions")
+    gate = tmp_path / "completion-gate"
+    gate.mkdir()
+    streamed = subprocess.Popen(
+        ["just", "census-repin", "--jobs", "2", "--verbose"],
+        cwd=root,
+        env=env | {"CROZIER_COMPLETION_GATE": str(gate)},
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        encoding="utf-8",
+    )
+    stdout: list[str] = []
+    reader = threading.Thread(target=lambda: stdout.extend(streamed.stdout or ()))
+    reader.start()
+    first = f"census-repin: completed golden test {BETA} (1/2)"
+    lines: list[str] = []
+    for line in streamed.stderr or ():
+        lines.append(line)
+        if line.rstrip("\n") == first:
+            (gate / "release").touch()
+    assert streamed.wait(timeout=180) == 0, "".join(stdout + lines)
+    reader.join()
+    said = [line.rstrip("\n") for line in lines]
+    assert first in said, "".join(lines)
+    assert said.index(first) < said.index(f"census-repin: completed golden test {ALPHA} (2/2)"), "".join(lines)
+    assert "2 test(s) run, 0 carried" in "".join(stdout)
 
 
 def test_measure_refuses_incomplete_compiler_identity_before_building(tmp_path: Path) -> None:
