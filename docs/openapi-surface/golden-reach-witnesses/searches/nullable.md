@@ -2,7 +2,7 @@
 
 Union-repair sites not executed by the registered golden-only runs:
 
-- `src/ir.rs::Builder::variant_ref[if \(is_plain_scalar\(variant\) \x7c\x7c nullable_array\) && variant\.nullable == Some\(true\)]`
+- `src/ir.rs::Builder::variant_ref[if \(is_plain_scalar\(variant\) \x7c\x7c nullable_array \x7c\x7c free_form_map\)$]`
 - `src/ir.rs::Builder::add_named_shape[^ +if variants\.iter\(\)\.all\(is_plain_scalar\)$]`
 
 No arm-specific live query or registry walk ran under this directory's
