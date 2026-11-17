@@ -158,12 +158,12 @@ None is among the 726 features above, and each other `gap` one is named under
 [Unproven combinations, named](#unproven-combinations-named).
 
 `golden` is still not `golden`-exhausted, so the handling sites are split the
-same way. The 621 `golden` rows declare 1098 handling sites in
+same way. The 621 `golden` rows declare 1099 handling sites in
 [the site table](openapi-surface/golden-reach-sites.tsv). The
 [ledger](openapi-surface/golden-reach.tsv) retains the base measurement's
 provenance and records scoped updates beside their rows.
 
-- **1011 are reached by a registered real specification.** Its scoped
+- **1012 are reached by a registered real specification.** Its scoped
   golden test executes the site; file-level residuals remain recorded separately.
 - **84 are reached only by a hand-written fixture.** Each arm-level
   cover executes the site and byte-matches the certified tree. Thus each of the 84 is still one of the 87 [unreached arms](#every-unreached-arm-and-its-search-verdict).
@@ -176,7 +176,7 @@ provenance and records scoped updates beside their rows.
   before/after trees in both generators recorded in [the shared table](openapi-surface/output-insensitive.tsv).
 - **0 are named gaps**, whose outstanding evidence is in [Unproven arms, named](#unproven-arms-named).
 
-1011 + 84 + 3 + 0 + 0 = 1098. Fourteen sites left the table with the two functions
+1012 + 84 + 3 + 0 + 0 = 1099. Fourteen sites left the table with the two functions
 that served only the `Body_*` exemption and the HTTP Basic header drop,
 `form_body_source_names` and `operation_uses_basic_auth`; the ledger re-joins its
 committed measurement without them. Twelve more left with the
@@ -2209,7 +2209,8 @@ corrections the shared comparison engine applies. All other bytes must match.
 | wrapped-union-member-docs-example | Discriminator mapping target that is a union of references, not all objects, with no discriminator of its own, held whole as the wrapper's `value`; the README and reference.md worked examples' empty mapping-value argument corrected | Fern behaviour + Fern defect | `discriminator-mapping-arms` | docs/openapi-surface/handwritten/tidepool-survey-log/fern-expected | `handwritten_fixtures_match_fern_goldens` | `wrapped-union-member-docs-example` |
 | dangling-mapping-target-variant | Discriminator mapping target naming no component beside targets that do: Fern's discriminated union of wrappers, the member's own tag and its enum kept; the dangling value's `value: typing.Any` wrapper, which rejects the server's flat variant payload, corrected to carry the tagged member's fields | Fern behaviour + Fern defect | `conquery-emission-parity` | docs/fern-measurements/emission-parity/dangling-mapping-target/fern-expected; tests/fixtures/ingef-conquery/expected | `emission_parity::a_mapping_target_naming_no_schema_keeps_fern_s_union_but_its_wrapper_s_fields; ingef_conquery_matches_fern_output` | `dangling-mapping-variant-fields` |
 | schema-valid-example-values | Worked-example values their own schema rejects — a string's name, Fern's fixed placeholders, a length-sized sample, a fixed number, a list's item count — replaced by the declared example, the default or a constructed value the schema accepts | Fern defect | `schema-valid-example-values` | tests/fixtures/discord-com/expected; tests/fixtures/audiobookshelf/expected; tests/fixtures/amazonaws.com-cloudformation/expected | `discord_com_matches_fern_output; audiobookshelf_matches_fern_output; amazonaws_com_cloudformation_matches_fern_output` | `schema-rejected-array-length-example, schema-rejected-name-example, schema-rejected-number-example, schema-rejected-placeholder-string-example, schema-rejected-sized-string-example` |
-| snippet-call-keyword-and-header-placeholder | Worked calls and client constructions: a `[]` query parameter's call keyword and a non-string promoted header's constructor placeholder corrected | Fern defect | `snippet-rendering` | docs/fern-measurements/handed-off/snippet-rendering/snippet-rendering/fern-expected | `handed_off_snippet_rendering_measurements_match_fern; handed_off_snippet_rendering::catalogued_snippet_defects_are_what_crozier_writes` | `bracket-query-parameter-call-keyword, non-string-client-header-example` |
+| snippet-call-keyword-and-header-placeholder | Worked calls and client constructions: a `[]` query parameter's call keyword and parameter-list name and a non-string promoted header's constructor placeholder corrected | Fern defect | `snippet-rendering` | docs/fern-measurements/handed-off/snippet-rendering/snippet-rendering/fern-expected | `handed_off_snippet_rendering_measurements_match_fern; handed_off_snippet_rendering::catalogued_snippet_defects_are_what_crozier_writes` | `bracket-query-parameter-call-keyword, non-string-client-header-example` |
+| field-alias-literal | Model field wire alias holding a quote or backslash: written as a literal of the declared name, so the model imports and keeps its wire name | Fern defect | `combinations-examples-docs` | docs/fern-measurements/handed-off/follow-up-tickets/842/fern-expected; docs/fern-measurements/handed-off/follow-up-tickets/679-escaped-quote-control/fern-expected | `follow_up_ticket_matching_outputs_hold_against_the_certified_pair; follow_up_ticket_escaped_quote_alias_still_matches_the_certified_pair` | `escaped-field-alias-literal` |
 | reused-body-query-keyword-clash | Required query parameter sharing a property name with a `$ref` body reused by a response: the body stays a named model and its argument is renamed; the README and reference.md worked calls' repeated query keyword corrected | Fern behaviour + Fern defect | `client-structure` | docs/fern-measurements/handed-off/client-structure/reused-body-keyword-example/fern-expected | `client_structure::a_query_clash_on_a_reused_body_keeps_the_renamed_keyword` | `repeated-query-body-example-keyword` |
 | readme-environment-constructor-arguments | README Environments construction passing the usage constructor's credentials and required headers | Fern defect | `certify-new-pair` | tests/fixtures/zulip/expected | `zulip_matches_fern_output` | `readme-environment-constructor-arguments` |
 | readme-escaped-method-call | README calls of a method the SDK escapes with a trailing underscore | Fern defect | `certify-new-pair` | tests/fixtures/apideck.com-connector/expected | `apideck_connector_matches_fern_output` | `readme-escaped-method-call` |

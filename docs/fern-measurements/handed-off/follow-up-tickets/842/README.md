@@ -14,7 +14,7 @@ shared generation lock. Fern writes each name between quotes unescaped, so the
 certified `Beacon` aliases `relay"code` and the expression `"a" + bearing + ""`,
 and the model fails to import.
 
-Verdict: **departure-catalogued**, `escaped-field-alias-literal`. crozier writes
+Verdict: **fern-defect-departed**, `escaped-field-alias-literal`. crozier writes
 each alias as a string literal of the declared name, so its package imports and
 the model parses, dumps and writes every field under exactly its declared wire
 name. The departure's [evidence note](../../../../departures/evidence/escaped-field-alias-literal.md)

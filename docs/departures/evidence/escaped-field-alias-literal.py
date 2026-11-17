@@ -19,6 +19,7 @@ import json
 from pathlib import Path
 import sys
 import typing
+from typing import NamedTuple
 
 parser = argparse.ArgumentParser()
 parser.add_argument("sdk", type=Path)
@@ -46,14 +47,26 @@ from fern.core.serialization import (  # noqa: E402 - the package is importable 
     convert_and_respect_annotation_metadata,
 )
 
+
+class Aliases(NamedTuple):
+    """A model field's two wire aliases: its serialization metadata's and pydantic's."""
+
+    serialization: object
+    pydantic: object
+
+    def declared(self) -> bool:
+        """Whether both aliases are one and the same declared wire name."""
+        return self.serialization == self.pydantic and self.serialization in wires
+
+
 hints = typing.get_type_hints(model, include_extras=True)
-aliases: dict[str, tuple[object, object]] = {}
+aliases: dict[str, Aliases] = {}
 for name, field in model.model_fields.items():
     metadata = [item.alias for item in getattr(hints[name], "__metadata__", ()) if isinstance(item, FieldMetadata)]
-    aliases[name] = (metadata[0] if metadata else name, field.alias or name)
-# Each field's aliases, by the declared wire name they should both be.
-by_wire = {pair[0]: name for name, pair in aliases.items() if pair[0] == pair[1] and pair[0] in wires}
-mismatched = sorted(repr(pair) for pair in aliases.values() if pair[0] not in wires or pair[0] != pair[1])
+    aliases[name] = Aliases(metadata[0] if metadata else name, field.alias or name)
+# Each field, by the declared wire name both its aliases are.
+by_wire = {pair.serialization: name for name, pair in aliases.items() if pair.declared()}
+mismatched = sorted(repr(tuple(pair)) for pair in aliases.values() if not pair.declared())
 if args.expected == "invalid":
     assert mismatched, "every alias is a declared wire name"
     print(json.dumps({"aliases not declared": mismatched}, sort_keys=True))

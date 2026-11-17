@@ -42,7 +42,7 @@ fn read_rows(path: &std::path::Path) -> Result<Vec<TicketRow>, String> {
                     )
                 })?;
             let replay = match fields[2].as_str() {
-                "already-matching" | "parity-gap-repaired" | "departure-catalogued" => {
+                "already-matching" | "parity-gap-repaired" | "fern-defect-departed" => {
                     Replay::ByteMatch
                 }
                 "refusal-kept" => Replay::Refusal,

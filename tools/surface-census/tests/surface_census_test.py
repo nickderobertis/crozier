@@ -14580,9 +14580,17 @@ class FinishedStateGateTests(unittest.TestCase):
         rows = combination_rows(self.root)
         table = (self.root / self.SITES).read_text(encoding="utf-8").splitlines()
         ledger = [line.split("\t") for line in (self.root / self.LEDGER).read_text(encoding="utf-8").splitlines()]
+        # A key the audit also rows (an audited interaction) would draw the audit's own
+        # findings into these cases, so the sample is one the site table alone proves.
+        audited = {line.split("\t")[0] for line in self.audit_lines()[1][1:]}
         for line in table:
             key, _selectors, sites, _note = line.split("\t")
-            if key.startswith(COMBINATION_PREFIX) and sites != "co-occurrence" and rows[key].cells[3] == "golden":
+            if (
+                key.startswith(COMBINATION_PREFIX)
+                and sites != "co-occurrence"
+                and key not in audited
+                and rows[key].cells[3] == "golden"
+            ):
                 fields = next(fields for fields in ledger if fields[1:2] == [key])
                 return key, line, fields
         raise AssertionError("the committed tree measures no combination at an interaction branch")
@@ -14671,7 +14679,11 @@ class FinishedStateGateTests(unittest.TestCase):
 
     def test_a_cooccurrence_row_and_its_audit_row_are_held_both_ways(self) -> None:
         text, lines = self.audit_lines()
-        row = lines[1]
+        sites = {
+            line.split("\t")[0]: line.split("\t")[2]
+            for line in (self.root / self.SITES).read_text(encoding="utf-8").splitlines()
+        }
+        row = next(line for line in lines[1:] if sites.get(line.split("\t")[0]) == "co-occurrence")
         key = row.split("\t")[0]
         (self.root / COOCCURRENCE_AUDIT).write_text(text.replace(row + "\n", "", 1), encoding="utf-8", newline="\n")
         self.assertIn(
