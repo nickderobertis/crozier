@@ -2126,6 +2126,73 @@ KIOSK_SCHEMAS = (
 )
 
 
+def berth_call(
+    content: str, parameters: str = "", item_parameters: str = "", required: str = "        required: true\n"
+) -> str:
+    """`POST /berths/{berthId}` with `content` as its request body's media map.
+
+    `parameters` are the Operation Object's own, `item_parameters` its path item's;
+    without either, the placeholder is declared by neither.
+    """
+    return (
+        "  /berths/{berthId}:\n"
+        + item_parameters
+        + "    post:\n      operationId: dockBerth\n"
+        + parameters
+        + "      requestBody:\n"
+        + required
+        + "        content:\n"
+        + content
+        + '      responses:\n        "204":\n          description: docked\n'
+        + '  /harbors:\n    get:\n      operationId: listHarbors\n      responses:\n        "204":\n'
+        + "          description: listed\n"
+    )
+
+
+def berth_media(name: str, schema: str) -> str:
+    return f"          {name}:\n            schema:\n{schema}"
+
+
+BERTH_ID = "      parameters:\n        - name: berthId\n          in: path\n          required: true\n          schema:\n            type: string\n"
+BERTH_ITEM_ID = BERTH_ID.replace("\n      ", "\n    ").replace("      parameters:", "    parameters:", 1)
+TIDE_QUERY = (
+    "      parameters:\n        - name: tide\n          in: query\n          schema:\n            type: string\n"
+)
+PILOT_HEADER = (
+    "      parameters:\n        - name: X-Pilot\n          in: header\n          schema:\n            type: string\n"
+)
+PILOT_ITEM_HEADER = PILOT_HEADER.replace("\n      ", "\n    ").replace("      parameters:", "    parameters:", 1)
+MOORING_UNION = (
+    "              oneOf:\n"
+    "                - type: object\n                  properties:\n                    rope:\n                      type: string\n"
+    "                - type: object\n                  properties:\n                    chain:\n                      type: string\n"
+)
+MOORING_OBJECT = (
+    "              type: object\n              properties:\n                rope:\n                  type: string\n"
+)
+MOORING_REF = '              $ref: "#/components/schemas/Mooring"\n'
+BYTES = "              type: string\n              format: binary\n"
+MOORING_SCHEMAS = (
+    "  schemas:\n    Mooring:\n      type: object\n      properties:\n        rope:\n          type: string\n"
+    "    Fenders:\n      type: object\n      additionalProperties:\n        type: string\n"
+    "    Tether:\n      oneOf:\n        - type: string\n        - type: integer\n"
+)
+
+
+def manifest_call(*statuses: tuple[str, str]) -> str:
+    """`GET /manifests` answering each `(status, media map)`; an empty map declares no content."""
+    answers = "".join(
+        f'        "{status}":\n          description: answered\n'
+        + (f"          content:\n{content}" if content else "")
+        for status, content in statuses
+    )
+    return "  /manifests:\n    get:\n      operationId: getManifest\n      responses:\n" + answers
+
+
+MANIFEST_JSON = "            application/json:\n" + JSON_ANSWER
+MANIFEST_TEXT = "            text/plain:\n" + PLAIN_TEXT
+
+
 class InteractionArm(NamedTuple):
     both: str
     controls: dict[str, str]
@@ -2289,6 +2356,158 @@ INTERACTION_ARMS: dict[str, InteractionArm] = {
         {
             "method name alone": operation_document(streamed_call(True, False), QUOTE_SCHEMAS),
             "stream condition alone": operation_document(streamed_call(False, True), QUOTE_SCHEMAS),
+        },
+    ),
+    # The Operation Object's own parameters beside the urlencoded union are what the arm
+    # reads; a path item's parameters, or an undeclared placeholder, wrap the request too.
+    "combo-form-urlencoded-body-with-params": InteractionArm(
+        operation_document(berth_call(berth_media("application/x-www-form-urlencoded", MOORING_UNION), BERTH_ID)),
+        {
+            "form alone": operation_document(
+                berth_call(berth_media("application/x-www-form-urlencoded", MOORING_UNION))
+            ),
+            "parameters alone": operation_document(
+                berth_call(berth_media("application/json", MOORING_UNION), BERTH_ID)
+            ),
+            "path item's parameters": operation_document(
+                berth_call(
+                    berth_media("application/x-www-form-urlencoded", MOORING_UNION), item_parameters=BERTH_ITEM_ID
+                )
+            ),
+        },
+    ),
+    "combo-multipart-body-with-params": InteractionArm(
+        operation_document(berth_call(berth_media("multipart/form-data", MOORING_OBJECT), TIDE_QUERY)),
+        {
+            "multipart alone": operation_document(berth_call(berth_media("multipart/form-data", MOORING_OBJECT))),
+            "parameters alone": operation_document(
+                berth_call(berth_media("application/json", MOORING_OBJECT), TIDE_QUERY)
+            ),
+            "path item's parameters": operation_document(
+                berth_call(berth_media("multipart/form-data", MOORING_OBJECT), item_parameters=BERTH_ITEM_ID)
+            ),
+        },
+    ),
+    # `required` left out is the selector's optional body; a declared `false` is not.
+    "combo-optional-ref-map-body": InteractionArm(
+        operation_document(
+            berth_call(berth_media("application/json", MOORING_REF.replace("Mooring", "Fenders")), required=""),
+            MOORING_SCHEMAS,
+        ),
+        {
+            "required map": operation_document(
+                berth_call(berth_media("application/json", MOORING_REF.replace("Mooring", "Fenders"))), MOORING_SCHEMAS
+            ),
+            "declared optional map": operation_document(
+                berth_call(
+                    berth_media("application/json", MOORING_REF.replace("Mooring", "Fenders")),
+                    required="        required: false\n",
+                ),
+                MOORING_SCHEMAS,
+            ),
+            "optional object": operation_document(
+                berth_call(berth_media("application/json", MOORING_REF), required=""), MOORING_SCHEMAS
+            ),
+        },
+    ),
+    "combo-optional-ref-union-body": InteractionArm(
+        operation_document(
+            berth_call(berth_media("application/json", MOORING_REF.replace("Mooring", "Tether")), required=""),
+            MOORING_SCHEMAS,
+        ),
+        {
+            "required union": operation_document(
+                berth_call(berth_media("application/json", MOORING_REF.replace("Mooring", "Tether"))), MOORING_SCHEMAS
+            ),
+            "declared optional union": operation_document(
+                berth_call(
+                    berth_media("application/json", MOORING_REF.replace("Mooring", "Tether")),
+                    required="        required: false\n",
+                ),
+                MOORING_SCHEMAS,
+            ),
+            "optional object": operation_document(
+                berth_call(berth_media("application/json", MOORING_REF), required=""), MOORING_SCHEMAS
+            ),
+        },
+    ),
+    # A `204` repeating the typed `200`'s media is bodyless all the same, but mixes none; a
+    # `203` is no status Fern types a method from, so beside an empty `200` no content is selected.
+    "combo-success-statuses-mixed-media": InteractionArm(
+        operation_document(manifest_call(("200", MANIFEST_JSON), ("204", ""))),
+        {
+            "success content alone": operation_document(manifest_call(("200", MANIFEST_JSON))),
+            "mixed media alone": operation_document(manifest_call(("200", ""), ("203", MANIFEST_TEXT))),
+            "204 repeating the media": operation_document(
+                manifest_call(("200", MANIFEST_JSON), ("204", MANIFEST_JSON))
+            ),
+        },
+    ),
+    # `operation.context:error-multiple-media` entails `operation.responses`: the entailed
+    # feature alone is an operation whose errors each declare one media type.
+    "combo-error-multiple-media": InteractionArm(
+        operation_document(manifest_call(("200", MANIFEST_JSON), ("404", MANIFEST_TEXT + MANIFEST_JSON))),
+        {
+            "responses alone": operation_document(manifest_call(("200", MANIFEST_JSON), ("404", MANIFEST_JSON))),
+            "several success media": operation_document(
+                manifest_call(("200", MANIFEST_TEXT + MANIFEST_JSON), ("404", MANIFEST_JSON))
+            ),
+        },
+    ),
+    "combo-form-urlencoded-beside-json-body": InteractionArm(
+        operation_document(
+            berth_call(
+                berth_media("application/json", MOORING_REF)
+                + berth_media("application/x-www-form-urlencoded", MOORING_REF)
+            ),
+            MOORING_SCHEMAS,
+        ),
+        {
+            "json alone": operation_document(berth_call(berth_media("application/json", MOORING_REF)), MOORING_SCHEMAS),
+            "urlencoded alone": operation_document(
+                berth_call(berth_media("application/x-www-form-urlencoded", MOORING_REF)), MOORING_SCHEMAS
+            ),
+            "json beside multipart": operation_document(
+                berth_call(
+                    berth_media("application/json", MOORING_REF) + berth_media("multipart/form-data", MOORING_REF)
+                ),
+                MOORING_SCHEMAS,
+            ),
+        },
+    ),
+    "combo-multipart-beside-json-body": InteractionArm(
+        operation_document(
+            berth_call(berth_media("application/json", MOORING_REF) + berth_media("multipart/form-data", MOORING_REF)),
+            MOORING_SCHEMAS,
+        ),
+        {
+            "json alone": operation_document(berth_call(berth_media("application/json", MOORING_REF)), MOORING_SCHEMAS),
+            "multipart alone": operation_document(
+                berth_call(berth_media("multipart/form-data", MOORING_REF)), MOORING_SCHEMAS
+            ),
+            "json beside urlencoded": operation_document(
+                berth_call(
+                    berth_media("application/json", MOORING_REF)
+                    + berth_media("application/x-www-form-urlencoded", MOORING_REF)
+                ),
+                MOORING_SCHEMAS,
+            ),
+        },
+    ),
+    # A header the path item declares is dropped the same way, but is not the selector's.
+    "combo-octet-stream-body-header-param": InteractionArm(
+        operation_document(berth_call(berth_media("application/octet-stream", BYTES), PILOT_HEADER)),
+        {
+            "bytes alone": operation_document(berth_call(berth_media("application/octet-stream", BYTES))),
+            "header alone": operation_document(
+                berth_call(berth_media("application/json", MOORING_OBJECT), PILOT_HEADER)
+            ),
+            "bytes beside a query parameter": operation_document(
+                berth_call(berth_media("application/octet-stream", BYTES), TIDE_QUERY)
+            ),
+            "path item's header": operation_document(
+                berth_call(berth_media("application/octet-stream", BYTES), item_parameters=PILOT_ITEM_HEADER)
+            ),
         },
     ),
 }
