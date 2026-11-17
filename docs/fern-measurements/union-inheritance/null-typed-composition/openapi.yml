@@ -1,0 +1,84 @@
+openapi: 3.1.0
+info:
+  title: Glaze Library
+  version: "1.0"
+paths:
+  /glazes/{glazeId}:
+    get:
+      operationId: getGlaze
+      tags: [glazes]
+      parameters:
+        - name: glazeId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The glaze.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Glaze"
+  /glazes/{glazeId}/firings:
+    get:
+      operationId: listGlazeFirings
+      tags: [glazes]
+      parameters:
+        - name: glazeId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The firings of the glaze, by kiln.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [batch, firings]
+                properties:
+                  batch:
+                    oneOf:
+                      - type: string
+                      - type: number
+                    type: "null"
+                  firings:
+                    type: object
+                    additionalProperties:
+                      type: [object, "null"]
+                      required: [cone]
+                      properties:
+                        cone:
+                          type: string
+                        hours:
+                          type: number
+components:
+  schemas:
+    Glaze:
+      type: object
+      required: [name, finish, recipe]
+      properties:
+        name:
+          type: string
+        finish:
+          $ref: "#/components/schemas/GlazeFinish"
+        recipe:
+          type: object
+          additionalProperties:
+            type: [object, "null"]
+            required: [grams]
+            properties:
+              grams:
+                type: number
+    GlazeFinish:
+      oneOf:
+        - type: string
+        - type: number
+        - type: boolean
+        - type: object
+        - type: array
+          items:
+            $ref: "#/components/schemas/GlazeFinish"
+      type: "null"

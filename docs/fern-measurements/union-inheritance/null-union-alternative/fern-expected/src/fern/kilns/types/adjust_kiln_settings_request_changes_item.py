@@ -9,7 +9,7 @@ from .adjust_kiln_settings_request_changes_item_reading import AdjustKilnSetting
 
 class AdjustKilnSettingsRequestChangesItem(UniversalBaseModel):
     setting: str
-    reading: AdjustKilnSettingsRequestChangesItemReading
+    reading: typing.Optional[AdjustKilnSettingsRequestChangesItemReading] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

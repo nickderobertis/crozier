@@ -1,0 +1,52 @@
+openapi: 3.0.3
+info:
+  title: Loom Monitor
+  version: "1.0"
+paths:
+  /looms/{loomId}/readings:
+    get:
+      operationId: getLoomReading
+      tags: [looms]
+      parameters:
+        - name: loomId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The latest reading.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoomReading"
+components:
+  schemas:
+    LoomReading:
+      type: object
+      required: [payload, tension]
+      properties:
+        payload:
+          anyOf:
+            - type: object
+              properties: {}
+              nullable: true
+            - type: string
+              nullable: true
+        tension:
+          anyOf:
+            - type: string
+              enum: [slack, even, taut]
+              nullable: true
+            - type: number
+        shuttle:
+          type: object
+          properties:
+            pick:
+              anyOf:
+                - type: object
+                  properties: {}
+                  additionalProperties: false
+                  nullable: true
+                - type: string
+              nullable: true

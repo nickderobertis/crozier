@@ -1,5 +1,6 @@
 //! The union-nullability and inherited-model repairs of tickets #825, #826,
-//! #827, #838 and #839, each settled against a from-scratch document under
+//! #827, #838 and #839 (with the union-nullability rules the tickets' Vercel
+//! and Hookdeck documents exposed beside them), each settled against a from-scratch document under
 //! [`DIR`] and the certified pair's complete tree for it (Fern CLI 5.200.0,
 //! fern-python-sdk 5.41.25), in both enum modes.
 //!
@@ -58,6 +59,27 @@ const MEASUREMENTS: &[(&str, &str, &str, &str, &str)] = &[
         "src/fern/types/reading_value.py",
         "typing.Optional[str]",
         "typing.Optional[ReadingValueText]",
+    ),
+    (
+        "#825 (a sibling `type: null` of a union)",
+        "null-typed-composition",
+        "src/fern/types/glaze_finish.py",
+        "GlazeFinish = typing.Union[str, float, bool, typing.Dict[str, typing.Any], typing.List[\"GlazeFinish\"]]",
+        "GlazeFinish = typing.Union[str, float, bool, typing.Dict[str, typing.Any], typing.Optional[typing.List[typing.Optional[\"GlazeFinish\"]]]]",
+    ),
+    (
+        "#825 (a map's nullable object value)",
+        "null-typed-composition",
+        "src/fern/glazes/types/list_glaze_firings_response.py",
+        "firings: typing.Dict[str, typing.Optional[ListGlazeFiringsResponseFiringsValue]]",
+        "firings: typing.Dict[str, ListGlazeFiringsResponseFiringsValue]",
+    ),
+    (
+        "#839 (a hoisted member's own nullability)",
+        "nullable-union-members",
+        "src/fern/types/loom_reading_payload.py",
+        "typing.Union[typing.Optional[LoomReadingPayloadZero], typing.Optional[str]]",
+        "typing.Union[LoomReadingPayloadZero, typing.Optional[str]]",
     ),
 ];
 

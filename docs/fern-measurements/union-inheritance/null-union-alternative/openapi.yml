@@ -60,7 +60,7 @@ paths:
                   type: array
                   items:
                     type: object
-                    required: [setting, reading]
+                    required: [setting]
                     properties:
                       setting:
                         type: string
