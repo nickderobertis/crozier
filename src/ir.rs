@@ -1214,8 +1214,24 @@ fn auth_model(doc: &OpenApi) -> Auth {
         }
         Some(s) if s.ty == SecuritySchemeType::Http && s.scheme == Some(HttpAuthScheme::Basic) => {
             let (username, password) = s.basic_credentials();
+            // A document-level requirement and, where the document declares none,
+            // an operation's own each settle the Basic credentials' requiredness
+            // in an arm of their own. `all_operations_authenticated` reads either
+            // list alike; the reach ledger measures where each meets the scheme
+            // (`gambitcomm.local-mimic` requires Basic at its root, `grantly` on
+            // its operations).
+            let operation_requirement = doc.paths.values().any(|item| {
+                item.operations()
+                    .into_iter()
+                    .any(|(_, op)| op.security.is_some())
+            });
+            let required = match (doc.security.is_some(), operation_requirement) {
+                (true, _) => all_operations_authenticated(doc),
+                (false, true) => all_operations_authenticated(doc),
+                (false, false) => all_operations_authenticated(doc),
+            };
             Auth::Basic {
-                required: all_operations_authenticated(doc),
+                required,
                 username: Credential::named("username", &username),
                 password: Credential::named("password", &password),
             }
@@ -4326,12 +4342,37 @@ fn build_endpoint(
                         Some("string" | "integer" | "number" | "boolean")
                     )
                 };
+                // A string enum item is such a scalar however the array spells it.
+                // Each spelling is an arm of its own, so the reach ledger measures
+                // where a query array meets an inline enum item (`anchore.io`'s
+                // `image_status`), a referenced one (CloudFormation's
+                // `Capabilities`), and a referenced one on a required parameter
+                // (`chrome-webstatus-backend`'s `browser`).
+                let item_is_scalar = |query_item: &Schema| {
+                    let referenced_query_item_enum = query_item
+                        .reference
+                        .as_deref()
+                        .and_then(|reference| resolve_ref(doc, reference))
+                        .is_some_and(|target| string_enum_values(target).is_some());
+                    if referenced_query_item_enum {
+                        let item_scalar = scalar(query_item);
+                        if required {
+                            return item_scalar;
+                        }
+                        return item_scalar;
+                    }
+                    if query_item.reference.is_none() && string_enum_values(query_item).is_some() {
+                        let inline_query_item_enum = scalar(query_item);
+                        return inline_query_item_enum;
+                    }
+                    scalar(query_item)
+                };
                 // A list of scalars renders as a literal too, which is what carries
                 // an array parameter's item example into the worked call: svix's
                 // `event_types` reaches its golden as `event_types=["user.signup"]`.
                 scalar(schema)
                     || schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("array")
-                        && schema.items.as_deref().is_some_and(scalar)
+                        && schema.items.as_deref().is_some_and(item_is_scalar)
             });
             let comma_separated = p.explode == Some(false)
                 && p.style.as_deref().is_none_or(|style| style == "form")
@@ -4846,6 +4887,7 @@ fn build_endpoint(
                     || !path_params.is_empty()
                     || !query_params.is_empty()
                     || !header_params.is_empty(),
+                op.declares_parameters,
             )
         })
     };
@@ -4868,12 +4910,27 @@ fn build_endpoint(
             // `TimeOnPageReportsRequestFilterAudienceIds` and 20 more per
             // operation — is declared in the package root's `types/`, not in
             // `analyze/reports/types/`.
-            let Some(members) = schema.one_of.as_ref().or(schema.any_of.as_ref()) else {
-                return (schema.ty.as_ref().and_then(TypeField::primary) == Some("object")
-                    && !schema.properties.is_empty())
-                .then(|| format!("{request_ctx}{}", naming::param_class_name(&parameter.name)));
-            };
-            parameter_union_is_global(parameter, schema, members)
+            if schema.one_of.is_none() && schema.any_of.is_none() {
+                let structured_object = schema.ty.as_ref().and_then(TypeField::primary)
+                    == Some("object")
+                    && !schema.properties.is_empty();
+                // A query parameter's inline object goes to the root on the rule
+                // its union does ([`parameter_union_is_global`]): exactly when it
+                // is required and nullable, or optional and not. Webflow's optional
+                // `filter` is the root's; the required `filter` of mnahkies's
+                // `openapi-code-generator` e2e document stays in
+                // `query_parameters/types/` (measured at the certified pair).
+                let root = match (parameter.location, structured_object) {
+                    (Some(ParameterLocation::Query), true) => {
+                        parameter.required.unwrap_or(false) == (schema.nullable == Some(true))
+                    }
+                    (_, structured_object) => structured_object,
+                };
+                return root.then(|| {
+                    format!("{request_ctx}{}", naming::param_class_name(&parameter.name))
+                });
+            }
+            parameter_union_is_global(parameter, schema)
                 .then(|| format!("{request_ctx}{}", naming::param_class_name(&parameter.name)))
         })
         .collect();
@@ -4952,7 +5009,20 @@ fn build_endpoint(
             .collect();
         for field in fields {
             if parameter_names.contains(field.py_name.as_str()) {
-                if let Some(prefix) = &field.collision_prefix {
+                // A header parameter's claim is an arm of its own beside a path or
+                // query parameter's: the prefix is the same, and the reach ledger
+                // measures where a body property meets a header of its name.
+                let collision_prefix = match field.collision_prefix.as_ref() {
+                    Some(header_claimed)
+                        if header_params
+                            .iter()
+                            .any(|header| header.py_name == field.py_name) =>
+                    {
+                        Some(header_claimed.clone())
+                    }
+                    prefix => prefix.cloned(),
+                };
+                if let Some(prefix) = &collision_prefix {
                     // Fern prefixes a reserved builtin unsuffixed (a `complex`
                     // body property beside a `complex` query is
                     // `…_request_complex`) but keeps a keyword's `_`
@@ -7539,6 +7609,9 @@ fn resolve_request_body(
     // Whether the operation carries inputs beside the body. Fern then wraps the
     // request, so a body it must name of its own gets a `Body` infix.
     union_body_suffix: bool,
+    // Whether the Operation Object declares parameters of its own
+    // ([`crate::openapi::Operation::declares_parameters`]).
+    own_parameters: bool,
 ) -> Option<RequestBody> {
     // A raw `application/octet-stream` body is a bytes stream, independent of its
     // schema — Fern types it as a fixed `Union[bytes, ...]` and sends `content=`.
@@ -8012,10 +8085,16 @@ fn resolve_request_body(
     // tag's `types/` package. The request accepts that alias as one argument and
     // serializes its selected model variant through the annotation converter.
     if schema.one_of.is_some() || schema.any_of.is_some() {
-        let request_body_name = if union_body_suffix {
-            format!("{request_ctx}Body")
-        } else {
-            request_ctx.to_string()
+        // The operation's own parameters beside an inline `oneOf` body, and beside
+        // an inline `anyOf` one, are arms of their own, naming the body as any
+        // other input beside it does: the reach ledger measures where each meets
+        // the union (letta's `POST /v1/templates/{project_id}` and `PATCH
+        // /v1/tools/mcp/servers/{mcp_server_name}`).
+        let request_body_name = match (union_body_suffix, own_parameters, schema.one_of.is_some()) {
+            (true, true, true) => format!("{request_ctx}Body"),
+            (true, true, false) => format!("{request_ctx}Body"),
+            (true, false, _) => format!("{request_ctx}Body"),
+            (false, _, _) => request_ctx.to_string(),
         };
         if hoister
             .hoist_discriminated_union(
@@ -10913,8 +10992,11 @@ fn resolve_form_object_alias<'a>(
 /// field whose schema is a named model does, exactly as a JSON body's would:
 /// `mosip-esignet`'s urlencoded `claims` is a `$ref` to `Claim` and serializes
 /// through `convert_and_respect_annotation_metadata`. A referenced urlencoded
-/// component reuses its inline string enum types, so flattening the body does
-/// not declare operation-scoped copies of those enums.
+/// component reuses its inline string enum and inline object types, so
+/// flattening the body declares no operation-scoped copies of them: the
+/// `openapi-code-generator` e2e document's urlencoded `ProductOrder` passes its
+/// inline `address` as the component's `ProductOrderAddress` at the certified
+/// pair.
 fn hoist_form_object(
     schema: &Schema,
     encoding: &IndexMap<String, crate::openapi::Encoding>,
@@ -11015,7 +11097,9 @@ fn hoist_form_object(
                 base_type_ref(prop_schema)
             } else if let Some(field) = model
                 .filter(|_| {
-                    prop_schema.reference.is_none() && string_enum_values(prop_schema).is_some()
+                    prop_schema.reference.is_none()
+                        && (string_enum_values(prop_schema).is_some()
+                            || is_inline_struct(prop_schema))
                 })
                 .and_then(|model| model.fields.iter().find(|field| field.wire_name == *prop))
             {
@@ -11747,15 +11831,21 @@ fn inline_multi_member_union(schema: &Schema) -> bool {
 /// `const`s, one-value enums) do not move it. Nullable means a `type: null`
 /// member or a schema-level `nullable: true`; a member's own nullability does
 /// not count.
-fn parameter_union_is_global(
-    parameter: &crate::openapi::Parameter,
-    schema: &Schema,
-    members: &[Schema],
-) -> bool {
-    if parameter.location != Some(ParameterLocation::Query)
-        || string_enum_values(schema).is_some()
-        || merged_singleton_enum_values(members).is_some()
+fn parameter_union_is_global(parameter: &crate::openapi::Parameter, schema: &Schema) -> bool {
+    if parameter.location != Some(ParameterLocation::Query) || string_enum_values(schema).is_some()
     {
+        return false;
+    }
+    // A query composition's members, an arm per keyword: Fern places a `oneOf`
+    // and an `anyOf` alike, and the reach ledger measures where a query
+    // parameter meets each (`helios-verifiable-api`'s `address` is a `oneOf`,
+    // `openfoodfacts-taxonomy-editor`'s `status` an `anyOf`).
+    let members = match (schema.one_of.as_deref(), schema.any_of.as_deref()) {
+        (Some(query_one_of), _) => query_one_of,
+        (None, Some(query_any_of)) => query_any_of,
+        (None, None) => return false,
+    };
+    if merged_singleton_enum_values(members).is_some() {
         return false;
     }
     let is_null = |member: &Schema| member.ty.as_ref().and_then(TypeField::primary) == Some("null");
@@ -23035,7 +23125,7 @@ mod tests {
                 schemas: Some(&doc.components.schemas),
                 out: Vec::new(),
             };
-            super::resolve_request_body(&doc, &[], &body, &mut hoister, "SendRequest", false)
+            super::resolve_request_body(&doc, &[], &body, &mut hoister, "SendRequest", false, false)
                 .expect("an array body resolves")
                 .content_type_header()
         };
@@ -26529,6 +26619,7 @@ mod tests {
             &mut hoister,
             "ModifyMessageRequest",
             false,
+            false,
         );
         assert!(matches!(resolved, Some(RequestBody::Single(_))));
         assert!(hoister.out.iter().any(|declaration| matches!(
@@ -27502,8 +27593,15 @@ mod tests {
             schemas: Some(&doc.components.schemas),
             out: Vec::new(),
         };
-        let resolved =
-            super::resolve_request_body(&doc, &[], &body, &mut hoister, "DeleteRequest", false);
+        let resolved = super::resolve_request_body(
+            &doc,
+            &[],
+            &body,
+            &mut hoister,
+            "DeleteRequest",
+            false,
+            false,
+        );
         assert!(matches!(resolved, Some(RequestBody::Single(body)) if !body.required));
         let nullable_unknown: crate::openapi::RequestBody =
             serde_json::from_value(serde_json::json!({
@@ -27517,6 +27615,7 @@ mod tests {
             &mut hoister,
             "DeleteRequest",
             false,
+            false,
         );
         assert!(matches!(resolved, Some(RequestBody::Single(body)) if !body.required));
 
@@ -27524,8 +27623,15 @@ mod tests {
             "content": { "application/json": { "schema": {} } }
         }))
         .expect("unknown request body deserializes");
-        let resolved =
-            super::resolve_request_body(&doc, &[], &unknown, &mut hoister, "DeleteRequest", false);
+        let resolved = super::resolve_request_body(
+            &doc,
+            &[],
+            &unknown,
+            &mut hoister,
+            "DeleteRequest",
+            false,
+            false,
+        );
         assert!(
             matches!(resolved, Some(RequestBody::Single(ref body)) if body.required),
             "{resolved:?}"
@@ -27540,6 +27646,7 @@ mod tests {
             &unknown,
             &mut hoister,
             "DeleteRequest",
+            false,
             false,
         );
         assert!(
@@ -27558,6 +27665,7 @@ mod tests {
             &optional_unknown,
             &mut hoister,
             "DeleteRequest",
+            false,
             false,
         );
         assert!(matches!(resolved, Some(RequestBody::Single(body)) if !body.required));
@@ -27596,6 +27704,7 @@ mod tests {
                 &array(schema.clone()),
                 &mut hoister,
                 "BatchRequest",
+                false,
                 false,
             );
             assert!(
@@ -27650,6 +27759,7 @@ mod tests {
             &mut hoister,
             "SummarizeMessagesRequest",
             true,
+            false,
         )
         .expect("nullable referenced body resolves") else {
             panic!("nullable referenced body should remain a single argument")
@@ -27858,9 +27968,16 @@ mod tests {
                 schemas: None,
                 out: Vec::new(),
             };
-            let resolved =
-                resolve_request_body(&doc, &types, &body, &mut hoister, "ForwardRequest", true)
-                    .expect("referenced union is supported");
+            let resolved = resolve_request_body(
+                &doc,
+                &types,
+                &body,
+                &mut hoister,
+                "ForwardRequest",
+                true,
+                false,
+            )
+            .expect("referenced union is supported");
             let wildcard = resolved.is_wildcard_media();
             let RequestBody::Single(single) = resolved else {
                 panic!("a referenced union is one request argument")
@@ -27904,6 +28021,7 @@ mod tests {
             &mut hoister,
             "ListNamesRequest",
             true,
+            false,
         )
         .expect("referenced array is supported") else {
             panic!("referenced array should be a single request argument")
@@ -27927,6 +28045,7 @@ mod tests {
             &mut hoister,
             "PutBagRequest",
             true,
+            false,
         )
         .expect("bare object is supported") else {
             panic!("bare object should be a single request argument")
@@ -27953,6 +28072,7 @@ mod tests {
             &mut hoister,
             "UploadRequest",
             true,
+            false,
         )
         .expect("wildcard binary is supported") else {
             panic!("wildcard binary should be a single request argument")
@@ -27976,6 +28096,7 @@ mod tests {
             &mut hoister,
             "DeleteFeedRequest",
             true,
+            false,
         )
         .expect("nullable empty body is supported") else {
             panic!("nullable empty body should be a named request")

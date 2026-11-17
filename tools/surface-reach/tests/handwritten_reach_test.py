@@ -2126,6 +2126,67 @@ KIOSK_SCHEMAS = (
 )
 
 
+# A kiln parameter at `location`, with a second operation so a header stays a
+# per-call argument rather than a client-wide global.
+def kiln_parameter(schema: str, location: str = "query", required: bool = False) -> str:
+    return (
+        "  /kilns:\n    get:\n      operationId: listKilns\n      parameters:\n        - name: shelf\n"
+        f"          in: {location}\n" + ("          required: true\n" if required else "") + f"          schema:\n{schema}"
+        '      responses:\n        "204":\n          description: done\n'
+        '  /glazes:\n    get:\n      operationId: listGlazes\n      responses:\n        "204":\n          description: done\n'
+    )
+
+
+def kiln_union(keyword: str) -> str:
+    return f"            {keyword}:\n              - type: string\n              - type: integer\n"
+
+
+def kiln_array(items: str) -> str:
+    return "            type: array\n            items:\n" + items
+
+
+INLINE_FIRING_ITEMS = "              type: string\n              enum: [bisque, glaze]\n"
+FIRING_ITEMS = '              $ref: "#/components/schemas/Firing"\n'
+PLAIN_ITEMS = "              type: string\n"
+FIRING_SCHEMAS = "  schemas:\n    Firing:\n      type: string\n      enum: [bisque, glaze]\n"
+
+
+# A posted batch whose JSON body is `body`, beside `parameters` the operation
+# declares itself, and `shared` ones its path item declares.
+def batch_post(body: str, parameters: str = "", shared: str = "") -> str:
+    return (
+        "  /batches:\n"
+        + shared
+        + "    post:\n      operationId: createBatch\n"
+        + parameters
+        + "      requestBody:\n        required: true\n        content:\n          application/json:\n            schema:\n"
+        + body
+        + '      responses:\n        "204":\n          description: done\n'
+    )
+
+
+def batch_union(keyword: str) -> str:
+    return (
+        f"              {keyword}:\n"
+        "                - type: object\n                  properties:\n                    cone:\n"
+        "                      type: integer\n"
+        "                - type: object\n                  properties:\n                    clay:\n"
+        "                      type: string\n"
+    )
+
+
+BATCH_OBJECT = (
+    "              type: object\n              properties:\n                cone:\n                  type: integer\n"
+)
+BATCH_QUERY = (
+    "      parameters:\n        - name: dryRun\n          in: query\n          schema:\n            type: boolean\n"
+)
+SHARED_BATCH_QUERY = (
+    "    parameters:\n      - name: dryRun\n        in: query\n        schema:\n          type: boolean\n"
+)
+BASIC_SCHEME = "  securitySchemes:\n    gate:\n      type: http\n      scheme: basic\n"
+
+
 class InteractionArm(NamedTuple):
     both: str
     controls: dict[str, str]
@@ -2289,6 +2350,106 @@ INTERACTION_ARMS: dict[str, InteractionArm] = {
         {
             "method name alone": operation_document(streamed_call(True, False), QUOTE_SCHEMAS),
             "stream condition alone": operation_document(streamed_call(False, True), QUOTE_SCHEMAS),
+        },
+    ),
+    "combo-query-param-anyof": InteractionArm(
+        operation_document(kiln_parameter(kiln_union("anyOf"))),
+        {
+            "query alone": operation_document(kiln_parameter("            type: string\n")),
+            "anyOf alone": operation_document(kiln_parameter(kiln_union("anyOf"), "header", True)),
+            "query oneOf": operation_document(kiln_parameter(kiln_union("oneOf"))),
+        },
+    ),
+    "combo-query-param-oneof": InteractionArm(
+        operation_document(kiln_parameter(kiln_union("oneOf"))),
+        {
+            "query alone": operation_document(kiln_parameter("            type: string\n")),
+            "oneOf alone": operation_document(kiln_parameter(kiln_union("oneOf"), "header", True)),
+            "query anyOf": operation_document(kiln_parameter(kiln_union("anyOf"))),
+        },
+    ),
+    "combo-query-param-array-inline-enum-items": InteractionArm(
+        operation_document(kiln_parameter(kiln_array(INLINE_FIRING_ITEMS))),
+        {
+            "query array alone": operation_document(kiln_parameter(kiln_array(PLAIN_ITEMS))),
+            "inline enum items alone": operation_document(
+                kiln_parameter(kiln_array(INLINE_FIRING_ITEMS), "header", True)
+            ),
+            "referenced enum items": operation_document(kiln_parameter(kiln_array(FIRING_ITEMS)), FIRING_SCHEMAS),
+        },
+    ),
+    "combo-query-param-array-ref-enum-items": InteractionArm(
+        operation_document(kiln_parameter(kiln_array(FIRING_ITEMS)), FIRING_SCHEMAS),
+        {
+            "query array alone": operation_document(kiln_parameter(kiln_array(PLAIN_ITEMS)), FIRING_SCHEMAS),
+            "referenced enum items alone": operation_document(
+                kiln_parameter(kiln_array(FIRING_ITEMS), "header", True), FIRING_SCHEMAS
+            ),
+            "inline enum items": operation_document(kiln_parameter(kiln_array(INLINE_FIRING_ITEMS))),
+        },
+    ),
+    # The required key's selector holds every feature of the referenced one and
+    # requiredness besides, so each control drops one of them.
+    "combo-required-query-array-enum-items": InteractionArm(
+        operation_document(kiln_parameter(kiln_array(FIRING_ITEMS), required=True), FIRING_SCHEMAS),
+        {
+            "optional": operation_document(kiln_parameter(kiln_array(FIRING_ITEMS)), FIRING_SCHEMAS),
+            "plain items": operation_document(kiln_parameter(kiln_array(PLAIN_ITEMS), required=True), FIRING_SCHEMAS),
+            "header": operation_document(kiln_parameter(kiln_array(FIRING_ITEMS), "header", True), FIRING_SCHEMAS),
+        },
+    ),
+    # The query object's arm places it by its requiredness; an optional object and
+    # a required one both run it.
+    "combo-query-param-inline-object": InteractionArm(
+        operation_document(
+            kiln_parameter(
+                "            type: object\n            properties:\n              cone:\n                type: integer\n"
+            )
+        ),
+        {
+            "query alone": operation_document(kiln_parameter("            type: string\n")),
+            "inline object alone": operation_document(
+                kiln_parameter(
+                    "            type: object\n            properties:\n              cone:\n                type: integer\n",
+                    "cookie",
+                )
+            ),
+        },
+    ),
+    "combo-params-beside-inline-anyof-body": InteractionArm(
+        operation_document(batch_post(batch_union("anyOf"), BATCH_QUERY)),
+        {
+            "parameters alone": operation_document(batch_post(BATCH_OBJECT, BATCH_QUERY)),
+            "inline anyOf body alone": operation_document(batch_post(batch_union("anyOf"))),
+            "path-item parameters beside it": operation_document(
+                batch_post(batch_union("anyOf"), shared=SHARED_BATCH_QUERY)
+            ),
+            "parameters beside an inline oneOf": operation_document(batch_post(batch_union("oneOf"), BATCH_QUERY)),
+        },
+    ),
+    "combo-params-beside-inline-oneof-body": InteractionArm(
+        operation_document(batch_post(batch_union("oneOf"), BATCH_QUERY)),
+        {
+            "parameters alone": operation_document(batch_post(BATCH_OBJECT, BATCH_QUERY)),
+            "inline oneOf body alone": operation_document(batch_post(batch_union("oneOf"))),
+            "path-item parameters beside it": operation_document(
+                batch_post(batch_union("oneOf"), shared=SHARED_BATCH_QUERY)
+            ),
+            "parameters beside an inline anyOf": operation_document(batch_post(batch_union("anyOf"), BATCH_QUERY)),
+        },
+    ),
+    "combo-basic-auth-document-requirement": InteractionArm(
+        operation_document(gated_call(), BASIC_SCHEME, ROOT_GATE),
+        {
+            "basic scheme alone": operation_document(gated_call(), BASIC_SCHEME),
+            "document requirement alone": operation_document(gated_call(), BEARER_SCHEME, ROOT_GATE),
+        },
+    ),
+    "combo-basic-auth-operation-requirement": InteractionArm(
+        operation_document(gated_call(OWN_GATE), BASIC_SCHEME),
+        {
+            "basic scheme alone": operation_document(gated_call(), BASIC_SCHEME),
+            "operation requirement alone": operation_document(gated_call(OWN_GATE), BEARER_SCHEME),
         },
     ),
 }
