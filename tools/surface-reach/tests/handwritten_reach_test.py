@@ -2126,6 +2126,24 @@ KIOSK_SCHEMAS = (
 )
 
 
+DISPATCH_MEMBER = (
+    "        - type: object\n          properties:\n            label:\n              type: string\n"
+    "          required: [label]\n"
+)
+DISPATCH_EXAMPLE = "      example:\n        label: morning\n        note: dock 4\n"
+
+
+def dispatch_document(schema: str) -> str:
+    """A `Dispatch` response model whose own `note` property every control keeps."""
+    return operation_document(
+        "  /dispatches:\n    get:\n      operationId: getDispatch\n      responses:\n"
+        '        "200":\n          description: ok\n          content:\n            application/json:\n'
+        '              schema:\n                $ref: "#/components/schemas/Dispatch"\n',
+        "  schemas:\n    Dispatch:\n      type: object\n      properties:\n        note:\n          type: string\n"
+        + schema,
+    )
+
+
 class InteractionArm(NamedTuple):
     both: str
     controls: dict[str, str]
@@ -2289,6 +2307,17 @@ INTERACTION_ARMS: dict[str, InteractionArm] = {
         {
             "method name alone": operation_document(streamed_call(True, False), QUOTE_SCHEMAS),
             "stream condition alone": operation_document(streamed_call(False, True), QUOTE_SCHEMAS),
+        },
+    ),
+    # The schema's own example reaches a field its inline `allOf` member declares; every
+    # document keeps the model's own `note`, so only the two features vary.
+    "combo-allof-schema-example": InteractionArm(
+        dispatch_document("      allOf:\n" + DISPATCH_MEMBER + DISPATCH_EXAMPLE),
+        {
+            "allOf alone": dispatch_document("      allOf:\n" + DISPATCH_MEMBER),
+            "example alone": dispatch_document(
+                "        label:\n          type: string\n      required: [label]\n" + DISPATCH_EXAMPLE
+            ),
         },
     ),
 }
