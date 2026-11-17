@@ -670,6 +670,58 @@ class OverlayCertifiedTreeTests(unittest.TestCase):
         )
         self.assertEqual((found.returncode, found.stdout.strip()), (0, str(entry)), found.stderr)
 
+    def find(self, *args: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            [
+                sys.executable,
+                str(self.root / "tools/fern-goldens/certified_tree.py"),
+                "find",
+                str(self.root / "tests/fixtures/alpha/openapi.yml"),
+                "--enum-type",
+                "literals",
+                *args,
+            ],
+            env=self.env,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            check=False,
+        )
+
+    def test_find_refuses_a_pair_it_cannot_key_and_names_why(self) -> None:
+        """`find` with half a pair, an empty or inexact version, or a certified
+        pair the metadata does not record exits non-zero with the reason, never
+        silently looking up the certified pair in place of what was passed."""
+        published = self.run_script("fern-overlay-goldens.sh", "--enum-type", "literals", "alpha")
+        self.assertEqual(published.returncode, 0, published.stderr)
+        for args, message in (
+            (("--cli", OVERLAY_CLI), "pass both, or neither"),
+            (("--generator", STAND_IN), "pass both, or neither"),
+            (("--cli", "", "--generator", STAND_IN), "are exact versions"),
+            (("--cli", OVERLAY_CLI, "--generator", ""), "are exact versions"),
+            (("--cli", "latest", "--generator", STAND_IN), "are exact versions"),
+        ):
+            with self.subTest(args=args):
+                refused = self.find(*args)
+                self.assertEqual((refused.returncode, refused.stdout), (2, ""), refused.stderr)
+                self.assertIn(message, refused.stderr)
+        found = self.find("--cli", OVERLAY_CLI, "--generator", STAND_IN)
+        self.assertEqual((found.returncode, found.stdout.strip()), (0, str(self.entry("literals"))), found.stderr)
+
+        metadata = self.root / "assets" / "scaffolding" / "metadata.json"
+        for text, message in (
+            ("{not json", "check the path named exists"),
+            ("[]", "is no JSON object"),
+            (json.dumps({"cliVersion": OVERLAY_CLI}), "records no exact cliVersion and generatorVersion"),
+            (json.dumps({"cliVersion": "", "generatorVersion": STAND_IN}), "records no exact cliVersion"),
+        ):
+            with self.subTest(metadata=text):
+                metadata.write_text(text, encoding="utf-8")
+                refused = self.find()
+                self.assertEqual((refused.returncode, refused.stdout), (1, ""), refused.stderr)
+                self.assertIn(message, refused.stderr)
+                self.assertTrue(refused.stderr.startswith("certified-tree: "), refused.stderr)
+
     def test_a_setting_the_store_key_does_not_name_is_not_kept(self) -> None:
         result = self.run_script("fern-overlay-goldens.sh", "--default-max-retries", "2", "alpha")
 

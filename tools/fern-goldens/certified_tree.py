@@ -268,7 +268,7 @@ def main(argv: list[str] | None = None) -> int:
         if (args.cli is None) != (args.generator is None):
             parser.error("--cli and --generator name one pair: pass both, or neither for the certified pair")
         repo = Path(__file__).resolve().parents[2]
-        cli, generator = Pair(args.cli, args.generator) if args.cli else certified_pair(repo)
+        cli, generator = Pair(args.cli, args.generator) if args.cli is not None else certified_pair(repo)
         if not (VERSION.fullmatch(cli) and VERSION.fullmatch(generator)):
             parser.error("--cli and --generator are exact versions")
         entry = find(args.document, cli, generator, mode)
