@@ -9179,9 +9179,13 @@ impl InlineHoister<'_> {
                         observed_arm!("hoist_union_variant:4");
                         return TypeRef::List(Box::new(item));
                     }
+                    // A `null` alternative leaves the element union, as it does
+                    // in a component's (`Builder::variant_ref`): Vercel's
+                    // `PatchtEdgeConfigItemsRequestItemsItemValueValueOneItem`.
                     let variants = members
                         .iter()
                         .enumerate()
+                        .filter(|(_, member)| !is_null_variant(member))
                         .map(|(member_index, member)| {
                             self.hoist_union_variant(&item_name, member_index, member, members)
                         })
@@ -9196,7 +9200,13 @@ impl InlineHoister<'_> {
                         min_length: None,
                         max_length: None,
                     }));
-                    return TypeRef::List(Box::new(TypeRef::Named(item_name)));
+                    // …and makes the element it named optional.
+                    let element = TypeRef::Named(item_name);
+                    return TypeRef::List(Box::new(if members.iter().any(is_null_variant) {
+                        optional_type_ref(element)
+                    } else {
+                        element
+                    }));
                 }
                 // An annotated `$ref` element is a use-site copy of its target:
                 // braintrust's `score_type` query parameter is
@@ -9256,9 +9266,14 @@ impl InlineHoister<'_> {
                     return union;
                 }
                 let hoisted = self.out.len();
+                // A `null` alternative leaves the nested union (see
+                // `Builder::composed_variant`): Vercel's
+                // `PatchtEdgeConfigItemsRequestItemsItemValueValueZero` is
+                // `Union[str, float, bool, Dict[str, Any]]`.
                 let nested: Vec<TypeRef> = members
                     .iter()
                     .enumerate()
+                    .filter(|(_, member)| !is_null_variant(member))
                     .map(|(nested_index, member)| {
                         self.hoist_union_variant(&name, nested_index, member, members)
                     })
@@ -9288,7 +9303,13 @@ impl InlineHoister<'_> {
                     min_length: None,
                     max_length: None,
                 }));
-                return TypeRef::Named(name);
+                // …and makes the alternative that names it optional:
+                // `Union[Optional[…ValueValueZero], …]`.
+                return if members.iter().any(is_null_variant) {
+                    optional_type_ref(TypeRef::Named(name))
+                } else {
+                    TypeRef::Named(name)
+                };
             }
         }
         if is_inline_object(variant)
@@ -15000,6 +15021,20 @@ impl Builder<'_> {
             }
         }
 
+        // A component declaring nothing but `nullable: true` keeps that
+        // nullability on its unknown alias, which the collapsing wrapper would
+        // drop: Hookdeck's `DestinationConfigCLIAuthEmpty` is `{nullable: true}`
+        // (beside documentation-only extensions), and the certified pair declares
+        // `DestinationConfigCliAuthEmpty = typing.Optional[typing.Any]`.
+        if schema.reference.is_none() && schema.nullable == Some(true) && is_unknown(schema) {
+            self.push_alias(
+                name,
+                module,
+                TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any))),
+                docstring,
+            );
+            return;
+        }
         // Everything else is an alias: a union, an extensible enum, a scalar, or
         // an unknown type. `full_type_ref` carries any `Optional` wrapping.
         self.push_alias(
@@ -15238,6 +15273,11 @@ impl Builder<'_> {
             });
         let own_from = self.types.len();
         let mut fields = Vec::new();
+        // The fields a union member's branches lend: they take no description
+        // from an inlined base (peach-payments' `CheckoutSuccessfulWebhook`
+        // restates `paymentBrand` in a `oneOf` branch, and the certified pair
+        // leaves it undocumented though `CheckoutPendingWebhook` describes it).
+        let mut branch_fields = std::collections::HashSet::new();
         for (index, member) in schema.all_of.iter().flatten().enumerate() {
             // A promoted parent property keeps the parent's name for whatever
             // it hoists: auto-agent-protocol's `VehicleDetailResponse.data` is
@@ -15271,7 +15311,10 @@ impl Builder<'_> {
                 match branch_union_properties(member, schemas) {
                     Some(BranchUnion::Tagged) => continue,
                     Some(BranchUnion::Merged(merged)) => {
+                        let before = fields.len();
                         self.collect_fields(name, &merged, &[], &mut fields);
+                        branch_fields
+                            .extend(fields[before..].iter().map(|field| field.wire_name.clone()));
                         continue;
                     }
                     None => {}
@@ -15429,11 +15472,42 @@ impl Builder<'_> {
                         bases.push(base_name.clone());
                         continue;
                     }
-                    let inline = self.inlined_part(raw_bases[index], &fields, &mut extended, 0);
+                    // A parent whose own model extends nothing is inlined as that
+                    // model: its fields in its order, typed as it types them.
+                    // peach-payments' `CheckoutSuccessfulWebhook` overrides
+                    // `CheckoutPendingWebhook`, which itself inlines
+                    // `CheckoutBaseWebhook`; the certified pair writes Pending's
+                    // own `id` before Base's `amount` … `timestamp`, and keeps
+                    // `CheckoutBaseWebhookCurrency` rather than coining a
+                    // `CheckoutPendingWebhookCurrency`.
+                    // A description it lends a field the model restates is
+                    // still the one its chain declares, not one its own model
+                    // copied: Successful's `result.code` stays undocumented,
+                    // where Pending's took Base's "A code representing the
+                    // checkout state."
+                    let established = self.established_flat_fields(base_name, raw_bases[index]);
+                    let mut chain_extends = Vec::new();
+                    let inline = self.inlined_part(raw_bases[index], &fields, &mut chain_extends, 0);
                     let inline_required: Vec<&str> =
                         inline.required.iter().map(String::as_str).collect();
                     let mut inherited = Vec::new();
+                    let hoisted = self.types.len();
                     self.collect_fields(base_name, &inline, &inline_required, &mut inherited);
+                    match established {
+                        Some(mut established) => {
+                            self.types.truncate(hoisted);
+                            for field in &mut established {
+                                if fields.iter().any(|own| own.wire_name == field.wire_name) {
+                                    field.docstring = inherited
+                                        .iter()
+                                        .find(|chain| chain.wire_name == field.wire_name)
+                                        .and_then(|chain| chain.docstring.clone());
+                                }
+                            }
+                            inherited = established;
+                        }
+                        None => extended.extend(chain_extends),
+                    }
                     inlined_by_base.push((first_conflict[index], inherited));
                 }
                 inlined_by_base.sort_by_key(|(position, _)| *position);
@@ -15457,7 +15531,9 @@ impl Builder<'_> {
                         // Fern's unknown type carries no docs, so an empty
                         // restatement takes none from the base: Zulip's
                         // `CodedError` restates `CodedErrorBase.code` as `{}`.
-                        if existing.docstring.is_none() && !is_unknown_type_ref(&existing.type_ref)
+                        if existing.docstring.is_none()
+                            && !is_unknown_type_ref(&existing.type_ref)
+                            && !branch_fields.contains(&existing.wire_name)
                         {
                             existing.docstring.clone_from(&field.docstring);
                         }
@@ -15630,6 +15706,32 @@ impl Builder<'_> {
         merged.properties = properties;
         merged.required = required.into();
         merged
+    }
+
+    /// The fields of `parent`'s own model, as the component builder lowers it,
+    /// when that model extends nothing (it declares no `allOf` parent, or
+    /// inlines every one); `None` when it extends a class, or is already being
+    /// built on this path. Whatever lowering it hoists is discarded: the
+    /// component builder declares the parent's types under its own name.
+    fn established_flat_fields(&mut self, parent_name: &str, parent: &Schema) -> Option<Vec<Field>> {
+        if parent.all_of.is_none() || self.building_types.contains(parent_name) {
+            return None;
+        }
+        let mark = self.types.len();
+        self.add_object(
+            parent_name,
+            naming::module_name(parent_name),
+            parent,
+            None,
+        );
+        let established = self.types[mark..].iter().find_map(|decl| match decl {
+            TypeDecl::Object(object) if object.name == parent_name && object.bases.is_empty() => {
+                Some(object.fields.clone())
+            }
+            _ => None,
+        });
+        self.types.truncate(mark);
+        established
     }
 
     /// Whether a model whose own fields are `local` overrides a property
@@ -17767,9 +17869,14 @@ impl Builder<'_> {
                     ) {
                         self.types.push(TypeDecl::DiscriminatedUnion(decl));
                     } else {
+                        // A `null` alternative leaves the element union, as it
+                        // leaves [`Builder::composed_variant`]'s: Vercel's
+                        // `CreateEdgeConfigRequestItemsValueOneItem` is
+                        // `Union[str, float, bool, Dict[str, Any]]`.
                         let members = members
                             .iter()
                             .enumerate()
+                            .filter(|(_, member)| !is_null_variant(member))
                             .map(|(member_index, member)| {
                                 self.variant_ref(&item_name, member_index, member, members)
                             })
@@ -17781,7 +17888,17 @@ impl Builder<'_> {
                             clean_doc(item.description.as_deref()),
                         );
                     }
-                    return sequence_of(variant, TypeRef::Named(item_name));
+                    // …and makes the element optional: the certified pair's
+                    // `List[Optional[CreateEdgeConfigRequestItemsValueOneItem]]`.
+                    let element = TypeRef::Named(item_name);
+                    return sequence_of(
+                        variant,
+                        if members.iter().any(is_null_variant) {
+                            optional_type_ref(element)
+                        } else {
+                            element
+                        },
+                    );
                 }
                 if described_all_of_ref(item).is_some() {
                     if let Some(element) = self.annotated_ref_type(&item_name, item) {
@@ -17922,9 +18039,16 @@ impl Builder<'_> {
         // does too: the `union-modelling/nullable-array-member` measurement's
         // `Tag` ends `{type: array, items: {type: string}, nullable: true}`, and
         // Fern's alias closes `typing.Optional[typing.List[str]]`.
+        // So does a free-form map's: Hookdeck's `FilterRuleProperty` offers,
+        // last, a nullable `{type: object, properties: {}, additionalProperties:
+        // true}`, and the certified pair's alias closes
+        // `typing.Optional[typing.Dict[str, typing.Any]]`.
         let nullable_array = variant.nullable == Some(true)
             && variant.ty.as_ref().and_then(TypeField::primary) == Some("array");
-        if (is_plain_scalar(variant) || nullable_array) && variant.nullable == Some(true) {
+        let free_form_map = matches!(member, TypeRef::Dict(..));
+        if (is_plain_scalar(variant) || nullable_array || free_form_map)
+            && variant.nullable == Some(true)
+        {
             return optional_type_ref(member);
         }
         member
@@ -18013,10 +18137,16 @@ impl Builder<'_> {
             self.types.push(TypeDecl::DiscriminatedUnion(decl));
             return TypeRef::Named(name);
         }
+        // A `null` alternative is no type of the nested union: Vercel's
+        // `createEdgeConfig` body offers item values `oneOf: [{oneOf: [string,
+        // number, boolean, null, object]}, …]`, and the certified pair's
+        // `CreateEdgeConfigRequestItemsValueZero` is `Union[str, float, bool,
+        // Dict[str, Any]]`, not a union admitting any value.
         let nested = dedupe_union_members(
             members
                 .iter()
                 .enumerate()
+                .filter(|(_, member)| !is_null_variant(member))
                 .map(|(nested_index, member)| {
                     self.variant_ref(&name, nested_index, member, members)
                 })
@@ -18029,7 +18159,14 @@ impl Builder<'_> {
             return only;
         }
         self.push_alias(&name, module, TypeRef::Union(nested), docstring);
-        TypeRef::Named(name)
+        // …and the alternative naming it is optional: the certified pair's
+        // `CreateEdgeConfigRequestItemsValue` opens
+        // `Union[Optional[CreateEdgeConfigRequestItemsValueZero], …]`.
+        if members.iter().any(is_null_variant) {
+            optional_type_ref(TypeRef::Named(name))
+        } else {
+            TypeRef::Named(name)
+        }
     }
 
     /// The scalar type an `allOf` names when it holds exactly one `$ref` to a
@@ -20645,6 +20782,18 @@ fn merge_restated_parent_properties(
                 }
                 if restated.items.is_none() && base.items.is_some() {
                     restated.items.clone_from(&base.items);
+                    changed = true;
+                }
+                // A restatement naming no values of its own spreads over the
+                // parent's: peach-payments' `PaymentLinkExpiredWebhook` restates
+                // `PaymentLinkBaseWebhook.status` as `{type: string, default:
+                // expired}`, and the certified pair keeps the parent's six values
+                // as the child's own `PaymentLinkExpiredWebhookStatus` enum.
+                if restated.enum_values.is_none()
+                    && restated.const_value.is_none()
+                    && base.enum_values.is_some()
+                {
+                    restated.enum_values.clone_from(&base.enum_values);
                     changed = true;
                 }
                 if !restated.properties.declared() && base.properties.declared() {

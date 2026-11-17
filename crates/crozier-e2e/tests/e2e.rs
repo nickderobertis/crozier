@@ -148,6 +148,15 @@ mod emission_parity;
 mod handed_off_type_declarations;
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates one small SDK per ticket and compares it whole, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+/// The union-nullability and inherited-model repairs of tickets #825, #826,
+/// #827, #838 and #839, each settled against a from-scratch document under
+/// `docs/fern-measurements/union-inheritance/` and held whole against the
+/// certified pair's tree in both enum modes.
+#[path = "e2e/union_inheritance.rs"]
+mod union_inheritance;
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
 // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These nine local generator journeys and their canonical-header controls generate small SDKs without network access or SDK installation; they exercise the existing real-binary boundary and introduce no promoted-tier setup.
 #[path = "e2e/remeasure.rs"]
 mod remeasure;
@@ -1053,6 +1062,7 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         (refusal_parity::REFUSAL_PARITY_DIR, "fern-expected"),
         (emission_parity::EMISSION_PARITY_DIR, "fern-expected"),
         (handed_off_type_declarations::DIR, "fern-expected"),
+        (union_inheritance::DIR, "fern-expected"),
         (handed_off_example_values::AREA_DIR, "fern-expected"),
         (handed_off_snippet_rendering::AREA_DIR, "fern-expected"),
         (bodies_media::BODIES_MEDIA_DIR, "fern-expected"),
@@ -1096,7 +1106,11 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
             }
         }
     }
-    for dir in [handed_off_type_declarations::DIR, remeasure::DIR] {
+    for dir in [
+        handed_off_type_declarations::DIR,
+        remeasure::DIR,
+        union_inheritance::DIR,
+    ] {
         if let Ok(entries) = std::fs::read_dir(root.join(dir)) {
             for entry in entries.filter_map(Result::ok) {
                 if entry

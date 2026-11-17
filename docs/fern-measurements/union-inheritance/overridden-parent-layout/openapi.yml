@@ -1,0 +1,79 @@
+openapi: 3.0.3
+info:
+  title: Greenhouse Alerts
+  version: "1.0"
+paths:
+  /alerts/{alertId}:
+    get:
+      operationId: getAlert
+      parameters:
+        - name: alertId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The alert.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/VentAlert"
+                  - $ref: "#/components/schemas/VentClosedAlert"
+components:
+  schemas:
+    AlertBase:
+      description: What every greenhouse alert carries.
+      type: object
+      properties:
+        bay:
+          description: The bay the alert concerns.
+          type: string
+        severity:
+          description: How urgent the alert is.
+          type: string
+          enum: [low, medium, high]
+        outcome.code:
+          description: A code for the alert's outcome.
+          type: string
+        sentAt:
+          description: When the alert was sent.
+          type: string
+    VentAlert:
+      description: A vent changed position.
+      allOf:
+        - $ref: "#/components/schemas/AlertBase"
+        - type: object
+          properties:
+            ventId:
+              description: The vent that moved.
+              type: string
+            motor:
+              description: The motor that drove the vent.
+              type: string
+              enum: [north, south]
+            outcome.code:
+              type: string
+              default: vent.moved
+    VentClosedAlert:
+      description: A vent closed fully.
+      allOf:
+        - $ref: "#/components/schemas/VentAlert"
+        - type: object
+          properties:
+            closedBy:
+              type: string
+            outcome.code:
+              type: string
+              default: vent.closed
+        - oneOf:
+            - type: object
+              properties:
+                gaugeReading:
+                  type: string
+            - type: object
+              properties:
+                motor:
+                  type: string
+                  default: north

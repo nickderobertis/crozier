@@ -4500,6 +4500,28 @@ fn normalize_webhook_operations(doc: &mut OpenApi) {
     }
 }
 
+/// Whether a `oneOf`/`anyOf` alternative is one Fern keeps inline in the union
+/// even when it declares a type name: a primitive with no values of its own, or
+/// a map (an object declaring no properties). Only a structured alternative (an
+/// object with properties, an enum, an array, a composition) is named by its
+/// declaration.
+fn scalar_union_member(member: &Schema) -> bool {
+    let composed = member.one_of.is_some() || member.any_of.is_some() || member.all_of.is_some();
+    if member.reference.is_some()
+        || composed
+        || member.enum_values.is_some()
+        || member.const_value.is_some()
+        || member.items.is_some()
+        || !member.properties.is_empty()
+    {
+        return false;
+    }
+    matches!(
+        member.ty.as_ref().and_then(TypeField::primary),
+        Some("string" | "number" | "integer" | "boolean" | "object")
+    )
+}
+
 /// Lift every inline schema that declares a type name (`x-crozier-type-name`,
 /// or `x-fern-type-name`) into a component of that name, leaving a `$ref` where
 /// it stood, wherever Fern's type for it is a root type: under a component, or
@@ -4557,13 +4579,26 @@ fn normalize_inline_declared_type_names(doc: &mut OpenApi) {
         if let Some(AdditionalProperties::Schema(values)) = schema.additional_properties.as_mut() {
             lift_child(values, taken);
         }
-        for members in [&mut schema.one_of, &mut schema.any_of, &mut schema.all_of]
+        for members in [&mut schema.one_of, &mut schema.any_of]
             .into_iter()
             .flatten()
         {
             for member in members {
-                lift_child(member, taken);
+                // A scalar alternative stays inline whatever it declares:
+                // Hookdeck's `FilterRuleProperty` offers `FilterRulePropertyString`,
+                // `…Number`, `…Boolean` and `…JSON` alternatives, and the
+                // certified pair's alias is `Union[Optional[str],
+                // Optional[float], Optional[bool], Optional[Dict[str, Any]]]`
+                // with no type of their own.
+                if scalar_union_member(member) {
+                    lift(member, taken);
+                } else {
+                    lift_child(member, taken);
+                }
             }
+        }
+        for member in schema.all_of.iter_mut().flatten() {
+            lift_child(member, taken);
         }
     }
     let mut taken: Taken = doc

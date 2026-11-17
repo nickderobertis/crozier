@@ -1,0 +1,66 @@
+openapi: 3.0.3
+info:
+  title: Ferry Bookings
+  version: "1.0"
+paths:
+  /crossings/{crossingId}:
+    get:
+      operationId: getCrossing
+      parameters:
+        - name: crossingId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: A crossing notice.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/CrossingDelayedNotice"
+                  - $ref: "#/components/schemas/CrossingSailedNotice"
+                  - $ref: "#/components/schemas/CrossingBoardingNotice"
+components:
+  schemas:
+    CrossingNotice:
+      description: What every crossing notice carries.
+      type: object
+      properties:
+        crossingId:
+          type: string
+        phase:
+          description: Where the crossing stands.
+          type: string
+          enum: [scheduled, boarding, delayed, sailed, cancelled]
+    CrossingDelayedNotice:
+      description: The crossing is delayed.
+      allOf:
+        - $ref: "#/components/schemas/CrossingNotice"
+        - type: object
+          properties:
+            phase:
+              type: string
+              default: delayed
+            minutesLate:
+              type: integer
+    CrossingSailedNotice:
+      description: The crossing has sailed.
+      allOf:
+        - $ref: "#/components/schemas/CrossingNotice"
+        - type: object
+          properties:
+            phase:
+              type: string
+              default: sailed
+    CrossingBoardingNotice:
+      description: Boarding has opened.
+      allOf:
+        - $ref: "#/components/schemas/CrossingNotice"
+        - type: object
+          properties:
+            phase:
+              type: string
+              default: boarding
+              enum: [boarding]

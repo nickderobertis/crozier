@@ -1,0 +1,42 @@
+openapi: 3.0.3
+info:
+  title: Loom Shed
+  version: "1.0"
+paths:
+  /looms/{loomId}:
+    get:
+      operationId: getLoom
+      parameters:
+        - name: loomId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The loom.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Loom"
+components:
+  schemas:
+    Loom:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: string
+        shuttle:
+          $ref: "#/components/schemas/ShuttleState"
+        heddle:
+          $ref: "#/components/schemas/HeddleNote"
+        warp:
+          $ref: "#/components/schemas/WarpTension"
+    ShuttleState:
+      nullable: true
+    HeddleNote:
+      nullable: true
+      description: Whatever the weaver last pinned to the heddle, if anything.
+    WarpTension:
+      description: An opaque tension reading.
