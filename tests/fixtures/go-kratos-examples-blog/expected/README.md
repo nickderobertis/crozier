@@ -10,7 +10,6 @@ The Fern Python library provides convenient access to the Fern APIs from Python.
 - [Installation](#installation)
 - [Reference](#reference)
 - [Usage](#usage)
-- [Environments](#environments)
 - [Async Client](#async-client)
 - [Exception Handling](#exception-handling)
 - [Advanced](#advanced)
@@ -35,33 +34,13 @@ A full reference for this library is available [here](./reference.md).
 Instantiate and use the client with the following:
 
 ```python
-from fern import FernApi, Institution
-
-client = FernApi()
-
-client.add_institutions(
-    request=[
-        Institution(
-            name="name",
-            description="description",
-            location="location",
-            website="website",
-        )
-    ],
-)
-```
-
-## Environments
-
-This SDK allows you to configure different environments for API requests.
-
-```python
 from fern import FernApi
-from fern.environment import FernApiEnvironment
 
 client = FernApi(
-    environment=FernApiEnvironment.DEFAULT,
+    base_url="https://yourhost.com/path/to/api",
 )
+
+client.blogservice.createarticle()
 ```
 
 ## Async Client
@@ -71,22 +50,15 @@ The SDK also exports an `async` client so that you can make non-blocking calls t
 ```python
 import asyncio
 
-from fern import AsyncFernApi, Institution
+from fern import AsyncFernApi
 
-client = AsyncFernApi()
+client = AsyncFernApi(
+    base_url="https://yourhost.com/path/to/api",
+)
 
 
 async def main() -> None:
-    await client.add_institutions(
-        request=[
-            Institution(
-                name="name",
-                description="description",
-                location="location",
-                website="website",
-            )
-        ],
-    )
+    await client.blogservice.createarticle()
 
 
 asyncio.run(main())
@@ -101,7 +73,7 @@ will be thrown.
 from fern.core.api_error import ApiError
 
 try:
-    client.add_institutions(...)
+    client.blogservice.createarticle(...)
 except ApiError as e:
     print(e.status_code)
     print(e.body)
@@ -118,7 +90,7 @@ The `.with_raw_response` property returns a "raw" client that can be used to acc
 from fern import FernApi
 
 client = FernApi(...)
-response = client.with_raw_response.add_institutions(...)
+response = client.blogservice.with_raw_response.createarticle(...)
 print(response.headers)  # access the response headers
 print(response.status_code)  # access the response status code
 print(response.data)  # access the underlying object
@@ -149,7 +121,7 @@ Which status codes are retried depends on the `retryStatusCodes` generator confi
 Use the `max_retries` request option to configure this behavior.
 
 ```python
-client.add_institutions(..., request_options={
+client.blogservice.createarticle(..., request_options={
     "max_retries": 1
 })
 ```
@@ -164,7 +136,7 @@ from fern import FernApi
 client = FernApi(..., timeout=20.0)
 
 # Override timeout for a specific method
-client.add_institutions(..., request_options={
+client.blogservice.createarticle(..., request_options={
     "timeout": 1
 })
 ```

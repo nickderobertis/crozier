@@ -6,22 +6,12 @@ import pydantic
 import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from ..core.serialization import FieldMetadata
+from .article import Article
 
 
-class Institution(UniversalBaseModel):
-    id: typing.Optional[int] = pydantic.Field(default=None)
-    """
-    The institution's unique identifier
-    """
-
-    name: str
-    description: str
-    location: str
-    website: str
-    email: typing.Optional[str] = None
-    phone: typing.Optional[str] = None
-    web_contact: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="webContact"), pydantic.Field(alias="webContact")
+class UpdateArticleReply(UniversalBaseModel):
+    article: typing_extensions.Annotated[
+        typing.Optional[Article], FieldMetadata(alias="Article"), pydantic.Field(alias="Article")
     ] = None
 
     if IS_PYDANTIC_V2:

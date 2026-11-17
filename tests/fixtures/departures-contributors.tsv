@@ -1733,10 +1733,10 @@ tests/fixtures/tuxedo-dapp/expected-literals	crozier-e2e::e2e	overlay_goldens::o
 tests/fixtures/twilio.com-twilio_messaging_v1/expected	crozier-e2e::e2e	twilio_messaging_v1_matches_fern_output
 tests/fixtures/twilio.com-twilio_voice_v1/expected	crozier-e2e::e2e	twilio_voice_v1_matches_fern_output
 tests/fixtures/typescript-service-template/expected	crozier-e2e::e2e	typescript_service_template_matches_fern_output
-tests/fixtures/uclalibrary-prl-harvester/expected	crozier-e2e::e2e	overlay_goldens::overlay_goldens_match_fern_output
-tests/fixtures/uclalibrary-prl-harvester/expected	crozier-e2e::e2e	uclalibrary_prl_harvester_matches_fern_output
-tests/fixtures/uclalibrary-prl-harvester/expected-literals	crozier-e2e::e2e	overlay_goldens::overlay_goldens_match_fern_output
-tests/fixtures/uclalibrary-prl-harvester/expected-literals	crozier-e2e::e2e	uclalibrary_prl_harvester_matches_fern_output
+tests/fixtures/go-kratos-examples-blog/expected	crozier-e2e::e2e	overlay_goldens::overlay_goldens_match_fern_output
+tests/fixtures/go-kratos-examples-blog/expected	crozier-e2e::e2e	go_kratos_examples_blog_matches_fern_output
+tests/fixtures/go-kratos-examples-blog/expected-literals	crozier-e2e::e2e	overlay_goldens::overlay_goldens_match_fern_output
+tests/fixtures/go-kratos-examples-blog/expected-literals	crozier-e2e::e2e	go_kratos_examples_blog_matches_fern_output
 tests/fixtures/ummaya-agent-delegation/expected	crozier-e2e::e2e	overlay_goldens::overlay_goldens_match_fern_output
 tests/fixtures/ummaya-agent-delegation/expected	crozier-e2e::e2e	ummaya_agent_delegation_matches_fern_output
 tests/fixtures/ummaya-agent-delegation/expected-literals	crozier-e2e::e2e	overlay_goldens::overlay_goldens_match_fern_output

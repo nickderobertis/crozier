@@ -1260,6 +1260,12 @@
       ]
     },
     "tests/fixtures/go-kratos-casbin-admin/expected": {},
+    "tests/fixtures/go-kratos-examples-blog/expected": {},
+    "tests/fixtures/go-kratos-examples-blog/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/googleapis-monitoring-v1/expected": {},
     "tests/fixtures/googleapis-servicebroker/expected": {},
     "tests/fixtures/googleapis-speech-v2beta1/expected": {},
@@ -2312,12 +2318,6 @@
     "tests/fixtures/twilio.com-twilio_messaging_v1/expected": {},
     "tests/fixtures/twilio.com-twilio_voice_v1/expected": {},
     "tests/fixtures/typescript-service-template/expected": {},
-    "tests/fixtures/uclalibrary-prl-harvester/expected": {},
-    "tests/fixtures/uclalibrary-prl-harvester/expected-literals": {
-      "excluded": [
-        ".crozier-overlay.json"
-      ]
-    },
     "tests/fixtures/ummaya-agent-delegation/expected": {},
     "tests/fixtures/ummaya-agent-delegation/expected-literals": {
       "excluded": [

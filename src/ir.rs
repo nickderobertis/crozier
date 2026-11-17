@@ -10624,7 +10624,7 @@ fn rename_claimed_path_params(
         // A claim the request body makes is an arm of its own beside a query or
         // header parameter's: the rename is the same, and the reach ledger
         // measures where a body property meets a path parameter of its name
-        // (UCLA Library's PRL harvester's `PUT /jobs/{id}` takes `id_path_param`).
+        // (go-kratos's blog example `PUT /v1/article/{id}` takes `id_path_param`).
         let mut renamed = match parameter_claims.contains(&param.wire_name) {
             true => format!("{}PathParam", param.wire_name),
             false => format!("{}PathParam", param.wire_name),

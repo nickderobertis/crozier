@@ -10579,7 +10579,7 @@ const OPENCODEUI: Corpus = Corpus {
 const CORPORA: &[&Corpus] = &[
     &PINECONE_INFERENCE,
     &OPENAPI_CODE_GENERATOR_E2E,
-    &PRL_HARVESTER,
+    &KRATOS_BLOG,
     &LITERALS_HASHGRAPH_63BA2735,
     &LITERALS_APIS_GURU_608E22DC,
     &LITERALS_APIS_GURU_79291D99,
@@ -33431,11 +33431,11 @@ fn mnahkies_openapi_code_generator_e2e_matches_fern_output() {
     assert_committed_corpus_matches(&OPENAPI_CODE_GENERATOR_E2E);
     overlay_goldens::assert_literals_match(&OPENAPI_CODE_GENERATOR_E2E);
 }
-/// `uclalibrary-prl-harvester`: corpus row 6102, UCLA Library's PRL harvester API —
-/// the registered witness of `combo-body-property-named-as-path-param`, whose
-/// request bodies declare the `id` their path parameter names.
-const PRL_HARVESTER: Corpus = Corpus {
-    api: "uclalibrary-prl-harvester",
+/// `go-kratos-examples-blog`: corpus row 6102, go-kratos's blog example API — the
+/// registered witness of `combo-body-property-named-as-path-param`, whose
+/// `PUT /v1/article/{id}` body declares the `id` its path parameter names.
+const KRATOS_BLOG: Corpus = Corpus {
+    api: "go-kratos-examples-blog",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -33446,8 +33446,8 @@ const PRL_HARVESTER: Corpus = Corpus {
 };
 
 #[test]
-fn uclalibrary_prl_harvester_matches_fern_output() {
-    assert_committed_corpus_matches(&PRL_HARVESTER);
-    overlay_goldens::assert_literals_match(&PRL_HARVESTER);
+fn go_kratos_examples_blog_matches_fern_output() {
+    assert_committed_corpus_matches(&KRATOS_BLOG);
+    overlay_goldens::assert_literals_match(&KRATOS_BLOG);
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
