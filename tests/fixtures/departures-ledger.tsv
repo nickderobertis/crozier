@@ -1576,6 +1576,11 @@ docs/fern-measurements/handed-off/union-modelling/query-oneof-of-arrays/fern-exp
 docs/fern-measurements/handed-off/union-modelling/query-oneof-of-arrays/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/union-modelling/query-oneof-of-arrays/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/union-modelling/query-oneof-of-arrays/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/union-modelling/query-union-object-members/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/union-modelling/query-union-object-members/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/union-modelling/query-union-object-members/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/union-modelling/query-union-object-members/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/union-modelling/query-union-object-members/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/union-modelling/union-modelling/annotated-reference-beside-null/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/union-modelling/union-modelling/annotated-reference-beside-null/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/union-modelling/union-modelling/annotated-reference-beside-null/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix

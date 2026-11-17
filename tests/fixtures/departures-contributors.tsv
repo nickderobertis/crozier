@@ -279,6 +279,7 @@ docs/fern-measurements/handed-off/union-modelling/nullable-anyof-ref-member-opti
 docs/fern-measurements/handed-off/union-modelling/pattern-properties-only-oneof-member/fern-expected	crozier-e2e::e2e	union_modelling::a_reference_beside_a_union_and_a_pattern_only_member_read_as_fern_reads_them
 docs/fern-measurements/handed-off/union-modelling/query-anyof-date-time-or-array-named/fern-expected	crozier-e2e::e2e	union_modelling::a_query_any_of_nullable_scalar_or_array_is_a_named_union
 docs/fern-measurements/handed-off/union-modelling/query-oneof-of-arrays/fern-expected	crozier-e2e::e2e	union_modelling::a_query_one_of_two_like_arrays_is_one_or_many
+docs/fern-measurements/handed-off/union-modelling/query-union-object-members/fern-expected	crozier-e2e::e2e	union_modelling::a_query_union_s_object_alternatives_keep_their_models
 docs/fern-measurements/handed-off/union-modelling/union-modelling/annotated-reference-beside-null/fern-expected	crozier-e2e::e2e	union_modelling::union_modelling_document_sub_rules_match_the_certified_pair
 docs/fern-measurements/handed-off/union-modelling/union-modelling/annotated-reference-beside-null/literals/fern-expected	crozier-e2e::e2e	union_modelling::union_modelling_document_sub_rules_match_the_certified_pair
 docs/fern-measurements/handed-off/union-modelling/union-modelling/event-stream-beside-json/fern-expected	crozier-e2e::e2e	union_modelling::union_modelling_document_sub_rules_match_the_certified_pair

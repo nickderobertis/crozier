@@ -10104,6 +10104,22 @@ impl InlineHoister<'_> {
                     continue;
                 }
             }
+            // An inline object alternative that declares its structure is a
+            // model of its own, named as a body union's variant is: Hookdeck's
+            // `GET /events` `cli_id` offers a string, a closed `{any, all}`
+            // object or a string array, and Fern declares
+            // `GetEventsRequestCliIdAll`; its `body` offers a string or a closed
+            // object declaring no properties, and Fern declares the empty model
+            // `GetEventsRequestBodyOne` rather than an unconstrained value.
+            if member.one_of.is_none()
+                && member.any_of.is_none()
+                && (is_inline_object(member) || is_declared_empty_object(member))
+            {
+                let variant_name = variant_class_name(&name, index, member, &siblings);
+                self.hoist_object(&variant_name, member);
+                variants.push(TypeRef::Named(variant_name));
+                continue;
+            }
             // A member naming a component that admits null is that component
             // made optional in its own slot, as in a component union: the
             // `union-modelling/nullable-reference-member` measurement's `since`
