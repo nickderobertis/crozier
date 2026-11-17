@@ -18406,8 +18406,18 @@ fn variant_class_name(parent: &str, index: usize, variant: &Schema, siblings: &[
     } else {
         discriminant_value.or(distinguishing)
     };
+    // The ordinal counts the alternatives a `null` one leaves behind: samepage's
+    // `page/postResponse.data` offers an object, a described `type: null`, then
+    // the `pending` and `rejected` enums, and the certified pair (Fern CLI
+    // 5.200.0, fern-python-sdk 5.41.25) names those two `PagePostResponseDataOne`
+    // and `…Two`.
+    let nulls_before = siblings
+        .iter()
+        .take(index)
+        .filter(|sibling| is_null_variant(sibling))
+        .count();
     let suffix = unique.map_or_else(
-        || ordinal_word(index).to_string(),
+        || ordinal_word(index - nulls_before).to_string(),
         |name| naming::class_name(&name),
     );
     format!("{parent}{suffix}")

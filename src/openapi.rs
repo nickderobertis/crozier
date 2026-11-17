@@ -3194,6 +3194,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     // normalizations run, so every later pass sees one self-contained document.
     let remote_origin = crate::refs::resolve(&mut doc, &crate::refs::CurlFetcher, path)?;
 
+    normalize_slash_named_schema_refs(&mut doc);
     normalize_float_type(&mut doc);
     normalize_parameter_schema_refs(&mut doc);
     normalize_webhook_operations(&mut doc);
@@ -3518,6 +3519,63 @@ fn normalize_empty_compositions(doc: &mut OpenApi) {
             }
         });
     });
+}
+
+/// Read a component pointer whose unescaped tail is the whole name of a
+/// component declaring `/` in its name as a reference to that component. The
+/// certified pair (Fern CLI 5.200.0, fern-python-sdk 5.41.25) resolves it so:
+/// samepage's `page/postResponse` component is named by `$ref:
+/// '#/components/schemas/page/postResponse'`, and Fern's `page` method returns
+/// `PagePostResponse` where a pointer walk finds no `page` component and would
+/// type the response unknown.
+///
+/// The component is renamed with `-` for each `/`, which names its class, its
+/// module and everything hoisted under it identically ([`crate::naming`] breaks
+/// a word at either), so no later pass has to read an escaped `~1` segment. A
+/// name whose renaming would collide with a declared one is left alone, and so
+/// is a tail that names no component whole: the pointer passes decide those.
+fn normalize_slash_named_schema_refs(doc: &mut OpenApi) {
+    let renames: IndexMap<String, String> = doc
+        .components
+        .schemas
+        .keys()
+        .filter(|name| name.contains('/'))
+        .map(|name| (name.clone(), name.replace('/', "-")))
+        .filter(|(_, renamed)| !doc.components.schemas.contains_key(renamed))
+        .collect();
+    if renames.is_empty() {
+        return;
+    }
+    let mut schemas = IndexMap::new();
+    for (name, schema) in std::mem::take(&mut doc.components.schemas) {
+        schemas.insert(renames.get(&name).cloned().unwrap_or(name), schema);
+    }
+    doc.components.schemas = schemas;
+    let rewrite = |reference: &mut String| {
+        let renamed = reference
+            .strip_prefix("#/components/schemas/")
+            .map(|tail| tail.replace("~1", "/").replace("~0", "~"))
+            .and_then(|tail| renames.get(&tail));
+        if let Some(renamed) = renamed {
+            *reference = format!("#/components/schemas/{renamed}");
+        }
+    };
+    let mut visit = |schema: &mut Schema| {
+        for_each_schema_in(schema, &mut |node| {
+            if let Some(reference) = node.reference.as_mut() {
+                rewrite(reference);
+            }
+            if let Some(discriminator) = node.discriminator.as_mut() {
+                for target in discriminator.mapping.values_mut() {
+                    rewrite(target);
+                }
+            }
+        });
+    };
+    for_each_root_schema(doc, &mut visit);
+    for item in doc.webhooks.values_mut() {
+        for_each_path_item_schema(item, &mut visit);
+    }
 }
 
 /// Drop the sibling `type: "null"` of a `oneOf`/`anyOf`, which the certified
