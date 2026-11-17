@@ -86,6 +86,12 @@ def clone(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Path]:
         else:
             shutil.copy2(source, target)
     small_inputs(root)
+    # A bootstrapped clone has the locked `.venv`, which scripts/census-python.sh
+    # honours first. Without it the selector falls back to the host's python3
+    # (Homebrew's on macOS runners, which has no yaml), and census-repin's
+    # dependency preflight then refuses before it reaches the lock.
+    if (REPO / ".venv").is_dir():
+        (root / ".venv").symlink_to(REPO / ".venv", target_is_directory=True)
     # The six entry points share this fixture. Restate its synthetic ledger
     # before committing so repin's offline preflight leaves it clean for the others.
     subprocess.run(
