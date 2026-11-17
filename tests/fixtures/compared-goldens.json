@@ -1057,6 +1057,12 @@
     "tests/fixtures/apache.org-airflow/expected": {},
     "tests/fixtures/apache.org-qakka/expected": {},
     "tests/fixtures/apache.org/expected": {},
+    "tests/fixtures/api-evangelist-pinecone-inference/expected": {},
+    "tests/fixtures/api-evangelist-pinecone-inference/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/api-openverse-org/expected": {},
     "tests/fixtures/apicurio.local-registry/expected": {},
     "tests/fixtures/apideck.com-accounting/expected": {},
@@ -1408,6 +1414,12 @@
     "tests/fixtures/mindee-ocr/expected": {},
     "tests/fixtures/missing-operation-id/expected": {},
     "tests/fixtures/mistle-control-plane/expected": {},
+    "tests/fixtures/mnahkies-openapi-code-generator-e2e/expected": {},
+    "tests/fixtures/mnahkies-openapi-code-generator-e2e/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/mockserver/expected": {},
     "tests/fixtures/mockserver/expected-literals": {
       "excluded": [
@@ -2300,6 +2312,12 @@
     "tests/fixtures/twilio.com-twilio_messaging_v1/expected": {},
     "tests/fixtures/twilio.com-twilio_voice_v1/expected": {},
     "tests/fixtures/typescript-service-template/expected": {},
+    "tests/fixtures/uclalibrary-prl-harvester/expected": {},
+    "tests/fixtures/uclalibrary-prl-harvester/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/ummaya-agent-delegation/expected": {},
     "tests/fixtures/ummaya-agent-delegation/expected-literals": {
       "excluded": [

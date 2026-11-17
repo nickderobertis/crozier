@@ -2131,7 +2131,9 @@ KIOSK_SCHEMAS = (
 def kiln_parameter(schema: str, location: str = "query", required: bool = False) -> str:
     return (
         "  /kilns:\n    get:\n      operationId: listKilns\n      parameters:\n        - name: shelf\n"
-        f"          in: {location}\n" + ("          required: true\n" if required else "") + f"          schema:\n{schema}"
+        f"          in: {location}\n"
+        + ("          required: true\n" if required else "")
+        + f"          schema:\n{schema}"
         '      responses:\n        "204":\n          description: done\n'
         '  /glazes:\n    get:\n      operationId: listGlazes\n      responses:\n        "204":\n          description: done\n'
     )
@@ -2185,6 +2187,34 @@ SHARED_BATCH_QUERY = (
     "    parameters:\n      - name: dryRun\n        in: query\n        schema:\n          type: boolean\n"
 )
 BASIC_SCHEME = "  securitySchemes:\n    gate:\n      type: http\n      scheme: basic\n"
+
+
+# One operation, so a header it declares rides every operation and is promoted.
+def kiln_version(schema: str, location: str = "header") -> str:
+    return (
+        "  /kilns:\n    get:\n      operationId: listKilns\n      parameters:\n        - name: X-Kiln-Version\n"
+        f"          in: {location}\n          schema:\n{schema}"
+        '      responses:\n        "204":\n          description: done\n'
+    )
+
+
+DEFAULTED_VERSION = "            type: string\n            default: '2025-10'\n"
+
+
+# A job updated by `PUT /jobs/{id}`, its inline body declaring `properties`.
+def job_update(properties: str) -> str:
+    return (
+        "  /jobs/{id}:\n    put:\n      operationId: updateJob\n      parameters:\n        - name: id\n"
+        "          in: path\n          required: true\n          schema:\n            type: string\n"
+        "      requestBody:\n        required: true\n        content:\n          application/json:\n"
+        "            schema:\n              type: object\n              properties:\n"
+        + properties
+        + '      responses:\n        "204":\n          description: done\n'
+    )
+
+
+JOB_NAME = "                name:\n                  type: string\n"
+JOB_ID = "                id:\n                  type: string\n"
 
 
 class InteractionArm(NamedTuple):
@@ -2451,6 +2481,19 @@ INTERACTION_ARMS: dict[str, InteractionArm] = {
             "basic scheme alone": operation_document(gated_call(), BASIC_SCHEME),
             "operation requirement alone": operation_document(gated_call(OWN_GATE), BEARER_SCHEME),
         },
+    ),
+    "combo-header-string-default": InteractionArm(
+        operation_document(kiln_version(DEFAULTED_VERSION)),
+        {
+            "header alone": operation_document(kiln_version("            type: string\n")),
+            "default alone": operation_document(kiln_version(DEFAULTED_VERSION, "query")),
+        },
+    ),
+    # The property named as a path parameter entails the request body, so the body
+    # alone is the only single-feature document there is.
+    "combo-body-property-named-as-path-param": InteractionArm(
+        operation_document(job_update(JOB_ID + JOB_NAME)),
+        {"request body alone": operation_document(job_update(JOB_NAME))},
     ),
 }
 

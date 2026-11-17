@@ -104,6 +104,9 @@ const KINDS: &[Kind] = &[
         script_args: "--enum-type literals",
         fixtures: &[
             // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Every Fern golden comparison — the corpus `*_matches_fern_output` tests, the hand-written, probe and measurement gates — runs in this one binary suite by the project's design (crates/crozier-e2e/AGENTS.md), which drives the binary crozier:build leaves; giving golden comparisons their own Nx edge is a graph change for that whole family, not for these cases.
+            "api-evangelist-pinecone-inference",
+            "mnahkies-openapi-code-generator-e2e",
+            "uclalibrary-prl-harvester",
             "registered-literals-hashgraph-guardian-63ba2735",
             "registered-literals-apis-guru-openapi-directory-608e22dc",
             "registered-literals-apis-guru-openapi-directory-79291d99",

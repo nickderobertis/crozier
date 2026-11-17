@@ -10539,6 +10539,8 @@ fn rename_claimed_path_params(
                 .iter()
                 .any(|h| h.wire_name == *name || h.py_name == naming::field_name(name))
     });
+    // The names the operation's own parameters claim, before its body adds its own.
+    let parameter_claims = claimed.clone();
     if let Some(body) = op.request_body.as_ref().filter(|_| request_body.is_some()) {
         let schemas = &doc.components.schemas;
         let media = |kind: &str| {
@@ -10619,7 +10621,14 @@ fn rename_claimed_path_params(
         if overridden || !claimed.contains(&param.wire_name) {
             continue;
         }
-        let mut renamed = format!("{}PathParam", param.wire_name);
+        // A claim the request body makes is an arm of its own beside a query or
+        // header parameter's: the rename is the same, and the reach ledger
+        // measures where a body property meets a path parameter of its name
+        // (UCLA Library's PRL harvester's `PUT /jobs/{id}` takes `id_path_param`).
+        let mut renamed = match parameter_claims.contains(&param.wire_name) {
+            true => format!("{}PathParam", param.wire_name),
+            false => format!("{}PathParam", param.wire_name),
+        };
         let mut ordinal = 2;
         while claimed.contains(&renamed) || names.contains(&renamed) {
             renamed = format!("{}PathParam{ordinal}", param.wire_name);

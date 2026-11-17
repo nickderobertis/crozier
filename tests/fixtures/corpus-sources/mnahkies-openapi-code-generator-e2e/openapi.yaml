@@ -1,0 +1,571 @@
+openapi: "3.0.0"
+info:
+  title: E2E Tests for @nahkies/openapi-code-generator
+  version: "0.0.1"
+tags:
+  - name: request headers
+  - name: validation
+  - name: escape hatches
+  - name: media types
+  - name: route matching
+servers:
+  - url: '{protocol}://{host}:{port}'
+    variables:
+      host:
+        default: localhost
+      protocol:
+        enum: [ http, https ]
+        default: http
+      port:
+        default: '8080'
+paths:
+  /headers/undeclared:
+    get:
+      tags:
+        - request headers
+      responses:
+        200:
+          $ref: '#/components/responses/GetHeaders'
+  /headers/request:
+    get:
+      tags:
+        - request headers
+      parameters:
+        - name: Route-Level-Header
+          in: header
+          schema:
+            type: string
+        - name: Number-Header
+          in: header
+          schema:
+            type: number
+        - name: Boolean-Header
+          in: header
+          schema:
+            type: boolean
+        - name: Second-Boolean-Header
+          in: header
+          schema:
+            type: boolean
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+      responses:
+        200:
+          $ref: '#/components/responses/GetHeaders'
+
+  /params/simple-query:
+    get:
+      tags:
+        - query-parameters
+      parameters:
+        - name: orderBy
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [ asc, desc ]
+        - name: limit
+          in: query
+          required: true
+          schema:
+            type: number
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - orderBy
+                  - limit
+                properties:
+                  orderBy:
+                    type: string
+                  limit:
+                    type: number
+  /params/default-object-query:
+    get:
+      tags:
+        - query-parameters
+      parameters:
+        - name: filter
+          in: query
+          required: true
+          schema:
+            type: object
+            required:
+              - name
+              - age
+            properties:
+              name:
+                type: string
+              age:
+                type: number
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - filter
+                properties:
+                  filter:
+                    type: object
+                    required:
+                      - name
+                      - age
+                    properties:
+                      name:
+                        type: string
+                      age:
+                        type: number
+  /params/unexploded-object-query:
+    get:
+      tags:
+        - query-parameters
+      parameters:
+        - name: filter
+          in: query
+          required: true
+          explode: false
+          schema:
+            type: object
+            required:
+              - name
+              - age
+            properties:
+              name:
+                type: string
+              age:
+                type: number
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - filter
+                properties:
+                  filter:
+                    type: object
+                    required:
+                      - name
+                      - age
+                    properties:
+                      name:
+                        type: string
+                      age:
+                        type: number
+  /params/mixed-query:
+    get:
+      tags:
+        - query-parameters
+      parameters:
+        - name: limit
+          in: query
+          required: true
+          schema:
+            type: number
+        - name: author_ids
+          in: query
+          required: true
+          schema:
+            type: array
+            items:
+              type: integer
+        - name: kebab-case
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: statuses
+          in: query
+          required: true
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - open
+                - closed
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  limit:
+                    type: number
+                  statuses:
+                    type: array
+                    items:
+                      type: string
+                  kebab-case:
+                    type: string
+                  author_ids:
+                    type: array
+                    items:
+                      type: integer
+
+  /validation/numbers/random-number:
+    get:
+      tags:
+        - validation
+      parameters:
+        - name: max
+          in: query
+          schema:
+            type: number
+            minimum: 1
+            default: 10
+        - name: min
+          in: query
+          schema:
+            type: number
+            minimum: 0
+            default: 0
+        - name: forbidden
+          in: query
+          schema:
+            type: array
+            items:
+              type: number
+              format: int
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RandomNumber'
+  /validation/enums:
+    post:
+      tags:
+        - validation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Enumerations'
+      responses:
+        200:
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Enumerations'
+  /validation/optional-body:
+    post:
+      tags:
+       - validation
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+      responses:
+        200:
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+        204:
+          description: ok
+  /validation/objects/discriminated-union:
+    post:
+      tags:
+       - validation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Animal'
+      responses:
+        200:
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Animal'
+
+  /responses/500:
+    get:
+      tags:
+      - validation
+      responses:
+        500:
+          description: Internal Server Error
+  /responses/default:
+    get:
+      tags:
+        - validation
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [200,500]
+      responses:
+        200:
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /responses/empty:
+    get:
+      tags:
+        - validation
+      responses:
+        204:
+          description: Ok
+
+  /media-types/text:
+    post:
+      tags:
+        - media types
+      requestBody:
+        content:
+          text/plain:
+            schema:
+              type: string
+        required: true
+      responses:
+        200:
+          description: Rendered as HTML
+          content:
+            text/html:
+              schema:
+                type: string
+  /media-types/x-www-form-urlencoded:
+    post:
+      tags:
+        - media types
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProductOrder'
+            encoding:
+              address:
+                style: deepObject
+                explode: true
+        required: true
+      responses:
+        200:
+          description: Echoed back as JSON
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductOrder'
+  /media-types/octet-stream:
+    post:
+      tags:
+        - media types
+      requestBody:
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+              maxLength: 20971520
+      responses:
+        200:
+          description: ok
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+
+  /escape-hatches/plain-text:
+    get:
+      tags:
+        - escape hatches
+      responses:
+        200:
+          description: 'ok'
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /route-matching/fixed-field:
+    get:
+      operationId: routeMatchingGetByFixedField
+      tags:
+        - route matching
+      responses:
+        200:
+          description: 'ok'
+          content:
+            application/json:
+              schema: {}
+
+  /route-matching/{id}:
+    get:
+      operationId: routeMatchingGetById
+      tags:
+        - route matching
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: 'ok'
+          content:
+            application/json:
+              schema: {}
+
+  /timeout:
+    get:
+      operationId: getTimeout
+      tags:
+        - timeout
+      parameters:
+        - name: ms
+          in: query
+          required: true
+          schema:
+            type: number
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ms:
+                    type: number
+
+components:
+  responses:
+    GetHeaders:
+      description: success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              rawHeaders:
+                additionalProperties: true
+              typedHeaders: {}
+
+  schemas:
+    Cat:
+      type: object
+      required:
+        - type
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum: ['cat']
+        lives:
+          type: number
+    Dog:
+      type: object
+      required:
+        - type
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum: ['dog']
+        sticks:
+          type: number
+    Animal:
+      type: object
+      oneOf:
+        - $ref: '#/components/schemas/Cat'
+        - $ref: '#/components/schemas/Dog'
+      discriminator:
+        propertyName: type
+        mapping:
+          cat: '#/components/schemas/Cat'
+          dog: '#/components/schemas/Dog'
+    Enumerations:
+      type: object
+      required:
+        - colors
+        - starRatings
+      properties:
+        colors:
+          type: string
+          enum:
+            - red
+            - green
+            - blue
+        starRatings:
+          type: number
+          enum:
+            - 1
+            - 2
+            - 3
+    RandomNumber:
+      type: object
+      properties:
+        result:
+          type: number
+        params:
+          type: object
+          properties:
+            min:
+              type: number
+            max:
+              type: number
+            forbidden:
+              type: array
+              items:
+                type: number
+    ProductOrder:
+      type: object
+      properties:
+        sku:
+          type: string
+        quantity:
+          type: number
+          minimum: 1
+        address:
+          type: object
+          properties:
+            address1:
+              type: string
+            postcode:
+              type: string

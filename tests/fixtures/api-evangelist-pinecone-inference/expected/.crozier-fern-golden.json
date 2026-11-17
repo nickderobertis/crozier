@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.25",
+  "corpus_spec_name": "api-evangelist-pinecone-inference",
+  "corpus_spec_ref": "4560f9e34376dcb3315f104aaf345a03e5073182",
+  "corpus_spec_url": "https://raw.githubusercontent.com/api-evangelist/pinecone/4560f9e34376dcb3315f104aaf345a03e5073182/openapi/_original/pinecone-inference-openapi.yaml"
+}

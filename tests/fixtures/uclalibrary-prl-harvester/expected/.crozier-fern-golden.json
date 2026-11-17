@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.25",
+  "corpus_spec_name": "uclalibrary-prl-harvester",
+  "corpus_spec_ref": "b27c3c8e14fa257b227e61554dd616add441aac2",
+  "corpus_spec_url": "https://raw.githubusercontent.com/UCLALibrary/prl-harvester/b27c3c8e14fa257b227e61554dd616add441aac2/src/main/resources/openapi.yaml"
+}

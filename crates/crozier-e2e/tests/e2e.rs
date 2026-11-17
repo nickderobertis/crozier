@@ -10577,6 +10577,9 @@ const OPENCODEUI: Corpus = Corpus {
 };
 
 const CORPORA: &[&Corpus] = &[
+    &PINECONE_INFERENCE,
+    &OPENAPI_CODE_GENERATOR_E2E,
+    &PRL_HARVESTER,
     &LITERALS_HASHGRAPH_63BA2735,
     &LITERALS_APIS_GURU_608E22DC,
     &LITERALS_APIS_GURU_79291D99,
@@ -33386,5 +33389,65 @@ const LITERALS_HASHGRAPH_63BA2735: Corpus = Corpus {
 fn registered_literals_hashgraph_guardian_63ba2735_matches_fern_output() {
     assert_committed_corpus_matches(&LITERALS_HASHGRAPH_63BA2735);
     overlay_goldens::assert_literals_match(&LITERALS_HASHGRAPH_63BA2735);
+}
+
+/// `api-evangelist-pinecone-inference`: corpus row 6100, Pinecone's inference API —
+/// the registered witness of `combo-header-string-default`, whose
+/// `X-Pinecone-Api-Version` header carries a string default on every operation.
+const PINECONE_INFERENCE: Corpus = Corpus {
+    api: "api-evangelist-pinecone-inference",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn api_evangelist_pinecone_inference_matches_fern_output() {
+    assert_committed_corpus_matches(&PINECONE_INFERENCE);
+    overlay_goldens::assert_literals_match(&PINECONE_INFERENCE);
+}
+
+/// `mnahkies-openapi-code-generator-e2e`: corpus row 6101, the
+/// openapi-code-generator end-to-end document — its required query `filter`
+/// objects stay in their tag's `types/`, and its referenced urlencoded
+/// `ProductOrder` passes the component's own `ProductOrderAddress`.
+const OPENAPI_CODE_GENERATOR_E2E: Corpus = Corpus {
+    api: "mnahkies-openapi-code-generator-e2e",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn mnahkies_openapi_code_generator_e2e_matches_fern_output() {
+    assert_committed_corpus_matches(&OPENAPI_CODE_GENERATOR_E2E);
+    overlay_goldens::assert_literals_match(&OPENAPI_CODE_GENERATOR_E2E);
+}
+/// `uclalibrary-prl-harvester`: corpus row 6102, UCLA Library's PRL harvester API —
+/// the registered witness of `combo-body-property-named-as-path-param`, whose
+/// request bodies declare the `id` their path parameter names.
+const PRL_HARVESTER: Corpus = Corpus {
+    api: "uclalibrary-prl-harvester",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn uclalibrary_prl_harvester_matches_fern_output() {
+    assert_committed_corpus_matches(&PRL_HARVESTER);
+    overlay_goldens::assert_literals_match(&PRL_HARVESTER);
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
