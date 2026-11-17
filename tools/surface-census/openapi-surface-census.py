@@ -8823,11 +8823,13 @@ def repository_path(url: str) -> str:
     """
     parts = urlsplit(url)
     segments = [segment for segment in parts.path.split("/") if segment]
-    if parts.hostname == "raw.githubusercontent.com":
-        return "/".join(segments[3:])
-    if parts.hostname == "github.com" and len(segments) > 4 and segments[2] in {"blob", "raw"}:
-        return "/".join(segments[4:])
-    return "/".join(segments)
+    match parts.hostname:
+        case "raw.githubusercontent.com":
+            return "/".join(segments[3:])
+        case "github.com" if len(segments) > 4 and segments[2] in {"blob", "raw"}:
+            return "/".join(segments[4:])
+        case _:
+            return "/".join(segments)
 
 
 def publisher_witness(url: str) -> WitnessKind:

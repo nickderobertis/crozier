@@ -1034,6 +1034,7 @@ fn replayed_tests(root: &Path, state: &Path, user_config: &Path) -> BTreeSet<(St
 /// inside a nextest run: run it uninstrumented with the same cargo profile, so
 /// nothing rebuilds — `cargo nextest run -p crozier-e2e --run-ignored only -E
 /// 'test(=departure_contributors::the_recipe_runs_only_the_selected_goldens_contributors)'`.
+// llmlint: ignore[shell_test_tiers_stay_split] The manager's ruling for #820 (c16.1) asked for this journey beside the recipe's offline cases, `#[ignore]`d with its reason when it cannot stay light enough for the merge gate, and run by hand. `#[ignore]` is static, not an env-var guard, so no lane runs it, and no unrelated edit to this suite pays its cost. A separate project for one by-name case would add a graph node no target selects.
 #[test]
 #[ignore = "drives the real `just departures-ledger` (Nx, cargo build, nextest); run it by name, uninstrumented"]
 fn the_recipe_runs_only_the_selected_goldens_contributors() {

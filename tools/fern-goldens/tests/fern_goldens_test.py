@@ -722,6 +722,65 @@ class OverlayCertifiedTreeTests(unittest.TestCase):
                 self.assertIn(message, refused.stderr)
                 self.assertTrue(refused.stderr.startswith("certified-tree: "), refused.stderr)
 
+    def publish(self, fixture: str, tree: Path, *args: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            [
+                sys.executable,
+                str(self.root / "tools/fern-goldens/certified_tree.py"),
+                "publish",
+                str(self.root / "tests/fixtures" / fixture / "openapi.yml"),
+                str(tree),
+                "--enum-type",
+                "literals",
+                *args,
+            ],
+            env=self.env,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            check=False,
+        )
+
+    def test_publish_keeps_the_log_it_is_given_as_the_entrys_fern_log(self) -> None:
+        """`certified_tree.py publish --log FILE` keeps FILE's text as the entry's
+        `fern.log`; without `--log` the entry's log is empty, and a `--log` naming
+        no file refuses with the fix and publishes nothing."""
+        tree = self.root / "untouched"
+        (tree / "src" / "fern").mkdir(parents=True)
+        (tree / "src" / "fern" / "client.py").write_text("CLIENT = 1\n", encoding="utf-8")
+        (tree / ".fern").mkdir()
+        (tree / ".fern" / "metadata.json").write_text(
+            json.dumps(
+                {"cliVersion": OVERLAY_CLI, "generatorName": "fernapi/fern-python-sdk", "generatorVersion": STAND_IN}
+            ),
+            encoding="utf-8",
+        )
+        log = self.root / "fern-output.txt"
+        log.write_text("[api]: Generating fern-python-sdk\n[api]: Done\n", encoding="utf-8")
+
+        published = self.publish("alpha", tree, "--log", str(log))
+        self.assertEqual(published.returncode, 0, published.stderr)
+        entry = Path(published.stdout.strip())
+        self.assertEqual(entry, self.entry("literals"))
+        self.assertEqual(
+            (entry / "fern.log").read_text(encoding="utf-8"), "[api]: Generating fern-python-sdk\n[api]: Done\n"
+        )
+        self.assertEqual(self.find().stdout.strip(), str(entry))
+
+        unlogged = self.publish("eos.local", tree)
+        self.assertEqual(unlogged.returncode, 0, unlogged.stderr)
+        self.assertEqual((Path(unlogged.stdout.strip()) / "fern.log").read_text(encoding="utf-8"), "")
+
+        store = entry.parent.parent
+        before = sorted(path.name for path in store.iterdir())
+        (self.root / "tests/fixtures/beta").mkdir()
+        (self.root / "tests/fixtures/beta/openapi.yml").write_text("openapi: 3.0.3\ninfo: {title: beta}\n", "utf-8")
+        missing = self.publish("beta", tree, "--log", str(self.root / "no-such-log.txt"))
+        self.assertEqual((missing.returncode, missing.stdout), (1, ""), missing.stderr)
+        self.assertIn("no-such-log.txt", missing.stderr)
+        self.assertIn("check the path named exists", missing.stderr)
+        self.assertEqual(sorted(path.name for path in store.iterdir()), before)
+
     def test_a_setting_the_store_key_does_not_name_is_not_kept(self) -> None:
         result = self.run_script("fern-overlay-goldens.sh", "--default-max-retries", "2", "alpha")
 

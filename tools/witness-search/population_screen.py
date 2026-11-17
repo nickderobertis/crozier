@@ -1166,13 +1166,15 @@ HANDED_OFF_DOCUMENT = re.compile(r"[^/:]+/[^/:]+:(.+)@[0-9a-f]{40}")
 
 def repository_document_path(population: str, document: str) -> str | None:
     """The path inside its repository of a GitHub, Sourcegraph or handed-off candidate, or None for another."""
-    if population in (Population.GITHUB, Population.SOURCEGRAPH):
-        parts = [part for part in document.split("/") if part]
-        return "/".join(parts[2:]) if len(parts) >= 3 else None
-    if population == Population.HANDED_OFF:
-        found = HANDED_OFF_DOCUMENT.fullmatch(document)
-        return found.group(1) if found else None
-    return None
+    match population:
+        case Population.GITHUB | Population.SOURCEGRAPH:
+            parts = [part for part in document.split("/") if part]
+            return "/".join(parts[2:]) if len(parts) >= 3 else None
+        case Population.HANDED_OFF:
+            found = HANDED_OFF_DOCUMENT.fullmatch(document)
+            return found.group(1) if found else None
+        case _:
+            return None
 
 
 def tooling_resource(population: str, document: str, source: str, corpus_sources: Mapping[str, str]) -> bool:
