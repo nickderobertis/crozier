@@ -15495,7 +15495,8 @@ impl Builder<'_> {
                     // checkout state."
                     let established = self.established_flat_fields(base_name, raw_bases[index]);
                     let mut chain_extends = Vec::new();
-                    let inline = self.inlined_part(raw_bases[index], &fields, &mut chain_extends, 0);
+                    let inline =
+                        self.inlined_part(raw_bases[index], &fields, &mut chain_extends, 0);
                     let inline_required: Vec<&str> =
                         inline.required.iter().map(String::as_str).collect();
                     let mut inherited = Vec::new();
@@ -15721,17 +15722,16 @@ impl Builder<'_> {
     /// inlines every one); `None` when it extends a class, or is already being
     /// built on this path. Whatever lowering it hoists is discarded: the
     /// component builder declares the parent's types under its own name.
-    fn established_flat_fields(&mut self, parent_name: &str, parent: &Schema) -> Option<Vec<Field>> {
+    fn established_flat_fields(
+        &mut self,
+        parent_name: &str,
+        parent: &Schema,
+    ) -> Option<Vec<Field>> {
         if parent.all_of.is_none() || self.building_types.contains(parent_name) {
             return None;
         }
         let mark = self.types.len();
-        self.add_object(
-            parent_name,
-            naming::module_name(parent_name),
-            parent,
-            None,
-        );
+        self.add_object(parent_name, naming::module_name(parent_name), parent, None);
         let established = self.types[mark..].iter().find_map(|decl| match decl {
             TypeDecl::Object(object) if object.name == parent_name && object.bases.is_empty() => {
                 Some(object.fields.clone())

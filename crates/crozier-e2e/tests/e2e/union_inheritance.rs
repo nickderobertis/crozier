@@ -210,7 +210,10 @@ fn declared_scalar_union_members_stay_inline_and_structured_ones_stay_named() {
     let out = temp.path().join("sdk");
     generate("declared-scalar-union-members", "python-enums", &out);
     let types = out.join("src/fern/types");
-    assert!(types.join("threshold_band.py").is_file(), "the object alternative keeps its declared name");
+    assert!(
+        types.join("threshold_band.py").is_file(),
+        "the object alternative keeps its declared name"
+    );
     for scalar in [
         "reading_value_text.py",
         "reading_value_number.py",
@@ -218,7 +221,10 @@ fn declared_scalar_union_members_stay_inline_and_structured_ones_stay_named() {
         "reading_value_blob.py",
         "threshold_count.py",
     ] {
-        assert!(!types.join(scalar).exists(), "crozier wrote a module for {scalar}");
+        assert!(
+            !types.join(scalar).exists(),
+            "crozier wrote a module for {scalar}"
+        );
     }
     let threshold = std::fs::read_to_string(types.join("reading_threshold.py")).expect("the alias");
     assert!(
