@@ -359,6 +359,10 @@ def test_a_merge_conflicted_record_is_regenerated_from_the_merged_tree(tmp_path:
 
     git("init", "-qb", "main")
     git("config", "core.autocrlf", "false")
+    # The merge and the verb's own merge commit run without `-c`: a host with
+    # no global identity (a CI runner) needs the repository's.
+    git("config", "user.name", "t")
+    git("config", "user.email", "t@t")
     git("add", "-A")
     git("commit", "-qm", "the measured tree")
     path = root / record_model.RECORD

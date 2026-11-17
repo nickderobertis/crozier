@@ -2884,7 +2884,9 @@ class ReporterContractTests(unittest.TestCase):
         self.assertEqual(2, len(written), "the recipe names its ledger and inventory outputs")
         self.assertEqual(written, weekly.LEDGER_OUTPUTS)
         self.assertEqual(("just", "departures-ledger"), weekly.LEDGER_RECIPE)
-        self.assertIn("\ndepartures-ledger:\n", (REPO / "justfile").read_text(encoding="utf-8"))
+        # The recipe takes optional arguments (a golden selection), so its
+        # header may name them; run bare, as weekly runs it, it records them all.
+        self.assertRegex((REPO / "justfile").read_text(encoding="utf-8"), r"(?m)^departures-ledger(?: \*\w+)?:$")
 
 
 if __name__ == "__main__":
