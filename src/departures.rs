@@ -2019,7 +2019,7 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 54] = [
+pub const RULE_IDS: [&str; 55] = [
     "anyof-path-param-schema-example",
     "binary-json-body-example",
     "body-query-parameter-value",
@@ -2038,6 +2038,7 @@ pub const RULE_IDS: [&str; 54] = [
     "emoji-tag-reference-identifiers",
     "empty-namespace-package",
     "empty-root-security-optional-credential",
+    "escaped-field-alias-literal",
     "fern-metadata-generator-config",
     "flat-reference-link-target",
     "init-type-checking-import-order",
@@ -2198,6 +2199,10 @@ pub fn rule(id: &str) -> Option<Rule> {
         "empty-root-security-optional-credential" => Rule {
             region: Some(empty_root_security_header_guard),
             line: Some(empty_root_security_optional_credential),
+            ..none
+        },
+        "escaped-field-alias-literal" => Rule {
+            line: Some(escaped_field_alias_literal),
             ..none
         },
         "fern-metadata-generator-config" => Rule {
@@ -5216,6 +5221,79 @@ fn is_root_client_file(rel: &str) -> bool {
     is_client_wrapper(rel) || root_client
 }
 
+/// `escaped-field-alias-literal`: a model field's wire alias, in a generated
+/// `.py` file. Fern writes the declared property name between double quotes
+/// unescaped (`alias="<name>"`, which its `ruff format` may requote), so a
+/// quote or backslash in the name reads as Python; crozier writes a string
+/// literal whose value is the name. Each `alias=` literal crozier's line holds
+/// for such a declared name is put back as Fern's spelling of it, and the result
+/// must be Fern's line.
+fn escaped_field_alias_literal(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    if !pair.rel.ends_with(".py") || fern == crozier || !crozier.contains("alias=") {
+        return false;
+    }
+    let mut names = BTreeSet::new();
+    visit_source_schemas(pair.context.source_document.as_ref(), &mut |schema| {
+        names.extend(
+            schema
+                .properties
+                .keys()
+                .filter(|name| name.contains(['"', '\\']))
+                .cloned(),
+        );
+    });
+    names.iter().any(|wire| {
+        python_string_literals(wire).iter().any(|literal| {
+            let ours = format!("alias={literal}");
+            crozier.contains(&ours)
+                && unescaped_alias_spellings(wire)
+                    .iter()
+                    .any(|theirs| crozier.replace(&ours, &format!("alias={theirs}")) == fern)
+        })
+    })
+}
+
+/// The two literals `ruff format` may write for `value`: double-quoted, and the
+/// single-quoted form it prefers where that needs fewer escapes.
+fn python_string_literals(value: &str) -> [String; 2] {
+    let single = value
+        .replace('\\', "\\\\")
+        .replace('\'', "\\'")
+        .replace('\n', "\\n")
+        .replace('\r', "\\r");
+    [
+        format!("\"{}\"", crate::emit::escape_py_str(value)),
+        format!("'{single}'"),
+    ]
+}
+
+/// What Fern's `alias="<wire>"` reads as once formatted: the text verbatim, or,
+/// where it is one string literal, either literal of the value Python reads.
+fn unescaped_alias_spellings(wire: &str) -> Vec<String> {
+    let mut spellings = vec![format!("\"{wire}\"")];
+    let mut value = String::new();
+    let mut characters = wire.chars();
+    while let Some(character) = characters.next() {
+        match character {
+            '"' => return spellings,
+            '\\' => match characters.next() {
+                Some('n') => value.push('\n'),
+                Some('r') => value.push('\r'),
+                Some('t') => value.push('\t'),
+                Some(escaped @ ('\\' | '"' | '\'')) => value.push(escaped),
+                Some(other) => {
+                    value.push('\\');
+                    value.push(other);
+                }
+                None => return spellings,
+            },
+            other => value.push(other),
+        }
+    }
+    spellings.extend(python_string_literals(&value));
+    spellings
+}
+
 /// `empty-root-security-optional-credential`, aligned half: in the root client
 /// or its wrapper, Fern's required credential parameter `<name>: T,`, or its
 /// docstring entry `<name> : T`, against crozier's `<name>:
@@ -6495,6 +6573,59 @@ mod tests {
     // would cost a reference regeneration while handing the rule the same Pair these
     // cases build. Acceptance runs end to end in every golden comparison, pinned line
     // by line in tests/fixtures/departures-ledger.tsv.
+    #[test]
+    fn escaped_field_aliases_admit_only_a_declared_name_spelled_as_its_value() {
+        let document = serde_json::json!({"components": {"schemas": {"Beacon": {
+            "type": "object",
+            "properties": {
+                "relay\\\"code": {"type": "string"},
+                "a\" + bearing + \"": {"type": "integer"},
+                "call-sign": {"type": "string"}
+            }
+        }}}});
+        let context = source_context(document, &[]);
+        let rule: LineRule = escaped_field_alias_literal;
+        let rel = "src/fern/types/beacon.py";
+        for (fern, crozier) in [
+            (
+                r#"        typing.Optional[str], FieldMetadata(alias='relay"code'), pydantic.Field(alias='relay"code')"#,
+                r#"        typing.Optional[str], FieldMetadata(alias='relay\\"code'), pydantic.Field(alias='relay\\"code')"#,
+            ),
+            (
+                r#"        typing.Optional[int], FieldMetadata(alias="a" + bearing + ""), pydantic.Field(alias="a" + bearing + "")"#,
+                r#"        typing.Optional[int], FieldMetadata(alias='a" + bearing + "'), pydantic.Field(alias='a" + bearing + "')"#,
+            ),
+        ] {
+            assert!(line_holds(rule, rel, &context, fern, crozier), "{crozier}");
+            // Any other change on the line still fails.
+            assert!(!line_holds(
+                rule,
+                rel,
+                &context,
+                fern,
+                &crozier.replace("typing.Optional[", "typing.List[")
+            ));
+            // Only generated Python, and only with the source declaring the name.
+            assert!(!line_holds(rule, "reference.md", &context, fern, crozier));
+            assert!(!line_holds(rule, rel, &Context::default(), fern, crozier));
+        }
+        // A name the source does not declare, or a plain alias, is no departure.
+        assert!(!line_holds(
+            rule,
+            rel,
+            &context,
+            r#"        FieldMetadata(alias="b" + c + "")"#,
+            r#"        FieldMetadata(alias='b" + c + "')"#
+        ));
+        assert!(!line_holds(
+            rule,
+            rel,
+            &context,
+            r#"        FieldMetadata(alias="call-sign")"#,
+            r#"        FieldMetadata(alias="call_sign")"#
+        ));
+    }
+
     #[test]
     fn non_string_client_header_examples_admit_only_the_declared_type() {
         let document = serde_json::json!({"paths": {"/berths": {"get": {

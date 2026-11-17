@@ -375,6 +375,26 @@
     unauthenticated operations without inventing a key.
   evidence: docs/departures/evidence/empty-root-security-optional-credential.md
 
+- id: escaped-field-alias-literal
+  kind: fern-defect
+  trigger: >-
+    A schema property whose declared name holds a double quote or a backslash,
+    so its model field carries a wire alias, in the generated model module.
+  fern: >-
+    The FieldMetadata and pydantic.Field aliases interpolate the name between
+    double quotes unescaped, so it reads as Python: a backslash-quote becomes a
+    shorter name, and a balanced expression such as a" + bearing + " becomes
+    executable code naming an undefined variable.
+  crozier: >-
+    Both aliases are a string literal whose value is exactly the declared name,
+    every other byte of the line unchanged.
+  reason: >-
+    A balanced-expression alias makes the certified model fail to import, and a
+    backslash-quote alias parses and writes the field under a name the document
+    does not declare. The literal alias imports and carries every value under
+    its declared wire name.
+  evidence: docs/departures/evidence/escaped-field-alias-literal.md
+
 - id: fern-metadata-generator-config
   kind: provenance
   trigger: >-

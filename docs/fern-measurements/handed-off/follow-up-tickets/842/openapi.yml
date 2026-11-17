@@ -1,0 +1,34 @@
+openapi: 3.0.3
+info:
+  title: Signal Relay
+  version: "1.0"
+servers:
+  - url: https://relay.example.com
+paths:
+  /beacons/{beaconId}:
+    get:
+      operationId: getBeacon
+      parameters:
+        - name: beaconId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The beacon.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Beacon"
+components:
+  schemas:
+    Beacon:
+      type: object
+      properties:
+        "relay\\\"code":
+          type: string
+        "a\" + bearing + \"":
+          type: integer
+        call-sign:
+          type: string

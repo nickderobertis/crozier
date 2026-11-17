@@ -1,6 +1,6 @@
 //! Ticket triage reuses landed measurements and holds each new reduction whole
 //! against the certified pair. The index is the single list of ticket proofs.
-use super::{crozier, filtered_tree_failures, repo_root};
+use super::{crozier, filtered_tree_failures, repo_root, runtime_python_env};
 
 pub(crate) const DIR: &str = "docs/fern-measurements/handed-off/follow-up-tickets";
 
@@ -42,7 +42,9 @@ fn read_rows(path: &std::path::Path) -> Result<Vec<TicketRow>, String> {
                     )
                 })?;
             let replay = match fields[2].as_str() {
-                "already-matching" | "parity-gap-repaired" => Replay::ByteMatch,
+                "already-matching" | "parity-gap-repaired" | "departure-catalogued" => {
+                    Replay::ByteMatch
+                }
                 "refusal-kept" => Replay::Refusal,
                 verdict => return Err(format!(
                     "{}:{}: unsupported replay verdict {verdict:?}; add its CLI proof before recording it",
@@ -93,7 +95,10 @@ fn follow_up_ticket_index_holds_every_ticket_once() {
     let actual: Vec<&str> = rows.iter().map(|row| row.fields[1].as_str()).collect();
     assert_eq!(
         actual,
-        ["602", "679", "685", "694", "696", "697", "698", "699", "700", "701", "702", "703"]
+        [
+            "602", "679", "685", "694", "696", "697", "698", "699", "700", "701", "702", "703",
+            "842"
+        ]
     );
     for row in rows {
         assert_eq!(
@@ -322,4 +327,93 @@ fn follow_up_ticket_alias_validation_reports_ruff_process_failures() {
     }
 }
 // llmlint: ignore-end[e2e_not_mocked]
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This `sdk_env_*` journey runs only in the `sdk-env` project (tests/sdk_env/project.json: `tier:promoted`, `cache: false`), promoted out of the affected tier into its own required CI leg; crates/crozier-e2e/AGENTS.md makes `#[ignore]` the one mechanism that routes a journey to that project.
+/// #842: the SDK crozier generates from a document whose wire names hold a
+/// balanced expression and a backslash-quote imports, and its model parses,
+/// dumps and writes each field under exactly the declared name; the certified
+/// pair's model fails to import, and its #679 control holds an alias the document
+/// does not declare (`escaped-field-alias-literal`).
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI); run via `just test-sdk-env`"]
+fn sdk_env_wire_aliases_are_literal_data_in_crozier_and_not_in_the_certified_pair() {
+    let python = runtime_python_env().expect("SDK runtime environment");
+    let root = repo_root();
+    let script = root.join("docs/departures/evidence/escaped-field-alias-literal.py");
+    let beacon = [
+        "--model",
+        "fern.types.beacon:Beacon",
+        "--wire",
+        "relay\\\"code",
+        "--wire",
+        "a\" + bearing + \"",
+        "--wire",
+        "call-sign",
+    ];
+    let run = |sdk: &std::path::Path, model: &[&str], expected: &str| {
+        let output = std::process::Command::new(&python)
+            .arg(&script)
+            .arg(sdk)
+            .args(model)
+            .args(["--expected", expected])
+            .env("PYTHONDONTWRITEBYTECODE", "1")
+            .output()
+            .expect("run the alias proof");
+        assert!(
+            output.status.success(),
+            "{} --expected {expected}: {}",
+            sdk.display(),
+            String::from_utf8_lossy(&output.stderr)
+        );
+        String::from_utf8_lossy(&output.stdout)
+            .trim_end()
+            .to_string()
+    };
+    let case = root.join(DIR).join("842");
+    let out = tempfile::tempdir().expect("output dir");
+    let result = super::probe_command(&case.join("openapi.yml"), out.path())
+        .output()
+        .expect("run crozier");
+    assert!(
+        result.status.success(),
+        "{}",
+        String::from_utf8_lossy(&result.stderr)
+    );
+    assert_eq!(
+        run(&out.path().join("src"), &beacon, "valid"),
+        r#"{"round trip": ["a\" + bearing + \"", "call-sign", "relay\\\"code"]}"#
+    );
+    // Python 3.14's deferred annotations surface the undefined name through
+    // Pydantic's schema build; earlier interpreters raise it at class creation.
+    let certified = run(&case.join("fern-expected/src"), &beacon, "invalid");
+    assert!(
+        [
+            r#"{"import": "SchemaError importing fern.types.beacon"}"#,
+            r#"{"import": "NameError importing fern.types.beacon"}"#,
+        ]
+        .contains(&certified.as_str()),
+        "{certified}"
+    );
+    let control = root.join(DIR).join("679-escaped-quote-control");
+    let reading = [
+        "--model",
+        "fern.types.reading:Reading",
+        "--wire",
+        "probe\\\"code",
+    ];
+    assert_eq!(
+        run(&control.join("fern-expected/src"), &reading, "invalid"),
+        r#"{"aliases not declared": ["('probe\"code', 'probe\"code')"]}"#
+    );
+    let crozier_control = tempfile::tempdir().expect("output dir");
+    let result = super::probe_command(&control.join("openapi.yml"), crozier_control.path())
+        .output()
+        .expect("run crozier");
+    assert!(result.status.success());
+    assert_eq!(
+        run(&crozier_control.path().join("src"), &reading, "valid"),
+        r#"{"round trip": ["probe\\\"code"]}"#
+    );
+}
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]

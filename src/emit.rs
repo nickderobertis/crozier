@@ -70,7 +70,7 @@ pub(crate) fn yaml_resolves_as_timestamp(value: &str) -> bool {
 /// string literal, so a `"`/`\`/newline in the input cannot break out of (or
 /// inject into) the generated source. Ordinary values (URLs, header names) pass
 /// through unchanged, so byte-exact output is unaffected.
-fn escape_py_str(s: &str) -> String {
+pub(crate) fn escape_py_str(s: &str) -> String {
     s.replace('\\', "\\\\")
         .replace('"', "\\\"")
         .replace('\n', "\\n")
@@ -929,17 +929,23 @@ fn render_field(field: &Field, imports: &mut Imports) -> RenderedField {
     // Fern carries the wire alias in both its serialization metadata and a
     // pydantic field marker. The former drives crozier's write-side converter;
     // the latter makes direct pydantic construction/deserialization honor it.
+    // The alias is a string literal of the wire name, escaped, where Fern
+    // interpolates the name between quotes unescaped: a quote or backslash in it
+    // otherwise reads as Python, and a balanced expression such as
+    // `a" + b + "` makes the model fail to import
+    // (`escaped-field-alias-literal`, #842).
     let annotation = if field.needs_alias() {
         imports.add_plain("pydantic");
         imports.add_plain("typing_extensions");
         imports.add_core("serialization", "FieldMetadata");
+        let alias = escape_py_str(&field.wire_name);
         let pydantic_field = field.docstring.as_ref().map_or_else(
-            || Doc::atom(format!("pydantic.Field(alias=\"{}\")", field.wire_name)),
+            || Doc::atom(format!("pydantic.Field(alias=\"{alias}\")")),
             |description| {
                 Doc::group(
                     "pydantic.Field(",
                     vec![
-                        Doc::atom(format!("alias=\"{}\"", field.wire_name)),
+                        Doc::atom(format!("alias=\"{alias}\"")),
                         Doc::atom(format!("description=\"{}\"", escape_py_str(description))),
                     ],
                     ")",
@@ -950,7 +956,7 @@ fn render_field(field: &Field, imports: &mut Imports) -> RenderedField {
             "typing_extensions.Annotated[",
             vec![
                 typ,
-                Doc::atom(format!("FieldMetadata(alias=\"{}\")", field.wire_name)),
+                Doc::atom(format!("FieldMetadata(alias=\"{alias}\")")),
                 pydantic_field,
             ],
             "]",

@@ -1204,6 +1204,7 @@ docs/fern-measurements/handed-off/follow-up-tickets/679-escaped-quote-control/fe
 docs/fern-measurements/handed-off/follow-up-tickets/679-escaped-quote-control/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/follow-up-tickets/679-escaped-quote-control/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/follow-up-tickets/679-escaped-quote-control/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/follow-up-tickets/679-escaped-quote-control/fern-expected	src/fern/types/reading.py	13	escaped-field-alias-literal
 docs/fern-measurements/handed-off/follow-up-tickets/694/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/follow-up-tickets/694/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/follow-up-tickets/694/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -1214,6 +1215,13 @@ docs/fern-measurements/handed-off/follow-up-tickets/696/fern-expected	src/fern/c
 docs/fern-measurements/handed-off/follow-up-tickets/696/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/follow-up-tickets/696/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/follow-up-tickets/696/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/follow-up-tickets/842/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/follow-up-tickets/842/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/follow-up-tickets/842/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/follow-up-tickets/842/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/follow-up-tickets/842/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/follow-up-tickets/842/fern-expected	src/fern/types/beacon.py	13	escaped-field-alias-literal
+docs/fern-measurements/handed-off/follow-up-tickets/842/fern-expected	src/fern/types/beacon.py	16	escaped-field-alias-literal
 docs/fern-measurements/handed-off/remeasure/enum-member-digit-separator/expected-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
 docs/fern-measurements/handed-off/remeasure/enum-member-digit-separator/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/remeasure/enum-member-digit-separator/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
