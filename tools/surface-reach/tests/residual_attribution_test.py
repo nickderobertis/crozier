@@ -490,11 +490,14 @@ def test_a_version_only_release_keeps_the_saved_attribution_valid(tmp_path: Path
     manifest.write_text(
         manifest.read_text(encoding="utf-8").replace(f'version = "{version[1]}"', f'version = "{released}"', 1),
         encoding="utf-8",
+        newline="\n",  # a release edits the version alone; Windows' default CRLF would rewrite every line
     )
     entry = f'name = "crozier"\nversion = "{version[1]}"\n'
     assert entry in lock.read_text(encoding="utf-8")
     lock.write_text(
-        lock.read_text(encoding="utf-8").replace(entry, entry.replace(version[1], released)), encoding="utf-8"
+        lock.read_text(encoding="utf-8").replace(entry, entry.replace(version[1], released)),
+        encoding="utf-8",
+        newline="\n",
     )
     legacy_bumped = repin()
     assert "boolean-schema-true: stale residual attribution" in legacy_bumped.stderr, legacy_bumped.stderr
@@ -506,7 +509,9 @@ def test_a_version_only_release_keeps_the_saved_attribution_valid(tmp_path: Path
     dependency = re.search(r'(?m)^name = "clap"\nversion = "([^"]+)"', lock.read_text(encoding="utf-8"))
     assert dependency is not None
     lock.write_text(
-        lock.read_text(encoding="utf-8").replace(dependency[0], dependency[0] + "-moved", 1), encoding="utf-8"
+        lock.read_text(encoding="utf-8").replace(dependency[0], dependency[0] + "-moved", 1),
+        encoding="utf-8",
+        newline="\n",
     )
     moved = repin()
     assert "boolean-schema-true: stale residual attribution" in moved.stderr, moved.stderr
