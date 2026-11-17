@@ -954,3 +954,155 @@ fn every_compared_golden_has_a_contributor_or_is_journey_only() {
         "a compared golden no inventoried test records: rederive the inventory with `{DISCOVER}`"
     );
 }
+
+/// Two goldens the inventory attributes to one test each, both cheap to compare.
+const CHEAP_SELECTION: [&str; 2] = [
+    "tests/fixtures/form-bodies/expected",
+    "docs/fern-measurements/handed-off/bodies-media/streaming-detection/fern-expected",
+];
+
+/// The steps the recipe runs after recording, each an `#[ignore]`d test run by name.
+const RECIPE_STEPS: [&str; 3] = [
+    "departure_contributors::verify_departure_contributors",
+    "departures_ledger_gate::write_departures_ledger",
+    "example_values_inventory::write_example_values_inventory",
+];
+
+/// Every `(binary, test)` a run nextest recorded under `state` executed, read
+/// back through `cargo nextest replay` — nextest's own account of the run.
+fn replayed_tests(root: &Path, state: &Path, user_config: &Path) -> BTreeSet<(String, String)> {
+    let nextest = |args: &[&str]| {
+        let output = std::process::Command::new("cargo")
+            .args(["nextest"])
+            .args(args)
+            .current_dir(root)
+            .env("NEXTEST_EXPERIMENTAL_RECORD", "1")
+            .env("NEXTEST_USER_CONFIG_FILE", user_config)
+            .env("XDG_STATE_HOME", state)
+            .env("CARGO_TERM_COLOR", "never")
+            .output()
+            .expect("cargo nextest runs");
+        let text = String::from_utf8_lossy(&output.stdout).into_owned()
+            + &String::from_utf8_lossy(&output.stderr);
+        assert!(
+            output.status.success(),
+            "cargo nextest {args:?} failed:\n{text}"
+        );
+        text
+    };
+    let runs: Vec<String> = nextest(&["store", "list"])
+        .lines()
+        .filter_map(|line| line.split_whitespace().next())
+        .filter(|id| id.len() == 8 && id.chars().all(|c| c.is_ascii_hexdigit()))
+        .map(str::to_owned)
+        .collect();
+    assert!(
+        !runs.is_empty(),
+        "the recipe recorded no nextest run under {}",
+        state.display()
+    );
+    let mut tests = BTreeSet::new();
+    for run in runs {
+        let replay = nextest(&["replay", "--run-id", &run, "--status-level", "pass"]);
+        for line in replay.lines() {
+            // `PASS [   0.020s] (1/3) crozier-e2e::e2e module::test`
+            let Some((_, rest)) = line.split_once("] ") else {
+                continue;
+            };
+            let rest = rest
+                .strip_prefix('(')
+                .and_then(|counted| counted.split_once(") ").map(|(_, rest)| rest))
+                .unwrap_or(rest);
+            if let [binary, test] = rest.split_whitespace().collect::<Vec<_>>()[..] {
+                if binary.starts_with("crozier-") && binary.contains("::") {
+                    tests.insert((binary.to_owned(), test.to_owned()));
+                }
+            }
+        }
+    }
+    tests
+}
+
+/// Issue #820, through the real recipe: `just departures-ledger GOLDEN...`
+/// with real `cargo nextest` runs only the inventory's tests recording the
+/// selected goldens (and the recipe's own named steps), never the unrelated
+/// journeys of the suite, and leaves the committed ledger and inventory as
+/// they are — a selection's rows are already current. Nextest's record store,
+/// pointed at a scratch `XDG_STATE_HOME`, is the account of what ran.
+///
+/// Ignored because it builds and runs crozier through Nx and nextest from
+/// inside a nextest run: run it uninstrumented with the same cargo profile, so
+/// nothing rebuilds — `cargo nextest run -p crozier-e2e --run-ignored only -E
+/// 'test(=departure_contributors::the_recipe_runs_only_the_selected_goldens_contributors)'`.
+#[test]
+#[ignore = "drives the real `just departures-ledger` (Nx, cargo build, nextest); run it by name, uninstrumented"]
+fn the_recipe_runs_only_the_selected_goldens_contributors() {
+    let root = super::repo_root();
+    let committed = |relative: &str| std::fs::read(root.join(relative)).expect(relative);
+    let ledger = departures_ledger::LEDGER;
+    let examples = example_values_inventory::INVENTORY;
+    let before = (committed(ledger), committed(examples));
+    let inventory = parse(&String::from_utf8(committed(CONTRIBUTORS)).expect("utf-8"))
+        .expect("the committed inventory parses");
+    let selection: Vec<String> = CHEAP_SELECTION.iter().map(|g| (*g).to_owned()).collect();
+    let mut expected: BTreeSet<(String, String)> = selected_rows(&inventory, &selection)
+        .expect("the selection is inventoried")
+        .iter()
+        .map(|row| (row.binary.clone(), row.test.clone()))
+        .collect();
+    let recording = expected.len();
+    expected.extend(RECIPE_STEPS.map(|step| (BINARY.to_owned(), step.to_owned())));
+
+    let scratch = tempfile::tempdir().expect("scratch");
+    let state = scratch.path().join("state");
+    let user_config = scratch.path().join("nextest.toml");
+    std::fs::write(
+        &user_config,
+        "[experimental]\nrecord = true\n\n[record]\nenabled = true\n",
+    )
+    .expect("nextest user config");
+    let mut just = std::process::Command::new("just");
+    just.arg("departures-ledger")
+        .args(CHEAP_SELECTION)
+        .current_dir(root);
+    // The outer nextest run's own variables would steer the recipe's runs.
+    for (name, _) in std::env::vars_os() {
+        if name.to_string_lossy().starts_with("NEXTEST_") {
+            just.env_remove(name);
+        }
+    }
+    let output = just
+        .env("NEXTEST_EXPERIMENTAL_RECORD", "1")
+        .env("NEXTEST_USER_CONFIG_FILE", &user_config)
+        .env("XDG_STATE_HOME", &state)
+        .output()
+        .expect("just runs");
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    let ran = replayed_tests(root, &state, &user_config);
+    let unrelated: Vec<_> = ran.difference(&expected).collect();
+    assert!(
+        unrelated.is_empty(),
+        "the recipe ran {} test(s) recording none of {CHEAP_SELECTION:?}, e.g. {:?}",
+        unrelated.len(),
+        &unrelated[..unrelated.len().min(10)]
+    );
+    assert_eq!(
+        ran, expected,
+        "the recipe skipped a contributor or one of its steps"
+    );
+    assert!(
+        output.status.success(),
+        "just departures-ledger failed:\n{stdout}\n{stderr}"
+    );
+    assert!(
+        stdout.contains(&format!("departures-ledger: wrote {ledger} (")),
+        "the recipe did not report the ledger it wrote:\n{stdout}"
+    );
+    assert_eq!(
+        (committed(ledger), committed(examples)),
+        before,
+        "a selection of {recording} contributor test(s) changed the committed ledger or inventory"
+    );
+}

@@ -137,7 +137,7 @@ else
     || fail "cannot join the selected tests into one nextest filter" "check that paste(1) is installed, then rerun"
 fi
 
-# llmlint: ignore[changed_behavior_has_e2e] running the whole crozier-e2e suite from its own tests would recurse; crates/crozier-e2e/tests/e2e/report_scripts.rs drives this script with only `cargo` stood in.
+# llmlint: ignore[changed_behavior_has_e2e] the recording run is proven twice: departure_contributors::the_recipe_runs_only_the_selected_goldens_contributors drives the real recipe and nextest over a two-golden selection (ignored: it runs Nx and nextest from inside a nextest run and rewrites the committed ledger, so it is run by name), and crates/crozier-e2e/tests/e2e/report_scripts.rs drives the failure paths a real run cannot induce with only `cargo` stood in.
 if ! CROZIER_REQUIRE_CORPUS=1 CROZIER_RECORD_DEPARTURES="$records" CROZIER_RECORD_EXAMPLE_INVENTORY="$inventory" CROZIER_RECORD_CONTRIBUTORS="$noted" cargo nextest run --locked -p crozier-e2e -p crozier-nested-discriminator-tests \
   --no-fail-fast -E "$filter" >"$log" 2>&1; then
   cat "$log" >&2 || echo "departures-ledger: could not read the run log $log" >&2
