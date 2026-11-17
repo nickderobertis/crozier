@@ -7,6 +7,11 @@
   neither reaches the network).
 - Tests here run the scripts with stand-in tools; a suite that drives the real
   `git` or `just` belongs to `fern-goldens-git`.
+- A suite that drives a publishing generation (`fern-references.py`, the
+  witness screen, `generate-fern-fixture.sh` under
+  `CROZIER_CERTIFIED_TREE_PUBLISH=1`) with a stand-in `fern` that writes
+  `.fern/metadata.json` sets `XDG_CACHE_HOME` to a scratch directory, or its
+  stand-in tree lands in the host's certified-tree store.
 - `fern-references.py check` and `generate` share each family's `validate_*`:
   an input a generation starts reading is validated there, and its path joins
   `fern-references-check`'s test inputs (its trace test fails until it does).

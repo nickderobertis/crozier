@@ -77,6 +77,7 @@ from collections.abc import Callable, Generator
 from dataclasses import asdict, astuple, dataclass, fields
 from enum import StrEnum
 from pathlib import Path
+from types import ModuleType
 from typing import NamedTuple, TypeVar, cast
 
 ROOT = Path(os.environ.get("CROZIER_FERN_REFERENCES_ROOT") or Path(__file__).resolve().parents[2]).resolve()
@@ -312,12 +313,57 @@ def run_fern(
                 tree = base / "generated" / "python"
             generate_exit, generate_log = fern(command, workspace, env)
         produced = tree if tree.is_dir() and any(p.is_file() for p in tree.rglob("*")) else None
+        # Only a generation the store's key describes completely is kept: the
+        # packaged layout under the `fern` organization, no audiences, client
+        # class name or extra fields, and a document Fern read as committed (no
+        # scratch-port remote refs).
+        if (
+            produced is not None
+            and generate_exit == "0"
+            and layout == "packaged"
+            and organization == "fern"
+            and not audiences
+            and client_class_name is None
+            and extra_fields is None
+            and not url
+        ):
+            publish_untouched(document, produced, enum_type, scrub(generate_log, base))
         yield FernRun(
             check_exit,
             scrub(check_log, base),
             generate_exit,
             scrub(generate_log, base),
             produced,
+        )
+
+
+def certified_tree_store() -> ModuleType:
+    """`certified_tree.py` beside this tool: the shared store of Fern's untouched trees."""
+    spec = importlib.util.spec_from_file_location("certified_tree", Path(__file__).with_name("certified_tree.py"))
+    if spec is None or spec.loader is None:
+        raise ReferenceError("cannot load tools/fern-goldens/certified_tree.py; restore it with git checkout")
+    module = importlib.util.module_from_spec(spec)
+    # Registered before execution: its dataclasses resolve their module by name.
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def publish_untouched(document: Path, tree: Path, enum_type: str, log: str) -> None:
+    """Keep `tree`, Fern's untouched output, in the host's certified-tree store
+    before the scratch workspace holding it is removed. A tree the store refuses
+    (its metadata does not describe the key) is named and left out; the
+    regeneration itself goes on."""
+    store = certified_tree_store()
+    try:
+        store.publish(document, tree, store.EnumMode(enum_type), log)
+    except store.RefusedTree as error:
+        print(f"fern-references: not kept in the certified-tree store: {error}", file=sys.stderr)
+    except OSError as error:
+        print(
+            f"fern-references: could not keep the untouched tree in {store.store_root()} ({error}); "
+            "free space or fix its permissions so the next generation keeps it",
+            file=sys.stderr,
         )
 
 
@@ -827,13 +873,25 @@ class MeasurementCase:
     overlay: CaseOverlay | None
 
 
+# A case's directory under docs/fern-measurements/. The recorded triage layout
+# names cause directories in upper case (`handed-off/union-modelling/R9/literals`);
+# every segment still starts with a letter or digit, so `..` and an absolute path
+# stay refused.
+CASE_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*(?:/[A-Za-z0-9][A-Za-z0-9._-]*)*")
+
+
 def case_row_failure(row: dict[str, str], seen: set[str]) -> str | None:
     """Why one `cases.tsv` row is malformed, or `None`. Whether the document and
     base tree it names exist is the item's own check (`validate_measurement`),
     so one missing input never hides the rest of the table."""
     name, document, overlay = row["case"], row["document"], row["overlay"]
-    if not re.fullmatch(r"[a-z0-9][a-z0-9._-]*(?:/[a-z0-9][a-z0-9._-]*)*", name) or name in seen:
-        return "a case is a unique lower-case path under docs/fern-measurements/"
+    # Unique ignoring case: two rows differing only in case would share one
+    # directory on a case-insensitive filesystem (macOS, Windows).
+    if not CASE_NAME.fullmatch(name) or name.casefold() in {case.casefold() for case in seen}:
+        return (
+            "a case is a unique relative path under docs/fern-measurements/ (ignoring case), each segment "
+            "a letter or digit followed by letters, digits, `.`, `_` or `-`"
+        )
     if row["enum_type"] not in ENUM_TYPES or row["layout"] not in LAYOUTS:
         return f"enum_type is one of {', '.join(ENUM_TYPES)} and layout one of {', '.join(LAYOUTS)}"
     target = (ROOT / document).resolve()

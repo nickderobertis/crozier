@@ -634,7 +634,9 @@ fn the_documented_ledger_format_is_the_loaders() {
     let justfile = std::fs::read_to_string(root.join("justfile")).unwrap();
     let recipe = departures_ledger::REGENERATE.trim_start_matches("just ");
     assert!(
-        justfile.contains(&format!("\n{recipe}:")),
+        justfile.lines().any(|line| line
+            .strip_prefix(recipe)
+            .is_some_and(|rest| rest.starts_with(':') || rest.starts_with(" *args:"))),
         "the justfile has no `{recipe}` recipe"
     );
     // The recipe runs the crozier-e2e project's target, whose script records.

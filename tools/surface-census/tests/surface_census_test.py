@@ -4615,6 +4615,8 @@ class CensusReportTests(unittest.TestCase):
                     "fixture": WEBHOOKS,
                     "origin": "vendored",
                     "path": f"tests/fixtures/{WEBHOOKS}/openapi.yml",
+                    # A vendored feature target is crozier's own authored evidence.
+                    "witness": "authored",
                 }
             ],
             payload["sources"],
@@ -8937,6 +8939,215 @@ class GoldenSourcePopulationTests(unittest.TestCase):
             unregistered = run("--fixtures-root", str(fixtures), "--corpus-root", str(corpus))
             self.assertEqual(1, unregistered.returncode, unregistered.stdout)
             self.assertIn("missing golden registry", unregistered.stderr)
+
+    # Each spelling rustfmt (or an author) gives a registration: the compact one,
+    # a call wrapped across lines with a trailing comma, a `const` binding wrapped
+    # onto its own line, and spacing around `&`.
+    FORMATTED_REGISTRY = textwrap.dedent(
+        """\
+        // A comment naming `assert_corpus_matches(&NOT_A_ROW)` registers nothing.
+        const COMPACT: Corpus = Corpus {
+            api: "compact",
+            unmatched: &[],
+        };
+
+        #[test]
+        fn compact_matches_fern_output() {
+            assert_committed_corpus_matches(&COMPACT);
+        }
+
+        const A_REGISTRATION_CONSTANT_NAME_LONG_ENOUGH_TO_WRAP_THE_BINDING: Corpus =
+            Corpus {
+                api: "wrapped-constant",
+                unmatched: &["reference.md"],
+            };
+
+        #[test]
+        fn wrapped_constant_matches_fern_output() {
+            assert_committed_corpus_matches(
+                &A_REGISTRATION_CONSTANT_NAME_LONG_ENOUGH_TO_WRAP_THE_BINDING,
+            );
+        }
+
+        const WRAPPED_CALL: Corpus = Corpus {
+            api: "wrapped-call",
+            unmatched: &[],
+        };
+
+        #[test]
+        fn wrapped_call_matches_fern_output() {
+            assert_corpus_matches(
+                & WRAPPED_CALL
+            );
+        }
+        """
+    )
+
+    def write_population(self, root: Path, registry: str, *names: str) -> tuple[Path, Path]:
+        fixtures, corpus = root / "tests" / "fixtures", root / "corpus"
+        fixtures.mkdir(parents=True)
+        rows_md = [
+            "| # | name | method | source | pinned ref | license | decision | shapes |",
+            "|---:|---|---|---|---|---|---|---|",
+        ]
+        for number, name in enumerate(names, 1):
+            rows_md.append(
+                f"| {number} | `{name}` | api-guru | https://example.test/{name}.yml | `1` | MIT | committed | t |"
+            )
+            (corpus / name).mkdir(parents=True)
+            (corpus / name / "openapi.yml").write_text(self.DOCUMENT, encoding="utf-8", newline="\n")
+            (fixtures / name / "expected").mkdir(parents=True)
+        (fixtures / "CORPUS.md").write_text("\n".join(rows_md) + "\n", encoding="utf-8", newline="\n")
+        registry_path = census.golden_registry(fixtures)
+        registry_path.parent.mkdir(parents=True)
+        registry_path.write_text(registry, encoding="utf-8", newline="\n")
+        return fixtures, corpus
+
+    def test_every_formatting_of_a_registration_is_counted(self) -> None:
+        """Issue #811: formatting a registration must not remove it from the census."""
+        with tempfile.TemporaryDirectory() as directory:
+            fixtures, corpus = self.write_population(
+                Path(directory), self.FORMATTED_REGISTRY, "compact", "wrapped-constant", "wrapped-call"
+            )
+            completed = run(
+                "--fixtures-root", str(fixtures), "--corpus-root", str(corpus), "--selector", "pathItem.trace", "--json"
+            )
+            self.assertEqual(0, completed.returncode, completed.stderr)
+            payload = json.loads(completed.stdout)
+            self.assertEqual(
+                ["compact", "wrapped-call", "wrapped-constant"], sorted(s["fixture"] for s in payload["sources"])
+            )
+            self.assertEqual(
+                {("pathItem.trace", "compact", 1), ("pathItem.trace", "wrapped-call", 1)}
+                | {("pathItem.trace", "wrapped-constant", 1)},
+                {(row["selector"], row["fixture"], row["count"]) for row in payload["rows"]},
+            )
+
+    def test_a_registration_the_census_cannot_read_is_refused_not_dropped(self) -> None:
+        """A golden test driving a helper with no readable `&CONST` fails the census, naming the line."""
+        unreadable = self.FORMATTED_REGISTRY + textwrap.dedent(
+            """
+            #[test]
+            fn indirect_matches_fern_output() {
+                assert_corpus_matches(corpus_named("compact"));
+            }
+            """
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            fixtures, corpus = self.write_population(Path(directory), unreadable, "compact")
+            refused = run("--fixtures-root", str(fixtures), "--corpus-root", str(corpus), "--json")
+            self.assertEqual(1, refused.returncode, refused.stdout)
+            self.assertIn(
+                '`assert_corpus_matches(corpus_named("compact"))` in `indirect_matches_fern_output`', refused.stderr
+            )
+            self.assertIn("line 39:", refused.stderr)
+
+    def test_a_tooling_test_resource_is_no_real_world_witness_to_census_or_search(self) -> None:
+        """Issue #835: one eligibility rule, applied to registered sources and to search admission alike."""
+        tooling_path = "core/src/test/resources/openapi/specs/boolean-schemas.yaml"
+        publishers = {
+            "publisher-api": "https://raw.githubusercontent.com/acme/api/" + "a" * 40 + "/openapi/openapi.yaml",
+            "tooling-resource": "https://raw.githubusercontent.com/acme/gateway/" + "b" * 40 + "/" + tooling_path,
+            # A repository named `examples` is not by that fact a test resource.
+            "examples-repository": "https://raw.githubusercontent.com/acme/examples/" + "c" * 40 + "/app/openapi.yaml",
+            # A github.com blob or raw URL: the owner, repository, `blob`/`raw` and
+            # revision segments are its identity, the rest is where it sits.
+            "blob-sample": "https://github.com/acme/api/blob/" + "d" * 40 + "/samples/openapi.yaml",
+            "raw-tests-repository": "https://github.com/acme/tests/raw/" + "e" * 40 + "/spec/openapi.yaml",
+            # A directory's case and the underscores around it do not change what it names.
+            "case-folded": "https://raw.githubusercontent.com/acme/api/" + "f" * 40 + "/Tests/openapi.yaml",
+            "underscore-wrapped": "https://raw.githubusercontent.com/acme/web/" + "1" * 40 + "/src/__mocks__/api.yaml",
+            # Another host's URL path is read whole, its first segment included.
+            "other-host-fixture": "https://specs.example.org/fixtures/v2/openapi.yaml",
+            "other-host-publisher": "https://specs.example.org/acme/v2/openapi.yaml",
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            fixtures, corpus = self.write_population(
+                Path(directory),
+                "".join(
+                    f'const ROW_{index}: Corpus = Corpus {{\n    api: "{name}",\n    unmatched: &[],\n}};\n'
+                    f"#[test]\nfn row_{index}_matches_fern_output() {{\n    assert_committed_corpus_matches(&ROW_{index});\n}}\n"
+                    for index, name in enumerate(publishers)
+                ),
+                *publishers,
+            )
+            manifest = fixtures / "CORPUS.md"
+            text = manifest.read_text(encoding="utf-8")
+            for name, url in publishers.items():
+                text = text.replace(f"https://example.test/{name}.yml", url)
+            manifest.write_text(text, encoding="utf-8", newline="\n")
+            completed = run("--fixtures-root", str(fixtures), "--corpus-root", str(corpus), "--json")
+            self.assertEqual(0, completed.returncode, completed.stderr)
+            witnesses = {source["fixture"]: source["witness"] for source in json.loads(completed.stdout)["sources"]}
+            self.assertEqual(
+                {
+                    "publisher-api": "real-world",
+                    "tooling-resource": "tooling-resource",
+                    "examples-repository": "real-world",
+                    "blob-sample": "tooling-resource",
+                    "raw-tests-repository": "real-world",
+                    "case-folded": "tooling-resource",
+                    "underscore-wrapped": "tooling-resource",
+                    "other-host-fixture": "tooling-resource",
+                    "other-host-publisher": "real-world",
+                },
+                witnesses,
+            )
+            # A row whose source cell is no URL cannot be classified, so it is refused.
+            manifest.write_text(text.replace(publishers["publisher-api"], "see the vendor"), encoding="utf-8")
+            refused = run("--fixtures-root", str(fixtures), "--corpus-root", str(corpus), "--json")
+            self.assertEqual(1, refused.returncode, refused.stdout)
+            self.assertIn("row `publisher-api` names source 'see the vendor', which is no http(s) URL", refused.stderr)
+        # Search admits a witness through `golden-reach-search screen --registered`;
+        # the same rule refuses that path there before any screen is measured.
+        refused = subprocess.run(
+            [
+                sys.executable,
+                str(REPO / "tools/surface-census/golden-reach-search.py"),
+                "screen",
+                "--source",
+                "github-code-search",
+                "--key",
+                "boolean-schema-true",
+                "--candidate",
+                f"acme/gateway:{tooling_path}@{'b' * 40}",
+                "--registered",
+                "tooling-resource",
+            ],
+            cwd=REPO,
+            capture_output=True,
+            text=True,
+            timeout=CENSUS_TIMEOUT,
+            encoding="utf-8",
+        )
+        self.assertEqual(1, refused.returncode, refused.stdout)
+        self.assertIn("is a tooling resource by its path", refused.stderr)
+        self.assertIn("not a real-world specification: a test fixture written to exercise a tool", refused.stderr)
+        # An eligible publisher path passes the rule and meets only the verb's
+        # ordinary checks (here: no recorded search declares it).
+        eligible = subprocess.run(
+            [
+                sys.executable,
+                str(REPO / "tools/surface-census/golden-reach-search.py"),
+                "screen",
+                "--source",
+                "github-code-search",
+                "--key",
+                "boolean-schema-true",
+                "--candidate",
+                f"acme/api:openapi/openapi.yaml@{'a' * 40}",
+                "--registered",
+                "publisher-api",
+            ],
+            cwd=REPO,
+            capture_output=True,
+            text=True,
+            timeout=CENSUS_TIMEOUT,
+            encoding="utf-8",
+        )
+        self.assertEqual(1, eligible.returncode, eligible.stdout)
+        self.assertNotIn("tooling resource", eligible.stderr)
+        self.assertIn("is no declarer of boolean-schema-true", eligible.stderr)
 
     def test_the_real_population_is_exactly_the_compared_goldens(self) -> None:
         corpus_root = REPO / "tests" / "fixtures" / "corpus-sources"
@@ -21370,7 +21581,9 @@ def stage_restatement_population(root: Path) -> None:
         (directory / "openapi.yml").write_text(
             "openapi: 3.0.3\ninfo: {title: Sample, version: '1'}\npaths: {}\n", encoding="utf-8"
         )
-        corpus_rows.append(f"| {number + 1} | {name} | 3.0 | source | grant | notes | committed | bytes |\n")
+        corpus_rows.append(
+            f"| {number + 1} | {name} | 3.0 | https://example.test/{name}.yml | grant | notes | committed | bytes |\n"
+        )
     (fixtures / "CORPUS.md").write_text("".join(corpus_rows), encoding="utf-8")
     registry = root / "crates/crozier-e2e/tests/e2e.rs"
     registry.parent.mkdir(parents=True)
@@ -21491,6 +21704,38 @@ class CoverageRestatementTests(unittest.TestCase):
         self.assertIn("authored tier statement", refused.stderr)
         self.index.write_text(valid, encoding="utf-8")
         self.assertEqual(0, self.run_restater().returncode)
+
+    def test_authored_inventory_counts_only_known_nonempty_distinct_keys(self) -> None:
+        """Issue #812: a key no region row declares must not move a tier total."""
+        matrix = self.root / "docs/openapi-surface/authored-probes/evidence-tiers.tsv"
+        matrix.parent.mkdir(parents=True)
+        source = self.root / "case.yml"
+        source.write_text("openapi: 3.0.3\n", encoding="utf-8")
+        digest = hashlib.sha256(source.read_bytes()).hexdigest()
+        header = "schema_version\tcase\ttier\tkeys\tsource\tsha256\tsearch\n"
+
+        def row(case: str, keys: str) -> str:
+            return f"1\t{case}\topen\t{keys}\tcase.yml\t{digest}\tsearch.md\n"
+
+        valid = row("case", "combo-header-string-default")
+        for keys, reason in (
+            ("combo-header-string-default;", "carry an empty key"),
+            ("combo-header-string-default;combo-header-string-default", "repeat a key"),
+            ("combo-no-such-region-row", "name `combo-no-such-region-row`, which no region table declares"),
+        ):
+            with self.subTest(keys=keys):
+                matrix.write_text(header + valid + row("offending", keys), encoding="utf-8")
+                refused = self.run_restater("--write")
+                self.assertEqual(1, refused.returncode, refused.stdout)
+                self.assertIn(f"offending keys `{keys}` {reason}", refused.stderr)
+                self.assertNotIn("Traceback", refused.stderr)
+                self.assertNotIn("2 decided", self.index.read_text(encoding="utf-8"))
+        matrix.write_text(
+            header + valid + row("second", "combo-header-string-default;combo-tag-only-operation-id"), encoding="utf-8"
+        )
+        recovered = self.run_restater("--write")
+        self.assertEqual(0, recovered.returncode, recovered.stderr)
+        self.assertIn("2 decided, 0 undecided", self.index.read_text(encoding="utf-8"))
 
     def test_authored_snapshot_gap_counts_preserve_cells_and_recover(self) -> None:
         payload = {
@@ -24417,6 +24662,14 @@ class AuthoredEvidenceTierTests(unittest.TestCase):
             root = Path(directory)
             target = root / "docs/openapi-surface/authored-probes/evidence-tiers.tsv"
             target.parent.mkdir(parents=True)
+            # The region inventory the case's key must name.
+            (root / "docs/openapi-surface-coverage.md").write_text(
+                "# Coverage\n\n## The region files\n\n| `combinations` | [`openapi-surface/combinations.md`](x) |\n",
+                encoding="utf-8",
+            )
+            (root / "docs/openapi-surface/combinations.md").write_text(
+                "| combo-case | both | x | gap | - | - | - | - |\n", encoding="utf-8"
+            )
             source = root / "source.yml"
             source.write_text("openapi: 3.0.3\n", encoding="utf-8")
             digest = hashlib.sha256(source.read_bytes()).hexdigest()

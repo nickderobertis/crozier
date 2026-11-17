@@ -151,11 +151,14 @@ def main(argv: list[str] | None = None) -> int:
     sys.modules[spec.name] = proofs
     spec.loader.exec_module(proofs)
     supplemental, errors = proofs.read_residual_proofs(REPO)
-    if supplemental and not args.real_witnesses_only:
+    # A record is only ever written over keys the proof gate has confirmed closed,
+    # so `--write-record` runs the gate even when measuring the real witnesses.
+    if supplemental and (args.write_record or not args.real_witnesses_only):
         errors += proofs.gate(REPO)["failures"]
     if errors:
         sys.exit("residual-attribution: " + "; ".join(errors))
-    closed = set() if args.real_witnesses_only else {proof.key for proof in supplemental}
+    confirmed_closed = {proof.key for proof in supplemental}
+    closed = set() if args.real_witnesses_only else confirmed_closed
     if not CROZIER.is_file():
         sys.exit(
             f"residual-attribution: no {CROZIER.relative_to(REPO).as_posix()}; run `just residual-attribution`, which builds it"
@@ -205,7 +208,11 @@ def main(argv: list[str] | None = None) -> int:
                 )
             )
     if args.write_record:
-        record.write(REPO, measured)
+        # The saved rows are rebuilt from the open keys: a key supplemental proof
+        # closed has no residual row to describe, and a whole-population run
+        # replaces every row rather than keeping one no case measures any more.
+        kept = measured if args.key is not None else {key: measured[key] for key in CASES if key in measured}
+        record.write(REPO, {key: row for key, row in kept.items() if key not in confirmed_closed})
         print(f"residual-attribution: wrote {record.RECORD.as_posix()}")
     return 0
 

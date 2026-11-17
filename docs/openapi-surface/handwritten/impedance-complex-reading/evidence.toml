@@ -1,0 +1,9 @@
+fern_cli_version = "5.200.0"
+fern_python_sdk_version = "5.41.25"
+digest = "bd2bef942b2b9743117109974581f6b40e4b5889dcbc64a2064899b1e181c6f9"
+
+[[covers]]
+key = "schema-name-builtin-complex"
+search = "docs/openapi-surface/witness-search-clients-extensions/README.md#schema-named-complex"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"

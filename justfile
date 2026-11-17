@@ -328,9 +328,11 @@ fixtures-diff corpus="" file="":
 # Regenerate the per-golden departure ledger, tests/fixtures/departures-ledger.tsv
 # (crates/crozier-e2e/departures-ledger.sh says how). Run it after a change that
 # adds, moves or removes a departure, and review the diff before committing; see
-# docs/departures/README.md.
-departures-ledger:
-    @just nx run crozier-e2e:departures-ledger
+# docs/departures/README.md. Optional args: GOLDEN... to record only those
+# goldens, `--rename OLD=NEW` after an unchanged move, `--discover-contributors`
+# to rederive tests/fixtures/departures-contributors.tsv.
+departures-ledger *args:
+    @CROZIER_DEPARTURES_LEDGER_ARGS="{{args}}" just nx run crozier-e2e:departures-ledger
 
 # Measure what the committed Fern GOLDENS reach in src/, apart from what
 # crozier's own tests reach — the number that answers "which fixture next?".

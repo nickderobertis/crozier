@@ -393,6 +393,11 @@ mod documentation_audit;
 #[path = "e2e/departures_ledger_gate.rs"]
 mod departures_ledger_gate;
 
+/// The inventory of tests whose comparisons record the ledger, and the rename
+/// and contributor-check steps of `just departures-ledger`.
+#[path = "e2e/departure_contributors.rs"]
+mod departure_contributors;
+
 /// `fixtures-report.sh` and `departures-ledger.sh`, run as their recipes run them.
 #[cfg(unix)]
 #[path = "e2e/report_scripts.rs"]
@@ -16396,6 +16401,10 @@ fn select_diff_corpora(requested: Option<&str>) -> (Vec<&'static Corpus>, Vec<(S
     }
     (selected, failures)
 }
+
+/// A report subprocess's output, failing with its status and standard error.
+#[path = "../../../tests/support/report_subprocess.rs"]
+mod report_subprocess;
 
 #[path = "e2e/fixture_diff_report.rs"]
 mod fixture_diff_report;

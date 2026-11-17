@@ -155,9 +155,14 @@ export CROZIER_REQUIRE_CORPUS=1
 corpus_next_action="A byte-match test failed or a corpus spec is unfetched. Run \
 'just test-corpus-match' to see which, then 'just fixtures-diff <corpus>' for the diff."
 
-step "clearing stale coverage profiles" \
+# `cargo llvm-cov report` reads every instrumented binary the target directory
+# holds, so a workspace test binary an earlier build left under another hash
+# would add its own source's line mapping to these exports. Clearing the
+# workspace's artifacts (and every profile) first means each export reads only
+# what this run built; dependencies stay cached.
+step "clearing stale coverage profiles and workspace binaries" \
   "Remove target/llvm-cov-target by hand and retry." \
-  cargo llvm-cov clean --profraw-only
+  cargo llvm-cov clean --workspace
 
 step "measuring the non-e2e tier" \
   "Run 'just test' to see the failure on its own." \

@@ -66,7 +66,7 @@ import sys
 import tempfile
 import urllib.parse
 from collections import Counter
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from enum import Enum
 from pathlib import Path, PurePosixPath
 from types import ModuleType
@@ -334,8 +334,35 @@ def fern_screen_document(document: Path, scratch: Path, timeout: int) -> dict[st
             .replace("; ", ", ")
             .replace("`", "'")[:400],
         )
+        if status == "0" and package.is_dir():
+            keep_untouched(document, package, logs["generate"], row)
     row["logs"] = logs
     return row
+
+
+def keep_untouched(document: Path, package: Path, log: str, row: Mapping[str, object]) -> None:
+    """Publish the tree Fern wrote to the host's certified-tree store
+    (`tools/fern-goldens/certified_tree.py`) before the screen's scratch is removed,
+    with the screen's row beside it, so a later measurement of the same document
+    at the same pair reuses it rather than generating again. A tree that does not
+    describe itself as the store's key (no `.fern/metadata.json` naming the pair
+    and enum mode) is left out: nothing in the screen's own record depends on it."""
+    store = _load("certified_tree", REPO / "tools" / "fern-goldens" / "certified_tree.py")
+    _cli, _name, _version, config = corpus_fern_pins()
+    pydantic = config.get("pydantic_config")
+    enums = isinstance(pydantic, dict) and pydantic.get("enum_type") == "python_enums"
+    # llmlint: ignore[changed_behavior_has_e2e] The screen's mode is the corpus goldens' own, and every registered golden records python_enums, so no screen input reaches the literals arm today; the store's literals publication itself is proven end to end by fern_references_test's test_a_certified_generation_keeps_its_untouched_tree_reusable, which publishes and finds both modes.
+    mode = store.EnumMode.PYTHON_ENUMS if enums else store.EnumMode.LITERALS
+    try:
+        store.publish(document, package, mode, log, {"screen.json": json.dumps(row, indent=2) + "\n"})
+    except store.RefusedTree:
+        return
+    except OSError as error:
+        print(
+            f"witness-screen: could not keep Fern's tree in {store.store_root()} ({error}); "
+            "free space or fix its permissions so the next screen keeps it",
+            file=sys.stderr,
+        )
 
 
 def fern_verdict(row: dict[str, Any], pins: Pins | None = None) -> str | None:

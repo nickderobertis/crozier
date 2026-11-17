@@ -1,0 +1,9 @@
+fern_cli_version = "5.200.0"
+fern_python_sdk_version = "5.41.25"
+digest = "a6aebd81fab7c8103f16ebf87895f51522b514b589b5fb159f5f2b115c186af7"
+
+[[covers]]
+key = "undiscriminated-ref-oneof-sibling-properties-dropped"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"

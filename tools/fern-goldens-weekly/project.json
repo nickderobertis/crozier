@@ -25,6 +25,7 @@
         "{workspaceRoot}/tools/fern-goldens/generate-fern-fixture.sh",
         "{workspaceRoot}/tools/fern-goldens/golden_overlay.py",
         "{workspaceRoot}/tools/fern-goldens/certified_pair.py",
+        "{workspaceRoot}/tools/fern-goldens/certified_tree.py",
         "{workspaceRoot}/tools/fern-refusals/fern-refusals.py",
         "{workspaceRoot}/tools/corpus/corpus-lib.sh",
         "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",

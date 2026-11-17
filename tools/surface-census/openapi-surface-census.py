@@ -49,6 +49,7 @@ here. What only this file knows is the object-model table itself — `OBJECTS` a
 from __future__ import annotations
 
 import argparse
+import bisect
 import difflib
 import io
 import json
@@ -58,9 +59,10 @@ import unicodedata
 from collections import Counter, defaultdict
 from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass
+from enum import StrEnum
 from pathlib import Path
 from typing import Any, NamedTuple, NoReturn, TypeAlias
-from urllib.parse import unquote
+from urllib.parse import unquote, urlsplit
 
 # The corpus project owns the remote-ref pins; its directory is not on sys.path
 # for a script run from here, nor for the tests that load this one by path.
@@ -8774,6 +8776,67 @@ SPEC_NAMES = ("openapi.yml", "openapi.yaml", "openapi.json")
 _ROW = re.compile(r"^\s*\|\s*\d+\s*\|")
 
 
+class WitnessKind(StrEnum):
+    """Whether a source's golden is evidence that Fern generates a shape from a real specification."""
+
+    REAL_WORLD = "real-world"
+    # One of crozier's own vendored feature targets: authored evidence.
+    AUTHORED = "authored"
+    # A publisher's test, sample, example, fixture or mock resource: authored evidence too.
+    TOOLING_RESOURCE = "tooling-resource"
+
+
+# The real-source eligibility rule, stated once and read by the census, golden-reach
+# and witness search alike: a test, sample, example, fixture or mock resource, by a
+# directory of its path inside its repository, is not a real-world specification.
+# Underscores around a segment (`__tests__`, `__mocks__`) do not change what it names.
+TOOLING_RESOURCE_SEGMENTS = frozenset(
+    {
+        "test",
+        "tests",
+        "testdata",
+        "test-data",
+        "test_data",
+        "fixture",
+        "fixtures",
+        "mock",
+        "mocks",
+        "example",
+        "examples",
+        "sample",
+        "samples",
+    }
+)
+
+
+def tooling_resource_path(path: str) -> bool:
+    """Whether a document at `path` inside its repository is a tooling resource, not a real-world specification."""
+    return any(segment.lower().strip("_") in TOOLING_RESOURCE_SEGMENTS for segment in path.strip("/").split("/")[:-1])
+
+
+def repository_path(url: str) -> str:
+    """The path inside its repository of a pinned publisher URL.
+
+    A raw GitHub URL's leading owner, repository and revision segments (and a
+    `github.com` blob or raw URL's) are the repository's identity, not where the
+    document sits in it; any other host's URL path is read whole.
+    """
+    parts = urlsplit(url)
+    segments = [segment for segment in parts.path.split("/") if segment]
+    match parts.hostname:
+        case "raw.githubusercontent.com":
+            return "/".join(segments[3:])
+        case "github.com" if len(segments) > 4 and segments[2] in {"blob", "raw"}:
+            return "/".join(segments[4:])
+        case _:
+            return "/".join(segments)
+
+
+def publisher_witness(url: str) -> WitnessKind:
+    """How the eligibility rule classifies the document a `CORPUS.md` row pins at `url`."""
+    return WitnessKind.TOOLING_RESOURCE if tooling_resource_path(repository_path(url)) else WitnessKind.REAL_WORLD
+
+
 @dataclass(frozen=True)
 class Source:
     """One registered golden source document."""
@@ -8781,6 +8844,7 @@ class Source:
     fixture: str
     origin: str  # "vendored" or "corpus"
     path: Path | None  # None when a source file is missing
+    witness: WitnessKind = WitnessKind.REAL_WORLD
 
 
 def corpus_aliases(fixtures_root: Path) -> dict[str, str]:
@@ -8795,6 +8859,43 @@ def corpus_aliases(fixtures_root: Path) -> dict[str, str]:
         name, _, fixture = line.partition("\t")
         aliases[name.strip()] = fixture.strip()
     return aliases
+
+
+def manifest_sources(manifest: Path) -> dict[str, str]:
+    """Each canonical registered name of tests/fixtures/CORPUS.md -> the publisher URL its row pins."""
+    sources: dict[str, str] = {}
+    for line in manifest.read_text(encoding="utf-8").splitlines():
+        if not _ROW.match(line):
+            continue
+        cells = [cell.strip().strip("`").strip() for cell in line.split("|")]
+        if len(cells) >= 9 and cells[2] and cells[7] in {"link-ok", "committed"}:
+            # The eligibility rule reads this URL's path; one that is no URL would
+            # read as a real-world publisher's by default, so it is refused instead.
+            url = urlsplit(cells[4])
+            if url.scheme not in {"http", "https"} or not url.hostname:
+                raise SystemExit(
+                    f"openapi-surface-census: {manifest} row `{cells[2]}` names source {cells[4]!r}, which is no "
+                    "http(s) URL of the document it pins; restore the row's source cell"
+                )
+            sources[cells[2]] = cells[4]
+    return sources
+
+
+def authored_witnesses(fixtures_root: Path, corpus_root: Path) -> frozenset[str]:
+    """Every source name (and fixture directory) whose golden is authored, not real-world, evidence.
+
+    The vendored feature targets, and every acquired corpus row the eligibility
+    rule (`publisher_witness`) classifies as a tooling resource. A checkout
+    with no `CORPUS.md` has no corpus rows to classify.
+    """
+    vendored_only = not (fixtures_root / "CORPUS.md").is_file()
+    aliases = corpus_aliases(fixtures_root)
+    return frozenset(
+        name
+        for source in acquisition_sources(fixtures_root, corpus_root, vendored_only)
+        if source.witness != WitnessKind.REAL_WORLD
+        for name in (source.fixture, aliases.get(source.fixture, source.fixture))
+    )
 
 
 def manifest_rows(manifest: Path) -> Iterator[str]:
@@ -8840,7 +8941,103 @@ def pinned_tree_root(fixtures_root: Path, corpus_root: Path, fixture: str) -> Pa
 # against Fern's: `<api>_matches_fern_output`, as `tools/surface-census/golden-reach.py`
 # scopes one instrumented run to it.
 GOLDEN_TEST = re.compile(r"matches_fern_output")
-_CORPUS_HELPER = re.compile(r"assert_(?:link_ok_|committed_)?corpus_matches\(&(\w+)\)")
+# A corpus assertion helper's name, wherever a call to it starts. Its argument is
+# parsed separately (`_CORPUS_ARGUMENT`) so rustfmt's wrapping — the call broken
+# across lines, a trailing comma, spacing around `&` — cannot hide a registration.
+_CORPUS_HELPER = re.compile(r"\b(assert_(?:link_ok_|committed_)?corpus_matches)\s*\(")
+_CORPUS_ARGUMENT = re.compile(r"\s*&\s*(\w+)\s*,?\s*\)")
+# A `Corpus { api: "…", … }` literal, optionally bound to a `const`, however the
+# binding is wrapped: rustfmt moves a long `const NAME: Corpus =` onto its own line.
+_CORPUS_LITERAL = re.compile(
+    r"(?:^const\s+(\w+)\s*:\s*Corpus\s*=\s*)?\bCorpus\s*\{\s*api:\s*\"([^\"]+)\"\s*,(.*?)\n\s*\}",
+    re.M | re.S,
+)
+_TOP_LEVEL_FN = re.compile(r"^(?:pub(?:\([^)]*\))?\s+)?fn\s+(\w+)\s*[<(]", re.M)
+# A whole-line comment is prose, not code: a doc comment naming a helper is no call.
+_LINE_COMMENT = re.compile(r"^[ \t]*//[^\n]*", re.M)
+
+
+def _rust_code(source: str) -> str:
+    """`source` with its whole-line comments blanked, line numbers kept."""
+    return _LINE_COMMENT.sub("", source)
+
+
+class CorpusLiteral(NamedTuple):
+    """One `Corpus` literal: the fixture directory it names and its declared residual."""
+
+    api: str
+    unmatched: tuple[str, ...]
+
+
+class CorpusDrive(NamedTuple):
+    """A golden test driving one `Corpus` constant through a corpus assertion helper."""
+
+    test: str
+    constant: str
+
+
+def corpus_constants(source: str) -> dict[str, CorpusLiteral]:
+    """`const NAME: Corpus` -> its literal, however rustfmt wrapped the binding."""
+    constants: dict[str, CorpusLiteral] = {}
+    for match in _CORPUS_LITERAL.finditer(_rust_code(source)):
+        constant, api, body = match.groups()
+        if constant:
+            constants[constant] = CorpusLiteral(api, _unmatched_files(body))
+    return constants
+
+
+def _unmatched_files(body: str) -> tuple[str, ...]:
+    residual = re.search(r"unmatched:\s*&\[(.*?)\]", body, re.S)
+    return tuple(re.findall(r'"([^"]+)"', residual.group(1))) if residual else ()
+
+
+def _call_end(code: str, opened: int) -> int:
+    """The offset just past the `)` closing the call whose `(` ends at `opened`."""
+    depth = 1
+    for offset in range(opened, len(code)):
+        depth += {"(": 1, ")": -1}.get(code[offset], 0)
+        if depth == 0:
+            return offset + 1
+    return len(code)
+
+
+def corpus_drives(source: str) -> list[CorpusDrive]:
+    """Every `Corpus` constant a golden test drives through a corpus assertion helper.
+
+    A call is recognised across whitespace, newlines and a trailing comma. One a
+    golden test makes that names no `Corpus` constant is refused, with its line,
+    rather than dropped: a registration this reader cannot read would otherwise
+    leave the measured population silently.
+    """
+    code = _rust_code(source)
+    constants = corpus_constants(source)
+    starts = [(match.start(), match.group(1)) for match in _TOP_LEVEL_FN.finditer(code)]
+    positions = [start for start, _name in starts]
+    drives: list[CorpusDrive] = []
+    refused: list[str] = []
+    for call in _CORPUS_HELPER.finditer(code):
+        if re.search(r"\bfn\s+$", code[max(0, call.start() - 8) : call.start()]):
+            continue  # the helper's own definition
+        index = bisect.bisect_right(positions, call.start()) - 1
+        test = starts[index][1] if index >= 0 else None
+        if test is None or not GOLDEN_TEST.search(test):
+            continue
+        argument = _CORPUS_ARGUMENT.match(code, call.end())
+        if argument and argument.group(1) in constants:
+            drives.append(CorpusDrive(test, argument.group(1)))
+            continue
+        line = code.count("\n", 0, call.start()) + 1
+        text = code[call.start() : _call_end(code, call.end())]
+        refused.append(f"line {line}: `{' '.join(text.split())}` in `{test}`")
+    if refused:
+        raise SystemExit(
+            "openapi-surface-census: a golden test drives a corpus helper with an argument the "
+            "census cannot read as `&CONST` naming a `Corpus` constant, so its registration "
+            "would leave the measured population: "
+            + "; ".join(refused)
+            + " — pass the `Corpus` constant itself (`&NAME`), or teach `corpus_drives` the new form"
+        )
+    return drives
 
 
 @dataclass(frozen=True)
@@ -8862,34 +9059,17 @@ def golden_registrations(e2e: Path) -> dict[str, GoldenRegistration]:
 
     A `Corpus { api, …, unmatched }` literal names a fixture directory and its
     residual; a `fn …matches_fern_output` that drives `&CONST` through one of the
-    corpus assertion helpers, or a `feature_target_goldens!` entry naming the
-    `api`, is that directory's golden test. A literal no golden test drives (the
-    known-upstream-failure rows) is not a registration.
+    corpus assertion helpers (`corpus_drives`), or a `feature_target_goldens!`
+    entry naming the `api`, is that directory's golden test. A literal no golden
+    test drives (the known-upstream-failure rows) is not a registration.
     """
     source = e2e.read_text(encoding="utf-8")
-    literals: dict[str, tuple[str, tuple[str, ...]]] = {}
-    unmatched_of: dict[str, tuple[str, ...]] = {}
-    for match in re.finditer(
-        r"(?:^const (\w+): Corpus = )?Corpus \{\s*api: \"([^\"]+)\",(.*?)\n\s*\}",
-        source,
-        re.M | re.S,
-    ):
-        constant, api, body = match.groups()
-        residual = re.search(r"unmatched: &\[(.*?)\]", body, re.S)
-        files = tuple(re.findall(r'"([^"]+)"', residual.group(1))) if residual else ()
-        unmatched_of[api] = files
-        if constant:
-            literals[constant] = (api, files)
+    unmatched_of = {api: _unmatched_files(body) for _constant, api, body in _CORPUS_LITERAL.findall(_rust_code(source))}
+    literals = corpus_constants(source)
     registrations: dict[str, GoldenRegistration] = {}
-    current = None
-    for line in source.splitlines():
-        fn = re.match(r"^fn (\w+)\(", line)
-        if fn:
-            current = fn.group(1)
-        drive = _CORPUS_HELPER.search(line)
-        if drive and current and GOLDEN_TEST.search(current) and drive.group(1) in literals:
-            api, files = literals[drive.group(1)]
-            registrations[api] = GoldenRegistration(api, current, files)
+    for drive in corpus_drives(source):
+        literal = literals[drive.constant]
+        registrations[literal.api] = GoldenRegistration(literal.api, drive.test, literal.unmatched)
     for test, api in re.findall(r"^\s*(\w+_matches_fern_output) => \"([^\"]+)\"", source, re.M):
         registrations[api] = GoldenRegistration(api, test, unmatched_of.get(api, ()))
     return registrations
@@ -8919,7 +9099,7 @@ def acquisition_sources(fixtures_root: Path, corpus_root: Path, vendored_only: b
     for directory in sorted(p for p in fixtures_root.iterdir() if p.is_dir()):
         spec = spec_in(directory)
         if spec is not None:
-            source = Source(fixture=directory.name, origin="vendored", path=spec)
+            source = Source(fixture=directory.name, origin="vendored", path=spec, witness=WitnessKind.AUTHORED)
             vendored[directory.name] = source
             sources.append(source)
     if vendored_only:
@@ -8931,6 +9111,7 @@ def acquisition_sources(fixtures_root: Path, corpus_root: Path, vendored_only: b
             f"openapi-surface-census: missing corpus manifest {manifest} — run from the "
             "repo root, or pass --vendored-only to census the offline half"
         )
+    publishers = manifest_sources(manifest)
     for name in manifest_rows(manifest):
         if aliases.get(name, name) in vendored:
             continue  # a manifest row whose document is vendored beside its golden
@@ -8939,6 +9120,7 @@ def acquisition_sources(fixtures_root: Path, corpus_root: Path, vendored_only: b
                 fixture=name,
                 origin="corpus",
                 path=spec_in(corpus_root / name) or pinned_tree_root(fixtures_root, corpus_root, name),
+                witness=publisher_witness(publishers[name]),
             )
         )
     return sources
@@ -9135,6 +9317,9 @@ def main(argv: list[str] | None = None) -> int:
                     # every platform of the release matrix; null when the source is
                     # missing from the selected source directories.
                     "path": path_of(source, repo_root),
+                    # `real-world`, `authored` (a vendored feature target) or
+                    # `tooling-resource` (a publisher's test or sample document).
+                    "witness": source.witness.value,
                 }
                 for source in sources
             ],

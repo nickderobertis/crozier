@@ -150,6 +150,8 @@ MIRRORED = (
     "tools/fern-goldens/generate-fern-fixture.sh",
     "tools/fern-goldens/golden_overlay.py",
     "tools/fern-goldens/certified_pair.py",
+    # Loaded by fern-references.py to keep each untouched generation reusable.
+    "tools/fern-goldens/certified_tree.py",
     "tools/fern-refusals/fern-refusals.py",
     # Read by fern-refusals.py at import: the unsettled-record contract.
     "docs/fern-refusals/unsettled-contract.json",
@@ -633,7 +635,9 @@ class WeeklyRunTests(unittest.TestCase):
             json.dumps({**RECORD, "cliVersion": OLD.cli, "generatorVersion": OLD.generator}, indent=2) + "\n",
             encoding="utf-8",
         )
-        (root / ".gitignore").write_text("/.local\n/target\n", encoding="utf-8")
+        # As the repository's own: a mirrored tool's imported sibling leaves
+        # bytecode beside it, which no shard reports as written.
+        (root / ".gitignore").write_text("/.local\n/target\n__pycache__/\n", encoding="utf-8")
         (root / "justfile").write_text("default:\n    @true\n", encoding="utf-8")
         fixtures = root / "tests/fixtures"
         (fixtures / "CORPUS.md").write_text(
@@ -796,6 +800,9 @@ class WeeklyRunTests(unittest.TestCase):
             "GH_STATE": str(self.gh_state),
             "GH_TOKEN": "stand-in-token",
             "SERVED_DOCUMENTS": json.dumps(getattr(self, "served", {})),
+            # The certified-tree store a generation publishes to stays in scratch,
+            # never the host's own cache.
+            "XDG_CACHE_HOME": str(self.scratch / "cache"),
         }
         env.pop("GITHUB_RUN_ID", None)
         env.update(updates)

@@ -8,12 +8,12 @@ A `certified-screen-pending` row is an exact trigger over admissible bytes, not 
 
 | population | what was read | documents screened | unfetchable entries |
 |---|---|---:|---:|
-| `registered` | every registered corpus row's committed source document (`tests/fixtures/corpus-sources.tsv`) | 405 | 0 |
+| `registered` | every registered corpus row's committed source document (`tests/fixtures/corpus-sources.tsv`) | 387 | 0 |
 | `apis-guru` | every `openapi.*` document of the pinned APIs.guru archive, `APIs-guru/openapi-directory` at `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49`; this is where the earlier census's archive declarations come from | 1970 | 0 |
-| `github` | every recorded GitHub code-search identity whose exact bytes this host now holds, recovered from the shared response cache or re-fetched at its commit, and this search's code-search hits fetched the same way | 15108 | 930 |
-| `sourcegraph` | every recorded Sourcegraph identity on github.com whose exact bytes this host now holds, recovered or re-fetched the same way | 3922 | 17 |
+| `github` | every recorded GitHub code-search identity whose exact bytes this host now holds, recovered from the shared response cache or re-fetched at its commit, and this search's code-search hits fetched the same way | 14163 | 921 |
+| `sourcegraph` | every recorded Sourcegraph identity on github.com whose exact bytes this host now holds, recovered or re-fetched the same way | 3334 | 16 |
 | `archive` | the APIs.guru served-index versions that have no document at the archive pin (`witness-search-apis.guru/unread-responses.jsonl`) | 0 | 0 |
-| `handed-off` | every handed-off document `docs/fern-measurements/handed-off/documents.tsv` names by repository, path and commit | 144 | 0 |
+| `handed-off` | every handed-off document `docs/fern-measurements/handed-off/documents.tsv` names by repository, path and commit | 131 | 0 |
 
 
 A candidate is a document whose bytes the key's census selector declares, or one the earlier [named census](../witness-search-ledger-remainders/census.tsv) already listed for the key; every one of that census's 749 rows has a row here, as has every candidate the earlier combination searches' named censuses list (below). The archive's documents are named `<provider>[/<service>]/<version>`, the archive path less `APIs/` and the file name, since one service carries several versions.
@@ -24,30 +24,30 @@ Each earlier combination search's census lists candidates of these keys: [`witne
 
 ## Verdicts
 
-| key | verdict | certified-screen-pending | `registered` | `apis-guru` | `github` | `sourcegraph` | `archive` | `handed-off` | rejected-trigger | rejected-licence | unfetchable |
-|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| `combo-allof-unresolved-nested-pointer` | `search-incomplete` | 3 | 0 | 3 | 216 | 8 | 0 | 0 | 0 | 19 | 205 |
-| `combo-anyof-beside-properties` | `search-incomplete` | 0 | 14 | 23 | 1845 | 597 | 0 | 5 | 2213 | 4 | 267 |
-| `combo-array-defs-pointer` | `search-incomplete` | 0 | 1 | 0 | 173 | 29 | 0 | 0 | 54 | 0 | 149 |
-| `combo-array-unresolved-nested-pointer` | `search-incomplete` | 1 | 0 | 6 | 176 | 9 | 0 | 1 | 0 | 42 | 149 |
-| `combo-body-property-named-as-path-param` | `search-incomplete` | 2354 | 45 | 410 | 4207 | 830 | 0 | 19 | 2080 | 968 | 109 |
-| `combo-header-array-accepted-placements` | `search-incomplete` | 457 | 1 | 2 | 553 | 182 | 0 | 0 | 92 | 35 | 154 |
-| `combo-header-string-default` | `search-incomplete` | 22 | 14 | 54 | 883 | 294 | 0 | 9 | 1071 | 65 | 96 |
-| `combo-map-beside-oneof` | `search-incomplete` | 12 | 9 | 3 | 997 | 179 | 0 | 8 | 957 | 15 | 212 |
-| `combo-map-unresolved-nested-pointer` | `search-incomplete` | 0 | 0 | 2 | 239 | 9 | 0 | 0 | 0 | 12 | 238 |
-| `combo-nullable-allof-parent-own-property` | `search-incomplete` | 0 | 2 | 2 | 155 | 8 | 0 | 1 | 21 | 0 | 147 |
-| `combo-property-anyof-composed-sibling` | `search-incomplete` | 160 | 4 | 1 | 310 | 21 | 0 | 0 | 0 | 18 | 158 |
-| `combo-property-defs-pointer` | `search-incomplete` | 0 | 1 | 0 | 172 | 28 | 0 | 0 | 52 | 0 | 149 |
-| `combo-property-unresolved-nested-pointer` | `search-incomplete` | 2 | 0 | 7 | 177 | 11 | 0 | 1 | 0 | 45 | 149 |
-| `combo-query-param-inline-object` | `search-incomplete` | 61 | 3 | 33 | 3179 | 105 | 0 | 3 | 3013 | 17 | 232 |
-| `combo-request-unresolved-nested-pointer` | `search-incomplete` | 1 | 0 | 0 | 150 | 9 | 0 | 0 | 0 | 9 | 149 |
-| `combo-required-query-array-enum-items` | `search-incomplete` | 71 | 8 | 25 | 458 | 202 | 0 | 5 | 499 | 38 | 90 |
-| `combo-response-unresolved-nested-pointer` | `search-incomplete` | 4 | 0 | 0 | 153 | 11 | 0 | 0 | 0 | 11 | 149 |
-| `combo-success-anyof-nullable` | `search-incomplete` | 178 | 6 | 13 | 2966 | 53 | 0 | 3 | 2719 | 57 | 87 |
-| `combo-success-oneof-nullable` | `search-incomplete` | 56 | 2 | 13 | 2917 | 19 | 0 | 1 | 2757 | 52 | 87 |
-| `combo-tag-only-operation-id` | `search-incomplete` | 20 | 1 | 1 | 11 | 7 | 0 | 0 | 0 | 0 | 0 |
-| `combo-unrequired-tag-anyof-reference` | `search-incomplete` | 135 | 29 | 51 | 1633 | 509 | 0 | 12 | 1973 | 106 | 20 |
-| `combo-unrequired-tag-oneof-reference` | `search-incomplete` | 345 | 60 | 74 | 4210 | 1105 | 0 | 35 | 4763 | 276 | 100 |
+| key | verdict | certified-screen-pending | `registered` | `apis-guru` | `github` | `sourcegraph` | `archive` | `handed-off` | `authored` | rejected-trigger | rejected-licence | unfetchable |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| `combo-allof-unresolved-nested-pointer` | `search-incomplete` | 3 | 0 | 3 | 215 | 7 | 0 | 0 | 1 | 0 | 17 | 205 |
+| `combo-anyof-beside-properties` | `search-incomplete` | 0 | 14 | 23 | 1553 | 472 | 0 | 4 | 340 | 1800 | 4 | 267 |
+| `combo-array-defs-pointer` | `search-incomplete` | 0 | 1 | 0 | 170 | 28 | 0 | 0 | 4 | 53 | 0 | 149 |
+| `combo-array-unresolved-nested-pointer` | `search-incomplete` | 1 | 0 | 6 | 173 | 9 | 0 | 1 | 3 | 0 | 42 | 149 |
+| `combo-body-property-named-as-path-param` | `search-incomplete` | 1714 | 43 | 410 | 3597 | 573 | 0 | 16 | 730 | 1915 | 902 | 109 |
+| `combo-header-array-accepted-placements` | `search-incomplete` | 27 | 1 | 2 | 236 | 31 | 0 | 0 | 396 | 65 | 27 | 154 |
+| `combo-header-string-default` | `search-incomplete` | 22 | 14 | 54 | 569 | 148 | 0 | 9 | 390 | 613 | 65 | 96 |
+| `combo-map-beside-oneof` | `search-incomplete` | 8 | 9 | 3 | 743 | 100 | 0 | 8 | 284 | 636 | 12 | 212 |
+| `combo-map-unresolved-nested-pointer` | `search-incomplete` | 0 | 0 | 2 | 236 | 9 | 0 | 0 | 3 | 0 | 12 | 238 |
+| `combo-nullable-allof-parent-own-property` | `search-incomplete` | 0 | 2 | 2 | 155 | 7 | 0 | 1 | 1 | 20 | 0 | 147 |
+| `combo-property-anyof-composed-sibling` | `search-incomplete` | 152 | 3 | 1 | 300 | 19 | 0 | 0 | 13 | 0 | 18 | 158 |
+| `combo-property-defs-pointer` | `search-incomplete` | 0 | 1 | 0 | 168 | 27 | 0 | 0 | 5 | 50 | 0 | 149 |
+| `combo-property-unresolved-nested-pointer` | `search-incomplete` | 1 | 0 | 7 | 173 | 9 | 0 | 1 | 5 | 0 | 43 | 149 |
+| `combo-query-param-inline-object` | `search-incomplete` | 47 | 3 | 33 | 2879 | 87 | 0 | 3 | 310 | 2712 | 17 | 232 |
+| `combo-request-unresolved-nested-pointer` | `search-incomplete` | 1 | 0 | 0 | 147 | 9 | 0 | 0 | 3 | 0 | 9 | 149 |
+| `combo-required-query-array-enum-items` | `search-incomplete` | 10 | 8 | 25 | 378 | 149 | 0 | 5 | 119 | 427 | 38 | 90 |
+| `combo-response-unresolved-nested-pointer` | `search-incomplete` | 4 | 0 | 0 | 150 | 11 | 0 | 0 | 3 | 0 | 11 | 149 |
+| `combo-success-anyof-nullable` | `search-incomplete` | 159 | 5 | 13 | 2678 | 45 | 0 | 2 | 295 | 2441 | 56 | 87 |
+| `combo-success-oneof-nullable` | `search-incomplete` | 42 | 2 | 13 | 2627 | 7 | 0 | 1 | 298 | 2480 | 41 | 87 |
+| `combo-tag-only-operation-id` | `search-incomplete` | 15 | 1 | 1 | 7 | 6 | 0 | 0 | 5 | 0 | 0 | 0 |
+| `combo-unrequired-tag-anyof-reference` | `search-incomplete` | 133 | 29 | 51 | 1555 | 455 | 0 | 12 | 117 | 1844 | 105 | 20 |
+| `combo-unrequired-tag-oneof-reference` | `search-incomplete` | 320 | 57 | 74 | 3853 | 917 | 0 | 33 | 470 | 4243 | 271 | 100 |
 
 
 Every key stays `search-incomplete`: no certified screen runs here, and each has a population below that could not be had whole. The population columns count candidate rows; the last three count rows by status.
@@ -136,8 +136,8 @@ Every key stays `search-incomplete`: no certified screen runs here, and each has
 
 | population | what could not be had, what was tried, and why it failed |
 |---|---|
-| `github` | 46148 of the 61321 planned GitHub documents were never fetched: the earlier acquisition's bytes were not retained on this host, and the manager-ruled bound of about six hours of paced raw fetching was spent on higher-ranked identities first. 179 fetched ones were refused (refused-http-0 13, refused-http-404 166). 713 of the planned documents are this search's own code-search hits, of which 3 were fetched. Each refused document its recorded hits tie to a key, and each unfetched hit, is a candidate the table keeps; with the earlier named censuses' refused, unreached and digest-only candidates (above) they are 3018 `unfetchable:<reason>` rows naming what was tried: a refused document under the keys its recorded hits match by field name (as the plan ranks it) with the SHA-256 the ledger recorded, a hit under the key whose query found it with `-`. A ledger document never asked that no earlier census lists is tied to a key only by the plan's field-name ranking: by the manager's ruling those heuristic associations, never asked within the six-hour bound, are counted (per key, in the table below) rather than listed, and owe no row. |
-| `sourcegraph` | 7223 of the 10823 planned Sourcegraph documents were never fetched, on the same terms (bytes not retained on this host; the six-hour bound spent first on higher-ranked identities); 17 fetched ones were refused, and are 78 `unfetchable:<reason>` rows of the table on the same terms. The anonymous Sourcegraph search answered 29602 matches, which name no content digest to pin a fetch to, so none was planned. |
+| `github` | 46148 of the 61321 planned GitHub documents were never fetched: the earlier acquisition's bytes were not retained on this host, and the manager-ruled bound of about six hours of paced raw fetching was spent on higher-ranked identities first. 179 fetched ones were refused (refused-http-0 13, refused-http-404 166). 713 of the planned documents are this search's own code-search hits, of which 3 were fetched. Each refused document its recorded hits tie to a key, and each unfetched hit, is a candidate the table keeps; with the earlier named censuses' refused, unreached and digest-only candidates (above) they are 2976 `unfetchable:<reason>` rows naming what was tried: a refused document under the keys its recorded hits match by field name (as the plan ranks it) with the SHA-256 the ledger recorded, a hit under the key whose query found it with `-`. A ledger document never asked that no earlier census lists is tied to a key only by the plan's field-name ranking: by the manager's ruling those heuristic associations, never asked within the six-hour bound, are counted (per key, in the table below) rather than listed, and owe no row. |
+| `sourcegraph` | 7223 of the 10823 planned Sourcegraph documents were never fetched, on the same terms (bytes not retained on this host; the six-hour bound spent first on higher-ranked identities); 17 fetched ones were refused, and are 75 `unfetchable:<reason>` rows of the table on the same terms. The anonymous Sourcegraph search answered 29602 matches, which name no content digest to pin a fetch to, so none was planned. |
 | `archive` | 98 served-index versions were acquired by an earlier run from mutable `api.apis.guru` URLs; 20 are byte-identical to registered corpus sources and are screened under `registered`, and the other 78 were not retained on this host. No immutable source names their bytes, so they were not re-fetched. |
 | `handed-off` | 2 of the 146 handed-off documents record bytes only, with no repository, path or commit; their bytes were not retained on this host (not in the tree, the preflight cache or the response cache), so nothing names a source to fetch them from. |
 

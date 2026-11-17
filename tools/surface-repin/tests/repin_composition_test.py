@@ -18,6 +18,7 @@ import shutil
 import subprocess
 import sys
 import textwrap
+import threading
 from pathlib import Path
 from typing import Any
 
@@ -61,6 +62,15 @@ fn every_feature_target_has_its_own_golden_test() {
 }
 #[test]
 fn alpha_matches_fern_output() {
+    // With the gate set, finish only once the driver has read beta's completion.
+    if let Ok(gate) = std::env::var("CROZIER_COMPLETION_GATE") {
+        let release = std::path::Path::new(&gate).join("release");
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(120);
+        while !release.exists() {
+            assert!(std::time::Instant::now() < deadline, "beta's completion was never reported while alpha ran");
+            std::thread::sleep(std::time::Duration::from_millis(50));
+        }
+    }
     assert_committed_corpus_matches(&ALPHA);
 }
 #[test]
@@ -301,6 +311,40 @@ def test_composition_tree_passes_port_checks_before_refusing_a_broken_selector(t
     assert "Traceback" not in result.stderr
 
 
+def test_a_missing_regeneration_dependency_is_refused_before_any_measurement(tmp_path: Path) -> None:
+    """Issue #833: an interpreter that cannot import a regenerator's dependency is refused up front."""
+    root = tmp_path / "repo"
+    root.mkdir()
+    fixture(root)
+    bare = tmp_path / "bare"
+    subprocess.run([PYTHON, "-m", "venv", "--without-pip", str(bare)], check=True, capture_output=True)
+    interpreter = bare / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
+    selector = root / "scripts/census-python.sh"
+    selected = selector.read_bytes()
+    selector.write_text("printf '%s\\n' " + shlex.quote(interpreter.as_posix()) + "\n", encoding="utf-8")
+    env = dict(
+        os.environ, XDG_CACHE_HOME=str(tmp_path / "cache"), CROZIER_GOLDEN_REACH_BASE_CACHE=str(tmp_path / "bases")
+    )
+    refused = subprocess.run(
+        ["just", "census-repin", "--jobs", "1"], cwd=root, env=env, capture_output=True, text=True, timeout=120
+    )
+    assert refused.returncode != 0
+    assert "cannot import yaml" in refused.stderr and "just sync-python" in refused.stderr, refused.stderr
+    assert "nothing was measured" in refused.stderr and "Traceback" not in refused.stderr
+    assert not (root / ".local/golden-reach").exists(), "the refusal comes before any instrumented build or run"
+    assert not (root / "target").exists()
+    # The locked environment recovers: its interpreter passes the same probe.
+    selector.write_bytes(selected)
+    spec = importlib.util.spec_from_file_location(
+        "repin_dependency_preflight", REPO / "tools/surface-census/census-repin.py"
+    )
+    assert spec and spec.loader
+    verb = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = verb
+    spec.loader.exec_module(verb)
+    assert Path(verb.census_python(root)).is_file()
+
+
 def test_real_measurement_carries_persists_merges_and_repins_with_recovery(tmp_path: Path) -> None:
     root = tmp_path / "repo"
     root.mkdir()
@@ -337,8 +381,11 @@ def exercise(root: Path, tmp_path: Path) -> None:
             assert result.returncode != 0, "this induced failure must be refused"
         return result
 
+    def measure_run(*args: str) -> subprocess.CompletedProcess[str]:
+        return run(PYTHON, "tools/surface-census/golden-reach.py", "measure", "--jobs", "1", *args)
+
     def measure(*args: str) -> dict[str, Any]:
-        run(PYTHON, "tools/surface-census/golden-reach.py", "measure", "--jobs", "1", *args)
+        measure_run(*args)
         return store(root)
 
     selector = root / "scripts/census-python.sh"
@@ -398,6 +445,12 @@ def exercise(root: Path, tmp_path: Path) -> None:
     assert "census-repin: re-anchored `src/lib.rs::beta[=^pub fn beta]`" in verbose.stderr
     assert f"census-repin: re-ran test {ALPHA}:" in verbose.stderr
     assert f"census-repin: re-ran test {BETA}:" not in verbose.stderr
+    # Issue #841: each completion is reported as the measurement advances, ahead
+    # of the reasons and summary that only follow the whole measurement.
+    progress = f"census-repin: completed golden test {ALPHA} (1/1)"
+    assert progress in verbose.stderr, verbose.stderr
+    assert verbose.stderr.index(progress) < verbose.stderr.index(f"census-repin: re-ran test {ALPHA}:")
+    assert "census-repin: completed hand-written fixture configured (1/1)" in verbose.stderr
     assert "1 test(s) run, 1 carried" in verbose.stdout
     assert "re-anchored `" not in verbose.stdout and "re-ran test" not in verbose.stdout
     stepped = store(root)
@@ -423,8 +476,14 @@ def exercise(root: Path, tmp_path: Path) -> None:
         (root / "src/lib.rs").read_text(encoding="utf-8").replace("    2\n", "    std::hint::black_box(());\n    2\n"),
     )
     c2 = commit(root, "change beta")
-    scoped = measure("--tests", f"^{ALPHA}$", "--golden-only")
+    partial = measure_run("--tests", f"^{ALPHA}$", "--golden-only")
+    scoped = store(root)
     assert set(scoped["tests"]) == {ALPHA}, "an invalidated excluded test cannot be carried"
+    # Issue #840: a store missing registered tests and fixtures is never a shared base.
+    assert "not published as a base" in partial.stdout, partial.stdout
+    assert not (tmp_path / "bases" / c2 / "base.json.gz").exists()
+    refuse_base = run(PYTHON, "tools/surface-census/census-repin.py", "--base-only")
+    assert f"census-repin: base {c2}" not in refuse_base.stdout, refuse_base.stdout
     assert scoped["tests"][ALPHA]["commit"] == c2 and not scoped["fixtures"]
     assert not (root / f".local/golden-reach/tests/{BETA}.json").exists()
     measure("--incremental")
@@ -436,6 +495,7 @@ def exercise(root: Path, tmp_path: Path) -> None:
     scenario.write_text(good, encoding="utf-8")
     complete = run("just", "census-repin", "--jobs", "1")
     assert "0 test(s) run, 2 carried" in complete.stdout
+    assert "completed golden test" not in complete.stderr, "progress is verbose-only"
     ledger = (root / "docs/openapi-surface/golden-reach.tsv").read_text(encoding="utf-8")
     assert f"measured at commit {c2[:12]}" in ledger.splitlines()[0]
     assert "src/lib.rs::alpha=" in ledger and "src/lib.rs::beta[" in ledger
@@ -474,7 +534,12 @@ def exercise(root: Path, tmp_path: Path) -> None:
     assert not (root / git(root, "rev-parse", "--git-path", "MERGE_HEAD")).exists()
     assert "-note" not in ledger_path.read_text(encoding="utf-8")
     assert store(root)["commit"] == parents[0]
-    assert all(entry["commit"] == c2 for entry in store(root)["tests"].values())
+    # Alpha is carried from the last complete base (only beta changed at c2); the
+    # scoped c2 store that once stood in as a base is no longer published as one.
+    assert {name: entry["commit"] for name, entry in store(root)["tests"].items()} == {
+        ALPHA: merged["tests"][ALPHA]["commit"],
+        BETA: c2,
+    }
     outputs = {path: path.read_bytes() for path in (root / "docs").rglob("*") if path.is_file()}
     run("just", "census-repin", "--jobs", "1")
     # The provenance line changes the step metadata; every derived row is stable.
@@ -534,6 +599,7 @@ def exercise(root: Path, tmp_path: Path) -> None:
             root / ".local/golden-reach/store.json.gz",
             tmp_path / "bases" / saved["commit"] / "base.json.gz",
         ):
+            destination.parent.mkdir(parents=True, exist_ok=True)
             with gzip.open(destination, "wt", encoding="utf-8") as handle:
                 json.dump(saved, handle)
         library = root / "src/lib.rs"
@@ -554,6 +620,8 @@ def exercise(root: Path, tmp_path: Path) -> None:
         root / ".local/golden-reach/store.json.gz",
         tmp_path / "bases" / saved["commit"] / "base.json.gz",
     ):
+        # The scoped step before this one published no base of its own.
+        destination.parent.mkdir(parents=True, exist_ok=True)
         with gzip.open(destination, "wt", encoding="utf-8") as handle:
             json.dump(saved, handle)
     refused_base = run(PYTHON, "tools/surface-census/golden-reach.py", "measure", "--incremental", "--jobs", "1")
@@ -595,6 +663,63 @@ def exercise(root: Path, tmp_path: Path) -> None:
                 assert after["fixtures"]["configured"][part] == before["fixtures"]["configured"][part]
             assert "0 test(s) run, 2 carried, 1 fixture(s) run, 0 carried" in measured.stdout
             assert f"its fixture changed ({path})" in measured.stderr
+
+    # Issue #840 through `just handwritten-reach`: over the committed fixtures it
+    # steps the local store, so a step carrying every golden test is complete and
+    # published; with no local store it holds the fixtures alone and is not, and
+    # the earlier complete base is kept.
+    write(root, "src/lib.rs", (root / "src/lib.rs").read_text(encoding="utf-8") + "\npub fn idle_one() {}\n")
+    carried_at = commit(root, "a change no measured function owns")
+    run("just", "handwritten-reach")
+    assert set(store(root)["tests"]) == {ALPHA, BETA}
+    assert (tmp_path / "bases" / carried_at / "base.json.gz").is_file(), "a complete step is published"
+    write(root, "src/lib.rs", (root / "src/lib.rs").read_text(encoding="utf-8") + "\npub fn idle_two() {}\n")
+    alone_at = commit(root, "another change no measured function owns")
+    (root / ".local/golden-reach/store.json.gz").unlink()
+    published = sorted(path.name for path in (tmp_path / "bases").iterdir())
+    run("just", "handwritten-reach")
+    assert store(root)["tests"] == {}, "with no local store the fixtures are measured alone"
+    assert not (tmp_path / "bases" / alone_at).exists(), "a fixtures-only step is no shared base"
+    assert sorted(path.name for path in (tmp_path / "bases").iterdir()) == published
+    assert (tmp_path / "bases" / carried_at / "base.json.gz").is_file(), "the complete base is kept"
+
+    # Issue #841 with two workers: alpha, submitted first, finishes only after
+    # this driver has read beta's completion from the live stream, so beta's
+    # line can only arrive mid-measurement and ahead of alpha's.
+    library = root / "src/lib.rs"
+    text = library.read_text(encoding="utf-8")
+    for name in ("alpha", "beta"):
+        header = f"fn {name}() -> usize {{"
+        assert header in text
+        text = text.replace(header, header + "\n    std::hint::black_box(());", 1)
+    library.write_text(text, encoding="utf-8")
+    commit(root, "change both measured functions")
+    gate = tmp_path / "completion-gate"
+    gate.mkdir()
+    streamed = subprocess.Popen(
+        ["just", "census-repin", "--jobs", "2", "--verbose"],
+        cwd=root,
+        env=env | {"CROZIER_COMPLETION_GATE": str(gate)},
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        encoding="utf-8",
+    )
+    stdout: list[str] = []
+    reader = threading.Thread(target=lambda: stdout.extend(streamed.stdout or ()))
+    reader.start()
+    first = f"census-repin: completed golden test {BETA} (1/2)"
+    lines: list[str] = []
+    for line in streamed.stderr or ():
+        lines.append(line)
+        if line.rstrip("\n") == first:
+            (gate / "release").touch()
+    assert streamed.wait(timeout=180) == 0, "".join(stdout + lines)
+    reader.join()
+    said = [line.rstrip("\n") for line in lines]
+    assert first in said, "".join(lines)
+    assert said.index(first) < said.index(f"census-repin: completed golden test {ALPHA} (2/2)"), "".join(lines)
+    assert "2 test(s) run, 0 carried" in "".join(stdout)
 
 
 def test_measure_refuses_incomplete_compiler_identity_before_building(tmp_path: Path) -> None:

@@ -295,6 +295,16 @@ just fern-references <family> --version V --cli-version C [<item>...]   # anothe
 just fern-references-check [<family>...]        # every item's inputs, without Fern
 ```
 
+Each generation also keeps Fern's untouched tree — before any comment
+stripping or overlay reduction — in the host's certified-tree store, so another
+measurement of the same document at the same pair and enum mode reuses it
+instead of generating again. `fern-references`, the witness screen and
+`fern-overlay-goldens.sh` publish there. The store's key, its layout and which
+generations it keeps are stated once, in
+[`tools/fern-goldens/certified_tree.py`](../tools/fern-goldens/certified_tree.py)'s
+docstring; `python3 tools/fern-goldens/certified_tree.py find <document>
+--enum-type <mode>` prints an entry's path.
+
 `check` validates every item without starting Fern, Docker or a network
 request: each input its generation reads exists (its document, hand-written
 fixture, overlay base tree, and the files `cases.tsv`, `certified-trees.json`

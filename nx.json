@@ -66,6 +66,7 @@
     "witnessIndexReads": [
       "{workspaceRoot}/tools/witness-search/witness-search-github-index.py",
       "{workspaceRoot}/tools/witness-search/witness_screen.py",
+      "{workspaceRoot}/tools/fern-goldens/certified_tree.py",
       "{workspaceRoot}/tools/witness-search/witness-search-github.py",
       "{workspaceRoot}/tools/witness-search/rate_limit_guard.py"
     ],

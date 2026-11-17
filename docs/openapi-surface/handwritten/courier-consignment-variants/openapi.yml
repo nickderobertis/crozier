@@ -1,0 +1,48 @@
+openapi: 3.0.3
+info:
+  title: Courier Consignments
+  version: 1.0.0
+paths:
+  /consignments/{consignmentId}:
+    get:
+      operationId: get_consignment
+      tags: [consignments]
+      parameters:
+        - name: consignmentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The consignment, whichever way it travels.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Consignment"
+components:
+  schemas:
+    Consignment:
+      type: object
+      properties:
+        reference:
+          type: string
+      oneOf:
+        - $ref: "#/components/schemas/ParcelConsignment"
+        - $ref: "#/components/schemas/PalletConsignment"
+    ParcelConsignment:
+      type: object
+      required: [weight_grams]
+      properties:
+        weight_grams:
+          type: integer
+        signature_required:
+          type: boolean
+    PalletConsignment:
+      type: object
+      required: [pallet_count]
+      properties:
+        pallet_count:
+          type: integer
+        tail_lift:
+          type: boolean

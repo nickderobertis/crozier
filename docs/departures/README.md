@@ -164,6 +164,22 @@ The same recipe regenerates
 which the same comparisons hold per golden, recorded under
 `CROZIER_RECORD_EXAMPLE_INVENTORY`.
 
+The recipe runs only the tests
+[`tests/fixtures/departures-contributors.tsv`](../../tests/fixtures/departures-contributors.tsv)
+lists as recording a golden, not the whole e2e suite, and refuses to merge a
+run that did not record exactly the `(golden, test)` pairs it lists, or that
+left a compared golden unrecorded. Its optional arguments:
+
+- `just departures-ledger GOLDEN...` records only those goldens — closed over
+  every other golden their tests record — and keeps every other golden's rows.
+- `just departures-ledger --rename OLD=NEW` follows a golden tree moved without
+  a byte changed: it checks the tree and its source document against `HEAD`,
+  renames the golden in the ledger, both inventories and the contributor list,
+  then records. A changed tree is regenerated without `--rename`.
+- `just departures-ledger --discover-contributors` runs the whole suite and
+  rederives the contributor list; run it when the refusal says to (a comparison
+  test added, renamed or removed).
+
 ## Adding a departure
 
 A fix node that makes crozier depart from Fern on purpose — correcting a Fern

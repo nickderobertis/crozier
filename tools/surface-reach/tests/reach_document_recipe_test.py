@@ -294,3 +294,20 @@ def test_recipe_restores_every_ledger_derived_section_before_measurement(tmp_pat
     assert "boolean-schema-true: multiple residual witnesses" in refused.stderr
     assert "just residual-attribution" in refused.stderr
     assert path.read_text(encoding="utf-8") == expected
+    ledger.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    # Issue #835: a registered witness whose publisher path is a test resource is
+    # authored evidence, so the row resting on it is no residual-witness row.
+    (tmp_path / "tests/fixtures/CORPUS.md").write_text(
+        "| # | name | method | source | pinned ref | license | decision | shapes |\n|---:|---|---|---|---|---|---|---|\n"
+        "| 1 | `webflow-v2` | github-raw | https://raw.githubusercontent.com/acme/sdk/"
+        + "a" * 40
+        + "/src/test/resources/webflow.json | `1` | MIT | committed | t |\n",
+        encoding="utf-8",
+    )
+    stale = subprocess.run(confirmation, cwd=tmp_path, capture_output=True, text=True, timeout=120)
+    assert stale.returncode == 0, stale.stderr
+    assert "stale Golden rows resting only on residual goldens" in stale.stderr, stale.stderr
+    reach_document.rewrite(tmp_path, repin.REACH, repin._load("census_repin_handwritten", "handwritten-fixtures.py"))
+    rewritten = path.read_text(encoding="utf-8")
+    assert [row[0] for row in cells(rewritten, "#### Golden rows resting only on residual goldens")] == []
+    assert "**0** golden rows rest only on residual golden witnesses" in rewritten
