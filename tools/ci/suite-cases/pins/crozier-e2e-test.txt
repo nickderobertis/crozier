@@ -53,6 +53,7 @@ crozier-e2e::e2e andreychh_coopera_matches_fern_output
 crozier-e2e::e2e apache_airflow_matches_fern_output
 crozier-e2e::e2e apache_org_airflow_matches_fern_output
 crozier-e2e::e2e apache_qakka_matches_fern_output
+crozier-e2e::e2e api_evangelist_pinecone_inference_matches_fern_output
 crozier-e2e::e2e api_openverse_org_matches_fern_output
 crozier-e2e::e2e apicurio_matches_fern_output
 crozier-e2e::e2e apideck_accounting_matches_fern_output
@@ -563,6 +564,7 @@ crozier-e2e::e2e missing_spec_fails_with_actionable_message
 crozier-e2e::e2e mistle_control_plane_matches_fern_output
 crozier-e2e::e2e mixed_error_body_shapes_downgrade_status_class_to_any
 crozier-e2e::e2e mixed_named_request_media_keep_the_single_operation_through_the_cli
+crozier-e2e::e2e mnahkies_openapi_code_generator_e2e_matches_fern_output
 crozier-e2e::e2e mockserver_matches_fern_output
 crozier-e2e::e2e model_field_docs_trim_terminal_line_breaks
 crozier-e2e::e2e mosip_esignet_matches_fern_output
@@ -1043,6 +1045,7 @@ crozier-e2e::e2e two_parents_sharing_an_inherited_property_are_refused_on_a_comp
 crozier-e2e::e2e type_names_across_namespaces_refuse_and_distinct_contexts_recover
 crozier-e2e::e2e type_not_defined_refuses_api_file_references_and_body_member_unions
 crozier-e2e::e2e typescript_service_template_matches_fern_output
+crozier-e2e::e2e uclalibrary_prl_harvester_matches_fern_output
 crozier-e2e::e2e ummaya_agent_delegation_matches_fern_output
 crozier-e2e::e2e unavailable_relative_type_aliases_refuse_and_available_files_recover
 crozier-e2e::e2e undeclared_error_response_component_is_refused_until_declared
@@ -1051,6 +1054,7 @@ crozier-e2e::e2e union_modelling::a_nullable_query_array_of_an_inline_enum_names
 crozier-e2e::e2e union_modelling::a_nullable_union_keeps_its_members_and_a_nullable_target_its_optional
 crozier-e2e::e2e union_modelling::a_query_any_of_nullable_scalar_or_array_is_a_named_union
 crozier-e2e::e2e union_modelling::a_query_one_of_two_like_arrays_is_one_or_many
+crozier-e2e::e2e union_modelling::a_query_union_s_object_alternatives_keep_their_models
 crozier-e2e::e2e union_modelling::a_reference_beside_a_union_and_a_pattern_only_member_read_as_fern_reads_them
 crozier-e2e::e2e union_modelling::an_open_base_s_union_lends_its_first_branch_s_properties
 crozier-e2e::e2e union_modelling::an_undecidable_discriminator_names_the_property_union
