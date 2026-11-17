@@ -2675,7 +2675,7 @@ PORT_PINS = (
         "CASES",
         "src/ir.rs::hoist_union_variant",
         "that the ordered hoist_union_variant case reading still covers the same gates, arms and fallthroughs",
-        "998bfae7abc02baf",
+        "c6ebbe5d6d16b547",
     ),
     PortPin(
         "CASES.prop_type_ref",
