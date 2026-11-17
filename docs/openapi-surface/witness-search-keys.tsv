@@ -213,6 +213,6 @@ stream-error-status-raises-typed-error	response.content	bodies-media.md	supporte
 string-body-example-backslash-escaped	mediaType.example	bodies-media.md	supported
 string-json-format-typed-any	schema.format=json-string	schemas.md	supported
 text-response-drops-request-example	mediaType.examples	bodies-media.md	supported
-undiscriminated-ref-oneof-sibling-properties-dropped	schema.oneOf&schema.properties:non-empty	schemas.md	supported
+undiscriminated-ref-oneof-sibling-properties-dropped	schema.oneOf:several-non-null-members	schemas.md	supported
 union-of-enum-ref-const-and-string-members	schema.const:string-valued	schemas.md	supported
 webhook-inline-json-body-named	openapi.webhooks:inline-json-body-named	oas31-extensions.md	supported
