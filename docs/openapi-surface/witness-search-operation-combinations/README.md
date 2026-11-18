@@ -62,21 +62,21 @@ candidate. It is also the open-row list for the completion report.
 | `combo-echo-body-effective-anonymous` | `interaction-proven` | 3123 | 0 |
 | `combo-echo-body-effective-non-oauth-required` | `interaction-proven` | 3094 | 0 |
 | `combo-echo-body-effective-oauth2` | `interaction-proven` | 3248 | 0 |
-| `combo-error-multiple-media` | `search-incomplete` | 3084 | 2959 |
+| `combo-error-multiple-media` | `interaction-proven` | 3084 | 0 |
 | `combo-error-object` | `interaction-proven` | 3344 | 0 |
 | `combo-errors-shared-ref` | `search-incomplete` | 3568 | 3482 |
-| `combo-form-urlencoded-beside-json-body` | `search-incomplete` | 3004 | 2874 |
-| `combo-form-urlencoded-body-with-params` | `search-incomplete` | 3129 | 3004 |
+| `combo-form-urlencoded-beside-json-body` | `interaction-proven` | 3004 | 0 |
+| `combo-form-urlencoded-body-with-params` | `interaction-proven` | 3129 | 0 |
 | `combo-form-urlencoded-union-body` | `interaction-proven` | 2973 | 0 |
 | `combo-header-param-ref-string-enum` | `interaction-proven` | 2975 | 0 |
 | `combo-inline-body-read-only-property` | `interaction-proven` | 2990 | 0 |
-| `combo-multipart-beside-json-body` | `search-incomplete` | 2993 | 2864 |
-| `combo-multipart-body-with-params` | `search-incomplete` | 3186 | 3078 |
+| `combo-multipart-beside-json-body` | `interaction-proven` | 2993 | 0 |
+| `combo-multipart-body-with-params` | `interaction-proven` | 3186 | 0 |
 | `combo-oas31-grouped-response` | `search-incomplete` | 3288 | 3205 |
 | `combo-oas31-root-response` | `search-incomplete` | 3030 | 2913 |
-| `combo-octet-stream-body-header-param` | `search-incomplete` | 2977 | 2846 |
-| `combo-optional-ref-map-body` | `search-incomplete` | 3019 | 2892 |
-| `combo-optional-ref-union-body` | `search-incomplete` | 2979 | 2847 |
+| `combo-octet-stream-body-header-param` | `interaction-proven` | 2977 | 0 |
+| `combo-optional-ref-map-body` | `interaction-proven` | 3019 | 0 |
+| `combo-optional-ref-union-body` | `interaction-proven` | 2979 | 0 |
 | `combo-paginated-grouped-operation` | `search-incomplete` | 2974 | 2842 |
 | `combo-params-beside-inline-anyof-body` | `interaction-proven` | 3041 | 0 |
 | `combo-params-beside-inline-oneof-body` | `interaction-proven` | 3058 | 0 |
@@ -94,7 +94,7 @@ candidate. It is also the open-row list for the completion report.
 | `combo-success-json-beside-binary-schema` | `interaction-proven` | 3009 | 0 |
 | `combo-success-json-beside-download` | `interaction-proven` | 2998 | 0 |
 | `combo-success-oneof-nullable` | `search-incomplete` | 2963 | 2829 |
-| `combo-success-statuses-mixed-media` | `search-incomplete` | 3139 | 3017 |
+| `combo-success-statuses-mixed-media` | `interaction-proven` | 3139 | 0 |
 | `combo-success-text-beside-download` | `interaction-proven` | 2969 | 0 |
 
 ## Handed-off verdicts

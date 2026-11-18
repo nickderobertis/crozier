@@ -19,8 +19,8 @@ golden) settled its key as interaction. No row of `screen.tsv` was edited.
 | `combo-query-param-array-ref-enum-items` | interaction | the referenced-enum-item region of the same closure; registered `amazonaws.com-cloudformation` |
 | `combo-required-query-array-enum-items` | interaction | the required arm inside that region; registered `chrome-webstatus-backend` |
 | `combo-query-param-inline-object` | interaction | the query arm of `src/ir.rs::build_endpoint`'s inline-object placement; registered `rapidata-identity`, and corpus row 6101 for a required query object |
-| `combo-params-beside-inline-anyof-body` | interaction | `src/ir.rs::resolve_request_body`'s `(true, true, false)` arm, reading `Operation::lists_own_parameters`; registered `letta` |
-| `combo-params-beside-inline-oneof-body` | interaction | its `(true, true, true)` arm; registered `letta` |
+| `combo-params-beside-inline-anyof-body` | interaction | `src/ir.rs::resolve_request_body`'s `(RequestInputs::Own, false)` arm, reading `Operation::own_parameter_locations`; registered `letta` |
+| `combo-params-beside-inline-oneof-body` | interaction | its `(RequestInputs::Own, true)` arm; registered `letta` |
 | `combo-basic-auth-document-requirement` | interaction | `src/ir.rs::auth_model`'s `(true, _)` Basic arm; registered `gambitcomm.local-mimic` |
 | `combo-basic-auth-operation-requirement` | interaction | its `(false, true)` Basic arm; registered `grantly` |
 | `combo-header-string-default` | interaction | `src/ir.rs::global_headers`'s `Defaulted` arm; corpus row 6100 `api-evangelist-pinecone-inference` |
