@@ -3532,16 +3532,30 @@ fn normalize_empty_compositions(doc: &mut OpenApi) {
 /// The component is renamed with `-` for each `/`, which names its class, its
 /// module and everything hoisted under it identically ([`crate::naming`] breaks
 /// a word at either), so no later pass has to read an escaped `~1` segment. A
-/// name whose renaming would collide with a declared one is left alone, and so
-/// is a tail that names no component whole: the pointer passes decide those.
+/// name whose renaming would collide with a declared one, or with another
+/// renaming, is left alone, and so is a tail that names no component whole: the
+/// pointer passes decide those.
 fn normalize_slash_named_schema_refs(doc: &mut OpenApi) {
-    let renames: IndexMap<String, String> = doc
+    let proposed: Vec<(String, String)> = doc
         .components
         .schemas
         .keys()
         .filter(|name| name.contains('/'))
         .map(|name| (name.clone(), name.replace('/', "-")))
-        .filter(|(_, renamed)| !doc.components.schemas.contains_key(renamed))
+        .collect();
+    // Two slash-named components can rename to one name (`a/b-c` and `a-b/c`
+    // both read `a-b-c`), and neither may then displace the other.
+    let shared = |renamed: &String| {
+        proposed
+            .iter()
+            .filter(|(_, other)| other == renamed)
+            .count()
+            > 1
+    };
+    let renames: IndexMap<String, String> = proposed
+        .iter()
+        .filter(|(_, renamed)| !doc.components.schemas.contains_key(renamed) && !shared(renamed))
+        .cloned()
         .collect();
     if renames.is_empty() {
         return;
@@ -7959,6 +7973,49 @@ components:
 
     /// Fern keeps a schema's nullability at its use sites rather than in the
     /// alias it declares, so a reference to one is optional wherever it appears.
+    #[test]
+    fn normalize_slash_named_schema_refs_renames_each_name_once_and_never_merges_two() {
+        let mut doc = parse(
+            r##"
+openapi: 3.0.0
+info: { title: T }
+components:
+  schemas:
+    page/postResponse: { type: object, properties: { id: { type: string } } }
+    a/b-c: { type: string }
+    a-b/c: { type: integer }
+    Holder:
+      type: object
+      properties:
+        raw: { $ref: "#/components/schemas/page/postResponse" }
+        escaped: { $ref: "#/components/schemas/page~1postResponse" }
+        first: { $ref: "#/components/schemas/a/b-c" }
+        second: { $ref: "#/components/schemas/a-b/c" }
+"##,
+        );
+        normalize_slash_named_schema_refs(&mut doc);
+        let schemas = &doc.components.schemas;
+        assert!(schemas.contains_key("page-postResponse"));
+        assert!(!schemas.contains_key("page/postResponse"));
+        let holder = &schemas["Holder"];
+        for property in ["raw", "escaped"] {
+            assert_eq!(
+                holder.properties[property].reference.as_deref(),
+                Some("#/components/schemas/page-postResponse"),
+                "{property}"
+            );
+        }
+        // `a/b-c` and `a-b/c` would both read `a-b-c`: both keep their own
+        // declarations, and their references stay as written.
+        assert!(schemas.contains_key("a/b-c") && schemas.contains_key("a-b/c"));
+        assert!(!schemas.contains_key("a-b-c"));
+        assert_eq!(
+            holder.properties["first"].reference.as_deref(),
+            Some("#/components/schemas/a/b-c")
+        );
+        assert_eq!(schemas.len(), 4);
+    }
+
     #[test]
     fn normalize_nullable_schema_refs_marks_every_reference_nullable() {
         let mut doc = parse(

@@ -674,6 +674,12 @@
       ]
     },
     "docs/fern-measurements/union-inheritance/restated-default-inherits-enum/fern-expected": {},
+    "docs/fern-measurements/union-inheritance/slash-named-component/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/union-inheritance/slash-named-component/fern-expected": {},
     "docs/fern-measurements/union-literals/atlas-untagged-inline-discriminator/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"

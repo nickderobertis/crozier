@@ -81,6 +81,20 @@ const MEASUREMENTS: &[(&str, &str, &str, &str, &str)] = &[
         "typing.Union[typing.Optional[LoomReadingPayloadZero], typing.Optional[str]]",
         "typing.Union[LoomReadingPayloadZero, typing.Optional[str]]",
     ),
+    (
+        "a component pointer naming a slash-named component",
+        "slash-named-component",
+        "src/fern/client.py",
+        "-> NotebooksListResponse:",
+        "-> typing.Any:",
+    ),
+    (
+        "a union ordinal past a `null` member",
+        "slash-named-component",
+        "src/fern/types/pages_request_response_page.py",
+        "PagesRequestResponsePageContent, PagesRequestResponsePageOne, PagesRequestResponsePageTwo",
+        "PagesRequestResponsePageContent, PagesRequestResponsePageTwo, PagesRequestResponsePageThree",
+    ),
 ];
 
 fn spec(case: &str) -> PathBuf {

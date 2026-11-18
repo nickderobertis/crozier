@@ -391,3 +391,5 @@ union-inheritance/null-typed-composition	docs/fern-measurements/union-inheritanc
 union-inheritance/nullable-union-members	docs/fern-measurements/union-inheritance/nullable-union-members/openapi.yml	python-enums	packaged	-
 union-inheritance/null-typed-composition/expected-literals	docs/fern-measurements/union-inheritance/null-typed-composition/openapi.yml	literals	packaged	fern-expected:docs/fern-measurements/union-inheritance/null-typed-composition/fern-expected
 union-inheritance/nullable-union-members/expected-literals	docs/fern-measurements/union-inheritance/nullable-union-members/openapi.yml	literals	packaged	fern-expected:docs/fern-measurements/union-inheritance/nullable-union-members/fern-expected
+union-inheritance/slash-named-component	docs/fern-measurements/union-inheritance/slash-named-component/openapi.yml	python-enums	packaged	-
+union-inheritance/slash-named-component/expected-literals	docs/fern-measurements/union-inheritance/slash-named-component/openapi.yml	literals	packaged	fern-expected:docs/fern-measurements/union-inheritance/slash-named-component/fern-expected

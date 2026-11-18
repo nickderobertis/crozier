@@ -457,6 +457,8 @@ docs/fern-measurements/union-inheritance/overridden-parent-layout/expected-liter
 docs/fern-measurements/union-inheritance/overridden-parent-layout/fern-expected	crozier-e2e::e2e	union_inheritance::union_inheritance_repairs_match_the_certified_pair
 docs/fern-measurements/union-inheritance/restated-default-inherits-enum/expected-literals/fern-expected	crozier-e2e::e2e	union_inheritance::union_inheritance_repairs_match_the_certified_pair
 docs/fern-measurements/union-inheritance/restated-default-inherits-enum/fern-expected	crozier-e2e::e2e	union_inheritance::union_inheritance_repairs_match_the_certified_pair
+docs/fern-measurements/union-inheritance/slash-named-component/expected-literals/fern-expected	crozier-e2e::e2e	union_inheritance::union_inheritance_repairs_match_the_certified_pair
+docs/fern-measurements/union-inheritance/slash-named-component/fern-expected	crozier-e2e::e2e	union_inheritance::union_inheritance_repairs_match_the_certified_pair
 docs/fern-measurements/union-literals/atlas-untagged-inline-discriminator/fern-expected	crozier-e2e::e2e	unions::union_shapes_match_complete_goldens_in_both_enum_modes
 docs/fern-measurements/union-literals/bakery-get-body-member/fern-expected	crozier-e2e::e2e	unions::union_shapes_match_complete_goldens_in_both_enum_modes
 docs/fern-measurements/union-literals/ferry-mapping-outside-schemas/fern-expected	crozier-e2e::e2e	unions::union_shapes_match_complete_goldens_in_both_enum_modes

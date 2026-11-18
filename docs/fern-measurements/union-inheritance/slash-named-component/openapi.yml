@@ -1,0 +1,69 @@
+openapi: 3.0.1
+info:
+  title: Notebook Relay
+  version: "1.0"
+paths:
+  /notebooks:
+    get:
+      operationId: listNotebooks
+      responses:
+        "200":
+          description: The notebooks this account can open.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/notebooks/listResponse"
+  /pages:
+    post:
+      operationId: requestPage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [pageId]
+              properties:
+                pageId:
+                  type: string
+      responses:
+        "200":
+          description: The page, or where its request stands.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/pages/requestResponse"
+components:
+  schemas:
+    notebooks/listResponse:
+      type: object
+      required: [notebooks]
+      properties:
+        notebooks:
+          type: array
+          items:
+            type: object
+            required: [uuid]
+            properties:
+              uuid:
+                type: string
+              title:
+                type: string
+    pages/requestResponse:
+      type: object
+      properties:
+        page:
+          anyOf:
+            - type: object
+              required: [content]
+              properties:
+                content:
+                  type: string
+            - type: "null"
+              description: The notebook is offline, so the request waits.
+            - type: string
+              enum: [pending]
+              description: The notebook has not answered yet.
+            - type: string
+              enum: [rejected]
+              description: The notebook declined the request.
