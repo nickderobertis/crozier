@@ -31,36 +31,36 @@
         [
           "src/ir.rs::Builder::add_object",
           [
-            197,
+            205,
             27,
-            197,
+            205,
             40
           ]
         ],
         [
           "src/ir.rs::Builder::add_object",
           [
-            197,
+            205,
             41,
-            197,
+            205,
             45
           ]
         ],
         [
           "src/ir.rs::Builder::add_object",
           [
-            197,
+            205,
             48,
-            197,
+            205,
             55
           ]
         ],
         [
           "src/ir.rs::Builder::add_object",
           [
-            235,
+            243,
             9,
-            235,
+            243,
             10
           ]
         ]
