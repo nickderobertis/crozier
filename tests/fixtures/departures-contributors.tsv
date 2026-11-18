@@ -1383,6 +1383,10 @@ tests/fixtures/registered-literals-fossology-fossology-rest-dotnet-7da1db69/expe
 tests/fixtures/registered-literals-fossology-fossology-rest-dotnet-7da1db69/expected	crozier-e2e::e2e	registered_literals_fossology_fossology_rest_dotnet_7da1db69_matches_fern_output
 tests/fixtures/registered-literals-fossology-fossology-rest-dotnet-7da1db69/expected-literals	crozier-e2e::e2e	overlay_goldens::overlay_goldens_match_fern_output
 tests/fixtures/registered-literals-fossology-fossology-rest-dotnet-7da1db69/expected-literals	crozier-e2e::e2e	registered_literals_fossology_fossology_rest_dotnet_7da1db69_matches_fern_output
+tests/fixtures/registered-literals-francineo-easa-dxcomponents-fc03fd3c/expected	crozier-e2e::e2e	overlay_goldens::overlay_goldens_match_fern_output
+tests/fixtures/registered-literals-francineo-easa-dxcomponents-fc03fd3c/expected	crozier-e2e::e2e	registered_literals_francineo_easa_dxcomponents_fc03fd3c_matches_fern_output
+tests/fixtures/registered-literals-francineo-easa-dxcomponents-fc03fd3c/expected-literals	crozier-e2e::e2e	overlay_goldens::overlay_goldens_match_fern_output
+tests/fixtures/registered-literals-francineo-easa-dxcomponents-fc03fd3c/expected-literals	crozier-e2e::e2e	registered_literals_francineo_easa_dxcomponents_fc03fd3c_matches_fern_output
 tests/fixtures/registered-literals-geoserver-geoserver-b34cf587/expected	crozier-e2e::e2e	overlay_goldens::overlay_goldens_match_fern_output
 tests/fixtures/registered-literals-geoserver-geoserver-b34cf587/expected	crozier-e2e::e2e	registered_literals_geoserver_geoserver_b34cf587_matches_fern_output
 tests/fixtures/registered-literals-geoserver-geoserver-b34cf587/expected-literals	crozier-e2e::e2e	overlay_goldens::overlay_goldens_match_fern_output
@@ -1555,6 +1559,10 @@ tests/fixtures/registered-literals-revertinc-revert-698ea54a/expected	crozier-e2
 tests/fixtures/registered-literals-revertinc-revert-698ea54a/expected	crozier-e2e::e2e	registered_literals_revertinc_revert_698ea54a_matches_fern_output
 tests/fixtures/registered-literals-revertinc-revert-698ea54a/expected-literals	crozier-e2e::e2e	overlay_goldens::overlay_goldens_match_fern_output
 tests/fixtures/registered-literals-revertinc-revert-698ea54a/expected-literals	crozier-e2e::e2e	registered_literals_revertinc_revert_698ea54a_matches_fern_output
+tests/fixtures/registered-literals-samepage-network-openai-samepage-bea1554a/expected	crozier-e2e::e2e	overlay_goldens::overlay_goldens_match_fern_output
+tests/fixtures/registered-literals-samepage-network-openai-samepage-bea1554a/expected	crozier-e2e::e2e	registered_literals_samepage_network_openai_samepage_bea1554a_matches_fern_output
+tests/fixtures/registered-literals-samepage-network-openai-samepage-bea1554a/expected-literals	crozier-e2e::e2e	overlay_goldens::overlay_goldens_match_fern_output
+tests/fixtures/registered-literals-samepage-network-openai-samepage-bea1554a/expected-literals	crozier-e2e::e2e	registered_literals_samepage_network_openai_samepage_bea1554a_matches_fern_output
 tests/fixtures/registered-literals-seekstorm-seekstorm-b73096c4/expected	crozier-e2e::e2e	overlay_goldens::overlay_goldens_match_fern_output
 tests/fixtures/registered-literals-seekstorm-seekstorm-b73096c4/expected	crozier-e2e::e2e	registered_literals_seekstorm_seekstorm_b73096c4_matches_fern_output
 tests/fixtures/registered-literals-seekstorm-seekstorm-b73096c4/expected-literals	crozier-e2e::e2e	overlay_goldens::overlay_goldens_match_fern_output

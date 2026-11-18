@@ -13828,6 +13828,12 @@ tests/fixtures/registered-literals-fossology-fossology-rest-dotnet-7da1db69/expe
 tests/fixtures/registered-literals-fossology-fossology-rest-dotnet-7da1db69/expected-literals	reference.md	6061	reference-anchor-follows-corrected-client
 tests/fixtures/registered-literals-fossology-fossology-rest-dotnet-7da1db69/expected-literals	reference.md	6202	constant-header-docs-arguments
 tests/fixtures/registered-literals-fossology-fossology-rest-dotnet-7da1db69/expected-literals	src/fern/upload/client.py	1665	multipart-object-required-file-example
+tests/fixtures/registered-literals-francineo-easa-dxcomponents-fc03fd3c/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+tests/fixtures/registered-literals-francineo-easa-dxcomponents-fc03fd3c/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+tests/fixtures/registered-literals-francineo-easa-dxcomponents-fc03fd3c/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+tests/fixtures/registered-literals-francineo-easa-dxcomponents-fc03fd3c/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
+tests/fixtures/registered-literals-francineo-easa-dxcomponents-fc03fd3c/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
+tests/fixtures/registered-literals-francineo-easa-dxcomponents-fc03fd3c/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
 tests/fixtures/registered-literals-geoserver-geoserver-b34cf587/expected	src/fern/__init__.py	76	init-type-checking-import-order
 tests/fixtures/registered-literals-geoserver-geoserver-b34cf587/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 tests/fixtures/registered-literals-geoserver-geoserver-b34cf587/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
@@ -16520,6 +16526,12 @@ tests/fixtures/registered-literals-revertinc-revert-698ea54a/expected-literals	r
 tests/fixtures/registered-literals-revertinc-revert-698ea54a/expected-literals	reference.md	9807	request-alias-reference-parameters
 tests/fixtures/registered-literals-revertinc-revert-698ea54a/expected-literals	reference.md	10094	request-alias-reference-parameters
 tests/fixtures/registered-literals-revertinc-revert-698ea54a/expected-literals	reference.md	10329	request-alias-reference-parameters
+tests/fixtures/registered-literals-samepage-network-openai-samepage-bea1554a/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+tests/fixtures/registered-literals-samepage-network-openai-samepage-bea1554a/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+tests/fixtures/registered-literals-samepage-network-openai-samepage-bea1554a/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+tests/fixtures/registered-literals-samepage-network-openai-samepage-bea1554a/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+tests/fixtures/registered-literals-samepage-network-openai-samepage-bea1554a/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+tests/fixtures/registered-literals-samepage-network-openai-samepage-bea1554a/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
 tests/fixtures/registered-literals-seekstorm-seekstorm-b73096c4/expected	reference.md	1060	reference-anchor-follows-corrected-client
 tests/fixtures/registered-literals-seekstorm-seekstorm-b73096c4/expected	reference.md	1099	declared-example-over-placeholder
 tests/fixtures/registered-literals-seekstorm-seekstorm-b73096c4/expected	reference.md	1147	reference-anchor-follows-corrected-client

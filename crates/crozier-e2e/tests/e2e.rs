@@ -10592,6 +10592,8 @@ const OPENCODEUI: Corpus = Corpus {
 
 const CORPORA: &[&Corpus] = &[
     &LITERALS_HASHGRAPH_63BA2735,
+    &LITERALS_SAMEPAGE_BEA1554A,
+    &LITERALS_EASA_FC03FD3C,
     &LITERALS_APIS_GURU_608E22DC,
     &LITERALS_APIS_GURU_79291D99,
     &LITERALS_ATACAN_B306BF44,
@@ -33402,3 +33404,39 @@ fn registered_literals_hashgraph_guardian_63ba2735_matches_fern_output() {
     overlay_goldens::assert_literals_match(&LITERALS_HASHGRAPH_63BA2735);
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+/// Certified enum-mode witness, corpus row 6000.
+const LITERALS_SAMEPAGE_BEA1554A: Corpus = Corpus {
+    api: "registered-literals-samepage-network-openai-samepage-bea1554a",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn registered_literals_samepage_network_openai_samepage_bea1554a_matches_fern_output() {
+    assert_committed_corpus_matches(&LITERALS_SAMEPAGE_BEA1554A);
+    overlay_goldens::assert_literals_match(&LITERALS_SAMEPAGE_BEA1554A);
+}
+
+/// Certified enum-mode witness, corpus row 6001.
+const LITERALS_EASA_FC03FD3C: Corpus = Corpus {
+    api: "registered-literals-francineo-easa-dxcomponents-fc03fd3c",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn registered_literals_francineo_easa_dxcomponents_fc03fd3c_matches_fern_output() {
+    assert_committed_corpus_matches(&LITERALS_EASA_FC03FD3C);
+    overlay_goldens::assert_literals_match(&LITERALS_EASA_FC03FD3C);
+}

@@ -1811,6 +1811,12 @@
         ".crozier-overlay.json"
       ]
     },
+    "tests/fixtures/registered-literals-francineo-easa-dxcomponents-fc03fd3c/expected": {},
+    "tests/fixtures/registered-literals-francineo-easa-dxcomponents-fc03fd3c/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/registered-literals-geoserver-geoserver-b34cf587/expected": {},
     "tests/fixtures/registered-literals-geoserver-geoserver-b34cf587/expected-literals": {
       "excluded": [
@@ -2065,6 +2071,12 @@
     },
     "tests/fixtures/registered-literals-revertinc-revert-698ea54a/expected": {},
     "tests/fixtures/registered-literals-revertinc-revert-698ea54a/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-samepage-network-openai-samepage-bea1554a/expected": {},
+    "tests/fixtures/registered-literals-samepage-network-openai-samepage-bea1554a/expected-literals": {
       "excluded": [
         ".crozier-overlay.json"
       ]
