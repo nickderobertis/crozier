@@ -141,19 +141,19 @@ split five ways:
 546 + 70 + 110 + 0 + 0 = 726.
 
 **Feature combinations are counted apart.** 107 combinations are selected
-([the list](openapi-surface/combinations.md)): 31 are `gap`, 72 are `golden` and 4 are `handwritten`.
+([the list](openapi-surface/combinations.md)): 28 are `gap`, 75 are `golden` and 4 are `handwritten`.
 13 of the `gap` ones are decided output-insensitive in
 [the shared table](openapi-surface/output-insensitive.tsv), neither proven nor unproven.
 **Combinations by proof.** A combination is proven only where its handling is checked against the certified pair,
 at an interaction branch or with source-checked independent feature controls. `finished_state_failures` in
 [the census suite](../tools/surface-census/tests/surface_census_test.py) validates the recorded evidence, with
 [the hand-written fixture format](openapi-surface/handwritten/AGENTS.md) it reads.
-**48** are byte-matched against a registered real specification at their
+**51** are byte-matched against a registered real specification at their
 interaction branch, **0** have independent handling, checked against the source,
 instrumented feature-only controls and fresh certified trees
 ([the audit](openapi-surface/combination-cooccurrence.tsv)), **0** are compared against a committed measurement of
-non-generation, **0** rest on a hand-written fixture (0 of them witness-blocked, 0 of them co-occurrences proven on the fixture), **46** remain
-open (unproven) (0 left unproven by the user's ruling), and **13** are decided output-insensitive: 48 + 0 + 0 + 0 + 46 + 13 = 107.
+non-generation, **0** rest on a hand-written fixture (0 of them witness-blocked, 0 of them co-occurrences proven on the fixture), **43** remain
+open (unproven) (0 left unproven by the user's ruling), and **13** are decided output-insensitive: 51 + 0 + 0 + 0 + 43 + 13 = 107.
 None is among the 726 features above, and each other `gap` one is named under
 [Unproven combinations, named](#unproven-combinations-named).
 
@@ -2958,7 +2958,7 @@ the tests run and carried.
 #### The reach ranking
 
 Golden rows ranked by unreached handling sites, then unreached handling regions,
-then key. **551** golden rows reach every handling site and tie below every row
+then key. **556** golden rows reach every handling site and tie below every row
 listed here: the [ledger](openapi-surface/golden-reach.tsv)'s rows whose
 `unreached_sites` is 0, its combination rows among them. Each says so in its own cell. Unreached regions break ties and
 create no obligation of their own.
@@ -3015,14 +3015,14 @@ unreached by any Fern-accepted document.
 | 9 | `parameter-schema` | `parameters` | **2** | **26** | **352** | open — real-specification witness search remains open |
 | 10 | `parameter-in-path` | `parameters` | **2** | **19** | **309** | open — real-specification witness search remains open |
 | 11 | `media-type-multipart` | `bodies-media` | **2** | **14** | **29** | open — real-specification witness search remains open |
-| 12 | `ref-pointer-nested-properties` | `schemas` | **2** | **10** | **7** | open — real-specification witness search remains open |
-| 13 | `ref-pointer-nested-items` | `schemas` | **2** | **6** | **4** | open — real-specification witness search remains open |
-| 14 | `anyof-discriminated-union` | `schemas` | **1** | **205** | **30** | owned — first-pass search record below |
-| 15 | `array-item-anyof-discriminated-union` | `schemas` | **1** | **199** | **19** | open — real-specification witness search remains open |
-| 16 | `array-item-oneof-discriminated-union` | `schemas` | **1** | **165** | **31** | open — real-specification witness search remains open |
-| 17 | `oneof-discriminated-union` | `schemas` | **1** | **111** | **86** | owned — first-pass search record below |
-| 18 | `anyof-oneof-variant` | `schemas` | **1** | **90** | **17** | owned — first-pass search record below |
-| 19 | `additional-properties-schema` | `schemas` | **1** | **51** | **259** | open — real-specification witness search remains open |
+| 12 | `ref-pointer-nested-items` | `schemas` | **2** | **6** | **4** | open — real-specification witness search remains open |
+| 13 | `anyof-discriminated-union` | `schemas` | **1** | **205** | **30** | owned — first-pass search record below |
+| 14 | `array-item-anyof-discriminated-union` | `schemas` | **1** | **199** | **19** | open — real-specification witness search remains open |
+| 15 | `array-item-oneof-discriminated-union` | `schemas` | **1** | **165** | **32** | open — real-specification witness search remains open |
+| 16 | `oneof-discriminated-union` | `schemas` | **1** | **111** | **87** | owned — first-pass search record below |
+| 17 | `anyof-oneof-variant` | `schemas` | **1** | **97** | **17** | owned — first-pass search record below |
+| 18 | `oneof-array-variant-anyof-item` | `schemas` | **1** | **55** | **1** | open — real-specification witness search remains open |
+| 19 | `additional-properties-schema` | `schemas` | **1** | **51** | **261** | open — real-specification witness search remains open |
 | 20 | `anyof-map-variant-anyof-value` | `schemas` | **1** | **48** | **5** | open — real-specification witness search remains open |
 | 21 | `anyof-map-variant-oneof-value` | `schemas` | **1** | **48** | **1** | open — real-specification witness search remains open |
 | 22 | `oneof-map-variant-oneof-value` | `schemas` | **1** | **48** | **1** | open — real-specification witness search remains open |
@@ -3170,7 +3170,7 @@ tree's document; each copy is its own declarer, named `<walk>:<path>`.
 #### Every unreached arm, and its search verdict
 
 <!-- BEGIN GENERATED ARM COUNTS: run `just golden-reach-arms` -->
-The golden rows split in two. **558** reach every handling site their
+The golden rows split in two. **556** reach every handling site their
 [site table](openapi-surface/golden-reach-sites.tsv) declares, and **66** carry at least one handling site no golden-only witness executes: 84 unreached arms in all. By the verdict each arm's linked record states, 61 read `exhausted`, 23 read `search-incomplete`, 0 read `config-gated`, and 0 have no arm search.
 <!-- END GENERATED ARM COUNTS -->
 Every one is named below with the verdict its linked arm-search record
