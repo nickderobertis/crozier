@@ -25,7 +25,7 @@ named in `detail`), or a Fern refusal.
 
 ## Keys
 
-Three pointer keys are interactions on a registered witness once their reach is measured; every other key stays the named open row it already
+Three pointer keys are settled as interactions on a registered witness; every other key stays the named open row it already
 is, under `#### Unproven combinations, named` in
 [`../../openapi-surface-coverage.md`](../../openapi-surface-coverage.md) or as a
 `class:open` row of [`../combination-cooccurrence.tsv`](../combination-cooccurrence.tsv),
@@ -36,11 +36,11 @@ candidates with no certified comparison yet. Each is named by its row in
 | key | route | screened (documents) | outstanding | state or blocker |
 |---|---|---|---|---|
 | `combo-allof-unresolved-nested-pointer` | certified screen | 1 of 1 | 0 | Its one candidate (`353c161d…`) is refused by Fern and by crozier (`object-extends-non-object`); no candidate remains, so the key needs a hand-written fixture. |
-| `combo-array-unresolved-nested-pointer` | certified screen | 1 of 1 | 0 | Interaction: `registered-literals-francineo-easa-dxcomponents-fc03fd3c` (corpus row 6001) byte-matches in both modes and executes the dedicated `Builder::field_type_ref` element arm; its reach measurement is pending. |
+| `combo-array-unresolved-nested-pointer` | certified screen | 1 of 1 | 0 | Interaction: `registered-literals-francineo-easa-dxcomponents-fc03fd3c` (corpus row 6001) byte-matches in both modes and executes the dedicated `Builder::field_type_ref` element arm; the reach ledger records it executing that arm, so the key is settled as an interaction ([audit](../combination-cooccurrence.tsv)). |
 | `combo-map-unresolved-nested-pointer` | certified screen | 0 of 0 | 0 | No pending candidate: the population could not be had whole ([populations](../witness-search-combination-populations/README.md#missing-populations)). |
 | `combo-property-unresolved-nested-pointer` | certified screen | 1 of 1 | 0 | Its one candidate (`408c3da8…`) is OpenAPI 3.2.0, which Fern and crozier both refuse; no candidate remains. |
-| `combo-request-unresolved-nested-pointer` | certified screen | 1 of 1 | 0 | Interaction: `registered-literals-francineo-easa-dxcomponents-fc03fd3c` (corpus row 6001) byte-matches and executes the dedicated `resolve_request_body` arm; its reach measurement is pending. |
-| `combo-response-unresolved-nested-pointer` | certified screen | 3 of 3 | 0 | Interaction: `registered-literals-francineo-easa-dxcomponents-fc03fd3c` (corpus row 6001) byte-matches and executes the dedicated `build_endpoint` arm; its reach measurement is pending. samepage (corpus row 6000) byte-matches too; `torii.json` (`0d01bc91…`) differs (see `certified.tsv`). |
+| `combo-request-unresolved-nested-pointer` | certified screen | 1 of 1 | 0 | Interaction: `registered-literals-francineo-easa-dxcomponents-fc03fd3c` (corpus row 6001) byte-matches and executes the dedicated `resolve_request_body` arm; the reach ledger records it executing that arm, so the key is settled as an interaction ([audit](../combination-cooccurrence.tsv)). |
+| `combo-response-unresolved-nested-pointer` | certified screen | 3 of 3 | 0 | Interaction: `registered-literals-francineo-easa-dxcomponents-fc03fd3c` (corpus row 6001) byte-matches and executes the dedicated `build_endpoint` arm; the reach ledger records it executing that arm, so the key is settled as an interaction ([audit](../combination-cooccurrence.tsv)). samepage (corpus row 6000) byte-matches too; `torii.json` (`0d01bc91…`) differs (see `certified.tsv`). |
 | `combo-array-defs-pointer` | certified screen | 0 of 0 | 0 | No pending candidate (every read row is `rejected-trigger` or unfetchable). |
 | `combo-property-defs-pointer` | certified screen | 0 of 0 | 0 | No pending candidate (every read row is `rejected-trigger` or unfetchable). |
 | `combo-anyof-beside-properties` | certified screen | 0 of 0 | 0 | No pending candidate; its region `Builder::discriminated_union[if !schema.properties.is_empty()]` stays unreached by every registered witness. |
