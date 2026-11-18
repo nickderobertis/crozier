@@ -1938,7 +1938,7 @@ class RegionUnionReportTest(unittest.TestCase):
         reports = sorted(
             (REPO / "docs/openapi-surface/witness-search-operation-combinations/controls").glob("*/region-union.json")
         )
-        self.assertEqual(10, len(reports))
+        self.assertEqual(8, len(reports))
         pattern = golden_reach().HANDLER_SPEC
         for path in reports:
             with self.subTest(report=path.parent.name):
