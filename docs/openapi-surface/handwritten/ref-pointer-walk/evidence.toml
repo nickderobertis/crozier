@@ -21,18 +21,6 @@ search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/
 verdict = "exhausted"
 
 [[covers]]
-key = "ref-pointer-nested-properties"
-arm = 'src/ir.rs::ref_to_class["properties" if index]'
-search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-105-ref-pointer-nested-properties"
-verdict = "exhausted"
-
-[[covers]]
-key = "ref-pointer-nested-properties"
-arm = 'src/ir.rs::resolve_schema_pointer[^\s*"properties" => \{]'
-search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-106-ref-pointer-nested-properties"
-verdict = "exhausted"
-
-[[covers]]
 key = "ref-pointer-nested-items"
 arm = 'src/ir.rs::ref_to_class["items" => \{]'
 search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-103-ref-pointer-nested-items"
@@ -54,12 +42,6 @@ verdict = "exhausted"
 key = "array-item-pointer-walk-anyof"
 arm = 'src/ir.rs::resolve_schema_pointer[^\s*"anyOf" => \{]'
 search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-31-array-item-pointer-walk-anyof"
-verdict = "exhausted"
-
-[[covers]]
-key = "array-item-pointer-walk-properties"
-arm = 'src/ir.rs::resolve_schema_pointer[^\s*"properties" => \{]'
-search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-34-array-item-pointer-walk-properties"
 verdict = "exhausted"
 
 [[covers]]
