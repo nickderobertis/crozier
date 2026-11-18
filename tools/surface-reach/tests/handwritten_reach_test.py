@@ -2128,6 +2128,12 @@ KIOSK_SCHEMAS = (
 )
 
 
+def schema_control(key: str, role: str) -> str:
+    """One committed document of a `combination-interaction-controls/` manifest entry."""
+    path = REPO / "docs/openapi-surface/combination-interaction-controls" / key / role / "openapi.yml"
+    return path.read_text(encoding="utf-8")
+
+
 def berth_call(
     content: str, parameters: str = "", item_parameters: str = "", required: str = "        required: true\n"
 ) -> str:
@@ -2358,6 +2364,16 @@ INTERACTION_ARMS: dict[str, InteractionArm] = {
         {
             "method name alone": operation_document(streamed_call(True, False), QUOTE_SCHEMAS),
             "stream condition alone": operation_document(streamed_call(False, True), QUOTE_SCHEMAS),
+        },
+    ),
+    # The schema's own example reaches a field its inline `allOf` member declares; every
+    # document keeps the model's own `note`, so only the two features vary. The documents
+    # are the manifest's, so this arm and the schema-control test drive the same inputs.
+    "combo-allof-schema-example": InteractionArm(
+        schema_control("combo-allof-schema-example", "both"),
+        {
+            "allOf alone": schema_control("combo-allof-schema-example", "first"),
+            "example alone": schema_control("combo-allof-schema-example", "second"),
         },
     ),
     # The Operation Object's own parameters beside the urlencoded union are what the arm
@@ -2849,6 +2865,7 @@ class ControlFeatures(NamedTuple):
 
 
 SCHEMA_CONTROL_FEATURES = {
+    "combo-allof-schema-example": ControlFeatures("schema.allOf", "schema.example"),
     "combo-map-beside-anyof": ControlFeatures("schema.additionalProperties", "schema.anyOf"),
     "combo-properties-beside-additional-properties": ControlFeatures(
         "schema.additionalProperties", "schema.properties:non-empty"

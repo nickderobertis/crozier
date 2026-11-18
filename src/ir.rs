@@ -6240,6 +6240,25 @@ fn schema_example_literal(schema: &Schema) -> Option<String> {
     resolved_schema_example_literal(schema, None)
 }
 
+/// Give each of `fields` the value an object schema's own example sets for its
+/// wire name, keeping the property's own example as the fallback the example
+/// replaced ([`FieldExampleSource::Object`]).
+fn apply_object_example(
+    example: &serde_json::Map<String, serde_json::Value>,
+    fields: &mut [Field],
+) {
+    for field in fields {
+        if let Some(value) = example.get(&field.wire_name) {
+            let property = match &field.example_source {
+                FieldExampleSource::Property => field.example.clone(),
+                FieldExampleSource::Object { property } => property.clone(),
+            };
+            field.example_source = FieldExampleSource::Object { property };
+            field.example = example_literal(value);
+        }
+    }
+}
+
 fn resolved_schema_example_literal(
     schema: &Schema,
     schemas: Option<&IndexMap<String, Schema>>,
@@ -15403,6 +15422,8 @@ impl Builder<'_> {
                 );
             }
         }
+        // Every field before this one an `allOf` member contributed.
+        let member_fields = fields.len();
         self.collect_fields(name, schema, &required, &mut fields);
         if let (Some(owners), Some(member)) = (
             promoted_owners.filter(|_| !schema.properties.is_empty()),
@@ -15439,16 +15460,16 @@ impl Builder<'_> {
             }
         }
         if let Some(example) = schema_example(schema).and_then(serde_json::Value::as_object) {
-            for field in &mut fields {
-                if let Some(value) = example.get(&field.wire_name) {
-                    let property = match &field.example_source {
-                        FieldExampleSource::Property => field.example.clone(),
-                        FieldExampleSource::Object { property } => property.clone(),
-                    };
-                    field.example_source = FieldExampleSource::Object { property };
-                    field.example = example_literal(value);
-                }
+            let (members, rest) = fields.split_at_mut(member_fields);
+            // Where the schema's own example names a field an `allOf` member
+            // declared, the example reaches across the composition: AssemblyAI's
+            // `TranscriptParams` example sets `audio_url`, which only its inline
+            // member declares, and the field takes the example's value as an own
+            // field would (`combo-allof-schema-example`).
+            if !members.is_empty() {
+                apply_object_example(example, members);
             }
+            apply_object_example(example, rest);
         }
         // A redeclaration that lowers to the base's own field is not an override —
         // it says again what the base already says, so Fern drops it and keeps the

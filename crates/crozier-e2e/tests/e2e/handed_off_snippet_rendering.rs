@@ -227,6 +227,19 @@ fn catalogued_snippet_defects_are_what_crozier_writes() {
             "    ids_array=[",
             "    ids=[",
         ),
+        // ... and the parameter list names the same argument.
+        (
+            "snippet-rendering",
+            "reference.md",
+            "**codes_array:** `typing.Optional[typing.Union[str, typing.Sequence[str]]]` ",
+            "**codes:** `typing.Optional[typing.Union[str, typing.Sequence[str]]]` ",
+        ),
+        (
+            "snippet-rendering",
+            "reference.md",
+            "**ids_array:** `typing.Optional[typing.Union[str, typing.Sequence[str]]]` ",
+            "**ids:** `typing.Optional[typing.Union[str, typing.Sequence[str]]]` ",
+        ),
         // non-string-client-header-example: the declared type's placeholder,
         // the string header's `YOUR_*` kept.
         (
@@ -276,10 +289,6 @@ fn catalogued_snippet_defects_are_what_crozier_writes() {
             "{cause}: crozier still writes `{fern}`"
         );
     }
-    // The parameter list keeps the certified spelling, matched byte for byte.
-    let (_, reference) = file_texts("snippet-rendering", "reference.md");
-    assert!(reference
-        .contains("**codes_array:** `typing.Optional[typing.Union[str, typing.Sequence[str]]]`"));
 }
 
 /// A copy of a cause's committed tree with one line changed: a `from` the tree

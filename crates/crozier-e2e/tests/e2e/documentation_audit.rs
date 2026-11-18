@@ -9,7 +9,9 @@
 use std::path::Path;
 use std::process::Command;
 
-use super::{handwritten_document_as_json, probe_command, python_interpreter, repo_root};
+use super::{
+    handwritten_document_as_json, probe_command, python_interpreter, repo_root, runtime_python_env,
+};
 
 /// The audit, beside the evidence note that reports its population.
 const SCRIPT: &str = "docs/departures/evidence/documentation-audit/documentation-audit.py";
@@ -310,3 +312,134 @@ fn a_forward_reference_that_does_not_parse_is_an_unknown_annotation() {
     let found = audit(&[&generated]);
     assert_eq!(found.status, Some(0), "{}{}", found.stdout, found.stderr);
 }
+
+/// The authored probe whose required array header every operation takes, so
+/// both generators promote it to a client constructor argument (#810).
+const PROMOTED_ARRAY: &str = "docs/openapi-surface/authored-probes/353-promoted-required-array";
+
+/// #810: a promoted array client header's constructor examples pass a list of
+/// its item's placeholder, where the certified pair passes the `YOUR_*` string
+/// the `typing.List[str]` annotation rejects (`non-string-client-header-example`).
+/// The audit reports each certified construction and nothing in crozier's tree.
+#[test]
+fn a_promoted_array_header_is_constructed_from_a_list_in_every_docstring_example() {
+    let probe = repo_root().join(PROMOTED_ARRAY);
+    let scratch = tempfile::tempdir().unwrap();
+    let generated = scratch.path().join("crozier");
+    probe_command(&probe.join("openapi.yml"), &generated)
+        .assert()
+        .success();
+    let constructions = |tree: &Path| -> Vec<String> {
+        std::fs::read_to_string(tree.join("src/fern/client.py"))
+            .unwrap()
+            .lines()
+            .map(str::trim)
+            .filter(|line| line.starts_with("probe_param=") && *line != "probe_param=probe_param,")
+            .map(str::to_owned)
+            .collect()
+    };
+    // The two root client classes' examples and the sync and async methods'.
+    assert_eq!(
+        constructions(&generated),
+        vec!["probe_param=[\"probeParam\", \"probeParam\"],"; 6]
+    );
+    let certified = probe.join("fern-expected");
+    assert_eq!(
+        constructions(&certified),
+        vec!["probe_param=\"YOUR_PROBE_PARAM\","; 6]
+    );
+    let found = audit(&[&certified]);
+    assert_eq!(found.status, Some(1), "{}{}", found.stdout, found.stderr);
+    assert_eq!(
+        rows(
+            &found,
+            "placeholder",
+            "`probe_param='YOUR_PROBE_PARAM'` for `typing.List[str]`"
+        )
+        .len(),
+        6,
+        "{}",
+        found.stdout
+    );
+    let ours = audit(&[&generated]);
+    assert_eq!(ours.status, Some(0), "{}{}", ours.stdout, ours.stderr);
+    assert!(ours.stdout.is_empty(), "{}", ours.stdout);
+}
+
+/// Each keyword a root client or method docstring passes to the client
+/// constructor, validated strictly against the constructor's own annotation:
+/// one `<where> <keyword> ok|rejected` line each.
+const CONSTRUCTIONS: &str = r#"
+import ast, inspect, sys, textwrap, typing
+from pydantic import TypeAdapter, ValidationError
+sys.path.insert(0, sys.argv[1])
+import fern
+for cls in (fern.FernApi, fern.AsyncFernApi):
+    hints = typing.get_type_hints(cls.__init__)
+    owners = [(cls.__name__, cls)] + [(f"{cls.__name__}.{name}", getattr(cls, name)) for name in ("probe", "other")]
+    for where, owner in owners:
+        code = textwrap.dedent(inspect.getdoc(owner).split("Examples\n--------\n", 1)[1])
+        for node in ast.walk(ast.parse(code)):
+            if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == cls.__name__:
+                for keyword in node.keywords:
+                    try:
+                        TypeAdapter(hints[keyword.arg]).validate_python(ast.literal_eval(keyword.value), strict=True)
+                    except ValidationError:
+                        print(where, keyword.arg, "rejected")
+                    else:
+                        print(where, keyword.arg, "ok")
+"#;
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This `sdk_env_*` journey runs only in the `sdk-env` project (tests/sdk_env/project.json: `tier:promoted`, `cache: false`), promoted out of the affected tier into its own required CI leg; crates/crozier-e2e/AGENTS.md makes `#[ignore]` the one mechanism that routes a journey to that project.
+/// #810, run: every constructor example crozier documents for the promoted
+/// array header validates against the generated `typing.List[str]` annotation,
+/// and every certified one is rejected by it.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI); run via `just test-sdk-env`"]
+fn sdk_env_promoted_array_header_examples_have_the_declared_type() {
+    let python = runtime_python_env().expect("SDK runtime environment");
+    let probe = repo_root().join(PROMOTED_ARRAY);
+    let scratch = tempfile::tempdir().unwrap();
+    let generated = scratch.path().join("crozier");
+    probe_command(&probe.join("openapi.yml"), &generated)
+        .assert()
+        .success();
+    let certified = scratch.path().join("certified");
+    super::copy_dir(&probe.join("fern-expected"), &certified);
+    let run = |tree: &Path| -> Vec<String> {
+        let output = Command::new(&python)
+            .args(["-c", CONSTRUCTIONS])
+            .arg(tree.join("src"))
+            .env("PYTHONDONTWRITEBYTECODE", "1")
+            .output()
+            .expect("run the construction check");
+        assert!(
+            output.status.success(),
+            "{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        let mut lines: Vec<String> = String::from_utf8_lossy(&output.stdout)
+            .lines()
+            .map(str::to_owned)
+            .collect();
+        lines.sort();
+        lines
+    };
+    let wheres = [
+        "AsyncFernApi",
+        "AsyncFernApi.other",
+        "AsyncFernApi.probe",
+        "FernApi",
+        "FernApi.other",
+        "FernApi.probe",
+    ];
+    let expect = |verdict: &str| -> Vec<String> {
+        wheres
+            .iter()
+            .map(|place| format!("{place} probe_param {verdict}"))
+            .collect()
+    };
+    assert_eq!(run(&generated), expect("ok"));
+    assert_eq!(run(&certified), expect("rejected"));
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
