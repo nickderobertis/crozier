@@ -25,7 +25,7 @@ named in `detail`), or a Fern refusal.
 
 ## Keys
 
-No key reaches a settled class here. Each stays the named open row it already
+Three pointer keys are interactions on a registered witness once their reach is measured; every other key stays the named open row it already
 is, under `#### Unproven combinations, named` in
 [`../../openapi-surface-coverage.md`](../../openapi-surface-coverage.md) or as a
 `class:open` row of [`../combination-cooccurrence.tsv`](../combination-cooccurrence.tsv),
@@ -33,30 +33,30 @@ for the reason given. "Outstanding" counts the key's `certified-screen-pending`
 candidates with no certified comparison yet. Each is named by its row in
 `screen.tsv`.
 
-| key | route | screened here | outstanding | what blocks it |
+| key | route | screened (documents) | outstanding | state or blocker |
 |---|---|---|---|---|
-| `combo-allof-unresolved-nested-pointer` | certified screen | 0 | 3 | Its one distinct document, `openapi-in-openapi.json` (`353c161d…`), has no certified tree yet. crozier refuses it as `object-extends-non-object` (`media-type`'s `allOf` extends the non-object `specification-extensions`); Fern's verdict is outstanding. |
-| `combo-array-unresolved-nested-pointer` | certified screen | 1 (`fc03fd3c…`) | 0 | Its one candidate mismatches outside the key's pointers (see `certified.tsv`), so no registered witness byte-matches. |
-| `combo-map-unresolved-nested-pointer` | certified screen | 0 | 0 | No pending candidate: the population could not be had whole ([populations](../witness-search-combination-populations/README.md#missing-populations)). |
-| `combo-property-unresolved-nested-pointer` | certified screen | 0 | 1 | `canopy-pulls-api` (`408c3da8…`) has no certified tree yet. crozier refuses it as `unsupported-openapi-version` (OpenAPI 3.2.0). |
-| `combo-request-unresolved-nested-pointer` | certified screen | 1 (`fc03fd3c…`) | 0 | As `combo-array-unresolved-nested-pointer`: the same document's residuals. |
-| `combo-response-unresolved-nested-pointer` | certified screen | 2 (`bea1554a…`, `fc03fd3c…`) | 2 | samepage's pointer interaction is repaired, and its tree differs only by the list-of-maps member residual. easa as above. `torii.json` (`0d01bc91…`, two rows) has no certified tree yet. |
-| `combo-array-defs-pointer` | certified screen | 0 | 0 | No pending candidate (every read row is `rejected-trigger` or unfetchable). |
-| `combo-property-defs-pointer` | certified screen | 0 | 0 | No pending candidate (every read row is `rejected-trigger` or unfetchable). |
-| `combo-anyof-beside-properties` | certified screen | 0 | 0 | No pending candidate. Its region `Builder::discriminated_union[if !schema.properties.is_empty()]` stays unreached by every registered witness. |
-| `combo-nullable-allof-parent-own-property` | certified screen | 0 | 0 | No pending candidate (147 identities unfetched in the bounded raw-lane budget). |
-| `combo-property-anyof-composed-sibling` | certified screen | 0 | 152 | Every candidate's certified generation is outstanding. |
-| `combo-unrequired-tag-anyof-reference` | certified screen | 0 | 133 | Every candidate's certified generation is outstanding. |
-| `combo-unrequired-tag-oneof-reference` | certified screen | 0 | 320 | Every candidate's certified generation is outstanding. |
-| `combo-map-beside-oneof` | dedicated region + arm witness | 0 | 8 | Its pooled `prefer_map_to_union` condition has no dedicated region yet, and its 8 candidates' certified generations are outstanding. |
-| `combo-success-anyof-nullable` | dedicated region + arm witness | 0 | 159 | The dropped-null response region still pools union spellings (no keyword-specific region), and its candidates' generations are outstanding. |
-| `combo-success-oneof-nullable` | dedicated region + arm witness | 0 | 42 | As `combo-success-anyof-nullable`. |
-| `combo-allof-nullable-member` | entailment | — | — | The entailment obstruction its audit row states. No region of its own executes with both features apart from the entailed one. |
-| `combo-map-of-nullable-values` | entailment | — | — | The entailment obstruction its audit row states. This change makes a nullable inline object map value optional (`Builder::field_type_ref`, `InlineHoister::field_type_ref`), but that arm has no dedicated region or registered witness yet. |
+| `combo-allof-unresolved-nested-pointer` | certified screen | 1 of 1 | 0 | Its one candidate (`353c161d…`) is refused by Fern and by crozier (`object-extends-non-object`); no candidate remains, so the key needs a hand-written fixture. |
+| `combo-array-unresolved-nested-pointer` | certified screen | 1 of 1 | 0 | Interaction: `registered-literals-francineo-easa-dxcomponents-fc03fd3c` (corpus row 6001) byte-matches in both modes and executes the dedicated `Builder::field_type_ref` element arm; its reach measurement is pending. |
+| `combo-map-unresolved-nested-pointer` | certified screen | 0 of 0 | 0 | No pending candidate: the population could not be had whole ([populations](../witness-search-combination-populations/README.md#missing-populations)). |
+| `combo-property-unresolved-nested-pointer` | certified screen | 1 of 1 | 0 | Its one candidate (`408c3da8…`) is OpenAPI 3.2.0, which Fern and crozier both refuse; no candidate remains. |
+| `combo-request-unresolved-nested-pointer` | certified screen | 1 of 1 | 0 | Interaction: `registered-literals-francineo-easa-dxcomponents-fc03fd3c` (corpus row 6001) byte-matches and executes the dedicated `resolve_request_body` arm; its reach measurement is pending. |
+| `combo-response-unresolved-nested-pointer` | certified screen | 3 of 3 | 0 | Interaction: `registered-literals-francineo-easa-dxcomponents-fc03fd3c` (corpus row 6001) byte-matches and executes the dedicated `build_endpoint` arm; its reach measurement is pending. samepage (corpus row 6000) byte-matches too; `torii.json` (`0d01bc91…`) differs (see `certified.tsv`). |
+| `combo-array-defs-pointer` | certified screen | 0 of 0 | 0 | No pending candidate (every read row is `rejected-trigger` or unfetchable). |
+| `combo-property-defs-pointer` | certified screen | 0 of 0 | 0 | No pending candidate (every read row is `rejected-trigger` or unfetchable). |
+| `combo-anyof-beside-properties` | certified screen | 0 of 0 | 0 | No pending candidate; its region `Builder::discriminated_union[if !schema.properties.is_empty()]` stays unreached by every registered witness. |
+| `combo-nullable-allof-parent-own-property` | certified screen | 0 of 0 | 0 | No pending candidate (147 identities unfetched in the bounded raw-lane budget). |
+| `combo-property-anyof-composed-sibling` | certified screen | 20 of 112 | 92 | 10 candidates byte-match in both modes; the key still needs an interaction site of its own and a registered witness executing it. 92 candidates outstanding. |
+| `combo-unrequired-tag-anyof-reference` | certified screen | 26 of 81 | 55 | 7 candidates byte-match; no interaction site is declared yet. 55 candidates outstanding. |
+| `combo-unrequired-tag-oneof-reference` | certified screen | 31 of 230 | 199 | 8 candidates byte-match; no interaction site is declared yet. 199 candidates outstanding. |
+| `combo-map-beside-oneof` | dedicated region + arm witness | 8 of 8 | 0 | Every candidate differs or is refused (see `certified.tsv`); the pooled `prefer_map_to_union` condition has no dedicated region yet. |
+| `combo-success-anyof-nullable` | dedicated region + arm witness | 32 of 108 | 76 | 17 candidates byte-match, but none executes the inline dropped-`null` union arm a keyword-specific region would split from `Some(if dropped_null {`. 76 candidates outstanding. |
+| `combo-success-oneof-nullable` | dedicated region + arm witness | 29 of 32 | 3 | 14 candidates byte-match, but none executes the inline dropped-`null` union arm. 3 candidates outstanding. |
+| `combo-allof-nullable-member` | entailment | — | — | The entailment obstruction its audit row states; no region of its own executes with both features apart from the entailed one. |
+| `combo-map-of-nullable-values` | entailment | — | — | The entailment obstruction its audit row states. |
 | `combo-property-ref-to-nullable-target` | entailment | — | — | The entailment obstruction its audit row states. |
 | `combo-property-ref-to-read-only-target` | entailment | — | — | The entailment obstruction its audit row states. |
-| `combo-allof-with-required` | source audit | — | — | The removed conjunction guard. No genuine conjunctive decision has been located, and no instrumented union test has run. |
-| `combo-annotated-ref-to-nullable-target` | source audit | — | — | As `combo-allof-with-required`: no conjunctive decision located, and no union test run. |
+| `combo-allof-with-required` | source audit | — | — | The removed conjunction guard: no genuine conjunctive decision has been located, and no instrumented union test has run. |
+| `combo-annotated-ref-to-nullable-target` | source audit | — | — | As `combo-allof-with-required`. |
 
 ## Ticket specifications compared beside the screen
 
