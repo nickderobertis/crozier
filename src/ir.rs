@@ -2929,8 +2929,14 @@ fn fern_enum_name_key(value: &str, declared: Option<&str>) -> String {
         .filter(char::is_ascii_alphanumeric)
         .map(|ch| ch.to_ascii_lowercase())
         .collect();
-    if generated.is_empty() || value.starts_with(|ch: char| ch.is_ascii_digit()) {
+    if generated.is_empty() {
         value.to_lowercase()
+    } else if value.starts_with(|ch: char| ch.is_ascii_digit()) {
+        // A value opening on a digit is compared by the name its number spells:
+        // the dibbs eCR refiner's `NarrativeOnlySection` offers `10154-3` and
+        // `10187-3`, which both spell `Undefined3` (Fern's speller stops at
+        // 9,999), and the certified pair keeps only the first.
+        naming::enum_member_name(value).replace('_', "").to_lowercase()
     } else {
         generated
     }
@@ -31981,6 +31987,25 @@ components:
             Some(TypeRef::Primitive(Prim::Str))
         );
         assert!(!ir.endpoints[0].response_may_be_empty);
+    }
+    #[test]
+    fn digit_leading_enum_values_spelling_one_name_keep_only_the_first() {
+        // The dibbs eCR refiner's `NarrativeOnlySection`: `10154-3` and `10187-3`
+        // both spell `UNDEFINED3`, and the certified pair keeps the first; a
+        // digit-leading value spelling a name of its own keeps its member.
+        let values = ["10154-3", "29299-5", "10187-3", "1-a"]
+            .map(String::from)
+            .to_vec();
+        let enumeration = build_enum(&Schema::default(), "NarrativeOnlySection", values, None);
+        let members: Vec<(&str, &str)> = enumeration
+            .members
+            .iter()
+            .map(|member| (member.name.as_str(), member.value.as_str()))
+            .collect();
+        assert_eq!(
+            members,
+            [("UNDEFINED3", "10154-3"), ("UNDEFINED5", "29299-5"), ("ONE_A", "1-a")]
+        );
     }
     #[test]
     fn enum_example_selection_accepts_only_declared_members() {
