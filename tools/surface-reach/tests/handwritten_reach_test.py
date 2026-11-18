@@ -190,9 +190,9 @@ verdict = "exhausted"
 )
 # A combination whose site cell reads `co-occurrence`: no measured branch joins both
 # features, so a fixture covering it is measured at each handling function the
-# committed audit names, over a document whose optional body references a map.
-COOCCURRING = "combo-optional-ref-map-body"
-OPTIONAL_MAP_BODY_DOCUMENT = """openapi: 3.0.3
+# committed audit names, over a document whose body property is a map of nullable values.
+COOCCURRING = "combo-map-of-nullable-values"
+NULLABLE_MAP_BODY_DOCUMENT = """openapi: 3.0.3
 info:
   title: sample
   version: 1.0.0
@@ -213,8 +213,12 @@ components:
   schemas:
     Labels:
       type: object
-      additionalProperties:
-        type: string
+      properties:
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+            nullable: true
 """
 
 
@@ -495,7 +499,7 @@ class HandwrittenReachRecipeTest(unittest.TestCase):
                     COMBINATION,
                     COMBINATION_DOCUMENT.format(labels=LABELS["array-of-nullable-unknown-items"]),
                 ),
-                ("optional-map-body", COOCCURRING, OPTIONAL_MAP_BODY_DOCUMENT),
+                ("nullable-map-body", COOCCURRING, NULLABLE_MAP_BODY_DOCUMENT),
             ):
                 directory = base / name
                 directory.mkdir(parents=True)
@@ -510,7 +514,7 @@ class HandwrittenReachRecipeTest(unittest.TestCase):
             self.assertEqual(HEADER, rows[0])
             measured = {(row[0], row[1], row[2]): (int(row[3]), int(row[4])) for row in rows[1:]}
             expected = {("nullable-map-only", COMBINATION, INTERACTION)} | {
-                ("optional-map-body", COOCCURRING, handler) for handler in handlers
+                ("nullable-map-body", COOCCURRING, handler) for handler in handlers
             }
             self.assertEqual(expected, set(measured), "a combination-only fixture was not measured at its sites")
             for site, (executed, total) in measured.items():
