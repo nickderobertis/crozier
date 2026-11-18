@@ -213,7 +213,7 @@ when the two differ.
 
 | Kind | Entries | Meaning |
 | --- | --- | --- |
-| `fern-defect` | 40 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
+| `fern-defect` | 41 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
 | `branding` | 1 | crozier names itself where Fern names itself. |
 | `packaging` | 1 | crozier writes the packaged SDK's publishing details from its own settings. |
 | `provenance` | 1 | crozier writes a fixed record of how the SDK was generated. |
@@ -251,10 +251,10 @@ when the two differ.
 ### `bracket-query-parameter-call-keyword`
 
 - **Kind:** `fern-defect`
-- **Trigger:** A query parameter whose wire name ends in [], passed in a README or reference.md worked call.
-- **Fern writes:** The call passes the argument as <name>_array=, a keyword the generated sync and async methods do not declare; their argument is <name>.
-- **crozier writes:** The same call with the generated method's own <name>= keyword, every other byte of the line unchanged; reference.md's parameter list and the method signature stay matched.
-- **Why:** Binding the documented call to the actual certified methods raises TypeError for an unexpected keyword argument. The corrected keyword binds and sends the values under the [] wire name.
+- **Trigger:** A query parameter whose wire name ends in [], passed in a README or reference.md worked call; or such a query parameter or a form-encoded or multipart body property, listed in reference.md's parameter list.
+- **Fern writes:** The call passes the argument as <name>_array=, and the parameter list documents **<name>_array:**, a name the generated sync and async methods do not declare; their argument is <name>.
+- **crozier writes:** The same call with the generated method's own <name>= keyword, and the parameter list entry **<name>:**, every other byte of each line unchanged, so the worked call, the parameter list and the method signature agree.
+- **Why:** Binding the documented call to the actual certified methods raises TypeError for an unexpected keyword argument, and the parameter list names an argument no method declares. The corrected keyword binds and sends the values under the [] wire name, and every listed name is a parameter of the method it documents.
 - **Evidence:** [`docs/departures/evidence/bracket-query-parameter-call-keyword.md`](../../docs/departures/evidence/bracket-query-parameter-call-keyword.md)
 
 ### `closed-empty-object-example`
@@ -382,6 +382,15 @@ when the two differ.
 - **crozier writes:** The credential optional, `api_key: typing.Optional[str] = None`, and its header set only when a value was given.
 - **Why:** An empty root `security` list means what an absent one does: every operation without its own `security` needs no credential. The certified pair already makes the credential optional for the absent spelling, and crozier reads both spellings alike, so an SDK user can call the unauthenticated operations without inventing a key.
 - **Evidence:** [`docs/departures/evidence/empty-root-security-optional-credential.md`](../../docs/departures/evidence/empty-root-security-optional-credential.md)
+
+### `escaped-field-alias-literal`
+
+- **Kind:** `fern-defect`
+- **Trigger:** A schema property whose declared name holds a double quote or a backslash, so its model field carries a wire alias, in the generated model module.
+- **Fern writes:** The FieldMetadata and pydantic.Field aliases interpolate the name between double quotes unescaped, so it reads as Python: a backslash-quote becomes a shorter name, and a balanced expression such as a" + bearing + " becomes executable code naming an undefined variable.
+- **crozier writes:** Both aliases are a string literal whose value is exactly the declared name, every other byte of the line unchanged.
+- **Why:** A balanced-expression alias makes the certified model fail to import, and a backslash-quote alias parses and writes the field under a name the document does not declare. The literal alias imports and carries every value under its declared wire name.
+- **Evidence:** [`docs/departures/evidence/escaped-field-alias-literal.md`](../../docs/departures/evidence/escaped-field-alias-literal.md)
 
 ### `fern-metadata-generator-config`
 

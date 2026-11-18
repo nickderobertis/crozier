@@ -3,17 +3,20 @@
 Run on 2026-11-03 (Python 3.14.7, HTTPX 0.28.1, Pydantic 2.14.0): the certified pair's tree from a copy of `fern-expected/`, crozier's from
 `crozier generate` over `openapi.yml` at this branch, each through the departure's own proof script
 under `docs/departures/evidence/`, whose requests go over a socket to a local HTTP server.
+The two `bracket-query-parameter-call-keyword` runs were taken again on 2026-11-17
+(Python 3.14.7, HTTPX 0.28.1, Pydantic 2.13.5), when the script began checking each
+parameter-list name against the methods' signatures (`undeclared`).
 
 ## bracket-query-parameter-call-keyword: certified pair (fern-expected/src)
 
 $ python bracket-query-parameter-call-keyword.py fern-expected/src --reference fern-expected/reference.md --expected invalid
-{"bindings": {"AsyncFernApi.list_berths": "got an unexpected keyword argument 'codes_array'", "AsyncFernApi.release_berths": "got an unexpected keyword argument 'ids_array'", "FernApi.list_berths": "got an unexpected keyword argument 'codes_array'", "FernApi.release_berths": "got an unexpected keyword argument 'ids_array'"}, "requests": 3}
+{"bindings": {"AsyncFernApi.list_berths": "got an unexpected keyword argument 'codes_array'", "AsyncFernApi.release_berths": "got an unexpected keyword argument 'ids_array'", "FernApi.list_berths": "got an unexpected keyword argument 'codes_array'", "FernApi.release_berths": "got an unexpected keyword argument 'ids_array'"}, "requests": 3, "undeclared": {"AsyncFernApi.list_berths": ["codes_array"], "AsyncFernApi.release_berths": ["ids_array"], "FernApi.list_berths": ["codes_array"], "FernApi.release_berths": ["ids_array"]}}
 exit 0
 
 ## bracket-query-parameter-call-keyword: crozier
 
 $ python bracket-query-parameter-call-keyword.py sdk/src --reference sdk/reference.md --expected valid
-{"bindings": {"AsyncFernApi.list_berths": "codes binds", "AsyncFernApi.release_berths": "ids binds", "FernApi.list_berths": "codes binds", "FernApi.release_berths": "ids binds"}, "requests": 3}
+{"bindings": {"AsyncFernApi.list_berths": "codes binds", "AsyncFernApi.release_berths": "ids binds", "FernApi.list_berths": "codes binds", "FernApi.release_berths": "ids binds"}, "requests": 3, "undeclared": {}}
 exit 0
 
 ## non-string-client-header-example: certified pair (fern-expected/src)

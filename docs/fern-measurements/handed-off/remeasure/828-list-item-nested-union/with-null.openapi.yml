@@ -1,0 +1,157 @@
+openapi: 3.1.0
+info:
+  title: Lantern Ledger
+  version: "1.0"
+servers:
+  - url: https://ledger.example.com
+paths:
+  /shelves/{shelfId}/entries:
+    patch:
+      operationId: patchShelfEntries
+      parameters:
+        - name: shelfId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [entries]
+              properties:
+                entries:
+                  type: array
+                  items:
+                    oneOf:
+                      - type: object
+                        required: [operation, label, payload]
+                        properties:
+                          label:
+                            type: string
+                          operation:
+                            oneOf:
+                              - const: create
+                              - const: update
+                          payload:
+                            oneOf:
+                              - oneOf:
+                                  - type: string
+                                  - type: number
+                                  - type: boolean
+                                  - type: "null"
+                                  - type: object
+                              - type: array
+                                items:
+                                  oneOf:
+                                    - type: string
+                                    - type: number
+                                    - type: boolean
+                                    - type: "null"
+                                    - type: object
+                      - type: object
+                        required: [operation, label]
+                        properties:
+                          label:
+                            type: string
+                          operation:
+                            const: delete
+      responses:
+        "204":
+          description: Patched.
+  /shelves/{shelfId}/tags:
+    patch:
+      operationId: patchShelfTags
+      parameters:
+        - name: shelfId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [tags]
+              properties:
+                tags:
+                  type: array
+                  items:
+                    oneOf:
+                      - type: object
+                        required: [operation, label, payload]
+                        properties:
+                          label:
+                            type: string
+                          operation:
+                            oneOf:
+                              - const: create
+                              - const: update
+                          payload:
+                            oneOf:
+                              - type: string
+                              - type: number
+                              - type: boolean
+                              - type: "null"
+                              - type: object
+                      - type: object
+                        required: [operation, label]
+                        properties:
+                          label:
+                            type: string
+                          operation:
+                            const: delete
+      responses:
+        "204":
+          description: Patched.
+  /shelves/{shelfId}/notes:
+    patch:
+      operationId: patchShelfNotes
+      parameters:
+        - name: shelfId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [notes]
+              properties:
+                notes:
+                  type: array
+                  items:
+                    type: object
+                    required: [label, payload]
+                    properties:
+                      label:
+                        type: string
+                      payload:
+                        oneOf:
+                          - oneOf:
+                              - type: string
+                              - type: number
+                              - type: boolean
+                              - type: "null"
+                              - type: object
+                          - type: array
+                            items:
+                              oneOf:
+                                - type: string
+                                - type: number
+                                - type: boolean
+                                - type: "null"
+                                - type: object
+      responses:
+        "204":
+          description: Patched.

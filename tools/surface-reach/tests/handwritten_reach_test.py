@@ -2228,6 +2228,12 @@ JOB_NAME = "                name:\n                  type: string\n"
 JOB_ID = "                id:\n                  type: string\n"
 
 
+def schema_control(key: str, role: str) -> str:
+    """One committed document of a `combination-interaction-controls/` manifest entry."""
+    path = REPO / "docs/openapi-surface/combination-interaction-controls" / key / role / "openapi.yml"
+    return path.read_text(encoding="utf-8")
+
+
 def berth_call(
     content: str, parameters: str = "", item_parameters: str = "", required: str = "        required: true\n"
 ) -> str:
@@ -2572,6 +2578,16 @@ INTERACTION_ARMS: dict[str, InteractionArm] = {
     "combo-body-property-named-as-path-param": InteractionArm(
         operation_document(job_update(JOB_ID + JOB_NAME)),
         {"request body alone": operation_document(job_update(JOB_NAME))},
+    ),
+    # The schema's own example reaches a field its inline `allOf` member declares; every
+    # document keeps the model's own `note`, so only the two features vary. The documents
+    # are the manifest's, so this arm and the schema-control test drive the same inputs.
+    "combo-allof-schema-example": InteractionArm(
+        schema_control("combo-allof-schema-example", "both"),
+        {
+            "allOf alone": schema_control("combo-allof-schema-example", "first"),
+            "example alone": schema_control("combo-allof-schema-example", "second"),
+        },
     ),
     # The Operation Object's own parameters beside the urlencoded union are what the arm
     # reads; a path item's parameters, or an undeclared placeholder, wrap the request too.
@@ -3062,6 +3078,7 @@ class ControlFeatures(NamedTuple):
 
 
 SCHEMA_CONTROL_FEATURES = {
+    "combo-allof-schema-example": ControlFeatures("schema.allOf", "schema.example"),
     "combo-map-beside-anyof": ControlFeatures("schema.additionalProperties", "schema.anyOf"),
     "combo-required-query-array-enum-items": ControlFeatures(
         "parameter.in=query&parameter.required&parameter.schema>schema.type:primary=array",

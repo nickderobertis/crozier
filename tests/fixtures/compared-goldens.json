@@ -195,6 +195,7 @@
     "docs/fern-measurements/handed-off/follow-up-tickets/679-escaped-quote-control/fern-expected": {},
     "docs/fern-measurements/handed-off/follow-up-tickets/694/fern-expected": {},
     "docs/fern-measurements/handed-off/follow-up-tickets/696/fern-expected": {},
+    "docs/fern-measurements/handed-off/follow-up-tickets/842/fern-expected": {},
     "docs/fern-measurements/handed-off/remeasure/enum-member-digit-separator/expected-literals/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
