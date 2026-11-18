@@ -45,12 +45,12 @@ candidates with no certified comparison yet. Each is named by its row in
 | `combo-property-defs-pointer` | certified screen | 0 of 0 | 0 | No pending candidate (every read row is `rejected-trigger` or unfetchable). |
 | `combo-anyof-beside-properties` | certified screen | 0 of 0 | 0 | No pending candidate; its region `Builder::discriminated_union[if !schema.properties.is_empty()]` stays unreached by every registered witness. |
 | `combo-nullable-allof-parent-own-property` | certified screen | 0 of 0 | 0 | No pending candidate (147 identities unfetched in the bounded raw-lane budget). |
-| `combo-property-anyof-composed-sibling` | certified screen | 20 of 112 | 92 | 10 candidates byte-match in both modes; the key still needs an interaction site of its own and a registered witness executing it. 92 candidates outstanding. |
-| `combo-unrequired-tag-anyof-reference` | certified screen | 26 of 81 | 55 | 7 candidates byte-match; no interaction site is declared yet. 55 candidates outstanding. |
-| `combo-unrequired-tag-oneof-reference` | certified screen | 31 of 230 | 199 | 8 candidates byte-match; no interaction site is declared yet. 199 candidates outstanding. |
+| `combo-property-anyof-composed-sibling` | certified screen | 44 of 112 | 68 | 10 candidates byte-match in both modes; the key still needs an interaction site of its own and a registered witness executing it. 68 candidates outstanding. |
+| `combo-unrequired-tag-anyof-reference` | certified screen | 48 of 81 | 33 | 9 candidates byte-match in both modes; no interaction site is declared yet. 33 candidates outstanding. |
+| `combo-unrequired-tag-oneof-reference` | certified screen | 57 of 230 | 173 | 11 candidates byte-match in both modes; no interaction site is declared yet. 173 candidates outstanding. |
 | `combo-map-beside-oneof` | dedicated region + arm witness | 8 of 8 | 0 | Every candidate differs or is refused (see `certified.tsv`); the pooled `prefer_map_to_union` condition has no dedicated region yet. |
-| `combo-success-anyof-nullable` | dedicated region + arm witness | 32 of 108 | 76 | 17 candidates byte-match, but none executes the inline dropped-`null` union arm a keyword-specific region would split from `Some(if dropped_null {`. 76 candidates outstanding. |
-| `combo-success-oneof-nullable` | dedicated region + arm witness | 29 of 32 | 3 | 14 candidates byte-match, but none executes the inline dropped-`null` union arm. 3 candidates outstanding. |
+| `combo-success-anyof-nullable` | dedicated region + arm witness | 43 of 108 | 65 | 22 candidates byte-match in both modes, but none executes the inline dropped-`null` union arm a keyword-specific region would split from `Some(if dropped_null {`. 65 candidates outstanding. |
+| `combo-success-oneof-nullable` | dedicated region + arm witness | 30 of 32 | 2 | 14 candidates byte-match in both modes, but none executes the inline dropped-`null` union arm. 2 candidates outstanding. |
 | `combo-allof-nullable-member` | entailment | — | — | The entailment obstruction its audit row states; no region of its own executes with both features apart from the entailed one. |
 | `combo-map-of-nullable-values` | entailment | — | — | The entailment obstruction its audit row states. |
 | `combo-property-ref-to-nullable-target` | entailment | — | — | The entailment obstruction its audit row states. |
