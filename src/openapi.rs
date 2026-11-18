@@ -1910,6 +1910,14 @@ pub struct Schema {
     /// the origin has to outlive the rewrite.
     #[serde(skip)]
     pub unresolved_reference: bool,
+    /// Set on the copy `normalize_schema_pointer_refs` writes where a bare `$ref`
+    /// pointed inside a component. Not a wire field. Fern names a union member
+    /// written so by its ordinal, as it names any reference, where an inline
+    /// object is named by its distinguishing property: the EASA D-X interfaces
+    /// document's `GeoJSONGeometryType` offers `$ref …/properties/point_with_extent`
+    /// first, and the certified pair declares `…GeoJsonGeometryTypeZero`.
+    #[serde(skip)]
+    pub pointer_copy: bool,
     /// Set when `normalize_empty_compositions` discarded a non-empty composition
     /// from this scalar-typed node. Not a wire field. Fern generates the plain
     /// type too, but a constraint inside the composition still binds the value,
@@ -4063,6 +4071,7 @@ fn inline_schema_pointers(
         if !expanding.contains(&reference) {
             if let Some(target) = schema_pointer_target(components, &reference) {
                 *schema = target.clone();
+                schema.pointer_copy = true;
                 expanding.push(reference);
                 inline_schema_pointers(schema, components, expanding);
                 expanding.pop();

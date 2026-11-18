@@ -17622,8 +17622,16 @@ impl Builder<'_> {
                             // for the variant: Fergus's `favouriteSectionIds` offers
                             // numbers or objects, and Fern declares
                             // `…FavouriteSectionIdsOneItem`.
+                            // So is an array of maps of an inline union or object,
+                            // the map's value named `{Owner}{Prop}{Ordinal}ItemValue`:
+                            // samepage's `query/postResponse` results offer, first, a
+                            // list of maps to `anyOf: [string, number, boolean]`, and
+                            // the certified pair declares
+                            // `QueryPostResponseDataItemResultsZeroItemValue`.
                             if m.ty.as_ref().and_then(|ty| ty.primary()) == Some("array")
-                                && m.items.as_deref().is_some_and(is_inline_struct)
+                                && m.items.as_deref().is_some_and(|items| {
+                                    is_inline_struct(items) || is_map_of_inline_structure(items)
+                                })
                             {
                                 return nullable_member(
                                     m,
@@ -17942,6 +17950,14 @@ impl Builder<'_> {
                         clean_doc(item.description.as_deref()),
                     );
                     return sequence_of(variant, TypeRef::Named(item_name));
+                }
+                // An element that is a map of an inline union or object names its
+                // value `{Item}Value`, as a map member does
+                // ([`Self::map_member_type`]).
+                if item.reference.is_none() && is_map_of_inline_structure(item) {
+                    if let Some(element) = self.map_member_type(&item_name, item) {
+                        return sequence_of(variant, element);
+                    }
                 }
             }
         }
@@ -18434,7 +18450,7 @@ fn variant_class_name(parent: &str, index: usize, variant: &Schema, siblings: &[
 fn distinguishing_property(siblings: &[Schema], index: usize) -> Option<String> {
     let mut claims: Vec<(usize, Vec<&String>)> = Vec::new();
     for (position, sibling) in siblings.iter().enumerate() {
-        if sibling.reference.is_some() || sibling.properties.is_empty() {
+        if sibling.reference.is_some() || sibling.pointer_copy || sibling.properties.is_empty() {
             continue;
         }
         let declared: Vec<&String> = sibling.properties.keys().collect();
@@ -20497,7 +20513,11 @@ fn sole_inline_all_of_element(schema: &Schema) -> Option<&Schema> {
         .iter()
         .filter(|member| member.reference.is_some() || !is_empty_schema(member));
     let only = members.next()?;
-    (members.next().is_none() && only.reference.is_none()).then_some(only)
+    // A pointer's copy is the reference Fern reads it as, not an inline element:
+    // the EASA D-X interfaces document's `normal_geometry` is `allOf` over a
+    // pointer into `SimpleDataModels`, and the certified pair's model keeps its
+    // description.
+    (members.next().is_none() && only.reference.is_none() && !only.pointer_copy).then_some(only)
 }
 
 /// The description a schema without one of its own takes from the `allOf`
