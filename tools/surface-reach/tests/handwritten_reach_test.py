@@ -930,7 +930,9 @@ NULLABLE_TARGET = r"src/ir.rs::referenced_schema_accepts_none[if target\.nullabl
 READ_ONLY_OPERAND = r"src/ir.rs::promote_required_parent_properties[=!read_only \{]"
 ERROR_STRUCT = r"src/ir.rs::hoist_error_body_types[if is_inline_struct\(schema\) \{]"
 BODYLESS = r"src/ir.rs::build_endpoint[if has_bodyless_success\(response_op\) && !has_text_response\(response_op\) \{]"
-OPTIONAL_ARM = r"src/ir.rs::build_endpoint[=other => optional_type_ref\(other\),]"
+MIXED_MEDIA_ARM = (
+    r"src/ir.rs::build_endpoint[other if empty_beside_body && success_statuses_mix_media\(response_op\) => \{]"
+)
 
 
 # The echo guard's last operand, which the anonymous and OAuth2 echo rows audit as
@@ -1020,8 +1022,8 @@ def tagged_union(location: str, keyword: str) -> str:
 
 FORM_JSON_MEDIA = r"src/ir.rs::resolve_request_body[if selected_json_request_media\(rb\)\.is_some\(\) \{]"
 FORM_UNION = r"src/ir.rs::resolve_request_body[if let Some\(members\) = obj\.one_of\.as_ref\(\)\.or\(obj\.any_of\.as_ref\(\)\) \{]"
-FORM_UNION_SUFFIX = r"src/ir.rs::resolve_request_body[^ {20}let name = if union_body_suffix \{]"
-UNION_BODY_SUFFIX = r"src/ir.rs::resolve_request_body[^ {8}let request_body_name = if union_body_suffix \{]"
+FORM_UNION_SUFFIX = r"src/ir.rs::resolve_request_body[^\s*RequestInputs::Own => \{$]"
+UNION_BODY_SUFFIX = r"src/ir.rs::resolve_request_body[^ {8}let request_body_name = if inputs != RequestInputs::None \{]"
 COMPOSED_MEDIA_EXAMPLE = (
     r"src/emit.rs::build_example_inner[let mut example_fields: Vec<&BodyField> = if composed_request_media_example \{]"
 )
@@ -1473,18 +1475,18 @@ OUTCOMES = (
             holds=(("errors/bad_request_error.py", "body: typing.Dict[str, typing.Any],"),),
         ),
     ),
-    # A bodyless `204` beside a typed `200` opens the empty-success arm, so the method
-    # returns its model optionally where the `200` alone returns it as is.
+    # A bodyless `204` beside a typed `200` opens the empty-success arm and its mixed-media
+    # arm, so the method returns its model optionally where the `200` alone returns it as is.
     Outcome(
         "combo-success-statuses-mixed-media",
         Run(
             emptied('        "204":\n          description: emptied\n'),
-            ran=(BODYLESS, OPTIONAL_ARM),
+            ran=(BODYLESS, MIXED_MEDIA_ARM),
             holds=((CLIENT, "-> typing.Optional[Kennel]:"),),
         ),
         Run(
             emptied(""),
-            skipped=(BODYLESS, OPTIONAL_ARM),
+            skipped=(BODYLESS, MIXED_MEDIA_ARM),
             holds=((CLIENT, "-> Kennel:"),),
         ),
     ),
@@ -1707,7 +1709,7 @@ OUTCOMES = (
             lacks=((RAW, "x-www-form-urlencoded"),),
         ),
     ),
-    # A query parameter beside an inline `anyOf` body sets `union_body_suffix`, so
+    # A query parameter beside an inline `anyOf` body is an input beside it, so
     # the hoisted union takes the `Body` infix it lacks alone.
     Outcome(
         "combo-params-beside-inline-anyof-body",
@@ -1936,7 +1938,7 @@ class RegionUnionReportTest(unittest.TestCase):
         reports = sorted(
             (REPO / "docs/openapi-surface/witness-search-operation-combinations/controls").glob("*/region-union.json")
         )
-        self.assertEqual(10, len(reports))
+        self.assertEqual(8, len(reports))
         pattern = golden_reach().HANDLER_SPEC
         for path in reports:
             with self.subTest(report=path.parent.name):
@@ -2132,6 +2134,73 @@ def schema_control(key: str, role: str) -> str:
     return path.read_text(encoding="utf-8")
 
 
+def berth_call(
+    content: str, parameters: str = "", item_parameters: str = "", required: str = "        required: true\n"
+) -> str:
+    """`POST /berths/{berthId}` with `content` as its request body's media map.
+
+    `parameters` are the Operation Object's own, `item_parameters` its path item's;
+    without either, the placeholder is declared by neither.
+    """
+    return (
+        "  /berths/{berthId}:\n"
+        + item_parameters
+        + "    post:\n      operationId: dockBerth\n"
+        + parameters
+        + "      requestBody:\n"
+        + required
+        + "        content:\n"
+        + content
+        + '      responses:\n        "204":\n          description: docked\n'
+        + '  /harbors:\n    get:\n      operationId: listHarbors\n      responses:\n        "204":\n'
+        + "          description: listed\n"
+    )
+
+
+def berth_media(name: str, schema: str) -> str:
+    return f"          {name}:\n            schema:\n{schema}"
+
+
+BERTH_ID = "      parameters:\n        - name: berthId\n          in: path\n          required: true\n          schema:\n            type: string\n"
+BERTH_ITEM_ID = BERTH_ID.replace("\n      ", "\n    ").replace("      parameters:", "    parameters:", 1)
+TIDE_QUERY = (
+    "      parameters:\n        - name: tide\n          in: query\n          schema:\n            type: string\n"
+)
+PILOT_HEADER = (
+    "      parameters:\n        - name: X-Pilot\n          in: header\n          schema:\n            type: string\n"
+)
+PILOT_ITEM_HEADER = PILOT_HEADER.replace("\n      ", "\n    ").replace("      parameters:", "    parameters:", 1)
+MOORING_UNION = (
+    "              oneOf:\n"
+    "                - type: object\n                  properties:\n                    rope:\n                      type: string\n"
+    "                - type: object\n                  properties:\n                    chain:\n                      type: string\n"
+)
+MOORING_OBJECT = (
+    "              type: object\n              properties:\n                rope:\n                  type: string\n"
+)
+MOORING_REF = '              $ref: "#/components/schemas/Mooring"\n'
+BYTES = "              type: string\n              format: binary\n"
+MOORING_SCHEMAS = (
+    "  schemas:\n    Mooring:\n      type: object\n      properties:\n        rope:\n          type: string\n"
+    "    Fenders:\n      type: object\n      additionalProperties:\n        type: string\n"
+    "    Tether:\n      oneOf:\n        - type: string\n        - type: integer\n"
+)
+
+
+def manifest_call(*statuses: tuple[str, str]) -> str:
+    """`GET /manifests` answering each `(status, media map)`; an empty map declares no content."""
+    answers = "".join(
+        f'        "{status}":\n          description: answered\n'
+        + (f"          content:\n{content}" if content else "")
+        for status, content in statuses
+    )
+    return "  /manifests:\n    get:\n      operationId: getManifest\n      responses:\n" + answers
+
+
+MANIFEST_JSON = "            application/json:\n" + JSON_ANSWER
+MANIFEST_TEXT = "            text/plain:\n" + PLAIN_TEXT
+
+
 class InteractionArm(NamedTuple):
     both: str
     controls: dict[str, str]
@@ -2307,6 +2376,158 @@ INTERACTION_ARMS: dict[str, InteractionArm] = {
             "example alone": schema_control("combo-allof-schema-example", "second"),
         },
     ),
+    # The Operation Object's own parameters beside the urlencoded union are what the arm
+    # reads; a path item's parameters, or an undeclared placeholder, wrap the request too.
+    "combo-form-urlencoded-body-with-params": InteractionArm(
+        operation_document(berth_call(berth_media("application/x-www-form-urlencoded", MOORING_UNION), BERTH_ID)),
+        {
+            "form alone": operation_document(
+                berth_call(berth_media("application/x-www-form-urlencoded", MOORING_UNION))
+            ),
+            "parameters alone": operation_document(
+                berth_call(berth_media("application/json", MOORING_UNION), BERTH_ID)
+            ),
+            "path item's parameters": operation_document(
+                berth_call(
+                    berth_media("application/x-www-form-urlencoded", MOORING_UNION), item_parameters=BERTH_ITEM_ID
+                )
+            ),
+        },
+    ),
+    "combo-multipart-body-with-params": InteractionArm(
+        operation_document(berth_call(berth_media("multipart/form-data", MOORING_OBJECT), TIDE_QUERY)),
+        {
+            "multipart alone": operation_document(berth_call(berth_media("multipart/form-data", MOORING_OBJECT))),
+            "parameters alone": operation_document(
+                berth_call(berth_media("application/json", MOORING_OBJECT), TIDE_QUERY)
+            ),
+            "path item's parameters": operation_document(
+                berth_call(berth_media("multipart/form-data", MOORING_OBJECT), item_parameters=BERTH_ITEM_ID)
+            ),
+        },
+    ),
+    # `required` left out is the selector's optional body; a declared `false` is not.
+    "combo-optional-ref-map-body": InteractionArm(
+        operation_document(
+            berth_call(berth_media("application/json", MOORING_REF.replace("Mooring", "Fenders")), required=""),
+            MOORING_SCHEMAS,
+        ),
+        {
+            "required map": operation_document(
+                berth_call(berth_media("application/json", MOORING_REF.replace("Mooring", "Fenders"))), MOORING_SCHEMAS
+            ),
+            "declared optional map": operation_document(
+                berth_call(
+                    berth_media("application/json", MOORING_REF.replace("Mooring", "Fenders")),
+                    required="        required: false\n",
+                ),
+                MOORING_SCHEMAS,
+            ),
+            "optional object": operation_document(
+                berth_call(berth_media("application/json", MOORING_REF), required=""), MOORING_SCHEMAS
+            ),
+        },
+    ),
+    "combo-optional-ref-union-body": InteractionArm(
+        operation_document(
+            berth_call(berth_media("application/json", MOORING_REF.replace("Mooring", "Tether")), required=""),
+            MOORING_SCHEMAS,
+        ),
+        {
+            "required union": operation_document(
+                berth_call(berth_media("application/json", MOORING_REF.replace("Mooring", "Tether"))), MOORING_SCHEMAS
+            ),
+            "declared optional union": operation_document(
+                berth_call(
+                    berth_media("application/json", MOORING_REF.replace("Mooring", "Tether")),
+                    required="        required: false\n",
+                ),
+                MOORING_SCHEMAS,
+            ),
+            "optional object": operation_document(
+                berth_call(berth_media("application/json", MOORING_REF), required=""), MOORING_SCHEMAS
+            ),
+        },
+    ),
+    # A `204` repeating the typed `200`'s media is bodyless all the same, but mixes none; a
+    # `203` is no status Fern types a method from, so beside an empty `200` no content is selected.
+    "combo-success-statuses-mixed-media": InteractionArm(
+        operation_document(manifest_call(("200", MANIFEST_JSON), ("204", ""))),
+        {
+            "success content alone": operation_document(manifest_call(("200", MANIFEST_JSON))),
+            "mixed media alone": operation_document(manifest_call(("200", ""), ("203", MANIFEST_TEXT))),
+            "204 repeating the media": operation_document(
+                manifest_call(("200", MANIFEST_JSON), ("204", MANIFEST_JSON))
+            ),
+        },
+    ),
+    # `operation.context:error-multiple-media` entails `operation.responses`: the entailed
+    # feature alone is an operation whose errors each declare one media type.
+    "combo-error-multiple-media": InteractionArm(
+        operation_document(manifest_call(("200", MANIFEST_JSON), ("404", MANIFEST_TEXT + MANIFEST_JSON))),
+        {
+            "responses alone": operation_document(manifest_call(("200", MANIFEST_JSON), ("404", MANIFEST_JSON))),
+            "several success media": operation_document(
+                manifest_call(("200", MANIFEST_TEXT + MANIFEST_JSON), ("404", MANIFEST_JSON))
+            ),
+        },
+    ),
+    "combo-form-urlencoded-beside-json-body": InteractionArm(
+        operation_document(
+            berth_call(
+                berth_media("application/json", MOORING_REF)
+                + berth_media("application/x-www-form-urlencoded", MOORING_REF)
+            ),
+            MOORING_SCHEMAS,
+        ),
+        {
+            "json alone": operation_document(berth_call(berth_media("application/json", MOORING_REF)), MOORING_SCHEMAS),
+            "urlencoded alone": operation_document(
+                berth_call(berth_media("application/x-www-form-urlencoded", MOORING_REF)), MOORING_SCHEMAS
+            ),
+            "json beside multipart": operation_document(
+                berth_call(
+                    berth_media("application/json", MOORING_REF) + berth_media("multipart/form-data", MOORING_REF)
+                ),
+                MOORING_SCHEMAS,
+            ),
+        },
+    ),
+    "combo-multipart-beside-json-body": InteractionArm(
+        operation_document(
+            berth_call(berth_media("application/json", MOORING_REF) + berth_media("multipart/form-data", MOORING_REF)),
+            MOORING_SCHEMAS,
+        ),
+        {
+            "json alone": operation_document(berth_call(berth_media("application/json", MOORING_REF)), MOORING_SCHEMAS),
+            "multipart alone": operation_document(
+                berth_call(berth_media("multipart/form-data", MOORING_REF)), MOORING_SCHEMAS
+            ),
+            "json beside urlencoded": operation_document(
+                berth_call(
+                    berth_media("application/json", MOORING_REF)
+                    + berth_media("application/x-www-form-urlencoded", MOORING_REF)
+                ),
+                MOORING_SCHEMAS,
+            ),
+        },
+    ),
+    # A header the path item declares is dropped the same way, but is not the selector's.
+    "combo-octet-stream-body-header-param": InteractionArm(
+        operation_document(berth_call(berth_media("application/octet-stream", BYTES), PILOT_HEADER)),
+        {
+            "bytes alone": operation_document(berth_call(berth_media("application/octet-stream", BYTES))),
+            "header alone": operation_document(
+                berth_call(berth_media("application/json", MOORING_OBJECT), PILOT_HEADER)
+            ),
+            "bytes beside a query parameter": operation_document(
+                berth_call(berth_media("application/octet-stream", BYTES), TIDE_QUERY)
+            ),
+            "path item's header": operation_document(
+                berth_call(berth_media("application/octet-stream", BYTES), item_parameters=PILOT_ITEM_HEADER)
+            ),
+        },
+    ),
 }
 
 
@@ -2456,13 +2677,15 @@ class CooccurrenceOutcomeTest(unittest.TestCase):
             (path, RegionUnionReport.read(path, reach.HANDLER_SPEC))
             for path in sorted(controls.glob("*/region-union.json"))
         ]
-        self.assertEqual(10, len(reports), "each completed failed-union experiment is replayed")
+        self.assertEqual(8, len(reports), "each completed failed-union experiment is replayed")
         audit, failures = reach.read_cooccurrence()
         self.assertEqual([], failures)
         crozier = handwritten.instrumented_crozier(REPO, reach)
         for path, expected in reports:
             with self.subTest(key=expected.key):
-                self.assertEqual("open", audit[expected.key].proof_class)
+                # A union that fails is what an exclusive arm predicts, so a key since proven at
+                # its own interaction branch keeps its experiment as evidence.
+                self.assertIn(audit[expected.key].proof_class, {"open", "interaction"})
                 self.assertEqual(set(expected.handlers), set(cooccurrence_handlers(expected.key)))
                 sites = [reach.resolve_site(handler) for handler in expected.handlers]
                 observed = {}

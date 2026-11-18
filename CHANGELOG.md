@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.165](https://github.com/nickderobertis/crozier/compare/v0.0.164...v0.0.165) - 2026-11-18
+
+### Fixed
+
+- *(parity)* prove the request-body and response combinations and repair what they expose ([#872](https://github.com/nickderobertis/crozier/pull/872))
+
 ## [0.0.164](https://github.com/nickderobertis/crozier/compare/v0.0.163...v0.0.164) - 2026-11-16
 
 ### Fixed

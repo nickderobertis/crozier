@@ -4814,6 +4814,16 @@ fn build_endpoint(
                 success_response_schema(response_op).is_some() && !typed_by_empty_status;
             match response {
                 other if typed_by_empty_status => other,
+                // The typed success status and the bodyless one declare
+                // different media: 6-dot-authentiqio's `GET /scope/{job}`
+                // answers a JSON `200` beside a contentless `204`. The result is
+                // the one below; this arm lets the reach ledger measure it.
+                other if empty_beside_body && success_statuses_mix_media(response_op) => {
+                    match other {
+                        TypeRef::Primitive(Prim::Any) => TypeRef::Optional(Box::new(other)),
+                        other => optional_type_ref(other),
+                    }
+                }
                 TypeRef::Primitive(Prim::Any) if empty_beside_body => {
                     TypeRef::Optional(Box::new(response))
                 }
@@ -4842,15 +4852,35 @@ fn build_endpoint(
                 rb,
                 &mut hoister,
                 &request_ctx,
-                op.parameters.iter().any(|p| !lifted(p))
+                if !(op.parameters.iter().any(|p| !lifted(p))
                     || !path_params.is_empty()
                     || !query_params.is_empty()
-                    || !header_params.is_empty(),
+                    || !header_params.is_empty())
+                {
+                    RequestInputs::None
+                } else if op.own_parameter_locations.is_empty() {
+                    RequestInputs::Inherited
+                } else {
+                    RequestInputs::Own
+                },
             )
         })
     };
     if matches!(request_body, Some(RequestBody::Bytes { .. })) {
-        header_params.clear();
+        // A bytes body's method takes no header arguments: `get-a-room`'s
+        // attachment upload declares an `X-Filename` header beside its
+        // `application/octet-stream` body, and Fern's method takes the content
+        // alone. The first arm lets the reach ledger measure a header the
+        // Operation Object declares itself being dropped.
+        let declares_header = op
+            .own_parameter_locations
+            .contains(&Some(ParameterLocation::Header));
+        match (declares_header, header_params.is_empty()) {
+            (true, false) => {
+                header_params.clear();
+            }
+            _ => header_params.clear(),
+        }
     }
     let body_ok = matches!(http_method, "GET" | "HEAD")
         || op.request_body.is_none()
@@ -7061,15 +7091,24 @@ fn one_primitive_union(members: &[Schema]) -> Option<TypeRef> {
 /// writes `text/plain` before `application/json`, and the generated exception
 /// carries `str` even though the JSON body is typed.
 fn error_body_schema(resp: &Response) -> Option<&Schema> {
-    resp.content
-        .values()
-        .filter_map(|media| media.schema.as_ref())
-        .find(|schema| !is_unknown(schema))
-        .or_else(|| {
-            resp.content
-                .values()
-                .find_map(|media| media.schema.as_ref())
-        })
+    let first_concrete = || {
+        resp.content
+            .values()
+            .filter_map(|media| media.schema.as_ref())
+            .find(|schema| !is_unknown(schema))
+            .or_else(|| {
+                resp.content
+                    .values()
+                    .find_map(|media| media.schema.as_ref())
+            })
+    };
+    // Several representations of one error are where the order decides, as
+    // FOLIO's shared `400` shows above; a single one is read the same way.
+    // This arm lets the reach ledger measure an error declaring several media.
+    if resp.content.len() > 1 {
+        return first_concrete();
+    }
+    first_concrete()
 }
 
 /// Hoist a standalone `{ErrorClassName}Body` model for each error response whose
@@ -7535,6 +7574,20 @@ pub(crate) fn header_param_stem(wire_name: &str) -> &str {
         .unwrap_or(wire_name)
 }
 
+/// The inputs an operation's method takes beside its request body. Fern wraps
+/// the request when there are any, so a body it must name of its own gets a
+/// `Body` infix.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum RequestInputs {
+    /// The body is the method's only input.
+    None,
+    /// Inputs the Operation Object inherits: its path item's parameters, or a
+    /// path template placeholder no parameter declares.
+    Inherited,
+    /// Parameters the Operation Object writes itself, beside any it inherits.
+    Own,
+}
+
 /// Resolve an operation's `application/json` request body into the subset crozier
 /// renders today. Returns `None` for shapes still outside that subset (which keeps
 /// the whole module unemittable rather than emitting a wrong client).
@@ -7555,9 +7608,7 @@ fn resolve_request_body(
     rb: &crate::openapi::RequestBody,
     hoister: &mut InlineHoister,
     request_ctx: &str,
-    // Whether the operation carries inputs beside the body. Fern then wraps the
-    // request, so a body it must name of its own gets a `Body` infix.
-    union_body_suffix: bool,
+    inputs: RequestInputs,
 ) -> Option<RequestBody> {
     // A raw `application/octet-stream` body is a bytes stream, independent of its
     // schema — Fern types it as a fixed `Union[bytes, ...]` and sends `content=`.
@@ -7591,14 +7642,31 @@ fn resolve_request_body(
     // `application/x-www-form-urlencoded` on five request bodies, all three
     // `$ref`ing one component schema, and Fern's golden sends `json=` with no
     // content-type header override — so the whole body stays the named component
-    // rather than being flattened into form fields. `multipart/form-data` keeps
-    // priority: no registered source offers it beside JSON, so nothing measures
-    // Fern there and this preference is not extended to it on a guess.
+    // rather than being flattened into form fields. `multipart/form-data` loses to
+    // JSON the same way (`discord-com`, below).
     for (media_type, multipart) in [
         ("multipart/form-data", true),
         ("application/x-www-form-urlencoded", false),
     ] {
         if selected_json_request_media(rb).is_some() {
+            // A form media declared beside the JSON one loses to it. The arms
+            // below let the reach ledger measure each pairing.
+            if rb.content.contains_key(media_type) {
+                match multipart {
+                    // `discord-com`'s webhook-message `PATCH` offers
+                    // `multipart/form-data` beside `application/json`, and its
+                    // golden sends `json=`.
+                    true => {
+                        continue;
+                    }
+                    // swagger-petstore's `PUT /pet` offers
+                    // `application/x-www-form-urlencoded` beside it, and its
+                    // golden sends `json=` too.
+                    false => {
+                        continue;
+                    }
+                }
+            }
             continue;
         }
         if let Some(media) = rb.content.get(media_type) {
@@ -7619,10 +7687,18 @@ fn resolve_request_body(
             // and Fern declares `PostTokenRequest_AuthorizationCode`.
             if !multipart {
                 if let Some(members) = obj.one_of.as_ref().or(obj.any_of.as_ref()) {
-                    let name = if union_body_suffix {
-                        format!("{request_ctx}Body")
-                    } else {
-                        request_ctx.to_string()
+                    let name = match inputs {
+                        // The Operation Object's own parameters are among the
+                        // inputs that wrap the request: Zulip's `PATCH
+                        // /navigation_views/{fragment}` declares its path
+                        // parameter itself. The name is the same whichever
+                        // inputs wrap it; this arm lets the reach ledger measure
+                        // the form union beside the operation's own parameters.
+                        RequestInputs::Own => {
+                            format!("{request_ctx}Body")
+                        }
+                        RequestInputs::Inherited => format!("{request_ctx}Body"),
+                        RequestInputs::None => request_ctx.to_string(),
                     };
                     // The same schema either way: this arm lets the ledger measure a written `oneOf`.
                     let obj = if schema.reference.is_none() && schema.one_of.is_some() {
@@ -7773,22 +7849,38 @@ fn resolve_request_body(
     // Daily Ops `execute` declares `required: false` over `$ref EmptyRequest`
     // (`additionalProperties: false`, no properties) and takes a required
     // `request: EmptyRequest`.
-    let passed_whole = schema
+    let whole_target = schema
         .reference
         .as_deref()
-        .and_then(|reference| resolve_ref(doc, reference))
-        .is_some_and(|target| {
-            is_map(target)
-                || is_closed_empty_object(target)
-                || (target.properties.is_empty()
-                    && (target.one_of.is_some() || target.any_of.is_some()))
-        });
+        .and_then(|reference| resolve_ref(doc, reference));
+    let passed_whole = whole_target.is_some_and(|target| {
+        is_map(target)
+            || is_closed_empty_object(target)
+            || (target.properties.is_empty()
+                && (target.one_of.is_some() || target.any_of.is_some()))
+    });
+    // A body that leaves `required` undeclared is required whatever component it
+    // names, whether or not Fern passes that component whole: these arms let the
+    // reach ledger measure the undeclared flag beside a referenced component
+    // declaring `additionalProperties`, and beside one declaring `oneOf`.
+    let declared_required = match (rb.required, whole_target) {
+        (Some(declared), _) => declared,
+        (None, Some(target)) if target.additional_properties.is_some() => {
+            // CloudPDF's map component above, with `required` left out.
+            true
+        }
+        (None, Some(target)) if target.one_of.is_some() => {
+            // MockServer's `oneOf` component above, with `required` left out.
+            true
+        }
+        (None, _) => true,
+    };
     // The same closed empty object written inline is passed whole too: a
     // `required: false` body of `{type: object, additionalProperties: false}`
     // takes a required `request: Dict[str, Any]` (measured in
     // `docs/fern-measurements/handed-off/bodies-media/request-body-optionality/`).
     let required = (media_type == "*/*"
-        || rb.required != Some(false)
+        || declared_required
         || passed_whole
         || is_closed_empty_object(schema)
         || is_map(schema)
@@ -8031,7 +8123,7 @@ fn resolve_request_body(
     // tag's `types/` package. The request accepts that alias as one argument and
     // serializes its selected model variant through the annotation converter.
     if schema.one_of.is_some() || schema.any_of.is_some() {
-        let request_body_name = if union_body_suffix {
+        let request_body_name = if inputs != RequestInputs::None {
             format!("{request_ctx}Body")
         } else {
             request_ctx.to_string()
@@ -8266,7 +8358,7 @@ fn resolve_request_body(
         // VTEX's `createorupdatefixedpricesonpricetableortradepolicy` takes two path
         // parameters beside its array.
         let item = if items.reference.is_none() && is_inline_struct(items) {
-            let name = if union_body_suffix {
+            let name = if inputs != RequestInputs::None {
                 format!("{request_ctx}BodyItem")
             } else {
                 format!("{request_ctx}Item")
@@ -10473,12 +10565,17 @@ fn rename_claimed_path_params(
         match request_body {
             Some(RequestBody::Form(form)) if form.multipart => {
                 if let Some(schema) = media("multipart/form-data") {
-                    claimed_property_names(
-                        resolve_multipart_ref(schema, Some(schemas)),
-                        schemas,
-                        &mut claimed,
-                        0,
-                    );
+                    let fields = resolve_multipart_ref(schema, Some(schemas));
+                    match op.own_parameter_locations.is_empty() {
+                        // The multipart fields claim their names beside the
+                        // parameters the Operation Object writes itself. They
+                        // claim them the same way beside inherited ones; this
+                        // arm lets the reach ledger measure the two together.
+                        false => {
+                            claimed_property_names(fields, schemas, &mut claimed, 0);
+                        }
+                        true => claimed_property_names(fields, schemas, &mut claimed, 0),
+                    }
                 }
             }
             Some(RequestBody::Bytes { .. }) | None => {}
@@ -11949,6 +12046,22 @@ fn has_text_response(op: &Operation) -> bool {
                 .keys()
                 .any(|media_type| is_text_response_media(media_type))
     })
+}
+
+/// Whether two concrete `2xx` statuses declare different media-type keys, in
+/// order: a JSON `200` beside a contentless `204`, say.
+fn success_statuses_mix_media(op: &Operation) -> bool {
+    let mut media = op
+        .responses
+        .iter()
+        .filter(|(code, _)| {
+            code.parse::<u16>()
+                .is_ok_and(|status| (200..300).contains(&status) && code.len() == 3)
+        })
+        .map(|(_, response)| response.content.keys().collect::<Vec<_>>());
+    media
+        .next()
+        .is_some_and(|first| media.any(|other| other != first))
 }
 
 fn has_bodyless_success(op: &Operation) -> bool {
@@ -23040,9 +23153,16 @@ mod tests {
                 schemas: Some(&doc.components.schemas),
                 out: Vec::new(),
             };
-            super::resolve_request_body(&doc, &[], &body, &mut hoister, "SendRequest", false)
-                .expect("an array body resolves")
-                .content_type_header()
+            super::resolve_request_body(
+                &doc,
+                &[],
+                &body,
+                &mut hoister,
+                "SendRequest",
+                super::RequestInputs::None,
+            )
+            .expect("an array body resolves")
+            .content_type_header()
         };
         assert!(header("Batch"));
         assert!(!header("Ids"));
@@ -26533,7 +26653,7 @@ mod tests {
             &body,
             &mut hoister,
             "ModifyMessageRequest",
-            false,
+            super::RequestInputs::None,
         );
         assert!(matches!(resolved, Some(RequestBody::Single(_))));
         assert!(hoister.out.iter().any(|declaration| matches!(
@@ -27507,8 +27627,14 @@ mod tests {
             schemas: Some(&doc.components.schemas),
             out: Vec::new(),
         };
-        let resolved =
-            super::resolve_request_body(&doc, &[], &body, &mut hoister, "DeleteRequest", false);
+        let resolved = super::resolve_request_body(
+            &doc,
+            &[],
+            &body,
+            &mut hoister,
+            "DeleteRequest",
+            super::RequestInputs::None,
+        );
         assert!(matches!(resolved, Some(RequestBody::Single(body)) if !body.required));
         let nullable_unknown: crate::openapi::RequestBody =
             serde_json::from_value(serde_json::json!({
@@ -27521,7 +27647,7 @@ mod tests {
             &nullable_unknown,
             &mut hoister,
             "DeleteRequest",
-            false,
+            super::RequestInputs::None,
         );
         assert!(matches!(resolved, Some(RequestBody::Single(body)) if !body.required));
 
@@ -27529,8 +27655,14 @@ mod tests {
             "content": { "application/json": { "schema": {} } }
         }))
         .expect("unknown request body deserializes");
-        let resolved =
-            super::resolve_request_body(&doc, &[], &unknown, &mut hoister, "DeleteRequest", false);
+        let resolved = super::resolve_request_body(
+            &doc,
+            &[],
+            &unknown,
+            &mut hoister,
+            "DeleteRequest",
+            super::RequestInputs::None,
+        );
         assert!(
             matches!(resolved, Some(RequestBody::Single(ref body)) if body.required),
             "{resolved:?}"
@@ -27545,7 +27677,7 @@ mod tests {
             &unknown,
             &mut hoister,
             "DeleteRequest",
-            false,
+            super::RequestInputs::None,
         );
         assert!(
             matches!(resolved, Some(RequestBody::Single(ref body)) if body.required),
@@ -27563,7 +27695,7 @@ mod tests {
             &optional_unknown,
             &mut hoister,
             "DeleteRequest",
-            false,
+            super::RequestInputs::None,
         );
         assert!(matches!(resolved, Some(RequestBody::Single(body)) if !body.required));
 
@@ -27601,7 +27733,7 @@ mod tests {
                 &array(schema.clone()),
                 &mut hoister,
                 "BatchRequest",
-                false,
+                super::RequestInputs::None,
             );
             assert!(
                 matches!(resolved, Some(RequestBody::Single(ref body)) if body.content_type == header),
@@ -27654,7 +27786,7 @@ mod tests {
             &request,
             &mut hoister,
             "SummarizeMessagesRequest",
-            true,
+            super::RequestInputs::Inherited,
         )
         .expect("nullable referenced body resolves") else {
             panic!("nullable referenced body should remain a single argument")
@@ -27863,9 +27995,15 @@ mod tests {
                 schemas: None,
                 out: Vec::new(),
             };
-            let resolved =
-                resolve_request_body(&doc, &types, &body, &mut hoister, "ForwardRequest", true)
-                    .expect("referenced union is supported");
+            let resolved = resolve_request_body(
+                &doc,
+                &types,
+                &body,
+                &mut hoister,
+                "ForwardRequest",
+                super::RequestInputs::Inherited,
+            )
+            .expect("referenced union is supported");
             let wildcard = resolved.is_wildcard_media();
             let RequestBody::Single(single) = resolved else {
                 panic!("a referenced union is one request argument")
@@ -27908,7 +28046,7 @@ mod tests {
             &referenced_array,
             &mut hoister,
             "ListNamesRequest",
-            true,
+            super::RequestInputs::Inherited,
         )
         .expect("referenced array is supported") else {
             panic!("referenced array should be a single request argument")
@@ -27931,7 +28069,7 @@ mod tests {
             &vendor_bag,
             &mut hoister,
             "PutBagRequest",
-            true,
+            super::RequestInputs::Inherited,
         )
         .expect("bare object is supported") else {
             panic!("bare object should be a single request argument")
@@ -27957,7 +28095,7 @@ mod tests {
             &wildcard_binary,
             &mut hoister,
             "UploadRequest",
-            true,
+            super::RequestInputs::Inherited,
         )
         .expect("wildcard binary is supported") else {
             panic!("wildcard binary should be a single request argument")
@@ -27980,7 +28118,7 @@ mod tests {
             &nullable_empty,
             &mut hoister,
             "DeleteFeedRequest",
-            true,
+            super::RequestInputs::Inherited,
         )
         .expect("nullable empty body is supported") else {
             panic!("nullable empty body should be a named request")
