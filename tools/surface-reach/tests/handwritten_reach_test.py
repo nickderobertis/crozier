@@ -2708,6 +2708,9 @@ class ControlFeatures(NamedTuple):
 
 
 SCHEMA_CONTROL_FEATURES = {
+    "combo-array-unresolved-nested-pointer": ControlFeatures(
+        "schema.type=array", "schema.$ref:unresolved-nested-local"
+    ),
     "combo-map-beside-anyof": ControlFeatures("schema.additionalProperties", "schema.anyOf"),
     "combo-properties-beside-additional-properties": ControlFeatures(
         "schema.additionalProperties", "schema.properties:non-empty"

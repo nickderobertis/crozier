@@ -2,6 +2,15 @@
   "schema_version": 1,
   "combinations": [
     {
+      "key": "combo-array-unresolved-nested-pointer",
+      "region": "src/ir.rs::Builder::field_type_ref[if unresolved_pointer \\{]",
+      "documents": {
+        "first": "docs/openapi-surface/combination-interaction-controls/combo-array-unresolved-nested-pointer/first/openapi.yml",
+        "second": "docs/openapi-surface/combination-interaction-controls/combo-array-unresolved-nested-pointer/second/openapi.yml",
+        "both": "docs/openapi-surface/combination-interaction-controls/combo-array-unresolved-nested-pointer/both/openapi.yml"
+      }
+    },
+    {
       "key": "combo-map-beside-anyof",
       "region": "src/ir.rs::prefer_map_to_union[if schema\\.any_of\\.is_some\\(\\)]",
       "documents": {
