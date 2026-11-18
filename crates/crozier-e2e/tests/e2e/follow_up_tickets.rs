@@ -93,7 +93,10 @@ fn follow_up_ticket_index_holds_every_ticket_once() {
     let actual: Vec<&str> = rows.iter().map(|row| row.fields[1].as_str()).collect();
     assert_eq!(
         actual,
-        ["602", "679", "685", "694", "696", "697", "698", "699", "700", "701", "702", "703"]
+        [
+            "602", "679", "685", "694", "696", "697", "698", "699", "700", "701", "702", "703",
+            "815"
+        ]
     );
     for row in rows {
         assert_eq!(

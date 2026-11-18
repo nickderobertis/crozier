@@ -10982,7 +10982,7 @@ fn resolve_form_object_alias<'a>(
 /// field whose schema is a named model does, exactly as a JSON body's would:
 /// `mosip-esignet`'s urlencoded `claims` is a `$ref` to `Claim` and serializes
 /// through `convert_and_respect_annotation_metadata`. A referenced urlencoded
-/// component reuses its inline string enum and inline object types, so
+/// component reuses its inline string enum and plain inline object types, so
 /// flattening the body declares no operation-scoped copies of them: the
 /// `openapi-code-generator` e2e document's urlencoded `ProductOrder` passes its
 /// inline `address` as the component's `ProductOrderAddress` at the certified
@@ -11089,7 +11089,7 @@ fn hoist_form_object(
                 .filter(|_| {
                     prop_schema.reference.is_none()
                         && (string_enum_values(prop_schema).is_some()
-                            || is_inline_struct(prop_schema))
+                            || prop_schema.all_of.is_none() && is_inline_struct(prop_schema))
                 })
                 .and_then(|model| model.fields.iter().find(|field| field.wire_name == *prop))
             {
