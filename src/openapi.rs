@@ -1655,6 +1655,17 @@ impl From<String> for LiteralTypeOverride {
     }
 }
 
+/// What a degraded `$ref` named, which no declaration answers.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Unresolved {
+    /// A bare reference to a component the document never declares.
+    Component,
+    /// A component pointer with a tail that names nothing whole — past a declared
+    /// head, or under a head the document never declares. The lowering reads it
+    /// apart where a placement meets it.
+    Pointer,
+}
+
 /// A JSON-Schema-ish node. A node is either a `$ref` (when [`Schema::reference`]
 /// is set) or an inline schema described by the remaining fields.
 #[derive(Debug, Default, Clone, PartialEq, Deserialize)]
@@ -1903,13 +1914,15 @@ pub struct Schema {
     /// See [`normalize_boolean_property_objects`].
     #[serde(skip)]
     pub(crate) boolean_stand_in: bool,
-    /// Set when this node's `$ref` named a component schema the document never
-    /// declares, which `normalize_unresolvable_schema_refs` degraded to the
-    /// unknown type. Not a wire field. Fern guards such a success body against an
-    /// empty response where a written `{}` in a 3.0 document is not guarded, so
-    /// the origin has to outlive the rewrite.
+    /// Set when this node's `$ref` named nothing the document declares, which
+    /// `normalize_unresolvable_schema_refs` or `normalize_unresolved_schema_pointers`
+    /// degraded to the unknown type, with what it named. Not a wire field. Fern
+    /// guards such a success body against an empty response where a written `{}`
+    /// in a 3.0 document is not guarded, so the origin has to outlive the
+    /// rewrite. Read it through [`Self::unresolved_reference`] and
+    /// [`Self::unresolved_pointer`].
     #[serde(skip)]
-    pub unresolved_reference: bool,
+    pub unresolved: Option<Unresolved>,
     /// Set on the copy `normalize_schema_pointer_refs` writes where a bare `$ref`
     /// pointed inside a component. Not a wire field. Fern names a union member
     /// written so by its ordinal, as it names any reference, where an inline
@@ -1918,14 +1931,6 @@ pub struct Schema {
     /// first, and the certified pair declares `…GeoJsonGeometryTypeZero`.
     #[serde(skip)]
     pub pointer_copy: bool,
-    /// Set beside [`Self::unresolved_reference`] where the reference was a
-    /// component pointer with a tail that names nothing whole — past a declared
-    /// head (`normalize_unresolved_schema_pointers`) or under a head the document
-    /// never declares (`normalize_unresolvable_schema_refs`) — as against a bare
-    /// reference to an undeclared component. Not a wire field. Both are Fern's
-    /// unknown type; the lowering reads this one apart where a placement meets it.
-    #[serde(skip)]
-    pub unresolved_pointer: bool,
     /// Set when `normalize_empty_compositions` discarded a non-empty composition
     /// from this scalar-typed node. Not a wire field. Fern generates the plain
     /// type too, but a constraint inside the composition still binds the value,
@@ -2215,6 +2220,19 @@ impl Schema {
                 }),
         );
         names.into_iter()
+    }
+
+    /// Whether this node's `$ref` named nothing the document declares.
+    #[must_use]
+    pub fn unresolved_reference(&self) -> bool {
+        self.unresolved.is_some()
+    }
+
+    /// Whether this node's `$ref` was a component pointer with a tail that names
+    /// nothing whole ([`Unresolved::Pointer`]).
+    #[must_use]
+    pub fn unresolved_pointer(&self) -> bool {
+        self.unresolved == Some(Unresolved::Pointer)
     }
 
     /// Whether the document says this schema admits `null`: the 3.0 `nullable`
@@ -4970,13 +4988,17 @@ fn normalize_unresolvable_schema_refs(doc: &mut OpenApi) {
                 // A pointer with a tail names nothing whole either: the EASA D-X
                 // interfaces document points at `DigitalInterfacesMessages/
                 // properties/UASZonesReply`, a head it never declares.
-                node.unresolved_pointer = node.reference.as_deref().is_some_and(|reference| {
+                let tailed = node.reference.as_deref().is_some_and(|reference| {
                     reference
                         .strip_prefix("#/components/schemas/")
                         .is_some_and(|pointer| pointer.contains('/'))
                 });
                 node.reference = None;
-                node.unresolved_reference = true;
+                node.unresolved = Some(if tailed {
+                    Unresolved::Pointer
+                } else {
+                    Unresolved::Component
+                });
             }
         });
     });
@@ -5034,8 +5056,7 @@ fn degrade_unresolved_pointers(
         && lone_member.is_some_and(|reference| unresolved.contains(reference))
     {
         schema.all_of = None;
-        schema.unresolved_reference = true;
-        schema.unresolved_pointer = true;
+        schema.unresolved = Some(Unresolved::Pointer);
     }
     if !array_item
         && schema
@@ -5044,8 +5065,7 @@ fn degrade_unresolved_pointers(
             .is_some_and(|reference| unresolved.contains(reference))
     {
         schema.reference = None;
-        schema.unresolved_reference = true;
-        schema.unresolved_pointer = true;
+        schema.unresolved = Some(Unresolved::Pointer);
     }
     for property in schema.properties.values_mut() {
         degrade_unresolved_pointers(property, unresolved, false);
@@ -7432,7 +7452,7 @@ components:
         ] {
             let node = &holder.properties[unknown];
             assert!(
-                node.reference.is_none() && node.unresolved_reference,
+                node.reference.is_none() && node.unresolved_reference(),
                 "{unknown}"
             );
         }
@@ -7444,19 +7464,19 @@ components:
             Some(AdditionalProperties::Schema(value)) => value,
             other => panic!("{other:?}"),
         };
-        assert!(value.reference.is_none() && value.unresolved_reference);
+        assert!(value.reference.is_none() && value.unresolved_reference());
         // A lone member is its holder's schema, so the holder is unknown and
         // keeps its own annotations; beside a `type` it is only a member.
         let merged = &holder.properties["merged"];
-        assert!(merged.all_of.is_none() && merged.unresolved_reference);
+        assert!(merged.all_of.is_none() && merged.unresolved_reference());
         assert_eq!(merged.description.as_deref(), Some("kept"));
         let beside = &holder.properties["beside"];
-        assert!(!beside.unresolved_reference);
+        assert!(!beside.unresolved_reference());
         let member = &beside.all_of.as_ref().unwrap()[0];
-        assert!(member.reference.is_none() && member.unresolved_reference);
+        assert!(member.reference.is_none() && member.unresolved_reference());
         // An array's element keeps its pointer for the element lowering.
         let names = holder.properties["names"].items.as_deref().unwrap();
-        assert!(names.reference.is_some() && !names.unresolved_reference);
+        assert!(names.reference.is_some() && !names.unresolved_reference());
         // The lowering's unknown pointers, a whole component, an undeclared
         // head and a pointer outside the components are not this pass's.
         for kept in [
@@ -7469,13 +7489,13 @@ components:
         ] {
             let node = &holder.properties[kept];
             assert!(
-                node.reference.is_some() && !node.unresolved_reference,
+                node.reference.is_some() && !node.unresolved_reference(),
                 "{kept}"
             );
         }
         assert!(
             holder.properties["found"].reference.is_none()
-                && !holder.properties["found"].unresolved_reference
+                && !holder.properties["found"].unresolved_reference()
         );
         // Request and response bodies are degraded as any other position is.
         let operation = doc.paths["/holder"].post.as_ref().unwrap();
@@ -7483,12 +7503,12 @@ components:
             .schema
             .as_ref()
             .unwrap();
-        assert!(body.reference.is_none() && body.unresolved_reference);
+        assert!(body.reference.is_none() && body.unresolved_reference());
         let response = operation.responses["200"].content["application/json"]
             .schema
             .as_ref()
             .unwrap();
-        assert!(response.reference.is_none() && response.unresolved_reference);
+        assert!(response.reference.is_none() && response.unresolved_reference());
     }
 
     #[test]

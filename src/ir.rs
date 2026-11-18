@@ -5395,7 +5395,7 @@ fn build_endpoint(
         // under a head it never declares, and its golden (corpus row 6001)
         // guards the body. Read first, so no earlier test decides it.
         response_may_be_empty: success_response_schema(op).is_some_and(|schema| {
-            if schema.unresolved_pointer {
+            if schema.unresolved_pointer() {
                 return true;
             }
             false
@@ -5411,7 +5411,7 @@ fn build_endpoint(
             // declares is unknown too, and may be empty: Skool's `GET
             // …/comments/` answers `$ref: SuccessResponse`, which no component
             // names, and its golden guards the empty body.
-            || success_response_schema(op).is_some_and(|schema| schema.unresolved_reference),
+            || success_response_schema(op).is_some_and(|schema| schema.unresolved_reference()),
         response_names_unknown: success_names_unknown,
         response_doc: success_response_doc(op),
         errors,
@@ -5772,7 +5772,7 @@ fn fern_imports_no_endpoint_example(doc: &OpenApi, op: &Operation) -> bool {
     // example to build: Fern logs *Failed to generate required response example*
     // for each of Spendesk's four operations answering `$ref: ApiResponse`.
     let undeclared_response =
-        success_response_schema(op).is_some_and(|schema| schema.unresolved_reference);
+        success_response_schema(op).is_some_and(|schema| schema.unresolved_reference());
     // A success object declaring both `additionalProperties: true` and its own
     // `example` fails the same way: atacan's AssemblyAI `Transcript` does, so its
     // `transcripts.submit` works only the required arguments, where the sibling
@@ -8367,7 +8367,7 @@ fn resolve_request_body(
         // the EASA D-X interfaces document's `retrieveUASZones` sends `$ref:
         // …/DigitalInterfacesMessages/properties/UASZonesRequest`, and its golden
         // (corpus row 6001) takes `request: typing.Any`.
-        if schema.unresolved_pointer {
+        if schema.unresolved_pointer() {
             return Some(single(
                 TypeRef::Primitive(Prim::Any),
                 required,
@@ -13897,7 +13897,7 @@ fn reads_dangling_targets(
         .values()
         .any(|target| !names_no_component(target, schemas))
         && variants.iter().all(|variant| {
-            !variant.unresolved_reference
+            !variant.unresolved_reference()
                 && variant
                     .reference
                     .as_deref()
@@ -16156,7 +16156,8 @@ impl Builder<'_> {
         };
         let all_dangling = variants.len() > 1
             && variants.iter().all(|variant| {
-                variant.unresolved_reference || variant.reference.as_deref().is_some_and(&dangling)
+                variant.unresolved_reference()
+                    || variant.reference.as_deref().is_some_and(&dangling)
             })
             && mapping.values().all(|reference| dangling(reference));
         if all_dangling {
@@ -20178,7 +20179,7 @@ fn property_description(schema: &Schema, optional: bool) -> Option<&str> {
         .reference
         .as_deref()
         .is_some_and(pointer_has_unnamed_segment)
-        || schema.unresolved_reference
+        || schema.unresolved_reference()
     {
         return None;
     }

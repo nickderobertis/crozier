@@ -17954,6 +17954,31 @@ fn digit_leading_schema_name_generates_valid_python() {
     assert_valid_python(&out);
 }
 
+/// Digit-leading enum values whose numbers spell one member name keep only the
+/// first, as the certified pair does for the dibbs eCR refiner's
+/// `NarrativeOnlySection` (`10154-3` and `10187-3` both spell `UNDEFINED3`):
+/// two members of one name would fail the enum's class creation at import.
+#[test]
+fn digit_leading_enum_values_spelling_one_name_keep_the_first() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Refiner API, version: 1.0.0 }\npaths:\n  /sections:\n    \
+         get:\n      operationId: getSection\n      responses:\n        '200': { description: OK, \
+         content: { application/json: { schema: { $ref: '#/components/schemas/Section' } } } }\n\
+         components:\n  schemas:\n    Section:\n      type: string\n      \
+         enum: ['10154-3', '29299-5', '10187-3']\n",
+    );
+    let section = std::fs::read_to_string(out.join("src/acme/types/section.py"))
+        .expect("the section enum is generated");
+    assert!(section.contains("UNDEFINED3 = \"10154-3\""), "{section}");
+    assert!(section.contains("UNDEFINED5 = \"29299-5\""), "{section}");
+    assert!(
+        !section.contains("10187-3"),
+        "the later value spelling UNDEFINED3 is dropped: {section}"
+    );
+    assert_eq!(section.matches("UNDEFINED3 = ").count(), 1, "{section}");
+    assert_valid_python(&out);
+}
+
 #[test]
 fn numeric_field_segments_collapse_and_keep_wire_aliases() {
     let (_dir, out) = generate_ok(
@@ -33403,7 +33428,6 @@ fn registered_literals_hashgraph_guardian_63ba2735_matches_fern_output() {
     assert_committed_corpus_matches(&LITERALS_HASHGRAPH_63BA2735);
     overlay_goldens::assert_literals_match(&LITERALS_HASHGRAPH_63BA2735);
 }
-// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 /// Certified enum-mode witness, corpus row 6000.
 const LITERALS_SAMEPAGE_BEA1554A: Corpus = Corpus {
@@ -33440,3 +33464,4 @@ fn registered_literals_francineo_easa_dxcomponents_fc03fd3c_matches_fern_output(
     assert_committed_corpus_matches(&LITERALS_EASA_FC03FD3C);
     overlay_goldens::assert_literals_match(&LITERALS_EASA_FC03FD3C);
 }
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
