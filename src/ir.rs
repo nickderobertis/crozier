@@ -2936,7 +2936,9 @@ fn fern_enum_name_key(value: &str, declared: Option<&str>) -> String {
         // the dibbs eCR refiner's `NarrativeOnlySection` offers `10154-3` and
         // `10187-3`, which both spell `Undefined3` (Fern's speller stops at
         // 9,999), and the certified pair keeps only the first.
-        naming::enum_member_name(value).replace('_', "").to_lowercase()
+        naming::enum_member_name(value)
+            .replace('_', "")
+            .to_lowercase()
     } else {
         generated
     }
@@ -32004,7 +32006,11 @@ components:
             .collect();
         assert_eq!(
             members,
-            [("UNDEFINED3", "10154-3"), ("UNDEFINED5", "29299-5"), ("ONE_A", "1-a")]
+            [
+                ("UNDEFINED3", "10154-3"),
+                ("UNDEFINED5", "29299-5"),
+                ("ONE_A", "1-a")
+            ]
         );
     }
     #[test]
