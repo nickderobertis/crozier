@@ -1214,12 +1214,8 @@ fn auth_model(doc: &OpenApi) -> Auth {
         }
         Some(s) if s.ty == SecuritySchemeType::Http && s.scheme == Some(HttpAuthScheme::Basic) => {
             let (username, password) = s.basic_credentials();
-            // A document-level requirement and, where the document declares none,
-            // an operation's own each settle the Basic credentials' requiredness
-            // in an arm of their own. `all_operations_authenticated` reads either
-            // list alike; the reach ledger measures where each meets the scheme
-            // (`gambitcomm.local-mimic` requires Basic at its root, `grantly` on
-            // its operations).
+            // One arm per requirement list, so the reach ledger can tell a document's
+            // requirement from an operation's own; both read the same helper.
             let operation_requirement = doc.paths.values().any(|item| {
                 item.operations()
                     .into_iter()
@@ -4342,12 +4338,8 @@ fn build_endpoint(
                         Some("string" | "integer" | "number" | "boolean")
                     )
                 };
-                // A string enum item is such a scalar however the array spells it.
-                // Each spelling is an arm of its own, so the reach ledger measures
-                // where a query array meets an inline enum item (`anchore.io`'s
-                // `image_status`), a referenced one (CloudFormation's
-                // `Capabilities`), and a referenced one on a required parameter
-                // (`chrome-webstatus-backend`'s `browser`).
+                // A string enum item is a scalar however it is spelled; one arm per
+                // spelling (inline, referenced, referenced and required) for the reach ledger.
                 let item_is_scalar = |query_item: &Schema| {
                     let referenced_query_item_enum = query_item
                         .reference
@@ -4887,7 +4879,7 @@ fn build_endpoint(
                     || !path_params.is_empty()
                     || !query_params.is_empty()
                     || !header_params.is_empty(),
-                op.declares_parameters,
+                op.lists_own_parameters,
             )
         })
     };
@@ -5009,9 +5001,7 @@ fn build_endpoint(
             .collect();
         for field in fields {
             if parameter_names.contains(field.py_name.as_str()) {
-                // A header parameter's claim is an arm of its own beside a path or
-                // query parameter's: the prefix is the same, and the reach ledger
-                // measures where a body property meets a header of its name.
+                // A header's claim has its own arm for the reach ledger; same prefix.
                 let collision_prefix = match field.collision_prefix.as_ref() {
                     Some(header_claimed)
                         if header_params
@@ -7609,8 +7599,6 @@ fn resolve_request_body(
     // Whether the operation carries inputs beside the body. Fern then wraps the
     // request, so a body it must name of its own gets a `Body` infix.
     union_body_suffix: bool,
-    // Whether the Operation Object declares parameters of its own
-    // ([`crate::openapi::Operation::declares_parameters`]).
     own_parameters: bool,
 ) -> Option<RequestBody> {
     // A raw `application/octet-stream` body is a bytes stream, independent of its
@@ -8085,11 +8073,8 @@ fn resolve_request_body(
     // tag's `types/` package. The request accepts that alias as one argument and
     // serializes its selected model variant through the annotation converter.
     if schema.one_of.is_some() || schema.any_of.is_some() {
-        // The operation's own parameters beside an inline `oneOf` body, and beside
-        // an inline `anyOf` one, are arms of their own, naming the body as any
-        // other input beside it does: the reach ledger measures where each meets
-        // the union (letta's `POST /v1/templates/{project_id}` and `PATCH
-        // /v1/tools/mcp/servers/{mcp_server_name}`).
+        // The operation's own parameters get an arm per union keyword for the reach
+        // ledger; the name is the one any input beside the body gives it.
         let request_body_name = match (union_body_suffix, own_parameters, schema.one_of.is_some()) {
             (true, true, true) => format!("{request_ctx}Body"),
             (true, true, false) => format!("{request_ctx}Body"),
@@ -10539,7 +10524,6 @@ fn rename_claimed_path_params(
                 .iter()
                 .any(|h| h.wire_name == *name || h.py_name == naming::field_name(name))
     });
-    // The names the operation's own parameters claim, before its body adds its own.
     let parameter_claims = claimed.clone();
     if let Some(body) = op.request_body.as_ref().filter(|_| request_body.is_some()) {
         let schemas = &doc.components.schemas;
@@ -10621,10 +10605,7 @@ fn rename_claimed_path_params(
         if overridden || !claimed.contains(&param.wire_name) {
             continue;
         }
-        // A claim the request body makes is an arm of its own beside a query or
-        // header parameter's: the rename is the same, and the reach ledger
-        // measures where a body property meets a path parameter of its name
-        // (go-kratos's blog example `PUT /v1/article/{id}` takes `id_path_param`).
+        // The body's claim (`false`) has its own arm for the reach ledger; same rename.
         let mut renamed = match parameter_claims.contains(&param.wire_name) {
             true => format!("{}PathParam", param.wire_name),
             false => format!("{}PathParam", param.wire_name),
@@ -11845,10 +11826,7 @@ fn parameter_union_is_global(parameter: &crate::openapi::Parameter, schema: &Sch
     {
         return false;
     }
-    // A query composition's members, an arm per keyword: Fern places a `oneOf`
-    // and an `anyOf` alike, and the reach ledger measures where a query
-    // parameter meets each (`helios-verifiable-api`'s `address` is a `oneOf`,
-    // `openfoodfacts-taxonomy-editor`'s `status` an `anyOf`).
+    // One arm per keyword for the reach ledger; Fern places `oneOf` and `anyOf` alike.
     let members = match (schema.one_of.as_deref(), schema.any_of.as_deref()) {
         (Some(query_one_of), _) => query_one_of,
         (None, Some(query_any_of)) => query_any_of,

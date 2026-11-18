@@ -2207,7 +2207,6 @@ def kiln_version(schema: str, location: str = "header") -> str:
 DEFAULTED_VERSION = "            type: string\n            default: '2025-10'\n"
 
 
-# A job updated by `PUT /jobs/{id}`, its inline body declaring `properties`.
 def job_update(properties: str) -> str:
     return (
         "  /jobs/{id}:\n    put:\n      operationId: updateJob\n      parameters:\n        - name: id\n"
