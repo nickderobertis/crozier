@@ -687,6 +687,10 @@ pub struct Operation {
     /// Whether path-item parameters were merged into this operation.
     #[serde(skip)]
     pub path_level_parameters: bool,
+    /// The location of each parameter the Operation Object itself writes, read
+    /// before the path item's are merged in beside them.
+    #[serde(skip)]
+    pub own_parameter_locations: Vec<Option<ParameterLocation>>,
     /// The operation identifier, `{group}_{camelMethodName}`. `None` distinguishes
     /// an omitted identifier from an explicitly empty one, which Fern names `_`.
     #[serde(rename = "operationId", default)]
@@ -5512,6 +5516,11 @@ fn normalize_parameters(doc: &mut OpenApi) {
         for slot in item.operation_slots() {
             let Some(op) = slot else { continue };
             op.path_level_parameters = !shared.is_empty();
+            op.own_parameter_locations = op
+                .parameters
+                .iter()
+                .map(|own| resolve_parameter(own, &defs).location)
+                .collect();
             let mut merged = shared.clone();
             for own in &op.parameters {
                 let own = resolve_parameter(own, &defs);

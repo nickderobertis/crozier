@@ -141,29 +141,29 @@ split five ways:
 546 + 70 + 110 + 0 + 0 = 726.
 
 **Feature combinations are counted apart.** 107 combinations are selected
-([the list](openapi-surface/combinations.md)): 26 are `gap`, 77 are `golden` and 4 are `handwritten`.
-11 of the `gap` ones are decided output-insensitive in
+([the list](openapi-surface/combinations.md)): 31 are `gap`, 72 are `golden` and 4 are `handwritten`.
+13 of the `gap` ones are decided output-insensitive in
 [the shared table](openapi-surface/output-insensitive.tsv), neither proven nor unproven.
 **Combinations by proof.** A combination is proven only where its handling is checked against the certified pair,
 at an interaction branch or with source-checked independent feature controls. `finished_state_failures` in
 [the census suite](../tools/surface-census/tests/surface_census_test.py) validates the recorded evidence, with
 [the hand-written fixture format](openapi-surface/handwritten/AGENTS.md) it reads.
-**41** are byte-matched against a registered real specification at their
+**48** are byte-matched against a registered real specification at their
 interaction branch, **0** have independent handling, checked against the source,
 instrumented feature-only controls and fresh certified trees
 ([the audit](openapi-surface/combination-cooccurrence.tsv)), **0** are compared against a committed measurement of
-non-generation, **0** rest on a hand-written fixture (0 of them witness-blocked, 0 of them co-occurrences proven on the fixture), **55** remain
-open (unproven) (0 left unproven by the user's ruling), and **11** are decided output-insensitive: 41 + 0 + 0 + 0 + 55 + 11 = 107.
+non-generation, **0** rest on a hand-written fixture (0 of them witness-blocked, 0 of them co-occurrences proven on the fixture), **46** remain
+open (unproven) (0 left unproven by the user's ruling), and **13** are decided output-insensitive: 48 + 0 + 0 + 0 + 46 + 13 = 107.
 None is among the 726 features above, and each other `gap` one is named under
 [Unproven combinations, named](#unproven-combinations-named).
 
 `golden` is still not `golden`-exhausted, so the handling sites are split the
-same way. The 624 `golden` rows declare 1101 handling sites in
+same way. The 619 `golden` rows declare 1108 handling sites in
 [the site table](openapi-surface/golden-reach-sites.tsv). The
 [ledger](openapi-surface/golden-reach.tsv) retains the base measurement's
 provenance and records scoped updates beside their rows.
 
-- **1017 are reached by a registered real specification.** Its scoped
+- **1021 are reached by a registered real specification.** Its scoped
   golden test executes the site; file-level residuals remain recorded separately.
 - **81 are reached only by a hand-written fixture.** Each arm-level
   cover executes the site and byte-matches the certified tree. Thus each of the 81 is still one of the 84 [unreached arms](#every-unreached-arm-and-its-search-verdict).
@@ -176,7 +176,9 @@ provenance and records scoped updates beside their rows.
   before/after trees in both generators recorded in [the shared table](openapi-surface/output-insensitive.tsv).
 - **0 are named gaps**, whose outstanding evidence is in [Unproven arms, named](#unproven-arms-named).
 
-1017 + 81 + 3 + 0 + 0 = 1101. Fourteen sites left the table with the two functions
+1021 + 84 + 3 + 0 + 0 = 1108. Nine sites replaced `co-occurrence` with the body and response
+interaction arms [their search record](openapi-surface/witness-search-combinations-bodies-responses/README.md#dedicated-regions)
+names, `combo-allof-schema-example` replaced it with its interaction branch in `Builder::add_object`, and the two `combo-oas31-*` rows left `golden` once decided output-insensitive. Fourteen sites left the table with the two functions
 that served only the `Body_*` exemption and the HTTP Basic header drop,
 `form_body_source_names` and `operation_uses_basic_auth`; the ledger re-joins its
 committed measurement without them. Twelve more left with the
@@ -2209,7 +2211,8 @@ corrections the shared comparison engine applies. All other bytes must match.
 | wrapped-union-member-docs-example | Discriminator mapping target that is a union of references, not all objects, with no discriminator of its own, held whole as the wrapper's `value`; the README and reference.md worked examples' empty mapping-value argument corrected | Fern behaviour + Fern defect | `discriminator-mapping-arms` | docs/openapi-surface/handwritten/tidepool-survey-log/fern-expected | `handwritten_fixtures_match_fern_goldens` | `wrapped-union-member-docs-example` |
 | dangling-mapping-target-variant | Discriminator mapping target naming no component beside targets that do: Fern's discriminated union of wrappers, the member's own tag and its enum kept; the dangling value's `value: typing.Any` wrapper, which rejects the server's flat variant payload, corrected to carry the tagged member's fields | Fern behaviour + Fern defect | `conquery-emission-parity` | docs/fern-measurements/emission-parity/dangling-mapping-target/fern-expected; tests/fixtures/ingef-conquery/expected | `emission_parity::a_mapping_target_naming_no_schema_keeps_fern_s_union_but_its_wrapper_s_fields; ingef_conquery_matches_fern_output` | `dangling-mapping-variant-fields` |
 | schema-valid-example-values | Worked-example values their own schema rejects — a string's name, Fern's fixed placeholders, a length-sized sample, a fixed number, a list's item count — replaced by the declared example, the default or a constructed value the schema accepts | Fern defect | `schema-valid-example-values` | tests/fixtures/discord-com/expected; tests/fixtures/audiobookshelf/expected; tests/fixtures/amazonaws.com-cloudformation/expected | `discord_com_matches_fern_output; audiobookshelf_matches_fern_output; amazonaws_com_cloudformation_matches_fern_output` | `schema-rejected-array-length-example, schema-rejected-name-example, schema-rejected-number-example, schema-rejected-placeholder-string-example, schema-rejected-sized-string-example` |
-| snippet-call-keyword-and-header-placeholder | Worked calls and client constructions: a `[]` query parameter's call keyword and a non-string promoted header's constructor placeholder corrected | Fern defect | `snippet-rendering` | docs/fern-measurements/handed-off/snippet-rendering/snippet-rendering/fern-expected | `handed_off_snippet_rendering_measurements_match_fern; handed_off_snippet_rendering::catalogued_snippet_defects_are_what_crozier_writes` | `bracket-query-parameter-call-keyword, non-string-client-header-example` |
+| snippet-call-keyword-and-header-placeholder | Worked calls and client constructions: a `[]` query parameter's call keyword and parameter-list name and a non-string promoted header's constructor placeholder corrected | Fern defect | `snippet-rendering` | docs/fern-measurements/handed-off/snippet-rendering/snippet-rendering/fern-expected | `handed_off_snippet_rendering_measurements_match_fern; handed_off_snippet_rendering::catalogued_snippet_defects_are_what_crozier_writes` | `bracket-query-parameter-call-keyword, non-string-client-header-example` |
+| field-alias-literal | Model field wire alias holding a quote or backslash: written as a literal of the declared name, so the model imports and keeps its wire name | Fern defect | `combinations-examples-docs` | docs/fern-measurements/handed-off/follow-up-tickets/842/fern-expected; docs/fern-measurements/handed-off/follow-up-tickets/679-escaped-quote-control/fern-expected | `follow_up_ticket_matching_outputs_hold_against_the_certified_pair; follow_up_ticket_escaped_quote_alias_still_matches_the_certified_pair` | `escaped-field-alias-literal` |
 | reused-body-query-keyword-clash | Required query parameter sharing a property name with a `$ref` body reused by a response: the body stays a named model and its argument is renamed; the README and reference.md worked calls' repeated query keyword corrected | Fern behaviour + Fern defect | `client-structure` | docs/fern-measurements/handed-off/client-structure/reused-body-keyword-example/fern-expected | `client_structure::a_query_clash_on_a_reused_body_keeps_the_renamed_keyword` | `repeated-query-body-example-keyword` |
 | readme-environment-constructor-arguments | README Environments construction passing the usage constructor's credentials and required headers | Fern defect | `certify-new-pair` | tests/fixtures/zulip/expected | `zulip_matches_fern_output` | `readme-environment-constructor-arguments` |
 | readme-escaped-method-call | README calls of a method the SDK escapes with a trailing underscore | Fern defect | `certify-new-pair` | tests/fixtures/apideck.com-connector/expected | `apideck_connector_matches_fern_output` | `readme-escaped-method-call` |
@@ -2955,7 +2958,7 @@ the tests run and carried.
 #### The reach ranking
 
 Golden rows ranked by unreached handling sites, then unreached handling regions,
-then key. **558** golden rows reach every handling site and tie below every row
+then key. **551** golden rows reach every handling site and tie below every row
 listed here: the [ledger](openapi-surface/golden-reach.tsv)'s rows whose
 `unreached_sites` is 0, its combination rows among them. Each says so in its own cell. Unreached regions break ties and
 create no obligation of their own.
@@ -3011,15 +3014,15 @@ unreached by any Fern-accepted document.
 | 8 | `ref-pointer-undeclared-component-head` | `schemas` | **2** | **29** | **17** | open — real-specification witness search remains open |
 | 9 | `parameter-schema` | `parameters` | **2** | **26** | **352** | open — real-specification witness search remains open |
 | 10 | `parameter-in-path` | `parameters` | **2** | **19** | **309** | open — real-specification witness search remains open |
-| 11 | `media-type-multipart` | `bodies-media` | **2** | **13** | **29** | open — real-specification witness search remains open |
-| 12 | `ref-pointer-nested-items` | `schemas` | **2** | **6** | **4** | open — real-specification witness search remains open |
-| 13 | `anyof-discriminated-union` | `schemas` | **1** | **205** | **30** | owned — first-pass search record below |
-| 14 | `array-item-anyof-discriminated-union` | `schemas` | **1** | **199** | **19** | open — real-specification witness search remains open |
-| 15 | `array-item-oneof-discriminated-union` | `schemas` | **1** | **165** | **32** | open — real-specification witness search remains open |
-| 16 | `oneof-discriminated-union` | `schemas` | **1** | **111** | **87** | owned — first-pass search record below |
-| 17 | `anyof-oneof-variant` | `schemas` | **1** | **97** | **17** | owned — first-pass search record below |
-| 18 | `oneof-array-variant-anyof-item` | `schemas` | **1** | **55** | **1** | open — real-specification witness search remains open |
-| 19 | `additional-properties-schema` | `schemas` | **1** | **51** | **261** | open — real-specification witness search remains open |
+| 11 | `media-type-multipart` | `bodies-media` | **2** | **14** | **29** | open — real-specification witness search remains open |
+| 12 | `ref-pointer-nested-properties` | `schemas` | **2** | **10** | **7** | open — real-specification witness search remains open |
+| 13 | `ref-pointer-nested-items` | `schemas` | **2** | **6** | **4** | open — real-specification witness search remains open |
+| 14 | `anyof-discriminated-union` | `schemas` | **1** | **205** | **30** | owned — first-pass search record below |
+| 15 | `array-item-anyof-discriminated-union` | `schemas` | **1** | **199** | **19** | open — real-specification witness search remains open |
+| 16 | `array-item-oneof-discriminated-union` | `schemas` | **1** | **165** | **31** | open — real-specification witness search remains open |
+| 17 | `oneof-discriminated-union` | `schemas` | **1** | **111** | **86** | owned — first-pass search record below |
+| 18 | `anyof-oneof-variant` | `schemas` | **1** | **90** | **17** | owned — first-pass search record below |
+| 19 | `additional-properties-schema` | `schemas` | **1** | **51** | **259** | open — real-specification witness search remains open |
 | 20 | `anyof-map-variant-anyof-value` | `schemas` | **1** | **48** | **5** | open — real-specification witness search remains open |
 | 21 | `anyof-map-variant-oneof-value` | `schemas` | **1** | **48** | **1** | open — real-specification witness search remains open |
 | 22 | `oneof-map-variant-oneof-value` | `schemas` | **1** | **48** | **1** | open — real-specification witness search remains open |

@@ -70,18 +70,22 @@
   kind: fern-defect
   trigger: >-
     A query parameter whose wire name ends in [], passed in a README or
-    reference.md worked call.
+    reference.md worked call; or such a query parameter or a form-encoded or
+    multipart body property, listed in reference.md's parameter list.
   fern: >-
-    The call passes the argument as <name>_array=, a keyword the generated
-    sync and async methods do not declare; their argument is <name>.
+    The call passes the argument as <name>_array=, and the parameter list
+    documents **<name>_array:**, a name the generated sync and async methods do
+    not declare; their argument is <name>.
   crozier: >-
-    The same call with the generated method's own <name>= keyword, every other
-    byte of the line unchanged; reference.md's parameter list and the method
-    signature stay matched.
+    The same call with the generated method's own <name>= keyword, and the
+    parameter list entry **<name>:**, every other byte of each line unchanged,
+    so the worked call, the parameter list and the method signature agree.
   reason: >-
     Binding the documented call to the actual certified methods raises
-    TypeError for an unexpected keyword argument. The corrected keyword binds
-    and sends the values under the [] wire name.
+    TypeError for an unexpected keyword argument, and the parameter list names
+    an argument no method declares. The corrected keyword binds and sends the
+    values under the [] wire name, and every listed name is a parameter of the
+    method it documents.
   evidence: docs/departures/evidence/bracket-query-parameter-call-keyword.md
 
 - id: closed-empty-object-example
@@ -370,6 +374,26 @@
     crozier reads both spellings alike, so an SDK user can call the
     unauthenticated operations without inventing a key.
   evidence: docs/departures/evidence/empty-root-security-optional-credential.md
+
+- id: escaped-field-alias-literal
+  kind: fern-defect
+  trigger: >-
+    A schema property whose declared name holds a double quote or a backslash,
+    so its model field carries a wire alias, in the generated model module.
+  fern: >-
+    The FieldMetadata and pydantic.Field aliases interpolate the name between
+    double quotes unescaped, so it reads as Python: a backslash-quote becomes a
+    shorter name, and a balanced expression such as a" + bearing + " becomes
+    executable code naming an undefined variable.
+  crozier: >-
+    Both aliases are a string literal whose value is exactly the declared name,
+    every other byte of the line unchanged.
+  reason: >-
+    A balanced-expression alias makes the certified model fail to import, and a
+    backslash-quote alias parses and writes the field under a name the document
+    does not declare. The literal alias imports and carries every value under
+    its declared wire name.
+  evidence: docs/departures/evidence/escaped-field-alias-literal.md
 
 - id: fern-metadata-generator-config
   kind: provenance

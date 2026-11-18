@@ -2,6 +2,15 @@
   "schema_version": 1,
   "combinations": [
     {
+      "key": "combo-allof-schema-example",
+      "region": "src/ir.rs::Builder::add_object[if !members\\.is_empty\\(\\) \\{]",
+      "documents": {
+        "first": "docs/openapi-surface/combination-interaction-controls/combo-allof-schema-example/first/openapi.yml",
+        "second": "docs/openapi-surface/combination-interaction-controls/combo-allof-schema-example/second/openapi.yml",
+        "both": "docs/openapi-surface/combination-interaction-controls/combo-allof-schema-example/both/openapi.yml"
+      }
+    },
+    {
       "key": "combo-array-unresolved-nested-pointer",
       "region": "src/ir.rs::Builder::field_type_ref[if unresolved_pointer \\{]",
       "documents": {

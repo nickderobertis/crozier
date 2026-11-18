@@ -1,6 +1,6 @@
 # Schema interaction controls
 
-`controls.json` names the two registered-interaction schema conjunction arms tested by
+`controls.json` names the three registered-interaction schema conjunction arms tested by
 `CooccurrenceOutcomeTest.test_schema_interaction_controls_reach_their_region_only_with_both_features`.
 Each document is authored from scratch. The test checks its two feature
 selectors as well as its combination selector, then invokes the instrumented
