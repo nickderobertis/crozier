@@ -2131,6 +2131,54 @@ class InteractionArm(NamedTuple):
     controls: dict[str, str]
 
 
+# The pointer placements' controls: `Ledger` declares `entry` and not `missing`, and
+# `Shape` composes, so `Ledger/properties/missing` names nothing past a declared head,
+# `Ledger/properties/entry` resolves, `Absent` names no component at all, and
+# `Shape/oneOf/0` ends on a composition member.
+LEDGER_SCHEMAS = (
+    "  schemas:\n    Ledger:\n      type: object\n      properties:\n        entry:\n"
+    "          type: object\n          properties:\n            id:\n              type: string\n"
+    "    Shape:\n      oneOf:\n        - type: object\n          properties:\n            side:\n"
+    "              type: number\n        - type: string\n"
+)
+
+
+def pointer(target: str, indent: int) -> str:
+    return " " * indent + f'$ref: "#/components/schemas/{target}"\n'
+
+
+def ledger_response(schema: str) -> str:
+    return (
+        "  /ledgers:\n    get:\n      operationId: getLedger\n      responses:\n"
+        '        "200":\n          description: ok\n          content:\n            application/json:\n'
+        "              schema:\n" + schema
+    )
+
+
+def ledger_request(schema: str) -> str:
+    return (
+        "  /ledgers:\n    post:\n      operationId: postLedger\n      requestBody:\n        required: true\n"
+        "        content:\n          application/json:\n            schema:\n"
+        + schema
+        + '      responses:\n        "204":\n          description: done\n'
+    )
+
+
+def ledger_property(schema: str) -> str:
+    """`Ledger`'s components with a `Journal` component whose `lines` property is `schema`."""
+    return LEDGER_SCHEMAS + "    Journal:\n      type: object\n      properties:\n        lines:\n" + schema
+
+
+JOURNAL_PATHS = ledger_response(pointer("Journal", 16))
+MISSING_PROPERTY = "                type: object\n                properties:\n                  entry:\n" + pointer(
+    "Ledger/properties/missing", 20
+)
+
+
+def array_of(target: str) -> str:
+    return "          type: array\n          items:\n" + pointer(target, 12)
+
+
 # Each exclusive interaction arm: the document with both features, and the controls that
 # may each hold at most one of them. Where one feature entails the other, no valid
 # document has the entailing feature alone, so the controls hold the entailed one.
@@ -2146,6 +2194,40 @@ INTERACTION_ARMS: dict[str, InteractionArm] = {
             "inline body alone": operation_document(form_body("application/json", KIOSK_BODY.format(flag="")), ""),
             "referenced body with a readOnly property": operation_document(
                 form_body("application/json", '              $ref: "#/components/schemas/Kiosk"\n'), KIOSK_SCHEMAS
+            ),
+        },
+    ),
+    # A pointer past a declared component's head that names nothing, at the success
+    # response, the request body and an array's items: each placement's own arm reads it,
+    # where an undeclared component, a pointer that resolves, the same pointer at another
+    # placement, and (for an element) a pointer ending on a composition member do not.
+    "combo-response-unresolved-nested-pointer": InteractionArm(
+        operation_document(ledger_response(pointer("Ledger/properties/missing", 16)), LEDGER_SCHEMAS),
+        {
+            "undeclared component": operation_document(ledger_response(pointer("Absent", 16)), LEDGER_SCHEMAS),
+            "resolved nested pointer": operation_document(
+                ledger_response(pointer("Ledger/properties/entry", 16)), LEDGER_SCHEMAS
+            ),
+            "unresolved pointer at a property": operation_document(ledger_response(MISSING_PROPERTY), LEDGER_SCHEMAS),
+        },
+    ),
+    "combo-request-unresolved-nested-pointer": InteractionArm(
+        operation_document(ledger_request(pointer("Ledger/properties/missing", 14)), LEDGER_SCHEMAS),
+        {
+            "undeclared component": operation_document(ledger_request(pointer("Absent", 14)), LEDGER_SCHEMAS),
+            "unknown body": operation_document(ledger_request("              {}\n"), LEDGER_SCHEMAS),
+            "unresolved pointer at a response": operation_document(
+                ledger_response(pointer("Ledger/properties/missing", 16)), LEDGER_SCHEMAS
+            ),
+        },
+    ),
+    "combo-array-unresolved-nested-pointer": InteractionArm(
+        operation_document(JOURNAL_PATHS, ledger_property(array_of("Ledger/properties/missing"))),
+        {
+            "composition-member pointer": operation_document(JOURNAL_PATHS, ledger_property(array_of("Shape/oneOf/0"))),
+            "undeclared component": operation_document(JOURNAL_PATHS, ledger_property(array_of("Absent"))),
+            "unresolved pointer at a property": operation_document(
+                JOURNAL_PATHS, ledger_property(pointer("Ledger/properties/missing", 10))
             ),
         },
     ),

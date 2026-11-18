@@ -1918,6 +1918,13 @@ pub struct Schema {
     /// first, and the certified pair declares `…GeoJsonGeometryTypeZero`.
     #[serde(skip)]
     pub pointer_copy: bool,
+    /// Set beside [`Self::unresolved_reference`] where the reference was a
+    /// pointer *past* a declared component's head that names nothing
+    /// (`normalize_unresolved_schema_pointers`), as against a component the
+    /// document never declares. Not a wire field. Both are Fern's unknown type;
+    /// the lowering reads this one apart where a placement meets it.
+    #[serde(skip)]
+    pub unresolved_pointer: bool,
     /// Set when `normalize_empty_compositions` discarded a non-empty composition
     /// from this scalar-typed node. Not a wire field. Fern generates the plain
     /// type too, but a constraint inside the composition still binds the value,
@@ -5019,6 +5026,7 @@ fn degrade_unresolved_pointers(
     {
         schema.all_of = None;
         schema.unresolved_reference = true;
+        schema.unresolved_pointer = true;
     }
     if !array_item
         && schema
@@ -5028,6 +5036,7 @@ fn degrade_unresolved_pointers(
     {
         schema.reference = None;
         schema.unresolved_reference = true;
+        schema.unresolved_pointer = true;
     }
     for property in schema.properties.values_mut() {
         degrade_unresolved_pointers(property, unresolved, false);

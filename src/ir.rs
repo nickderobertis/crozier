@@ -5393,7 +5393,16 @@ fn build_endpoint(
             // declares is unknown too, and may be empty: Skool's `GET
             // …/comments/` answers `$ref: SuccessResponse`, which no component
             // names, and its golden guards the empty body.
-            || success_response_schema(op).is_some_and(|schema| schema.unresolved_reference),
+            || success_response_schema(op).is_some_and(|schema| {
+                // So is one whose nested pointer names nothing: the EASA D-X
+                // interfaces document answers `$ref: …/DigitalInterfacesMessages
+                // /properties/UASZonesReply`, a property that component never
+                // declares, and its golden (corpus row 6001) guards the body.
+                if schema.unresolved_pointer {
+                    return true;
+                }
+                schema.unresolved_reference
+            }),
         response_names_unknown: success_names_unknown,
         response_doc: success_response_doc(op),
         errors,
@@ -8343,12 +8352,16 @@ fn resolve_request_body(
     // argument optional: letta declares all three shapes and Fern splits them on
     // exactly that (`{}` → required, `{nullable: true}` → `Optional[Any] = None`).
     if is_unknown(schema) {
-        return Some(single(
-            TypeRef::Primitive(Prim::Any),
-            schema.nullable != Some(true) && (media_type == "*/*" || rb.required != Some(false)),
-            false,
-            false,
-        ));
+        let required =
+            schema.nullable != Some(true) && (media_type == "*/*" || rb.required != Some(false));
+        // A body whose nested pointer names nothing is that unknown body too:
+        // the EASA D-X interfaces document's `retrieveUASZones` sends `$ref:
+        // …/DigitalInterfacesMessages/properties/UASZonesRequest`, and its golden
+        // (corpus row 6001) takes `request: typing.Any`.
+        if schema.unresolved_pointer {
+            return Some(single(TypeRef::Primitive(Prim::Any), required, false, false));
+        }
+        return Some(single(TypeRef::Primitive(Prim::Any), required, false, false));
     }
     if media_type == "*/*"
         && schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("string")
@@ -16994,13 +17007,18 @@ impl Builder<'_> {
                                 .strip_prefix("#/components/schemas/")
                                 .is_some_and(|pointer| pointer.contains('/'))
                         });
-                    if unresolved_pointer
-                        || items.reference.as_deref().is_some_and(|reference| {
-                            reference.contains("/oneOf/")
-                                || reference.contains("/anyOf/")
-                                || reference.contains("/allOf/")
-                        })
-                    {
+                    // The EASA D-X interfaces document's `TimePeriod.schedule`
+                    // items point at `SimpleDataModels/properties/DailyPeriod`,
+                    // which that component never declares, and its golden (corpus
+                    // row 6001) is `List[Any]`.
+                    if unresolved_pointer {
+                        return sequence_of(prop_schema, TypeRef::Primitive(Prim::Any));
+                    }
+                    if items.reference.as_deref().is_some_and(|reference| {
+                        reference.contains("/oneOf/")
+                            || reference.contains("/anyOf/")
+                            || reference.contains("/allOf/")
+                    }) {
                         return sequence_of(prop_schema, TypeRef::Primitive(Prim::Any));
                     }
                     // A nullable component used as an array item remains nullable in
