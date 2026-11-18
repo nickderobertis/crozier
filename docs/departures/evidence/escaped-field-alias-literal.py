@@ -64,7 +64,6 @@ aliases: dict[str, Aliases] = {}
 for name, field in model.model_fields.items():
     metadata = [item.alias for item in getattr(hints[name], "__metadata__", ()) if isinstance(item, FieldMetadata)]
     aliases[name] = Aliases(metadata[0] if metadata else name, field.alias or name)
-# Each field, by the declared wire name both its aliases are.
 by_wire = {pair.serialization: name for name, pair in aliases.items() if pair.declared()}
 mismatched = sorted(repr(tuple(pair)) for pair in aliases.values() if not pair.declared())
 if args.expected == "invalid":

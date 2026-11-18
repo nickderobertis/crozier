@@ -98,7 +98,6 @@ def local_server() -> Iterator[tuple[str, list[list[tuple[str, str]]]]]:
 
 
 bindings: dict[str, str] = {}
-# Each parameter-list name the generated methods do not declare.
 undeclared: dict[str, list[str]] = {}
 for method in CALLS:
     listed = listed_parameters(method)
