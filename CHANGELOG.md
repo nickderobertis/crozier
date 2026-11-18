@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.166](https://github.com/nickderobertis/crozier/compare/v0.0.165...v0.0.166) - 2026-11-18
+
+### Fixed
+
+- *(parity)* prove the example combinations and emit valid worked examples, reference names and wire aliases ([#871](https://github.com/nickderobertis/crozier/pull/871))
+
 ## [0.0.165](https://github.com/nickderobertis/crozier/compare/v0.0.164...v0.0.165) - 2026-11-18
 
 ### Fixed
