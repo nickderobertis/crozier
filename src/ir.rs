@@ -8359,9 +8359,19 @@ fn resolve_request_body(
         // …/DigitalInterfacesMessages/properties/UASZonesRequest`, and its golden
         // (corpus row 6001) takes `request: typing.Any`.
         if schema.unresolved_pointer {
-            return Some(single(TypeRef::Primitive(Prim::Any), required, false, false));
+            return Some(single(
+                TypeRef::Primitive(Prim::Any),
+                required,
+                false,
+                false,
+            ));
         }
-        return Some(single(TypeRef::Primitive(Prim::Any), required, false, false));
+        return Some(single(
+            TypeRef::Primitive(Prim::Any),
+            required,
+            false,
+            false,
+        ));
     }
     if media_type == "*/*"
         && schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("string")
