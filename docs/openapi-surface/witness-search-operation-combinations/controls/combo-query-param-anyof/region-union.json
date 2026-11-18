@@ -8,9 +8,9 @@
     "src/ir.rs::InlineHoister::hoist_param_enum"
   ],
   "counts": {
-    "first": 702,
-    "second": 521,
-    "both": 788
+    "first": 705,
+    "second": 524,
+    "both": 791
   },
   "both_only": [
     [

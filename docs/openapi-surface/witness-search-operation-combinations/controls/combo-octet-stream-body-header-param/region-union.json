@@ -6,9 +6,9 @@
     "src/ir.rs::build_endpoint"
   ],
   "counts": {
-    "first": 628,
-    "second": 518,
-    "both": 668
+    "first": 631,
+    "second": 521,
+    "both": 671
   },
   "both_only": [
     [

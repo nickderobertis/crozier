@@ -8,9 +8,9 @@
     "src/ir.rs::InlineHoister::hoist_array_item_enum"
   ],
   "counts": {
-    "first": 790,
-    "second": 556,
-    "both": 817
+    "first": 793,
+    "second": 559,
+    "both": 820
   },
   "both_only": [
     [
