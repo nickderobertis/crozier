@@ -64,3 +64,18 @@ repair belongs to the `combinations-schemas-2` node, and #828's emit rule (the
 empty Markdown list) and its `fern-defect` departure (the docstring's omitted
 required field) belong to a follow-on node that runs after it lands; these two
 documents are its measured trigger.
+
+## Scope of the departure the follow-on writes
+
+By the manager's ruling `c24.1`, `combinations-schemas` will cite this
+departure where Fern's union usage example omits a required field (its ticket
+#825: a union whose first alternative becomes `Optional`). The behaviour
+measured here is of that general kind: in every omission above, the field left
+out is required and typed by a union carrying a `null` member, whether the
+model holding it is a union item (`entries`) or a plain list item (`notes`, in
+`reference.md`). So the follow-on's `fern-defect` entry should be worded for a
+worked example, in a docstring or in Markdown, that omits a required field whose
+union type Fern makes `Optional`, not only for a list of union items. Its rule
+should then admit only the shapes it can hold to a certified tree. These two
+reductions measure the list-item and plain-item cases; #825's own measurement
+is that node's evidence.
