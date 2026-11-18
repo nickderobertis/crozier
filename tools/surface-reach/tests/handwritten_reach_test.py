@@ -2126,22 +2126,10 @@ KIOSK_SCHEMAS = (
 )
 
 
-DISPATCH_MEMBER = (
-    "        - type: object\n          properties:\n            label:\n              type: string\n"
-    "          required: [label]\n"
-)
-DISPATCH_EXAMPLE = "      example:\n        label: morning\n        note: dock 4\n"
-
-
-def dispatch_document(schema: str) -> str:
-    """A `Dispatch` response model whose own `note` property every control keeps."""
-    return operation_document(
-        "  /dispatches:\n    get:\n      operationId: getDispatch\n      responses:\n"
-        '        "200":\n          description: ok\n          content:\n            application/json:\n'
-        '              schema:\n                $ref: "#/components/schemas/Dispatch"\n',
-        "  schemas:\n    Dispatch:\n      type: object\n      properties:\n        note:\n          type: string\n"
-        + schema,
-    )
+def schema_control(key: str, role: str) -> str:
+    """One committed document of a `combination-interaction-controls/` manifest entry."""
+    path = REPO / "docs/openapi-surface/combination-interaction-controls" / key / role / "openapi.yml"
+    return path.read_text(encoding="utf-8")
 
 
 class InteractionArm(NamedTuple):
@@ -2310,14 +2298,13 @@ INTERACTION_ARMS: dict[str, InteractionArm] = {
         },
     ),
     # The schema's own example reaches a field its inline `allOf` member declares; every
-    # document keeps the model's own `note`, so only the two features vary.
+    # document keeps the model's own `note`, so only the two features vary. The documents
+    # are the manifest's, so this arm and the schema-control test drive the same inputs.
     "combo-allof-schema-example": InteractionArm(
-        dispatch_document("      allOf:\n" + DISPATCH_MEMBER + DISPATCH_EXAMPLE),
+        schema_control("combo-allof-schema-example", "both"),
         {
-            "allOf alone": dispatch_document("      allOf:\n" + DISPATCH_MEMBER),
-            "example alone": dispatch_document(
-                "        label:\n          type: string\n      required: [label]\n" + DISPATCH_EXAMPLE
-            ),
+            "allOf alone": schema_control("combo-allof-schema-example", "first"),
+            "example alone": schema_control("combo-allof-schema-example", "second"),
         },
     ),
 }
@@ -2655,6 +2642,7 @@ class ControlFeatures(NamedTuple):
 
 
 SCHEMA_CONTROL_FEATURES = {
+    "combo-allof-schema-example": ControlFeatures("schema.allOf", "schema.example"),
     "combo-map-beside-anyof": ControlFeatures("schema.additionalProperties", "schema.anyOf"),
     "combo-properties-beside-additional-properties": ControlFeatures(
         "schema.additionalProperties", "schema.properties:non-empty"
