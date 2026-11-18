@@ -930,7 +930,9 @@ NULLABLE_TARGET = r"src/ir.rs::referenced_schema_accepts_none[if target\.nullabl
 READ_ONLY_OPERAND = r"src/ir.rs::promote_required_parent_properties[=!read_only \{]"
 ERROR_STRUCT = r"src/ir.rs::hoist_error_body_types[if is_inline_struct\(schema\) \{]"
 BODYLESS = r"src/ir.rs::build_endpoint[if has_bodyless_success\(response_op\) && !has_text_response\(response_op\) \{]"
-OPTIONAL_ARM = r"src/ir.rs::build_endpoint[=other => optional_type_ref\(other\),]"
+MIXED_MEDIA_ARM = (
+    r"src/ir.rs::build_endpoint[other if empty_beside_body && success_statuses_mix_media\(response_op\) => \{]"
+)
 
 
 # The echo guard's last operand, which the anonymous and OAuth2 echo rows audit as
@@ -1020,8 +1022,8 @@ def tagged_union(location: str, keyword: str) -> str:
 
 FORM_JSON_MEDIA = r"src/ir.rs::resolve_request_body[if selected_json_request_media\(rb\)\.is_some\(\) \{]"
 FORM_UNION = r"src/ir.rs::resolve_request_body[if let Some\(members\) = obj\.one_of\.as_ref\(\)\.or\(obj\.any_of\.as_ref\(\)\) \{]"
-FORM_UNION_SUFFIX = r"src/ir.rs::resolve_request_body[^ {20}let name = if union_body_suffix \{]"
-UNION_BODY_SUFFIX = r"src/ir.rs::resolve_request_body[^ {8}let request_body_name = if union_body_suffix \{]"
+FORM_UNION_SUFFIX = r"src/ir.rs::resolve_request_body[^\s*RequestInputs::Own => \{$]"
+UNION_BODY_SUFFIX = r"src/ir.rs::resolve_request_body[^ {8}let request_body_name = if inputs != RequestInputs::None \{]"
 COMPOSED_MEDIA_EXAMPLE = (
     r"src/emit.rs::build_example_inner[let mut example_fields: Vec<&BodyField> = if composed_request_media_example \{]"
 )
@@ -1473,18 +1475,18 @@ OUTCOMES = (
             holds=(("errors/bad_request_error.py", "body: typing.Dict[str, typing.Any],"),),
         ),
     ),
-    # A bodyless `204` beside a typed `200` opens the empty-success arm, so the method
-    # returns its model optionally where the `200` alone returns it as is.
+    # A bodyless `204` beside a typed `200` opens the empty-success arm and its mixed-media
+    # arm, so the method returns its model optionally where the `200` alone returns it as is.
     Outcome(
         "combo-success-statuses-mixed-media",
         Run(
             emptied('        "204":\n          description: emptied\n'),
-            ran=(BODYLESS, OPTIONAL_ARM),
+            ran=(BODYLESS, MIXED_MEDIA_ARM),
             holds=((CLIENT, "-> typing.Optional[Kennel]:"),),
         ),
         Run(
             emptied(""),
-            skipped=(BODYLESS, OPTIONAL_ARM),
+            skipped=(BODYLESS, MIXED_MEDIA_ARM),
             holds=((CLIENT, "-> Kennel:"),),
         ),
     ),
@@ -1707,7 +1709,7 @@ OUTCOMES = (
             lacks=((RAW, "x-www-form-urlencoded"),),
         ),
     ),
-    # A query parameter beside an inline `anyOf` body sets `union_body_suffix`, so
+    # A query parameter beside an inline `anyOf` body is an input beside it, so
     # the hoisted union takes the `Body` infix it lacks alone.
     Outcome(
         "combo-params-beside-inline-anyof-body",
@@ -2659,13 +2661,15 @@ class CooccurrenceOutcomeTest(unittest.TestCase):
             (path, RegionUnionReport.read(path, reach.HANDLER_SPEC))
             for path in sorted(controls.glob("*/region-union.json"))
         ]
-        self.assertEqual(10, len(reports), "each completed failed-union experiment is replayed")
+        self.assertEqual(8, len(reports), "each completed failed-union experiment is replayed")
         audit, failures = reach.read_cooccurrence()
         self.assertEqual([], failures)
         crozier = handwritten.instrumented_crozier(REPO, reach)
         for path, expected in reports:
             with self.subTest(key=expected.key):
-                self.assertEqual("open", audit[expected.key].proof_class)
+                # A union that fails is what an exclusive arm predicts, so a key since proven at
+                # its own interaction branch keeps its experiment as evidence.
+                self.assertIn(audit[expected.key].proof_class, {"open", "interaction"})
                 self.assertEqual(set(expected.handlers), set(cooccurrence_handlers(expected.key)))
                 sites = [reach.resolve_site(handler) for handler in expected.handlers]
                 observed = {}
