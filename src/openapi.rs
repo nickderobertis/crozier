@@ -1919,10 +1919,11 @@ pub struct Schema {
     #[serde(skip)]
     pub pointer_copy: bool,
     /// Set beside [`Self::unresolved_reference`] where the reference was a
-    /// pointer *past* a declared component's head that names nothing
-    /// (`normalize_unresolved_schema_pointers`), as against a component the
-    /// document never declares. Not a wire field. Both are Fern's unknown type;
-    /// the lowering reads this one apart where a placement meets it.
+    /// component pointer with a tail that names nothing whole — past a declared
+    /// head (`normalize_unresolved_schema_pointers`) or under a head the document
+    /// never declares (`normalize_unresolvable_schema_refs`) — as against a bare
+    /// reference to an undeclared component. Not a wire field. Both are Fern's
+    /// unknown type; the lowering reads this one apart where a placement meets it.
     #[serde(skip)]
     pub unresolved_pointer: bool,
     /// Set when `normalize_empty_compositions` discarded a non-empty composition
@@ -4966,6 +4967,14 @@ fn normalize_unresolvable_schema_refs(doc: &mut OpenApi) {
                 .and_then(referenced_component_schema)
                 .is_some_and(|name| !declared.contains(name));
             if unresolvable {
+                // A pointer with a tail names nothing whole either: the EASA D-X
+                // interfaces document points at `DigitalInterfacesMessages/
+                // properties/UASZonesReply`, a head it never declares.
+                node.unresolved_pointer = node.reference.as_deref().is_some_and(|reference| {
+                    reference
+                        .strip_prefix("#/components/schemas/")
+                        .is_some_and(|pointer| pointer.contains('/'))
+                });
                 node.reference = None;
                 node.unresolved_reference = true;
             }

@@ -5389,7 +5389,17 @@ fn build_endpoint(
         body_response_same_ref: body_response_same_ref(doc, op),
         body_schema_is_success_response: request_and_response_refs_match(op),
         response,
-        response_may_be_empty: has_bodyless_success(op)
+        // A success schema whose component pointer names nothing whole is the
+        // unknown type, and may be empty: the EASA D-X interfaces document
+        // answers `$ref: …/DigitalInterfacesMessages/properties/UASZonesReply`
+        // under a head it never declares, and its golden (corpus row 6001)
+        // guards the body. Read first, so no earlier test decides it.
+        response_may_be_empty: success_response_schema(op).is_some_and(|schema| {
+            if schema.unresolved_pointer {
+                return true;
+            }
+            false
+        }) || has_bodyless_success(op)
             || success_response_entry(op).is_some_and(|response| response.reference.is_some())
             // An unknown success body (`schema: {}`, inline or through a
             // component that is itself `{}`) may be empty in any OpenAPI version:
@@ -5401,16 +5411,7 @@ fn build_endpoint(
             // declares is unknown too, and may be empty: Skool's `GET
             // …/comments/` answers `$ref: SuccessResponse`, which no component
             // names, and its golden guards the empty body.
-            || success_response_schema(op).is_some_and(|schema| {
-                // So is one whose nested pointer names nothing: the EASA D-X
-                // interfaces document answers `$ref: …/DigitalInterfacesMessages
-                // /properties/UASZonesReply`, a property that component never
-                // declares, and its golden (corpus row 6001) guards the body.
-                if schema.unresolved_pointer {
-                    return true;
-                }
-                schema.unresolved_reference
-            }),
+            || success_response_schema(op).is_some_and(|schema| schema.unresolved_reference),
         response_names_unknown: success_names_unknown,
         response_doc: success_response_doc(op),
         errors,
