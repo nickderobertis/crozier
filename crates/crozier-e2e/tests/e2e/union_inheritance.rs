@@ -251,9 +251,10 @@ fn declared_scalar_union_members_stay_inline_and_structured_ones_stay_named() {
 /// The slash-named-component measurement's pointer, spelled every way a document
 /// can reach a component whose name holds a `/`: escaped as JSON Pointer
 /// spells it, as a discriminator mapping's target, and from inside a webhook's
-/// inline payload. Each names the component's class. Two slash-named components
-/// whose renaming would coincide are both kept, so neither declaration
-/// displaces the other, and their pointers stay unresolved: the unknown type.
+/// inline payload. Each names the component's class. A slash-named component
+/// whose renaming would coincide with another's, or with a declared name, keeps
+/// its own name, so no declaration displaces another, and its pointer stays
+/// unresolved: the unknown type.
 #[test]
 fn slash_named_components_resolve_from_every_reference_spelling() {
     let temp = tempfile::tempdir().expect("output tempdir");
@@ -284,12 +285,23 @@ fn slash_named_components_resolve_from_every_reference_spelling() {
         "the webhook payload's pointer: {payload}"
     );
     let tags = read("src/fern/types/get_tags_response.py");
-    for field in ["first", "second"] {
+    for field in ["first", "second", "slashed"] {
         assert!(
             tags.contains(&format!("    {field}: typing.Optional[typing.Any] = None")),
             "{field} stays an unresolved pointer: {tags}"
         );
     }
+    // `drafts/note` would rename onto the declared `drafts-note`, so it keeps its
+    // name: the declared component is still the one its own pointer names.
+    assert!(
+        tags.contains("    declared: typing.Optional[DraftsNote] = None"),
+        "the declared `drafts-note` is still the component its pointer names: {tags}"
+    );
+    let note = read("src/fern/types/drafts_note.py");
+    assert!(
+        note.contains("DraftsNote = int"),
+        "`drafts-note` keeps its own integer declaration: {note}"
+    );
 }
 
 /// The document [`slash_named_components_resolve_from_every_reference_spelling`] generates.
@@ -325,6 +337,10 @@ paths:
                     $ref: "#/components/schemas/tags/a/b-c"
                   second:
                     $ref: "#/components/schemas/tags/a-b/c"
+                  slashed:
+                    $ref: "#/components/schemas/drafts/note"
+                  declared:
+                    $ref: "#/components/schemas/drafts-note"
   /events:
     get:
       operationId: listEvents
@@ -367,6 +383,10 @@ components:
       required: [kind]
       properties:
         kind: {type: string}
+    drafts/note:
+      type: string
+    drafts-note:
+      type: integer
     tags/a/b-c:
       type: string
     tags/a-b/c:
