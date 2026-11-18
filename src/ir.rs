@@ -1214,8 +1214,9 @@ fn auth_model(doc: &OpenApi) -> Auth {
         }
         Some(s) if s.ty == SecuritySchemeType::Http && s.scheme == Some(HttpAuthScheme::Basic) => {
             let (username, password) = s.basic_credentials();
-            // One arm per requirement list, so the reach ledger can tell a document's
-            // requirement from an operation's own; both read the same helper.
+            // Separate regions the reach ledger measures for the
+            // `combo-basic-auth-{document,operation}-requirement` keys; their output
+            // is identical by design.
             let operation_requirement = doc.paths.values().any(|item| {
                 item.operations()
                     .into_iter()
@@ -4338,8 +4339,9 @@ fn build_endpoint(
                         Some("string" | "integer" | "number" | "boolean")
                     )
                 };
-                // A string enum item is a scalar however it is spelled; one arm per
-                // spelling (inline, referenced, referenced and required) for the reach ledger.
+                // Separate regions the reach ledger measures for the
+                // `combo-query-param-array-{inline,ref}-enum-items` and
+                // `combo-required-query-array-enum-items` keys; output identical by design.
                 let item_is_scalar = |query_item: &Schema| {
                     let referenced_query_item_enum = query_item
                         .reference
@@ -5030,7 +5032,8 @@ fn build_endpoint(
             .collect();
         for field in fields {
             if parameter_names.contains(field.py_name.as_str()) {
-                // A header's claim has its own arm for the reach ledger; same prefix.
+                // A separate region the reach ledger measures for
+                // `combo-body-property-named-as-header-param`; output identical by design.
                 let collision_prefix = match field.collision_prefix.as_ref() {
                     Some(header_claimed)
                         if header_params
@@ -8182,8 +8185,8 @@ fn resolve_request_body(
     // tag's `types/` package. The request accepts that alias as one argument and
     // serializes its selected model variant through the annotation converter.
     if schema.one_of.is_some() || schema.any_of.is_some() {
-        // The operation's own parameters get an arm per union keyword for the reach
-        // ledger; the name is the one any input beside the body gives it.
+        // Separate regions the reach ledger measures for the
+        // `combo-params-beside-inline-{oneof,anyof}-body` keys; output identical by design.
         let request_body_name = match (inputs, schema.one_of.is_some()) {
             (RequestInputs::Own, true) => format!("{request_ctx}Body"),
             (RequestInputs::Own, false) => format!("{request_ctx}Body"),
@@ -10719,7 +10722,8 @@ fn rename_claimed_path_params(
         if overridden || !claimed.contains(&param.wire_name) {
             continue;
         }
-        // The body's claim (`false`) has its own arm for the reach ledger; same rename.
+        // A separate region the reach ledger measures for
+        // `combo-body-property-named-as-path-param`; output identical by design.
         let mut renamed = match parameter_claims.contains(&param.wire_name) {
             true => format!("{}PathParam", param.wire_name),
             false => format!("{}PathParam", param.wire_name),
