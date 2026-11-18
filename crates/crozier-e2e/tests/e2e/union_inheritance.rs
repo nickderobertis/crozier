@@ -184,6 +184,7 @@ fn literals_failures(case: &str, out: &Path) -> Vec<String> {
     )
 }
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These journeys generate one small SDK per measurement row in each enum mode, comparing each whole against its certified tree, and two more without one, on the crozier-e2e edge every other golden comparison shares; a narrower edge for generator-replay journeys is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 /// Each ticket's measurement is the certified pair's tree file for file in
 /// both enum modes, and the comparison fails once the rule's bytes are written
 /// back the way crozier wrote them before the repair.
@@ -246,3 +247,138 @@ fn declared_scalar_union_members_stay_inline_and_structured_ones_stay_named() {
         "{threshold}"
     );
 }
+
+/// The slash-named-component measurement's pointer, spelled every way a document
+/// can reach a component whose name holds a `/`: escaped as JSON Pointer
+/// spells it, as a discriminator mapping's target, and from inside a webhook's
+/// inline payload. Each names the component's class. Two slash-named components
+/// whose renaming would coincide are both kept, so neither declaration
+/// displaces the other, and their pointers stay unresolved: the unknown type.
+#[test]
+fn slash_named_components_resolve_from_every_reference_spelling() {
+    let temp = tempfile::tempdir().expect("output tempdir");
+    let spec = temp.path().join("openapi.yml");
+    std::fs::write(&spec, SLASH_NAMED_REFERENCES).expect("write the document");
+    let out = temp.path().join("sdk");
+    probe_command(&spec, &out).assert().success();
+    let read = |rel: &str| {
+        std::fs::read_to_string(out.join(rel)).unwrap_or_else(|error| panic!("{rel}: {error}"))
+    };
+    let client = read("src/fern/client.py");
+    assert!(
+        client.contains("-> PagesPage:"),
+        "the escaped pointer names PagesPage"
+    );
+    assert!(
+        client.contains("-> EventsEvent:"),
+        "the unescaped pointer names EventsEvent"
+    );
+    let event = read("src/fern/types/events_event.py");
+    assert!(
+        event.contains("typing.Union[EventsEvent_Created, EventsEvent_Deleted], pydantic.Field(discriminator=\"kind\")"),
+        "the discriminator mapping reaches both slash-named members: {event}"
+    );
+    let payload = read("src/fern/types/post_page_changed_payload.py");
+    assert!(
+        payload.contains("    page: PagesPage"),
+        "the webhook payload's pointer: {payload}"
+    );
+    let tags = read("src/fern/types/get_tags_response.py");
+    for field in ["first", "second"] {
+        assert!(
+            tags.contains(&format!("    {field}: typing.Optional[typing.Any] = None")),
+            "{field} stays an unresolved pointer: {tags}"
+        );
+    }
+}
+
+/// The document [`slash_named_components_resolve_from_every_reference_spelling`] generates.
+const SLASH_NAMED_REFERENCES: &str = r##"openapi: 3.1.0
+info:
+  title: Relay
+  version: "1.0"
+paths:
+  /pages/{id}:
+    get:
+      operationId: getPage
+      parameters:
+        - {name: id, in: path, required: true, schema: {type: string}}
+      responses:
+        "200":
+          description: The page.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/pages~1page"
+  /tags:
+    get:
+      operationId: getTags
+      responses:
+        "200":
+          description: Both tags.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  first:
+                    $ref: "#/components/schemas/tags/a/b-c"
+                  second:
+                    $ref: "#/components/schemas/tags/a-b/c"
+  /events:
+    get:
+      operationId: listEvents
+      responses:
+        "200":
+          description: The latest event.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/events/event"
+webhooks:
+  pageChanged:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [page]
+              properties:
+                page:
+                  $ref: "#/components/schemas/pages/page"
+      responses:
+        "200":
+          description: Received.
+components:
+  schemas:
+    pages/page:
+      type: object
+      required: [id]
+      properties:
+        id: {type: string}
+    events/created:
+      type: object
+      required: [kind]
+      properties:
+        kind: {type: string}
+    events/deleted:
+      type: object
+      required: [kind]
+      properties:
+        kind: {type: string}
+    tags/a/b-c:
+      type: string
+    tags/a-b/c:
+      type: integer
+    events/event:
+      oneOf:
+        - $ref: "#/components/schemas/events/created"
+        - $ref: "#/components/schemas/events/deleted"
+      discriminator:
+        propertyName: kind
+        mapping:
+          created: "#/components/schemas/events/created"
+          deleted: "#/components/schemas/events/deleted"
+"##;
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
