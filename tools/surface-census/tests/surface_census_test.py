@@ -14813,6 +14813,12 @@ class FinishedStateGateTests(unittest.TestCase):
         self.assertEqual([], failures)
         placed, failures = gate.interaction_sites({witness: fixture}, sites, audit)
         self.assertEqual([], failures)
+        self.assertEqual(set(sites[key].sites), {row.site for row in placed if row.key == key})
+        # Every committed hand-written cover names an interaction site, so the same cover is
+        # also stood up as a `co-occurrence` row, which is measured at the audit's handlers.
+        sites = {**sites, key: sites[key]._replace(sites=(), cooccurrence=True)}
+        placed, failures = gate.interaction_sites({witness: fixture}, sites, audit)
+        self.assertEqual([], failures)
         self.assertEqual(set(reach.handler_specs(audit[key].handlers)), {row.site for row in placed if row.key == key})
         cover = next(cover for cover in fixture.covers if cover.key == key and cover.arm is None)
         undeclared = fixture._replace(covers=[cover._replace(key="combo-not-declared")])
@@ -14941,7 +14947,7 @@ class FinishedStateGateTests(unittest.TestCase):
         self.assertEqual([], [f for f in finished_state_failures(self.root) if "witness-blocked" in f or fixture in f])
 
     def test_an_open_row_presented_as_a_current_exhausted_handwritten_proof_is_refused(self) -> None:
-        key = "combo-body-property-named-as-path-param"
+        key = "combo-body-property-named-as-header-param"
         current = "docs/openapi-surface/witness-search-operation-combinations/README.md"
         historical = "witness-search-fixture-only-bodies-paths-continuation/README.md"
 
@@ -14961,7 +14967,7 @@ class FinishedStateGateTests(unittest.TestCase):
         self.edit(region, line, stale)
         self.assertTrue(presented(finished_state_failures(self.root)))
         self.edit(region, stale, line)
-        evidence = "docs/openapi-surface/handwritten/beacon-signal-results/evidence.toml"
+        evidence = "docs/openapi-surface/handwritten/ferry-desk-header-collision/evidence.toml"
         text = (self.root / evidence).read_text(encoding="utf-8")
         cover = f'key = "{key}"\nsearch = "{current}#verdicts"\nverdict = "search-incomplete"\nrenewed = "{current}"'
         self.assertIn(cover, text)
@@ -14973,9 +14979,9 @@ class FinishedStateGateTests(unittest.TestCase):
         self.assertTrue(presented(finished_state_failures(self.root)))
 
     def test_a_malformed_cover_is_reported_by_the_open_row_check(self) -> None:
-        root = self.root / "docs/openapi-surface/handwritten/beacon-signal-results"
+        root = self.root / "docs/openapi-surface/handwritten/ferry-desk-header-collision"
         record = "docs/openapi-surface/witness-search-operation-combinations/README.md"
-        key = "combo-body-property-named-as-path-param"
+        key = "combo-body-property-named-as-header-param"
         row = combination_rows(self.root)[key]
         (root / "evidence.toml").write_text('covers = "none"\n', encoding="utf-8")
         failures = open_handwritten_presentation_failures(self.root, key, record, row)
@@ -21658,7 +21664,7 @@ class CoverageRestatementTests(unittest.TestCase):
         source.write_text("openapi: 3.0.3\n", encoding="utf-8")
         digest = hashlib.sha256(source.read_bytes()).hexdigest()
         header = "schema_version\tcase\ttier\tkeys\tsource\tsha256\tsearch\n"
-        row = f"1\tcase\topen\tcombo-header-string-default\tcase.yml\t{digest}\tsearch.md\n"
+        row = f"1\tcase\topen\tcombo-header-array-accepted-placements\tcase.yml\t{digest}\tsearch.md\n"
         matrix.write_text(header + row, encoding="utf-8")
         for invalid in (
             header.replace("schema_version", "wrong_header") + row,
@@ -21681,7 +21687,7 @@ class CoverageRestatementTests(unittest.TestCase):
         rendered = self.index.read_text(encoding="utf-8")
         self.assertIn("1 decided, 0 undecided", rendered)
         self.assertIn("1 combination cases remain", rendered)
-        self.assertIn("| `combo-header-string-default` | `parameters` | `search incomplete`", rendered)
+        self.assertIn("| `combo-header-array-accepted-placements` | `parameters` | `search incomplete`", rendered)
         unrelated = next(line for line in rendered.splitlines() if line.startswith("| `combo-tag-only-operation-id` |"))
         matrix.write_text(header + row.replace("\topen\t", "\thandwritten\t"), encoding="utf-8")
         changed = self.run_restater("--write")
@@ -21743,13 +21749,13 @@ class CoverageRestatementTests(unittest.TestCase):
             "rows": [
                 {"selector": "openapi.paths", "fixture": "sample", "count": 1},
                 {"selector": "operation.operationId:digit-leading-method", "fixture": "sample", "count": 1},
-                {"selector": "parameter.in=header&parameter.schema>schema.default", "fixture": "sample", "count": 3},
+                {"selector": "parameter.in=header&parameter.schema>schema.type=array", "fixture": "sample", "count": 3},
             ],
         }
         snapshot = self.root / "snapshot.json"
         snapshot.write_text(json.dumps(payload), encoding="utf-8")
         region = self.root / "docs/openapi-surface/parameters.md"
-        key = "| combo-header-string-default |"
+        key = "| combo-header-array-accepted-placements |"
         original = next(line for line in region.read_text(encoding="utf-8").splitlines() if line.startswith(key))
         written = self.run_restater("--snapshot-json", str(snapshot), "--write")
         self.assertEqual(0, written.returncode, written.stderr)
@@ -21758,14 +21764,16 @@ class CoverageRestatementTests(unittest.TestCase):
         self.assertEqual(original.split("|")[:5], positive.split("|")[:5])
         self.assertEqual(original.split("|")[6:], positive.split("|")[6:])
         payload["rows"] = [
-            row for row in payload["rows"] if row["selector"] != "parameter.in=header&parameter.schema>schema.default"
+            row
+            for row in payload["rows"]
+            if row["selector"] != "parameter.in=header&parameter.schema>schema.type=array"
         ]
         snapshot.write_text(json.dumps(payload), encoding="utf-8")
         self.assertEqual(0, self.run_restater("--snapshot-json", str(snapshot), "--write").returncode)
         valid = region.read_text(encoding="utf-8")
         self.assertIn("0 declarations across 0 registered golden sources", valid)
         region.write_text(
-            valid.replace("census `parameter.in=header&parameter.schema>schema.default`", "missing selector"),
+            valid.replace("census `parameter.in=header&parameter.schema>schema.type=array`", "missing selector"),
             encoding="utf-8",
         )
         refused = self.run_restater("--snapshot-json", str(snapshot), "--write")

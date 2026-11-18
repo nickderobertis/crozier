@@ -53,10 +53,10 @@ candidate. It is also the open-row list for the completion report.
 
 | Combination | State | Candidates | Outstanding |
 |---|---|---:|---:|
-| `combo-basic-auth-document-requirement` | `search-incomplete` | 3041 | 2918 |
-| `combo-basic-auth-operation-requirement` | `search-incomplete` | 3244 | 3120 |
+| `combo-basic-auth-document-requirement` | `interaction-proven` | 3041 | 0 |
+| `combo-basic-auth-operation-requirement` | `interaction-proven` | 3244 | 0 |
 | `combo-body-property-named-as-header-param` | `search-incomplete` | 2960 | 2826 |
-| `combo-body-property-named-as-path-param` | `search-incomplete` | 3535 | 3407 |
+| `combo-body-property-named-as-path-param` | `interaction-proven` | 3535 | 0 |
 | `combo-document-operation-security` | `interaction-proven` | 3165 | 0 |
 | `combo-document-security-security-empty` | `interaction-proven` | 3059 | 0 |
 | `combo-echo-body-effective-anonymous` | `interaction-proven` | 3123 | 0 |
@@ -78,14 +78,14 @@ candidate. It is also the open-row list for the completion report.
 | `combo-optional-ref-map-body` | `search-incomplete` | 3019 | 2892 |
 | `combo-optional-ref-union-body` | `search-incomplete` | 2979 | 2847 |
 | `combo-paginated-grouped-operation` | `search-incomplete` | 2974 | 2842 |
-| `combo-params-beside-inline-anyof-body` | `search-incomplete` | 3041 | 2913 |
-| `combo-params-beside-inline-oneof-body` | `search-incomplete` | 3058 | 2933 |
+| `combo-params-beside-inline-anyof-body` | `interaction-proven` | 3041 | 0 |
+| `combo-params-beside-inline-oneof-body` | `interaction-proven` | 3058 | 0 |
 | `combo-path-param-ref-string-enum` | `interaction-proven` | 3010 | 0 |
-| `combo-query-param-anyof` | `search-incomplete` | 3050 | 2929 |
-| `combo-query-param-array-inline-enum-items` | `search-incomplete` | 3171 | 3050 |
-| `combo-query-param-array-ref-enum-items` | `search-incomplete` | 3066 | 2937 |
-| `combo-query-param-inline-object` | `search-incomplete` | 3007 | 2876 |
-| `combo-query-param-oneof` | `search-incomplete` | 3007 | 2881 |
+| `combo-query-param-anyof` | `interaction-proven` | 3050 | 0 |
+| `combo-query-param-array-inline-enum-items` | `interaction-proven` | 3171 | 0 |
+| `combo-query-param-array-ref-enum-items` | `interaction-proven` | 3066 | 0 |
+| `combo-query-param-inline-object` | `interaction-proven` | 3007 | 0 |
+| `combo-query-param-oneof` | `interaction-proven` | 3007 | 0 |
 | `combo-query-param-ref-date-time` | `interaction-proven` | 2965 | 0 |
 | `combo-query-param-ref-object` | `interaction-proven` | 3009 | 0 |
 | `combo-query-param-ref-string-enum` | `interaction-proven` | 3189 | 0 |
@@ -121,7 +121,7 @@ node's base:
 | Combination | `not-declared` | `declared-arm-not-executed` | `witness` | `declared-no-exclusive-arm` | `declared-pooled-arm-executed` |
 |---|---:|---:|---:|---:|---:|
 | `combo-body-property-named-as-header-param` | 104 | 0 | 0 | 0 | 0 |
-| `combo-body-property-named-as-path-param` | 91 | 13 | 0 | 0 | 0 |
+| `combo-body-property-named-as-path-param` | 91 | 7 | 6 | 0 | 0 |
 | `combo-inline-body-read-only-property` | 101 | 0 | 3 | 0 | 0 |
 | `combo-success-anyof-nullable` | 101 | 3 | 0 | 0 | 0 |
 | `combo-success-oneof-nullable` | 103 | 1 | 0 | 0 | 0 |
