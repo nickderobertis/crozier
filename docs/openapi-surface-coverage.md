@@ -148,12 +148,12 @@ split five ways:
 at an interaction branch or with source-checked independent feature controls. `finished_state_failures` in
 [the census suite](../tools/surface-census/tests/surface_census_test.py) validates the recorded evidence, with
 [the hand-written fixture format](openapi-surface/handwritten/AGENTS.md) it reads.
-**47** are byte-matched against a registered real specification at their
+**48** are byte-matched against a registered real specification at their
 interaction branch, **0** have independent handling, checked against the source,
 instrumented feature-only controls and fresh certified trees
 ([the audit](openapi-surface/combination-cooccurrence.tsv)), **0** are compared against a committed measurement of
-non-generation, **0** rest on a hand-written fixture (0 of them witness-blocked, 0 of them co-occurrences proven on the fixture), **47** remain
-open (unproven) (0 left unproven by the user's ruling), and **13** are decided output-insensitive: 47 + 0 + 0 + 0 + 47 + 13 = 107.
+non-generation, **0** rest on a hand-written fixture (0 of them witness-blocked, 0 of them co-occurrences proven on the fixture), **46** remain
+open (unproven) (0 left unproven by the user's ruling), and **13** are decided output-insensitive: 48 + 0 + 0 + 0 + 46 + 13 = 107.
 None is among the 726 features above, and each other `gap` one is named under
 [Unproven combinations, named](#unproven-combinations-named).
 
