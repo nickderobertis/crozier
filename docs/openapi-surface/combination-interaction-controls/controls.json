@@ -18,6 +18,15 @@
         "second": "docs/openapi-surface/combination-interaction-controls/combo-properties-beside-additional-properties/second/openapi.yml",
         "both": "docs/openapi-surface/combination-interaction-controls/combo-properties-beside-additional-properties/both/openapi.yml"
       }
+    },
+    {
+      "key": "combo-required-query-array-enum-items",
+      "region": "src/ir.rs::build_endpoint[^ {24}if required \\{$]",
+      "documents": {
+        "first": "docs/openapi-surface/combination-interaction-controls/combo-required-query-array-enum-items/first/openapi.yml",
+        "second": "docs/openapi-surface/combination-interaction-controls/combo-required-query-array-enum-items/second/openapi.yml",
+        "both": "docs/openapi-surface/combination-interaction-controls/combo-required-query-array-enum-items/both/openapi.yml"
+      }
     }
   ]
 }

@@ -190,26 +190,31 @@ verdict = "exhausted"
 )
 # A combination whose site cell reads `co-occurrence`: no measured branch joins both
 # features, so a fixture covering it is measured at each handling function the
-# committed audit names, over a document whose operation requires a basic scheme.
-COOCCURRING = "combo-basic-auth-operation-requirement"
-SECURITY_DOCUMENT = """openapi: 3.0.3
+# committed audit names, over a document whose optional body references a map.
+COOCCURRING = "combo-optional-ref-map-body"
+OPTIONAL_MAP_BODY_DOCUMENT = """openapi: 3.0.3
 info:
   title: sample
   version: 1.0.0
 paths:
-  /ping:
-    get:
-      operationId: ping
-      security:
-        - basic: []
+  /labels:
+    post:
+      operationId: setLabels
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Labels"
       responses:
-        "200":
-          description: ok
+        "204":
+          description: done
 components:
-  securitySchemes:
-    basic:
-      type: http
-      scheme: basic
+  schemas:
+    Labels:
+      type: object
+      additionalProperties:
+        type: string
 """
 
 
@@ -490,7 +495,7 @@ class HandwrittenReachRecipeTest(unittest.TestCase):
                     COMBINATION,
                     COMBINATION_DOCUMENT.format(labels=LABELS["array-of-nullable-unknown-items"]),
                 ),
-                ("basic-operation-requirement", COOCCURRING, SECURITY_DOCUMENT),
+                ("optional-map-body", COOCCURRING, OPTIONAL_MAP_BODY_DOCUMENT),
             ):
                 directory = base / name
                 directory.mkdir(parents=True)
@@ -505,7 +510,7 @@ class HandwrittenReachRecipeTest(unittest.TestCase):
             self.assertEqual(HEADER, rows[0])
             measured = {(row[0], row[1], row[2]): (int(row[3]), int(row[4])) for row in rows[1:]}
             expected = {("nullable-map-only", COMBINATION, INTERACTION)} | {
-                ("basic-operation-requirement", COOCCURRING, handler) for handler in handlers
+                ("optional-map-body", COOCCURRING, handler) for handler in handlers
             }
             self.assertEqual(expected, set(measured), "a combination-only fixture was not measured at its sites")
             for site, (executed, total) in measured.items():
@@ -944,7 +949,7 @@ HEADER_ENUM_ARM = r"src/emit.rs::append_request_call_args[let value = if header_
 QUERY_EXAMPLE_DROPPED = r"src/ir.rs::build_endpoint[let example = if omit_synthesized_example]"
 QUERY_EXAMPLE_TAKEN = r"src/ir.rs::build_endpoint[=^ {16}query_parameter_example\(doc, p\)$]"
 ALIASED_TEMPORAL = r"src/ir.rs::build_endpoint[=TypeRef::Primitive\(Prim::Datetime\) => Some\(Prim::Datetime\),]"
-BODY_COLLISION = r"src/ir.rs::build_endpoint[if let Some\(prefix\) = &field\.collision_prefix]"
+BODY_COLLISION = r"src/ir.rs::build_endpoint[if let Some\(prefix\) = &collision_prefix]"
 QUERY_UNION_GLOBAL = r"src/ir.rs::parameter_union_is_global[=parameter\.required\.unwrap_or\(false\) == nullable]"
 ONE_OR_MANY = r"src/ir.rs::one_or_many_query_schema[=let nullable = non_null\.len\(\) < members\.len\(\)]"
 BASIC = "  securitySchemes:\n    basicAuth:\n      type: http\n      scheme: basic\n"
@@ -1021,7 +1026,9 @@ def tagged_union(location: str, keyword: str) -> str:
 FORM_JSON_MEDIA = r"src/ir.rs::resolve_request_body[if selected_json_request_media\(rb\)\.is_some\(\) \{]"
 FORM_UNION = r"src/ir.rs::resolve_request_body[if let Some\(members\) = obj\.one_of\.as_ref\(\)\.or\(obj\.any_of\.as_ref\(\)\) \{]"
 FORM_UNION_SUFFIX = r"src/ir.rs::resolve_request_body[^ {20}let name = if union_body_suffix \{]"
-UNION_BODY_SUFFIX = r"src/ir.rs::resolve_request_body[^ {8}let request_body_name = if union_body_suffix \{]"
+# The operation's own parameters beside an inline union body: one arm per keyword.
+ANY_OF_BODY_SUFFIX = r"src/ir.rs::resolve_request_body[=\(true, true, false\) => format!]"
+ONE_OF_BODY_SUFFIX = r"src/ir.rs::resolve_request_body[=\(true, true, true\) => format!]"
 COMPOSED_MEDIA_EXAMPLE = (
     r"src/emit.rs::build_example_inner[let mut example_fields: Vec<&BodyField> = if composed_request_media_example \{]"
 )
@@ -1029,9 +1036,8 @@ FALLBACKS_ONLY = r"src/ir.rs::resolve_request_body[=Some\(_\) => ComponentExampl
 UNION_EXAMPLE = r"src/emit.rs::ExampleCtx::value_from_example[if let TypeRef::Union\(variants\) = t \{]"
 MATCHED_VARIANT = r"src/emit.rs::ExampleCtx::value_from_example[if self\.example_matches_type\(variant, &value\) \{]"
 MULTIPART_CLAIMS = r"src/ir.rs::rename_claimed_path_params[Some\(RequestBody::Form\(form\)\) if form\.multipart => \{]"
-CLAIMED_RENAME = (
-    r'src/ir.rs::rename_claimed_path_params[=let mut renamed = format!\("\{\}PathParam", param\.wire_name\);]'
-)
+# A path parameter renamed for a name its request body claims.
+CLAIMED_RENAME = r'src/ir.rs::rename_claimed_path_params[=^\s+false => format!\("\{\}PathParam"]'
 
 
 def tally_post(content: str, parameters: str = "") -> str:
@@ -1713,12 +1719,12 @@ OUTCOMES = (
         "combo-params-beside-inline-anyof-body",
         Run(
             operation_document(tally_post(TALLY_JSON + TALLY_ANY, TALLY_QUERY)),
-            ran=(UNION_BODY_SUFFIX,),
+            ran=(ANY_OF_BODY_SUFFIX,),
             holds=((CLIENT, "request: PostTallyRequestBody,"),),
         ),
         Run(
             operation_document(tally_post(TALLY_JSON + TALLY_ANY)),
-            skipped=(UNION_BODY_SUFFIX,),
+            skipped=(ANY_OF_BODY_SUFFIX,),
             holds=((CLIENT, "request: PostTallyRequest,"),),
             lacks=((CLIENT, "PostTallyRequestBody"),),
         ),
@@ -1727,12 +1733,12 @@ OUTCOMES = (
         "combo-params-beside-inline-oneof-body",
         Run(
             operation_document(tally_post(TALLY_JSON + TALLY_UNION, TALLY_QUERY)),
-            ran=(UNION_BODY_SUFFIX,),
+            ran=(ONE_OF_BODY_SUFFIX,),
             holds=((CLIENT, "request: PostTallyRequestBody,"),),
         ),
         Run(
             operation_document(tally_post(TALLY_JSON + TALLY_UNION)),
-            skipped=(UNION_BODY_SUFFIX,),
+            skipped=(ONE_OF_BODY_SUFFIX,),
             holds=((CLIENT, "request: PostTallyRequest,"),),
             lacks=((CLIENT, "PostTallyRequestBody"),),
         ),
@@ -1744,12 +1750,12 @@ OUTCOMES = (
         Run(
             operation_document(tally_post(TALLY_FORM + TALLY_UNION, TALLY_QUERY)),
             ran=(FORM_UNION_SUFFIX,),
-            skipped=(UNION_BODY_SUFFIX,),
+            skipped=(ANY_OF_BODY_SUFFIX, ONE_OF_BODY_SUFFIX),
             holds=((CLIENT, "request: typing.Optional[PostTallyRequestBody] = None,"),),
         ),
         Run(
             operation_document(tally_post(TALLY_FORM + TALLY_UNION)),
-            skipped=(FORM_UNION_SUFFIX, UNION_BODY_SUFFIX),
+            skipped=(FORM_UNION_SUFFIX, ANY_OF_BODY_SUFFIX, ONE_OF_BODY_SUFFIX),
             holds=((CLIENT, "request: typing.Optional[PostTallyRequest] = None,"),),
             lacks=((CLIENT, "PostTallyRequestBody"),),
         ),
@@ -2644,7 +2650,7 @@ class CooccurrenceOutcomeTest(unittest.TestCase):
             (path, RegionUnionReport.read(path, reach.HANDLER_SPEC))
             for path in sorted(controls.glob("*/region-union.json"))
         ]
-        self.assertEqual(10, len(reports), "each completed failed-union experiment is replayed")
+        self.assertEqual(6, len(reports), "each completed failed-union experiment is replayed")
         audit, failures = reach.read_cooccurrence()
         self.assertEqual([], failures)
         crozier = handwritten.instrumented_crozier(REPO, reach)
@@ -2831,6 +2837,10 @@ class ControlFeatures(NamedTuple):
 
 SCHEMA_CONTROL_FEATURES = {
     "combo-map-beside-anyof": ControlFeatures("schema.additionalProperties", "schema.anyOf"),
+    "combo-required-query-array-enum-items": ControlFeatures(
+        "parameter.in=query&parameter.required&parameter.schema>schema.type:primary=array",
+        "schema.items>schema.$ref~>schema.enum:string-valued",
+    ),
     "combo-properties-beside-additional-properties": ControlFeatures(
         "schema.additionalProperties", "schema.properties:non-empty"
     ),
