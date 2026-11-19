@@ -1745,6 +1745,10 @@ impl BodySchemaShape {
         if schema.reference.is_some() {
             Self::Ref
         } else if (schema.one_of.is_some() || schema.any_of.is_some())
+            // A union beside `additionalProperties` is sent as the map it also
+            // is, and keeps the header (the `union-inheritance/map-beside-union`
+            // measurement's `logFiring`).
+            && !prefer_map_to_union(schema)
             && schema.discriminator.is_none()
             // Members tagging themselves discriminate the union as a written
             // discriminator does, and the header stays: Letta's template body,
@@ -4556,7 +4560,14 @@ fn build_endpoint(
                     |reference| TypeRef::Named(ref_to_class(reference)),
                 )
             };
-            Some(optional_type_ref(base))
+            // An unknown beside `null` stays optional, where elsewhere `Any`
+            // absorbs it: opencode's `lsp.hover` answers `anyOf: [{}, {type:
+            // 'null'}]`, and the certified pair returns `Optional[Any]`.
+            Some(if base == TypeRef::Primitive(Prim::Any) {
+                TypeRef::Optional(Box::new(base))
+            } else {
+                optional_type_ref(base)
+            })
         }
         // A nullable one-member `oneOf`/`anyOf` around a component returns that
         // component, optional: keyserv's `KeysApi_Current` answers
@@ -4713,7 +4724,19 @@ fn build_endpoint(
         }
         Some(schema) if schema.reference.is_none() && is_map(schema) => {
             if let Some(AdditionalProperties::Schema(value)) = &schema.additional_properties {
-                if let Some(variants) = value.one_of.as_ref().or(value.any_of.as_ref()) {
+                // A scalar beside `null` is that scalar, optional, and no value
+                // union is declared: OpenLineage's `ingest_event` answers a map of
+                // `anyOf: [string, null]`, and the certified pair returns
+                // `Dict[str, Optional[str]]`.
+                let nullable_scalar = simple_nullable_member(value).filter(|member| {
+                    member.reference.is_none() && !is_inline_struct(member) && !is_map(member)
+                });
+                if let Some(member) = nullable_scalar {
+                    Some(TypeRef::Dict(
+                        Box::new(TypeRef::Primitive(Prim::Str)),
+                        Box::new(TypeRef::Optional(Box::new(base_type_ref(member)))),
+                    ))
+                } else if let Some(variants) = value.one_of.as_ref().or(value.any_of.as_ref()) {
                     let name = format!("{pascal_ctx}ResponseValue");
                     let target = TypeRef::Union(
                         variants
@@ -7981,6 +8004,11 @@ fn resolve_request_body(
             .as_deref()
             .and_then(|inner| resolve_ref(doc, inner))
             .is_some_and(|inner| inner.one_of.is_some() || inner.any_of.is_some());
+        // A union beside `additionalProperties` is declared as the map it also
+        // is, so nothing is converted, though the body keeps a union's
+        // content-type header: the certified pair sends the Accounts API's
+        // `CreateAccountRequest`, `additionalProperties: true` beside a
+        // discriminated `oneOf`, as `json=request` with that header.
         if target.one_of.is_some()
             || target.any_of.is_some()
             || renamed_union
@@ -7988,7 +8016,7 @@ fn resolve_request_body(
         {
             let mut body = single(TypeRef::Named(class), required, true, true);
             if let RequestBody::Single(single) = &mut body {
-                single.convert = !bare_name_mapped_union(target);
+                single.convert = !bare_name_mapped_union(target) && !prefer_map_to_union(target);
                 single.content_type_override =
                     (media_type == "*/*").then(|| media_type.to_string());
                 single.example = (media_example(doc, media).map(serde_json::Value::to_string))
@@ -8140,7 +8168,10 @@ fn resolve_request_body(
     // An inline top-level union is named from the operation and emitted in the
     // tag's `types/` package. The request accepts that alias as one argument and
     // serializes its selected model variant through the annotation converter.
-    if schema.one_of.is_some() || schema.any_of.is_some() {
+    // A union beside `additionalProperties` is the map body below: the
+    // certified pair passes OpenLineage's `additionalProperties: true` beside
+    // `oneOf: [RunEvent, DatasetEvent]` as `typing.Dict[str, typing.Any]`.
+    if (schema.one_of.is_some() || schema.any_of.is_some()) && !prefer_map_to_union(schema) {
         let request_body_name = if inputs != RequestInputs::None {
             format!("{request_ctx}Body")
         } else {
@@ -13270,6 +13301,12 @@ pub(crate) fn inferred_discriminant_property(
                         && !variant.required.contains(property);
                     let supported = unrequired_tag
                         || match property.as_str() {
+                            // A bare `const` the member leaves unrequired is no
+                            // tag here either: open-managed-agents' session-event
+                            // body is `oneOf: [$ref PostUserMessage, $ref
+                            // PostToolConfirmation]`, `PostUserMessage` leaving its
+                            // `type: {const: user.message}` unrequired, and the
+                            // certified pair keeps the plain `Union`.
                             "type" => {
                                 variant.required.contains(property)
                                     && schema_example(field)
@@ -13279,6 +13316,8 @@ pub(crate) fn inferred_discriminant_property(
                                         .const_value
                                         .as_ref()
                                         .is_some_and(serde_json::Value::is_string)
+                                        && (variant.required.contains(property)
+                                            || !untyped_const_tag(field))
                             }
                             // OpenCodeUI's `ToolState` is an `anyOf` of four `$ref`s
                             // each requiring a `const` `status`, and Fern's golden is
@@ -13719,7 +13758,11 @@ fn collect_discriminant_strips(
         .filter(|_| !lone)
         .map(|disc| disc.property_name.clone())
         .filter(|property| !property.is_empty())
-        .or_else(|| inferred_strip_discriminant_property(schema, schemas));
+        .or_else(|| inferred_strip_discriminant_property(schema, schemas))
+        // A union beside `additionalProperties` is the map it also is, and
+        // consumes no member's tag: azion's `OutputPolymorphic` members keep
+        // `type: str` in the certified pair.
+        .filter(|_| !prefer_map_to_union(schema));
     if let Some(property) = property {
         // A `discriminator` that maps nothing strips like an inferred one when
         // every variant's own tag names it: Tally's `Block` declares only
@@ -13825,7 +13868,13 @@ fn collect_discriminant_strips(
         .chain(schema.items.iter().map(Box::as_ref))
         .chain(schema.one_of.iter().flatten())
         .chain(schema.any_of.iter().flatten())
-        .chain(schema.all_of.iter().flatten())
+        .chain(
+            schema
+                .all_of
+                .iter()
+                .flatten()
+                .filter(|member| !untagged_by_unrequired_tag(member, schemas)),
+        )
         .chain(map_value)
     {
         collect_discriminant_strips(child, schemas, standalone, strips);
@@ -14594,8 +14643,17 @@ impl Builder<'_> {
             }
         }
         // A discriminated `oneOf`/`anyOf` (with an explicit `mapping`) becomes a
-        // set of per-variant wrapper models plus a union alias.
-        if let Some(decl) = self.discriminated_union(name, &module, schema, docstring.clone()) {
+        // set of per-variant wrapper models plus a union alias — unless it sits
+        // beside `additionalProperties`, where the map wins as it does for an
+        // undiscriminated union: azion's `OutputPolymorphic` is
+        // `additionalProperties: true` beside a discriminated `oneOf`, and the
+        // certified pair declares `Dict[str, Any]`.
+        let discriminated = if prefer_map_to_union(schema) {
+            None
+        } else {
+            self.discriminated_union(name, &module, schema, docstring.clone())
+        };
+        if let Some(decl) = discriminated {
             self.types.push(TypeDecl::DiscriminatedUnion(decl));
             return;
         }
@@ -19272,9 +19330,16 @@ fn branch_union_properties(
     schemas: &IndexMap<String, Schema>,
 ) -> Option<BranchUnion> {
     let branches = member.one_of.as_ref().or(member.any_of.as_ref())?;
-    if member.one_of.is_some() && inferred_discriminant_property(member, schemas).is_some() {
+    if member.one_of.is_some()
+        && !untagged_by_unrequired_tag(member, schemas)
+        && inferred_discriminant_property(member, schemas).is_some()
+    {
         return Some(BranchUnion::Tagged);
     }
+    // Branches merged past an unrequired tag keep the first branch's spelling
+    // of a property several declare: intellifi's `SpotSet` types `type` with
+    // `SpotSetTypeAny`'s one-value enum.
+    let first_wins = untagged_by_unrequired_tag(member, schemas);
     let mut merged = Schema::default();
     for branch in branches {
         // A `$ref` branch lends its component's properties the same way:
@@ -19287,12 +19352,39 @@ fn branch_union_properties(
             .and_then(|reference| resolve_ref_from_schemas(schemas, reference))
             .unwrap_or(branch);
         for (prop, prop_schema) in &branch.properties {
-            if !prop_schema.negative_only() {
+            if !(prop_schema.negative_only() || first_wins && merged.properties.contains_key(prop))
+            {
                 merged.properties.insert(prop.clone(), prop_schema.clone());
             }
         }
     }
     (!merged.properties.is_empty()).then(|| BranchUnion::Merged(Box::new(merged)))
+}
+
+/// Whether an `allOf` member's `oneOf` of `$ref`s reads a tag some referenced
+/// branch leaves unrequired: there the branches lend their properties as an
+/// undiscriminated union's do, and keep the tag. (Inline branches tag the
+/// union whether or not they require it, as a top-level union's do.) intellifi's `SpotSet` is `allOf: [$ref
+/// SpotSetBase, oneOf: [$ref SpotSetTypeAny, …]]`, each branch's one-value `type`
+/// enum unrequired, and the certified pair's `SpotSet` declares every branch's
+/// fields while `SpotSetTypeAny` keeps its `type`.
+fn untagged_by_unrequired_tag(member: &Schema, schemas: &IndexMap<String, Schema>) -> bool {
+    let Some(branches) = member.one_of.as_ref() else {
+        return false;
+    };
+    if !branches.iter().all(|branch| branch.reference.is_some()) {
+        return false;
+    }
+    inferred_discriminant_property(member, schemas).is_some_and(|property| {
+        branches.iter().any(|branch| {
+            let branch = branch
+                .reference
+                .as_deref()
+                .and_then(|reference| resolve_ref_from_schemas(schemas, reference))
+                .unwrap_or(branch);
+            !branch.required.contains(&property)
+        })
+    })
 }
 
 /// The union member at `index` of an `allOf` whose only other member is an

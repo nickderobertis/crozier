@@ -1,0 +1,90 @@
+openapi: 3.0.3
+info:
+  title: Glaze Library
+  version: "1.0"
+paths:
+  /glazes/{glazeId}:
+    get:
+      operationId: getGlaze
+      tags: [glazes]
+      parameters:
+        - name: glazeId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The glaze.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Glaze"
+  /glazes:
+    post:
+      operationId: addGlaze
+      tags: [glazes]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Glaze"
+      responses:
+        "201":
+          description: Added.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MatteGlaze"
+  /firings:
+    post:
+      operationId: logFiring
+      tags: [firings]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              description: A matte or gloss glaze, with any notes the kiln keeps.
+              additionalProperties: true
+              oneOf:
+                - $ref: "#/components/schemas/MatteGlaze"
+                - $ref: "#/components/schemas/GlossGlaze"
+      responses:
+        "204":
+          description: Logged.
+components:
+  schemas:
+    Glaze:
+      additionalProperties: true
+      discriminator:
+        propertyName: finish
+        mapping:
+          matte: "#/components/schemas/MatteGlaze"
+          gloss: "#/components/schemas/GlossGlaze"
+      oneOf:
+        - $ref: "#/components/schemas/MatteGlaze"
+        - $ref: "#/components/schemas/GlossGlaze"
+    MatteGlaze:
+      type: object
+      required: [finish, name]
+      properties:
+        finish:
+          type: string
+          description: Always matte.
+        name:
+          type: string
+        tooth:
+          type: integer
+    GlossGlaze:
+      type: object
+      required: [finish, name]
+      properties:
+        finish:
+          type: string
+          description: Always gloss.
+        name:
+          type: string
+        sheen:
+          type: number

@@ -1,0 +1,56 @@
+openapi: 3.0.3
+info:
+  title: Drying Racks
+  version: "1.0"
+paths:
+  /shelves/{shelfId}:
+    get:
+      operationId: getShelf
+      tags: [shelves]
+      parameters:
+        - name: shelfId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The shelf.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Shelf"
+components:
+  schemas:
+    ShelfBase:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+    Shelf:
+      allOf:
+        - $ref: "#/components/schemas/ShelfBase"
+        - oneOf:
+            - $ref: "#/components/schemas/WallShelf"
+            - $ref: "#/components/schemas/FloorShelf"
+    WallShelf:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [wall]
+          description: Mounted on the wall.
+        brackets:
+          type: integer
+    FloorShelf:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [floor]
+          description: Standing on the floor.
+        height:
+          type: number

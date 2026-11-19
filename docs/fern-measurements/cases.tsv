@@ -394,3 +394,11 @@ union-inheritance/nullable-union-members/expected-literals	docs/fern-measurement
 union-inheritance/slash-named-component	docs/fern-measurements/union-inheritance/slash-named-component/openapi.yml	python-enums	packaged	-
 union-inheritance/slash-named-component/expected-literals	docs/fern-measurements/union-inheritance/slash-named-component/openapi.yml	literals	packaged	fern-expected:docs/fern-measurements/union-inheritance/slash-named-component/fern-expected
 handed-off/follow-up-tickets/842	docs/fern-measurements/handed-off/follow-up-tickets/842/openapi.yml	python-enums	packaged	-
+union-inheritance/nullable-unknown-success-body	docs/fern-measurements/union-inheritance/nullable-unknown-success-body/openapi.yml	python-enums	packaged	-
+union-inheritance/map-beside-union	docs/fern-measurements/union-inheritance/map-beside-union/openapi.yml	python-enums	packaged	-
+union-inheritance/unrequired-const-tag-union	docs/fern-measurements/union-inheritance/unrequired-const-tag-union/openapi.yml	python-enums	packaged	-
+union-inheritance/allof-unrequired-tag-branches	docs/fern-measurements/union-inheritance/allof-unrequired-tag-branches/openapi.yml	python-enums	packaged	-
+union-inheritance/nullable-unknown-success-body/expected-literals	docs/fern-measurements/union-inheritance/nullable-unknown-success-body/openapi.yml	literals	packaged	fern-expected:docs/fern-measurements/union-inheritance/nullable-unknown-success-body/fern-expected
+union-inheritance/map-beside-union/expected-literals	docs/fern-measurements/union-inheritance/map-beside-union/openapi.yml	literals	packaged	fern-expected:docs/fern-measurements/union-inheritance/map-beside-union/fern-expected
+union-inheritance/unrequired-const-tag-union/expected-literals	docs/fern-measurements/union-inheritance/unrequired-const-tag-union/openapi.yml	literals	packaged	fern-expected:docs/fern-measurements/union-inheritance/unrequired-const-tag-union/fern-expected
+union-inheritance/allof-unrequired-tag-branches/expected-literals	docs/fern-measurements/union-inheritance/allof-unrequired-tag-branches/openapi.yml	literals	packaged	fern-expected:docs/fern-measurements/union-inheritance/allof-unrequired-tag-branches/fern-expected

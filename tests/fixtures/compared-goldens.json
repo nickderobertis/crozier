@@ -633,12 +633,24 @@
     "docs/fern-measurements/superseded-fixtures/request-example-nulls/fern-expected": {},
     "docs/fern-measurements/superseded-fixtures/reservoir-ledger/fern-expected": {},
     "docs/fern-measurements/superseded-fixtures/undiscriminated-ref-oneof-sibling-properties-dropped/fern-expected": {},
+    "docs/fern-measurements/union-inheritance/allof-unrequired-tag-branches/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/union-inheritance/allof-unrequired-tag-branches/fern-expected": {},
     "docs/fern-measurements/union-inheritance/declared-scalar-union-members/expected-literals/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
     "docs/fern-measurements/union-inheritance/declared-scalar-union-members/fern-expected": {},
+    "docs/fern-measurements/union-inheritance/map-beside-union/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/union-inheritance/map-beside-union/fern-expected": {},
     "docs/fern-measurements/union-inheritance/null-typed-composition/expected-literals/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
@@ -663,6 +675,12 @@
       ]
     },
     "docs/fern-measurements/union-inheritance/nullable-union-members/fern-expected": {},
+    "docs/fern-measurements/union-inheritance/nullable-unknown-success-body/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/union-inheritance/nullable-unknown-success-body/fern-expected": {},
     "docs/fern-measurements/union-inheritance/overridden-parent-layout/expected-literals/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
@@ -681,6 +699,12 @@
       ]
     },
     "docs/fern-measurements/union-inheritance/slash-named-component/fern-expected": {},
+    "docs/fern-measurements/union-inheritance/unrequired-const-tag-union/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/union-inheritance/unrequired-const-tag-union/fern-expected": {},
     "docs/fern-measurements/union-literals/atlas-untagged-inline-discriminator/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"

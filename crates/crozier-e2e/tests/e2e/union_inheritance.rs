@@ -1,6 +1,9 @@
 //! The union-nullability and inherited-model repairs of tickets #825, #826,
 //! #827, #838 and #839 (with the union-nullability rules the tickets' Vercel
-//! and Hookdeck documents exposed beside them), each settled against a from-scratch document under
+//! and Hookdeck documents exposed beside them, and the schema-combination
+//! repairs the certified screen of `combo-success-anyof-nullable`,
+//! `combo-map-beside-oneof` and `combo-unrequired-tag-oneof-reference` exposed),
+//! each settled against a from-scratch document under
 //! [`DIR`] and the certified pair's complete tree for it (Fern CLI 5.200.0,
 //! fern-python-sdk 5.41.25), in both enum modes.
 //!
@@ -94,6 +97,69 @@ const MEASUREMENTS: &[(&str, &str, &str, &str, &str)] = &[
         "src/fern/types/pages_request_response_page.py",
         "PagesRequestResponsePageContent, PagesRequestResponsePageOne, PagesRequestResponsePageTwo",
         "PagesRequestResponsePageContent, PagesRequestResponsePageTwo, PagesRequestResponsePageThree",
+    ),
+    (
+        "combo-success-anyof-nullable: an unknown success body beside `null`",
+        "nullable-unknown-success-body",
+        "src/fern/probes/client.py",
+        ") -> typing.Optional[typing.Any]:",
+        ") -> typing.Any:",
+    ),
+    (
+        "#825 (a response map's scalar value beside `null`)",
+        "nullable-unknown-success-body",
+        "src/fern/probes/client.py",
+        ") -> typing.Dict[str, typing.Optional[str]]:",
+        ") -> typing.Dict[str, ListProbeLabelsResponseValue]:",
+    ),
+    (
+        "combo-map-beside-oneof: a discriminated union beside `additionalProperties`",
+        "map-beside-union",
+        "src/fern/types/glaze.py",
+        "Glaze = typing.Dict[str, typing.Any]",
+        "Glaze = typing_extensions.Annotated[typing.Union[Glaze_Matte, Glaze_Gloss], pydantic.Field(discriminator=\"finish\")]",
+    ),
+    (
+        "combo-map-beside-oneof: that union sent as a `$ref` body",
+        "map-beside-union",
+        "src/fern/glazes/raw_client.py",
+        "json=request,",
+        "json=convert_and_respect_annotation_metadata(object_=request, annotation=Glaze, direction=\"write\"),",
+    ),
+    (
+        "combo-map-beside-oneof: an inline body union beside `additionalProperties`",
+        "map-beside-union",
+        "src/fern/firings/client.py",
+        "request: typing.Dict[str, typing.Any]",
+        "request: LogFiringRequest",
+    ),
+    (
+        "combo-unrequired-tag-oneof-reference: a bare `const` tag a member leaves unrequired",
+        "unrequired-const-tag-union",
+        "src/fern/entries/types/add_entry_request.py",
+        "AddEntryRequest = typing.Union[StudioNote, StudioReminder]",
+        "AddEntryRequest = typing.Union[AddEntryRequest_Note, AddEntryRequest_Reminder]",
+    ),
+    (
+        "combo-unrequired-tag-oneof-reference: an `allOf` member's branches past an unrequired tag",
+        "allof-unrequired-tag-branches",
+        "src/fern/types/shelf.py",
+        "    brackets: typing.Optional[int] = None\n    height: typing.Optional[float] = None\n",
+        "",
+    ),
+    (
+        "combo-unrequired-tag-oneof-reference: the first branch's spelling of a shared property",
+        "allof-unrequired-tag-branches",
+        "src/fern/types/shelf.py",
+        "Mounted on the wall.",
+        "Standing on the floor.",
+    ),
+    (
+        "combo-unrequired-tag-oneof-reference: the merged branches keep their tag",
+        "allof-unrequired-tag-branches",
+        "src/fern/types/wall_shelf.py",
+        "    type: typing.Optional[WallShelfType] = pydantic.Field(default=None)\n",
+        "",
     ),
 ];
 
