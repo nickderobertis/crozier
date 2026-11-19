@@ -8,6 +8,7 @@ from .firing_notes import FiringNotes
 from .firing_summary import FiringSummary
 from .glazing_step import GlazingStep
 from .kiln_alarm_view import KilnAlarmView
+from .kiln_plate import KilnPlate
 
 
 class Bundle(UniversalBaseModel):
@@ -15,6 +16,7 @@ class Bundle(UniversalBaseModel):
     summary: typing.Optional[FiringSummary] = None
     alarm: typing.Optional[KilnAlarmView] = None
     notes: typing.Optional[FiringNotes] = None
+    plate: typing.Optional[KilnPlate] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

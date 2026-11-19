@@ -15544,6 +15544,21 @@ impl Builder<'_> {
                 .keys()
                 .any(|field| !parent_properties.insert(field))
         });
+        // Which bases share a property with another: only those are inlined
+        // where overlap alone flattens the model (see the inlining below).
+        let overlaps: Vec<bool> = base_refs
+            .iter()
+            .enumerate()
+            .map(|(index, (_, base))| {
+                base_refs.iter().enumerate().any(|(other, (_, sibling))| {
+                    other != index
+                        && base
+                            .properties
+                            .keys()
+                            .any(|field| sibling.properties.contains_key(field))
+                })
+            })
+            .collect();
         // A model hoisted out of its own base, where that base recurses
         // through it, is flattened too: the `R8` measurement's
         // `Section.subsections` element is `allOf: [{id, …}, $ref Section]`, and
@@ -15763,8 +15778,24 @@ impl Builder<'_> {
             // A nullability-only member is the exception: the model is a flat
             // copy of every base, each read with its whole `allOf` chain, and
             // extends nothing (see [`is_nullable_annotation`]).
-            let inlined_by_base = if flatten_all {
+            let inlined_by_base = if nullable_annotation || cyclic_parent {
                 inherited_by_base
+            } else if overlapping_parents {
+                // Parents that overlap are inlined, and every other parent the
+                // model leaves alone stays a base: Bosch Rexroth's
+                // `ctrlXCORETypePlate` is `allOf: [$ref TypePlate, $ref
+                // UbuntuCoreIds, $ref ctrlXCORETypePlate_allOf]`, the last
+                // restating `TypePlate.typePlateType`, and the certified pair's
+                // `CtrlXcoreTypePlate` extends `UbuntuCoreIds`.
+                let mut inlined = Vec::new();
+                for (index, inherited) in inherited_by_base.into_iter().enumerate() {
+                    if overlaps[index] || overridden_by_base[index] {
+                        inlined.push(inherited);
+                    } else {
+                        bases.push(base_refs[index].0.clone());
+                    }
+                }
+                inlined
             } else {
                 let mut extended = Vec::new();
                 let mut inlined_by_base = Vec::new();

@@ -219,6 +219,13 @@ const MEASUREMENTS: &[(&str, &str, &str, &str, &str)] = &[
         "FiringNotes = typing.Optional[typing.Dict[str, typing.Any]]",
         "FiringNotes = typing.Dict[str, typing.Any]",
     ),
+    (
+        "#827 (overlapping parents are inlined, and an untouched parent stays a base)",
+        "inlined-chain-inheritance",
+        "src/fern/types/kiln_plate.py",
+        "class KilnPlate(StoreIds):",
+        "class KilnPlate(UniversalBaseModel):",
+    ),
 ];
 
 fn spec(case: &str) -> PathBuf {
