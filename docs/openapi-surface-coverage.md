@@ -141,29 +141,29 @@ split five ways:
 546 + 70 + 110 + 0 + 0 = 726.
 
 **Feature combinations are counted apart.** 107 combinations are selected
-([the list](openapi-surface/combinations.md)): 28 are `gap`, 75 are `golden` and 4 are `handwritten`.
+([the list](openapi-surface/combinations.md)): 25 are `gap`, 78 are `golden` and 4 are `handwritten`.
 13 of the `gap` ones are decided output-insensitive in
 [the shared table](openapi-surface/output-insensitive.tsv), neither proven nor unproven.
 **Combinations by proof.** A combination is proven only where its handling is checked against the certified pair,
 at an interaction branch or with source-checked independent feature controls. `finished_state_failures` in
 [the census suite](../tools/surface-census/tests/surface_census_test.py) validates the recorded evidence, with
 [the hand-written fixture format](openapi-surface/handwritten/AGENTS.md) it reads.
-**53** are byte-matched against a registered real specification at their
+**56** are byte-matched against a registered real specification at their
 interaction branch, **1** has independent handling, checked against the source,
 instrumented feature-only controls and fresh certified trees
 ([the audit](openapi-surface/combination-cooccurrence.tsv)), **0** are compared against a committed measurement of
-non-generation, **0** rest on a hand-written fixture (0 of them witness-blocked, 0 of them co-occurrences proven on the fixture), **40** remain
-open (unproven) (0 left unproven by the user's ruling), and **13** are decided output-insensitive: 53 + 1 + 0 + 0 + 40 + 13 = 107.
+non-generation, **0** rest on a hand-written fixture (0 of them witness-blocked, 0 of them co-occurrences proven on the fixture), **37** remain
+open (unproven) (0 left unproven by the user's ruling), and **13** are decided output-insensitive: 56 + 1 + 0 + 0 + 37 + 13 = 107.
 None is among the 726 features above, and each other `gap` one is named under
 [Unproven combinations, named](#unproven-combinations-named).
 
 `golden` is still not `golden`-exhausted, so the handling sites are split the
-same way. The 622 `golden` rows declare 1112 handling sites in
+same way. The 625 `golden` rows declare 1116 handling sites in
 [the site table](openapi-surface/golden-reach-sites.tsv). The
 [ledger](openapi-surface/golden-reach.tsv) retains the base measurement's
 provenance and records scoped updates beside their rows.
 
-- **1028 are reached by a registered real specification.** Its scoped
+- **1032 are reached by a registered real specification.** Its scoped
   golden test executes the site; file-level residuals remain recorded separately.
 - **81 are reached only by a hand-written fixture.** Each arm-level
   cover executes the site and byte-matches the certified tree. Thus each of the 81 is still one of the 84 [unreached arms](#every-unreached-arm-and-its-search-verdict).
@@ -176,7 +176,7 @@ provenance and records scoped updates beside their rows.
   before/after trees in both generators recorded in [the shared table](openapi-surface/output-insensitive.tsv).
 - **0 are named gaps**, whose outstanding evidence is in [Unproven arms, named](#unproven-arms-named).
 
-1028 + 81 + 3 + 0 + 0 = 1112. Nine sites replaced `co-occurrence` with the body and response
+1032 + 81 + 3 + 0 + 0 = 1116. `combo-allof-with-required` replaced `co-occurrence` with its promotion arm `own_required_promotion`, which `groupe-psa` reaches, and `combo-property-anyof-composed-sibling` and the two `combo-unrequired-tag-*-reference` rows became `golden` on the dedicated arms their registered declarers reach ([their record](openapi-surface/witness-search-combinations-schemas/README.md#keys)). Nine sites replaced `co-occurrence` with the body and response
 interaction arms [their search record](openapi-surface/witness-search-combinations-bodies-responses/README.md#dedicated-regions)
 names, `combo-allof-schema-example` replaced it with its interaction branch in `Builder::add_object`, and the two `combo-oas31-*` rows left `golden` once decided output-insensitive. Fourteen sites left the table with the two functions
 that served only the `Body_*` exemption and the HTTP Basic header drop,
@@ -3170,7 +3170,7 @@ tree's document; each copy is its own declarer, named `<walk>:<path>`.
 #### Every unreached arm, and its search verdict
 
 <!-- BEGIN GENERATED ARM COUNTS: run `just golden-reach-arms` -->
-The golden rows split in two. **556** reach every handling site their
+The golden rows split in two. **559** reach every handling site their
 [site table](openapi-surface/golden-reach-sites.tsv) declares, and **66** carry at least one handling site no golden-only witness executes: 84 unreached arms in all. By the verdict each arm's linked record states, 61 read `exhausted`, 23 read `search-incomplete`, 0 read `config-gated`, and 0 have no arm search.
 <!-- END GENERATED ARM COUNTS -->
 Every one is named below with the verdict its linked arm-search record
@@ -3511,13 +3511,10 @@ unproven.
 | `combo-map-unresolved-nested-pointer` | `schemas` | `search incomplete` — [bounded search](openapi-surface/witness-search-combination-populations/README.md#verdicts); outstanding candidates: [named census](openapi-surface/witness-search-combination-populations/screen.tsv) |
 | `combo-nullable-allof-parent-own-property` | `schemas` | `search incomplete` — [bounded search](openapi-surface/witness-search-combination-populations/README.md#verdicts); outstanding candidates: [named census](openapi-surface/witness-search-combination-populations/screen.tsv) |
 | `combo-path-param-ref-pattern` | `parameters` | `search incomplete` — [bounded search](openapi-surface/witness-search-operation-combinations-parameters/README.md#the-pattern-crozier-reads); outstanding candidates: [named census](openapi-surface/witness-search-operation-combinations-parameters/census.tsv) |
-| `combo-property-anyof-composed-sibling` | `schemas` | `search incomplete` — [bounded search](openapi-surface/witness-search-combination-populations/README.md#verdicts); outstanding candidates: [named census](openapi-surface/witness-search-combination-populations/screen.tsv) |
 | `combo-property-defs-pointer` | `schemas` | `search incomplete` — [bounded search](openapi-surface/witness-search-combination-populations/README.md#verdicts); outstanding candidates: [named census](openapi-surface/witness-search-combination-populations/screen.tsv) |
 | `combo-property-unresolved-nested-pointer` | `schemas` | `search incomplete` — [bounded search](openapi-surface/witness-search-combination-populations/README.md#verdicts); outstanding candidates: [named census](openapi-surface/witness-search-combination-populations/screen.tsv) |
 | `combo-required-query-array-enum-items` | `parameters` | `search incomplete` — [bounded search](openapi-surface/witness-search-combination-populations/README.md#verdicts); outstanding candidates: [named census](openapi-surface/witness-search-combination-populations/screen.tsv) |
 | `combo-tag-only-operation-id` | `document-paths` | `search incomplete` — [bounded search](openapi-surface/witness-search-combination-populations/README.md#verdicts); outstanding candidates: [named census](openapi-surface/witness-search-combination-populations/screen.tsv) |
-| `combo-unrequired-tag-anyof-reference` | `schemas` | `search incomplete` — [bounded search](openapi-surface/witness-search-combination-populations/README.md#verdicts); outstanding candidates: [named census](openapi-surface/witness-search-combination-populations/screen.tsv) |
-| `combo-unrequired-tag-oneof-reference` | `schemas` | `search incomplete` — [bounded search](openapi-surface/witness-search-combination-populations/README.md#verdicts); outstanding candidates: [named census](openapi-surface/witness-search-combination-populations/screen.tsv) |
 
 
 #### The `example` arm, removed as a proven divergence
