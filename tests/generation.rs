@@ -6375,7 +6375,10 @@ components:
     // in docs/fern-measurements/union-inheritance/nullable-typeless-component/).
     for (name, alias) in [
         ("null_only", "NullOnly = typing.Any"),
-        ("nullable_unknown", "NullableUnknown = typing.Optional[typing.Any]"),
+        (
+            "nullable_unknown",
+            "NullableUnknown = typing.Optional[typing.Any]",
+        ),
     ] {
         let path = format!("src/acme/types/{name}.py");
         let module = &files[&path];
