@@ -2904,7 +2904,11 @@ class CooccurrenceOutcomeTest(unittest.TestCase):
             for label, document, expected in (
                 ("both", signal_answer(signal_union(keyword, True)), True),
                 ("union alone", signal_answer(signal_union(keyword, False)), False),
-                ("nullable scalar", signal_answer("                type: integer\n                nullable: true\n"), False),
+                (
+                    "nullable scalar",
+                    signal_answer("                type: integer\n                nullable: true\n"),
+                    False,
+                ),
                 (
                     "type list with null",
                     signal_answer("                type: [integer, boolean, 'null']\n").replace(

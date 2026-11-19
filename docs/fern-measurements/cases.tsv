@@ -175,6 +175,9 @@ schema-shapes/query-union-array-enum-member	docs/fern-measurements/schema-shapes
 schema-independence/annotated-ref-nullable-target-first	docs/fern-measurements/schema-independence/annotated-ref-nullable-target-first/openapi.yml	python-enums	packaged	-
 schema-independence/annotated-ref-nullable-target-second	docs/fern-measurements/schema-independence/annotated-ref-nullable-target-second/openapi.yml	python-enums	packaged	-
 schema-independence/annotated-ref-nullable-target-both	docs/fern-measurements/schema-independence/annotated-ref-nullable-target-both/openapi.yml	python-enums	packaged	-
+schema-independence/annotated-ref-nullable-target-first/expected-literals	docs/fern-measurements/schema-independence/annotated-ref-nullable-target-first/openapi.yml	literals	packaged	-
+schema-independence/annotated-ref-nullable-target-second/expected-literals	docs/fern-measurements/schema-independence/annotated-ref-nullable-target-second/openapi.yml	literals	packaged	-
+schema-independence/annotated-ref-nullable-target-both/expected-literals	docs/fern-measurements/schema-independence/annotated-ref-nullable-target-both/openapi.yml	literals	packaged	-
 union-literals/atlas-untagged-inline-discriminator	docs/openapi-surface/handwritten/atlas-untagged-inline-discriminator/openapi.yml	literals	packaged	fern-expected:docs/openapi-surface/handwritten/atlas-untagged-inline-discriminator/fern-expected
 union-literals/bakery-get-body-member	docs/openapi-surface/handwritten/bakery-get-body-member/openapi.yml	literals	packaged	fern-expected:docs/openapi-surface/handwritten/bakery-get-body-member/fern-expected
 union-literals/ferry-mapping-outside-schemas	docs/openapi-surface/handwritten/ferry-mapping-outside-schemas/openapi.yml	literals	packaged	fern-expected:docs/openapi-surface/handwritten/ferry-mapping-outside-schemas/fern-expected
