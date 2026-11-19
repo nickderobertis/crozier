@@ -156,6 +156,10 @@ non-generation, **0** rest on a hand-written fixture (0 of them witness-blocked,
 open (unproven) (0 left unproven by the user's ruling), and **13** are decided output-insensitive: 56 + 1 + 0 + 0 + 37 + 13 = 107.
 None is among the 726 features above, and each other `gap` one is named under
 [Unproven combinations, named](#unproven-combinations-named).
+The schema-combination certified screen's 264 `attributed-residual` rows and
+16 `open-parity-gap` rows are attributed, not byte-matched, and count in none of
+these totals: each names its root cause and owner, under manager ruling a13
+([record](openapi-surface/witness-search-combinations-schemas/README.md#what-the-attributed-rows-are-and-who-owns-them)).
 
 `golden` is still not `golden`-exhausted, so the handling sites are split the
 same way. The 625 `golden` rows declare 1116 handling sites in

@@ -54,7 +54,7 @@ candidate is named by its row in `screen.tsv`, and its outcome by its rows in
 | `combo-nullable-allof-parent-own-property` | certified screen | 0 of 0 | 0 | No pending candidate (147 identities unfetched in the bounded raw-lane budget). |
 | `combo-property-anyof-composed-sibling` | certified screen, then dedicated region | 112 of 112 | 0 | **Interaction.** 10 candidates byte-match in both modes, 95 are refused by Fern and crozier alike, 2 are open example-validation refusal gaps, 4 differ only for attributed unrelated causes and 1 (`9867c34e…`) for a `combo-success-anyof-nullable` difference repaired here. The source audit found the pooled handling site `Builder::field_type_ref`'s `if is_composed_member(m) {`, which names a property union's composed member whatever either keyword; the dedicated arm `src/ir.rs::Builder::field_type_ref[if composed_any_of_sibling\(prop_schema\x2c m\) \{]` takes an inline `oneOf` beside a property `anyOf`'s other alternatives. Its schema interaction controls (`../combination-interaction-controls/combo-property-anyof-composed-sibling/`) run it only with both features, and all four registered declarers execute it — `oal-example` (corpus row 312, the audit's witness, at `obj3.stuff`), `osparc-director-v2`, `vocode-core`, `waylay-queries` — each byte-matching its committed golden ([audit](../combination-cooccurrence.tsv)). |
 | `combo-unrequired-tag-anyof-reference` | certified screen, then dedicated region | 81 of 81 | 0 | **Interaction.** 16 candidates byte-match in both modes; 37 differ only for attributed unrelated causes, 25 are refused by both, 3 are open example-validation refusal gaps. The source audit found the conjunctive decision in `inferred_discriminant_property` (`let unrequired_tag = only_references`: every member a `$ref`, each component tagging itself with an unrequired one-member string `enum`), pooled over `oneOf` and `anyOf`; the dedicated arm `src/ir.rs::unrequired_reference_tag_value[if union\.any_of\.is_some\(\) \{]` takes it under an `anyOf`. Its controls (`../combination-interaction-controls/combo-unrequired-tag-anyof-reference/`) run it only with both features; registered `vocode-core` (corpus row 2800, at `ExternalActionUpdateParams.config`) and `notion-mcp-server` execute it (a typed `const` tag, waylay-queries' `data_axis`, takes the non-`enum` arm) and byte-match in both enum modes ([audit](../combination-cooccurrence.tsv)). |
-| `combo-unrequired-tag-oneof-reference` | certified screen, then dedicated region | 230 of 230 | 0 | **Interaction.** 23 candidates byte-match in both modes, 2 of them (`c3445e5e…`, `83f6c0ba…`) after the bare-`const` repair below, and `cb07c78d…` differs only by an unrelated residual after the `allOf`-branch repair; 43 differ only for attributed unrelated causes, 159 are refused by both, 2 are Fern limitations and 2 open example-validation refusal gaps. The same conjunctive decision as the `anyOf` key; its dedicated arm `src/ir.rs::unrequired_reference_tag_value[if union\.one_of\.is_some\(\) \{]` takes it under a `oneOf`. Its controls (`../combination-interaction-controls/combo-unrequired-tag-oneof-reference/`) run it only with both features; registered `hasura-metadata` (corpus row 305, at `request_transform`'s `oneOf` over `template_engine`) executes it and byte-matches in both enum modes ([audit](../combination-cooccurrence.tsv)). |
+| `combo-unrequired-tag-oneof-reference` | certified screen, then dedicated region | 230 of 230 | 0 | **Interaction.** 23 candidates byte-match in both modes, 2 of them (`c3445e5e…`, `83f6c0ba…`) after the bare-`const` repair below, and `cb07c78d…` differs only by an unrelated residual after the `allOf`-branch repair; the three Bosch Rexroth TypePlate documents (`10a343e0…`, `530d0166…`, `910d62b4…`) byte-match after the overlapping-parents repair below; 40 differ only for attributed unrelated causes, 159 are refused by both, 2 are Fern limitations and 2 open example-validation refusal gaps. The same conjunctive decision as the `anyOf` key; its dedicated arm `src/ir.rs::unrequired_reference_tag_value[if union\.one_of\.is_some\(\) \{]` takes it under a `oneOf`. Its controls (`../combination-interaction-controls/combo-unrequired-tag-oneof-reference/`) run it only with both features; registered `hasura-metadata` (corpus row 305, at `request_transform`'s `oneOf` over `template_engine`) executes it and byte-matches in both enum modes ([audit](../combination-cooccurrence.tsv)). |
 | `combo-map-beside-oneof` | dedicated region + arm witness | 8 of 8 | 0 | **Interaction.** Repaired here (below), rask's lineage document (`672f1ef2…`) byte-matches in both modes and is registered as corpus row 6002; its golden executes the exclusive arm `prefer_map_to_union[if schema.one_of.is_some()]`, which the from-scratch controls run only with both features ([audit](../combination-cooccurrence.tsv)). Of the others, 2 are repaired here and differ only by attributed residuals, 4 differ only for unrelated causes, 1 is a Fern limitation. |
 | `combo-success-anyof-nullable` | dedicated region + arm witness | 108 of 108 | 0 | 40 candidates byte-match in both modes; `9867c34e…`'s `anyOf: [{}, null]` success body is repaired here and it differs only by an attributed residual; 38 differ only for unrelated causes, 28 are refused by both, 1 is an open example-validation refusal gap. The pooled dropped-`null` condition is split: `src/ir.rs::nullable_success_union[if schema\.any_of\.is_some\(\) \{]` is the `anyOf` arm, apart from the `oneOf` one and a normalized type list, with output unchanged (`CooccurrenceOutcomeTest.test_nullable_success_unions_reach_a_keyword_specific_region_only_with_both_features`). **Blocked:** no registered golden executes it (the reach ledger re-measured over the finished tree), and none of the 40 byte-matching candidates does either, each run instrumented — each writes its `null` alternative beside one member, in a property, or under a `$ref`. Only the hand-written `beacon-signal-results` executes it, which counts under an exhausted search, and the operation-combination bounded search still names 2845 outstanding candidates. |
 | `combo-success-oneof-nullable` | dedicated region + arm witness | 32 of 32 | 0 | 14 candidates byte-match in both modes; 8 differ only for attributed unrelated causes, 9 are refused by both, 1 is a Fern limitation. Its dedicated arm is `src/ir.rs::nullable_success_union[if schema\.one_of\.is_some\(\) \{]`, with the same keyword controls. **Blocked:** no registered golden and none of the 14 byte-matching candidates executes it, each run instrumented; only `beacon-signal-results` does, and the operation-combination bounded search still names 2829 outstanding candidates. |
@@ -97,11 +97,60 @@ to a from-scratch measurement under
   own, and every use-site copy (enum, object, component alias) takes the
   member's (`annotated-ref-description-precedence`; exposed by the key's
   independence documents, not by a screen candidate).
+- #826 and #827, where their root causes recurred on screened documents
+  (manager ruling a13: a ticket fixed only for its named specification is not
+  fixed), each held to `inlined-chain-inheritance`: an inlined parent's
+  property hoists its inline type under the component declaring it (epilot's
+  `AutomationActionConfigReason`, `b39e4f49…`); an inlined chain writes each
+  level's own fields before its parents' (Mistral's `FIMCompletionResponse`,
+  `94f7d515…`); a restatement writing no `nullable` keeps the parent's
+  (hyperdx's `AlertResponse`, `8d4010ac…`); overlapping parents are inlined
+  while an untouched one stays a base (the TypePlate documents above); and a
+  nullable free-form object component keeps its nullability (uploadcare's
+  `metadata`, `2af57889…`).
 
 Every other difference the screen exposed is outside the keys' conjunctions:
 each is named in `certified.tsv` as an `attributed-residual` (citing an open
 issue where one describes it), and the recurring new causes are drafted as
 follow-ups rather than repaired here.
+
+## What the attributed rows are, and who owns them
+
+Under manager ruling a13, the screen's 264 `attributed-residual` rows (129
+documents x mode) and 16 `open-parity-gap` rows (7 documents) are **attributed,
+not byte-matched**: they are left neither repaired nor catalogued as departures
+here, and count in no byte-match total. Each `attributed-residual` row's detail
+ends `Owners:` with the root causes it shows, one owner each: an open issue, or
+one follow-up drafted per root cause (never per document). Each
+`open-parity-gap` row (Fern's example validation refuses, crozier generates) is
+owned by the example-validation refusal class (`EXV`).
+
+| code | root cause | owner |
+|---|---|---|
+| `EXS` | worked-example value source | follow-up `worked-examples-choose-a-different-example-source-than-the-certified-pair` |
+| `EXF` | worked-example argument presence and order | follow-up `worked-examples-include-omit-or-order-arguments-differently-from-the-certified-pair` |
+| `EXL` | README/docstring example layout | follow-up `readme-and-docstring-worked-examples-are-laid-out-differently-from-the-certified-pair` |
+| `HST` | nested union hoisting, naming and discrimination | follow-up `nested-unions-are-not-hoisted-named-or-discriminated-as-the-certified-pair-does` |
+| `TAG` | restated, const and inferred discriminant tags | follow-up `restated-const-and-inferred-discriminant-tags-differ-from-the-certified-pair` |
+| `NAM` | identifier naming and escaping | follow-up `identifier-naming-and-escaping-differ-from-the-certified-pair` |
+| `NUL` | nullability of bodies, containers and parameters | follow-up `nullability-of-bodies-containers-and-parameters-differs-from-the-certified-pair` |
+| `MP` | multipart bodies | follow-up `multipart-bodies-differ-from-the-certified-pair` |
+| `BIN` | binary/base64 string typing | follow-up `binary-and-base64-string-fields-are-typed-differently-from-the-certified-pair` |
+| `MOD` | module placement and imports | follow-up `module-placement-and-imports-differ-from-the-certified-pair` |
+| `ENM` | union member merging and deduplication | follow-up `union-members-are-not-merged-or-deduplicated-as-the-certified-pair-does` |
+| `OMB` | one-member oneOf request body | follow-up `a-one-member-oneof-request-body-is-not-spread-into-keyword-arguments` |
+| `ERR` | error body types | follow-up `error-body-types-differ-from-the-certified-pair` |
+| `PTR` | nested pointers and `$ref` siblings | follow-up `nested-pointers-and-ref-siblings-resolve-differently-from-the-certified-pair` |
+| `DOC` | description text | follow-up `description-text-differs-from-the-certified-pair` |
+| `ALL` | single-`$ref` and `$ref`-pair allOf shapes | follow-up `single-ref-and-ref-pair-allof-shapes-are-typed-differently-from-the-certified-pair` |
+| `SER` | request serialization wrapping | follow-up `request-serialization-wrapping-differs-from-the-certified-pair` |
+| `AUM` | allOf over union branches | follow-up `allof-over-union-branches-merges-differently-from-the-certified-pair` |
+| `CT` | content-type header on an inline oneOf body | follow-up `an-inline-oneof-request-body-sends-a-content-type-header-the-certified-pair-omits` |
+| `REF` | crozier refuses a document Fern generates | follow-up `crozier-refuses-eight-certified-screen-documents-the-certified-fern-pair-generates` |
+| `PTRBODY` | unresolved nested-pointer response body in examples | follow-up `an-operation-whose-success-response-is-an-unresolved-nested-pointer-omits-its-optional-body-from-worked-examples` |
+| `EMPTYSDK` | Fern writes an empty SDK for an unresolvable reference | the intended empty-SDK refusal ruling (crozier refuses) |
+| `EXV` | example-validation refusal class | follow-up `refuse-the-screened-documents-whose-examples-violate-their-schemas-as-the-certified-pair-s-example-validation-does` |
+| `#446`, `#447`, `#453`, `#536`, `#698` | as each issue states | the open issue |
 
 ## Ticket specifications compared beside the screen
 
@@ -111,7 +160,7 @@ Not screen candidates: the real specifications tickets #825, #826, #827, #838 an
 | document | sha256 | tickets | outcome |
 |---|---|---|---|
 | APIs.guru `vercel.com/0.0.1/openapi.yaml` | `65e9c34e…` | #825 | 13 files differed on main. With this change, python-enums differs in 2 files and literals in 4. All are usage examples: Fern leaves the required `value` out of `PatchtEdgeConfigItemsRequestItemsItemValue(...)`, the Fern defect ticket 828's departure catalogues (owned by `combinations-examples-docs`), and writes `items=[]` in `reference.md`. The two literals-only files quote a string that holds `"` with escapes inside docstring examples, where Fern uses single quotes, which is unrelated. |
-| konfig-sdks `peach-payments/openapi.yaml` | `d7497fa8…` | #827, #838 | python-enums byte-matches whole. |
+| konfig-sdks `peach-payments/openapi.yaml` | `d7497fa8…` | #827, #838 | Byte-matches whole in both enum modes, re-compared on the finished tree. |
 | Hookdeck (`62844bc1…`) | `62844bc1…` | #826, #839 | No file of either ticket differs, in either mode. 18 files still differ: open tickets #815 (closed object query-union members) and #438 (parameter union member nullability). |
 
 The from-scratch measurements under
