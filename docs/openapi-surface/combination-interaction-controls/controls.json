@@ -29,6 +29,15 @@
       }
     },
     {
+      "key": "combo-map-beside-oneof",
+      "region": "src/ir.rs::prefer_map_to_union[if schema\\.one_of\\.is_some\\(\\)]",
+      "documents": {
+        "first": "docs/openapi-surface/combination-interaction-controls/combo-map-beside-oneof/first/openapi.yml",
+        "second": "docs/openapi-surface/combination-interaction-controls/combo-map-beside-oneof/second/openapi.yml",
+        "both": "docs/openapi-surface/combination-interaction-controls/combo-map-beside-oneof/both/openapi.yml"
+      }
+    },
+    {
       "key": "combo-properties-beside-additional-properties",
       "region": "src/ir.rs::Builder::field_type_ref[let inline_value = if !prop_schema\\.properties\\.is_empty\\(\\)]",
       "documents": {

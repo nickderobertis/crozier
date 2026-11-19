@@ -2952,6 +2952,7 @@ SCHEMA_CONTROL_FEATURES = {
     ),
     "combo-allof-schema-example": ControlFeatures("schema.allOf", "schema.example"),
     "combo-map-beside-anyof": ControlFeatures("schema.additionalProperties", "schema.anyOf"),
+    "combo-map-beside-oneof": ControlFeatures("schema.additionalProperties", "schema.oneOf"),
     "combo-properties-beside-additional-properties": ControlFeatures(
         "schema.additionalProperties", "schema.properties:non-empty"
     ),
