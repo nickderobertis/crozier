@@ -2289,6 +2289,12 @@ docs/fern-measurements/union-inheritance/allof-unrequired-tag-branches/fern-expe
 docs/fern-measurements/union-inheritance/allof-unrequired-tag-branches/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/union-inheritance/allof-unrequired-tag-branches/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/union-inheritance/allof-unrequired-tag-branches/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/union-inheritance/annotated-ref-description-precedence/expected-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
+docs/fern-measurements/union-inheritance/annotated-ref-description-precedence/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/union-inheritance/annotated-ref-description-precedence/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/union-inheritance/annotated-ref-description-precedence/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/union-inheritance/annotated-ref-description-precedence/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/union-inheritance/annotated-ref-description-precedence/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/union-inheritance/declared-scalar-union-members/expected-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
 docs/fern-measurements/union-inheritance/declared-scalar-union-members/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/union-inheritance/declared-scalar-union-members/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
