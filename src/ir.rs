@@ -13383,12 +13383,13 @@ fn untyped_const_tag(tag: &Schema) -> bool {
     tag.const_value.is_some() && tag.enum_values.is_none() && !is_string_type(tag)
 }
 
-/// Whether an unrequired one-member string `enum` tag that every `$ref` member
+/// Whether an unrequired one-member string tag that every `$ref` member
 /// declares discriminates the union: always, under `oneOf` and `anyOf` alike
 /// (see [`inferred_discriminant_property`]). Each keyword reads apart, and a tag
-/// the member's own component declares inline apart from one reached through a
-/// `$ref` or a composition, so the reach ledger measures each on its own; the
-/// result is the same for all of them.
+/// the member's own component writes inline as an `enum` apart from a typed
+/// `const` (waylay-queries' `data_axis`) or one reached through a `$ref` or a
+/// composition, so the reach ledger measures each on its own; the result is the
+/// same for all of them.
 fn unrequired_reference_tag(
     union: &Schema,
     written: &Schema,
@@ -13400,7 +13401,7 @@ fn unrequired_reference_tag(
         .as_deref()
         .and_then(|reference| resolve_ref_from_schemas(schemas, reference))
         .and_then(|target| target.properties.get(property))
-        .is_some_and(|tag| tag.reference.is_none());
+        .is_some_and(|tag| tag.reference.is_none() && tag.enum_values.is_some());
     if !declared_inline {
         return true;
     }

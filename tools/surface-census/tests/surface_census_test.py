@@ -14099,6 +14099,24 @@ class FinishedStateGateTests(unittest.TestCase):
         copies += [
             path.relative_to(REPO) for path in (REPO / surface / "golden-reach-witnesses" / "searches").glob("*.md")
         ]
+        # An independent combination is held to its manifest, its documents and their certified trees.
+        independence = load_script("tools/surface-census/combination-independence.py")
+        proofs, _failures = independence.read_records(REPO)
+        copies += [independence.MANIFEST]
+        copies += [
+            path
+            for proof in proofs.values()
+            for document in proof.documents.values()
+            for path in (
+                document.document,
+                *(
+                    file.relative_to(REPO)
+                    for tree in document.trees.values()
+                    for file in (REPO / tree).rglob("*")
+                    if file.is_file()
+                ),
+            )
+        ]
         for relative in copies:
             (self.root / relative).parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(REPO / relative, self.root / relative)
