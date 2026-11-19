@@ -148,12 +148,12 @@ split five ways:
 at an interaction branch or with source-checked independent feature controls. `finished_state_failures` in
 [the census suite](../tools/surface-census/tests/surface_census_test.py) validates the recorded evidence, with
 [the hand-written fixture format](openapi-surface/handwritten/AGENTS.md) it reads.
-**52** are byte-matched against a registered real specification at their
-interaction branch, **0** have independent handling, checked against the source,
+**53** are byte-matched against a registered real specification at their
+interaction branch, **1** has independent handling, checked against the source,
 instrumented feature-only controls and fresh certified trees
 ([the audit](openapi-surface/combination-cooccurrence.tsv)), **0** are compared against a committed measurement of
-non-generation, **0** rest on a hand-written fixture (0 of them witness-blocked, 0 of them co-occurrences proven on the fixture), **42** remain
-open (unproven) (0 left unproven by the user's ruling), and **13** are decided output-insensitive: 52 + 0 + 0 + 0 + 42 + 13 = 107.
+non-generation, **0** rest on a hand-written fixture (0 of them witness-blocked, 0 of them co-occurrences proven on the fixture), **40** remain
+open (unproven) (0 left unproven by the user's ruling), and **13** are decided output-insensitive: 53 + 1 + 0 + 0 + 40 + 13 = 107.
 None is among the 726 features above, and each other `gap` one is named under
 [Unproven combinations, named](#unproven-combinations-named).
 
@@ -2958,7 +2958,7 @@ the tests run and carried.
 #### The reach ranking
 
 Golden rows ranked by unreached handling sites, then unreached handling regions,
-then key. **556** golden rows reach every handling site and tie below every row
+then key. **559** golden rows reach every handling site and tie below every row
 listed here: the [ledger](openapi-surface/golden-reach.tsv)'s rows whose
 `unreached_sites` is 0, its combination rows among them. Each says so in its own cell. Unreached regions break ties and
 create no obligation of their own.
@@ -3009,7 +3009,7 @@ unreached by any Fern-accepted document.
 | 3 | `oneof-anyof-variant` | `schemas` | **3** | **111** | **8** | open — real-specification witness search remains open |
 | 4 | `allof` | `schemas` | **3** | **27** | **162** | open — real-specification witness search remains open |
 | 5 | `discriminator-mapping` | `schemas` | **2** | **175** | **58** | open — real-specification witness search remains open |
-| 6 | `oneof` | `schemas` | **2** | **118** | **185** | open — real-specification witness search remains open |
+| 6 | `oneof` | `schemas` | **2** | **119** | **185** | open — real-specification witness search remains open |
 | 7 | `fern-streaming-extension` | `oas31-extensions` | **2** | **57** | **7** | open — real-specification witness search remains open |
 | 8 | `ref-pointer-undeclared-component-head` | `schemas` | **2** | **29** | **17** | open — real-specification witness search remains open |
 | 9 | `parameter-schema` | `parameters` | **2** | **26** | **353** | open — real-specification witness search remains open |
@@ -3298,7 +3298,7 @@ why. The changes that took the arm off:
 | 4 | `allof` | `src/ir.rs::InlineHoister::prop_type_ref[=^ {12}return TypeRef::Named\(ref_to_class\(reference\)\);]` | 1 | `search-incomplete` | `kiln-variant-trigger` |
 | 5 | `discriminator-mapping` | `src/ir.rs::Builder::discriminated_union[if union_target \{]` | 32 | `exhausted` | `tidepool-survey-log` |
 | 5 | `discriminator-mapping` | `src/emit.rs::ExampleCtx::discriminated_union_value[Some\(m\) if m\.layout\.is_wrapped\(\) => \{]` | 20 | `exhausted` | `tidepool-survey-log` |
-| 6 | `oneof` | `src/ir.rs::build_endpoint[Some\(if dropped_null \{]` | 2 | `search-incomplete` | `quiz-nullable-response-union` |
+| 6 | `oneof` | `src/ir.rs::build_endpoint[Some\(if dropped_null \{]` | 3 | `search-incomplete` | `quiz-nullable-response-union` |
 | 6 | `oneof` | `src/ir.rs::hoist_error_body_types[if schema\.discriminator\.is_some\(\)]` | 10 | `search-incomplete` | `error-body-shapes` |
 | 7 | `fern-streaming-extension` | `src/emit.rs::sse_end[=\x7cend\x7c format!]` | 3 | `exhausted` | `streaming-extension-terminator` |
 | 7 | `fern-streaming-extension` | `src/ir.rs::declare_split_union_body[=tag_types\.push\(TagTypeDecl \{]` | 3 | `exhausted` | `stream-condition-union-body` |
