@@ -2899,7 +2899,7 @@ PORT_PINS = (
         "_candidate_tag_values",
         "src/ir.rs::inferred_discriminant_property",
         "that tag inference still applies the same required-property exceptions for referenced and inline members",
-        "542f37ec0b505cab",
+        "cabe7717d28303e0",
     ),
     PortPin(
         "untyped_enum_tag",
@@ -6241,8 +6241,11 @@ def _candidate_tag_values(
             ):
                 supported = True
             elif candidate == "type":
+                # A bare `const` the member leaves unrequired is no tag.
                 supported = (candidate in required_names(variant) and isinstance(schema_example(field), str)) or (
-                    written(field, "const") and isinstance(field["const"], str)
+                    written(field, "const")
+                    and isinstance(field["const"], str)
+                    and (candidate in required_names(variant) or not untyped_const_tag(field))
                 )
             elif candidate in ("role", "status"):
                 supported = candidate in required_names(variant)
