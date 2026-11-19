@@ -8027,8 +8027,6 @@ components:
         );
     }
 
-    /// Fern keeps a schema's nullability at its use sites rather than in the
-    /// alias it declares, so a reference to one is optional wherever it appears.
     #[test]
     fn normalize_slash_named_schema_refs_renames_each_name_once_and_never_merges_two() {
         let mut doc = parse(
@@ -8072,6 +8070,8 @@ components:
         assert_eq!(schemas.len(), 4);
     }
 
+    /// Fern keeps a schema's nullability at its use sites rather than in the
+    /// alias it declares, so a reference to one is optional wherever it appears.
     #[test]
     fn normalize_nullable_schema_refs_marks_every_reference_nullable() {
         let mut doc = parse(

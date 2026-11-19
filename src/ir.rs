@@ -14411,11 +14411,6 @@ fn append_member_fields(
     }
 }
 
-/// A union member that is nothing but an inline `oneOf`/`anyOf` of two or more
-/// alternatives, none of them only `null`'s partner: no `$ref`, `allOf`,
-/// properties or map of its own. A one-member composition is that member, and
-/// one alternative beside `null` is that alternative made optional, so neither
-/// is a union of its own.
 /// Whether `member` is an inline `oneOf` offered beside at least one other
 /// non-`null` alternative of the property's `anyOf`: the OAL example's
 /// `obj3.stuff` (corpus row 312). Lowered as any composed member is; the
@@ -14432,6 +14427,11 @@ fn composed_any_of_sibling(property: &Schema, member: &Schema) -> bool {
         })
 }
 
+/// A union member that is nothing but an inline `oneOf`/`anyOf` of two or more
+/// alternatives, none of them only `null`'s partner: no `$ref`, `allOf`,
+/// properties or map of its own. A one-member composition is that member, and
+/// one alternative beside `null` is that alternative made optional, so neither
+/// is a union of its own.
 fn is_composed_member(member: &Schema) -> bool {
     member.reference.is_none()
         && member.all_of.is_none()
