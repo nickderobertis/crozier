@@ -2899,7 +2899,7 @@ PORT_PINS = (
         "_candidate_tag_values",
         "src/ir.rs::inferred_discriminant_property",
         "that tag inference still applies the same required-property exceptions for referenced and inline members",
-        "831f54ae7213c520",
+        "77902e58b762442b",
     ),
     PortPin(
         "untyped_enum_tag",
