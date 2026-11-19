@@ -6,24 +6,39 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
-    from .types import FloorShelf, FloorShelfType, Shelf, ShelfBase, ShelfType, WallShelf, WallShelfType
-    from . import shelves
+    from .types import (
+        Cart,
+        FixedCart,
+        FloorShelf,
+        FloorShelfType,
+        RollingCart,
+        Shelf,
+        ShelfBase,
+        ShelfType,
+        WallShelf,
+        WallShelfType,
+    )
+    from . import carts, shelves
     from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
     from .version import __version__
 _dynamic_imports: typing.Dict[str, str] = {
     "AsyncFernApi": ".client",
+    "Cart": ".types",
     "DefaultAioHttpClient": "._default_clients",
     "DefaultAsyncHttpxClient": "._default_clients",
     "FernApi": ".client",
+    "FixedCart": ".types",
     "FloorShelf": ".types",
     "FloorShelfType": ".types",
+    "RollingCart": ".types",
     "Shelf": ".types",
     "ShelfBase": ".types",
     "ShelfType": ".types",
     "WallShelf": ".types",
     "WallShelfType": ".types",
     "__version__": ".version",
+    "carts": ".carts",
     "shelves": ".shelves",
 }
 
@@ -51,16 +66,20 @@ def __dir__():
 
 __all__ = [
     "AsyncFernApi",
+    "Cart",
     "DefaultAioHttpClient",
     "DefaultAsyncHttpxClient",
     "FernApi",
+    "FixedCart",
     "FloorShelf",
     "FloorShelfType",
+    "RollingCart",
     "Shelf",
     "ShelfBase",
     "ShelfType",
     "WallShelf",
     "WallShelfType",
     "__version__",
+    "carts",
     "shelves",
 ]

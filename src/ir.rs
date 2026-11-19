@@ -19361,7 +19361,7 @@ fn branch_union_properties(
     (!merged.properties.is_empty()).then(|| BranchUnion::Merged(Box::new(merged)))
 }
 
-/// Whether an `allOf` member's `oneOf` of `$ref`s reads a tag some referenced
+/// Whether an `allOf` member's undiscriminated `oneOf` of `$ref`s reads a tag some referenced
 /// branch leaves unrequired: there the branches lend their properties as an
 /// undiscriminated union's do, and keep the tag. (Inline branches tag the
 /// union whether or not they require it, as a top-level union's do.) intellifi's `SpotSet` is `allOf: [$ref
@@ -19372,7 +19372,9 @@ fn untagged_by_unrequired_tag(member: &Schema, schemas: &IndexMap<String, Schema
     let Some(branches) = member.one_of.as_ref() else {
         return false;
     };
-    if !branches.iter().all(|branch| branch.reference.is_some()) {
+    // A written `discriminator` still tags the branches: Fern strips the
+    // members' tag under one (the App API's `JourneyBlockComponentArgs`).
+    if member.discriminator.is_some() || !branches.iter().all(|branch| branch.reference.is_some()) {
         return false;
     }
     inferred_discriminant_property(member, schemas).is_some_and(|property| {

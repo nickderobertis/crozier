@@ -20,6 +20,23 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Shelf"
+  /carts/{cartId}:
+    get:
+      operationId: getCart
+      tags: [carts]
+      parameters:
+        - name: cartId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The cart.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cart"
 components:
   schemas:
     ShelfBase:
@@ -54,3 +71,31 @@ components:
           description: Standing on the floor.
         height:
           type: number
+    Cart:
+      allOf:
+        - $ref: "#/components/schemas/ShelfBase"
+        - type: object
+          discriminator:
+            propertyName: type
+            mapping:
+              rolling: "#/components/schemas/RollingCart"
+              fixed: "#/components/schemas/FixedCart"
+          oneOf:
+            - $ref: "#/components/schemas/RollingCart"
+            - $ref: "#/components/schemas/FixedCart"
+    RollingCart:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [rolling]
+        wheels:
+          type: integer
+    FixedCart:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [fixed]
+        anchors:
+          type: integer

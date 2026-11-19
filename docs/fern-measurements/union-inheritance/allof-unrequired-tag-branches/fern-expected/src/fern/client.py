@@ -9,6 +9,7 @@ from .core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from .core.logging import LogConfig, Logger
 
 if typing.TYPE_CHECKING:
+    from .carts.client import AsyncCartsClient, CartsClient
     from .shelves.client import AsyncShelvesClient, ShelvesClient
 
 
@@ -84,6 +85,7 @@ class FernApi:
             logging=logging,
         )
         self._shelves: typing.Optional[ShelvesClient] = None
+        self._carts: typing.Optional[CartsClient] = None
 
     @property
     def shelves(self):
@@ -92,6 +94,14 @@ class FernApi:
 
             self._shelves = ShelvesClient(client_wrapper=self._client_wrapper)
         return self._shelves
+
+    @property
+    def carts(self):
+        if self._carts is None:
+            from .carts.client import CartsClient
+
+            self._carts = CartsClient(client_wrapper=self._client_wrapper)
+        return self._carts
 
 
 def _make_default_async_client(
@@ -182,6 +192,7 @@ class AsyncFernApi:
             logging=logging,
         )
         self._shelves: typing.Optional[AsyncShelvesClient] = None
+        self._carts: typing.Optional[AsyncCartsClient] = None
 
     @property
     def shelves(self):
@@ -190,3 +201,11 @@ class AsyncFernApi:
 
             self._shelves = AsyncShelvesClient(client_wrapper=self._client_wrapper)
         return self._shelves
+
+    @property
+    def carts(self):
+        if self._carts is None:
+            from .carts.client import AsyncCartsClient
+
+            self._carts = AsyncCartsClient(client_wrapper=self._client_wrapper)
+        return self._carts

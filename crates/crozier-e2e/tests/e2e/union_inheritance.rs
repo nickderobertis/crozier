@@ -161,6 +161,13 @@ const MEASUREMENTS: &[(&str, &str, &str, &str, &str)] = &[
         "    type: typing.Optional[WallShelfType] = pydantic.Field(default=None)\n",
         "",
     ),
+    (
+        "combo-unrequired-tag-oneof-reference: a written discriminator still strips the tag",
+        "allof-unrequired-tag-branches",
+        "src/fern/types/rolling_cart.py",
+        "class RollingCart(UniversalBaseModel):\n    wheels",
+        "class RollingCart(UniversalBaseModel):\n    type: typing.Optional[RollingCartType] = None\n    wheels",
+    ),
 ];
 
 fn spec(case: &str) -> PathBuf {
