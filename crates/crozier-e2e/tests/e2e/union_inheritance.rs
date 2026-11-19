@@ -2,7 +2,9 @@
 //! #827, #838 and #839 (with the union-nullability rules the tickets' Vercel
 //! and Hookdeck documents exposed beside them, and the schema-combination
 //! repairs the certified screen of `combo-success-anyof-nullable`,
-//! `combo-map-beside-oneof` and `combo-unrequired-tag-oneof-reference` exposed),
+//! `combo-map-beside-oneof` and `combo-unrequired-tag-oneof-reference` exposed,
+//! and the annotated-`$ref` description precedence the
+//! `combo-annotated-ref-to-nullable-target` independence documents exposed),
 //! each settled against a from-scratch document under
 //! [`DIR`] and the certified pair's complete tree for it (Fern CLI 5.200.0,
 //! fern-python-sdk 5.41.25), in both enum modes.
@@ -167,6 +169,27 @@ const MEASUREMENTS: &[(&str, &str, &str, &str, &str)] = &[
         "src/fern/types/rolling_cart.py",
         "class RollingCart(UniversalBaseModel):\n    wheels",
         "class RollingCart(UniversalBaseModel):\n    type: typing.Optional[RollingCartType] = None\n    wheels",
+    ),
+    (
+        "combo-annotated-ref-to-nullable-target: a required annotated `$ref` field takes its annotation's description",
+        "annotated-ref-description-precedence",
+        "src/fern/types/entry.py",
+        "    memo: str = pydantic.Field()\n    \"\"\"\n    The wording.\n",
+        "    memo: str = pydantic.Field()\n    \"\"\"\n    A note kept beside the entry.\n",
+    ),
+    (
+        "combo-annotated-ref-to-nullable-target: an annotated `$ref`'s copy takes its annotation's description",
+        "annotated-ref-description-precedence",
+        "src/fern/types/entry_tone.py",
+        "    The tone's wording.\n",
+        "    The tone kept beside the entry.\n",
+    ),
+    (
+        "combo-annotated-ref-to-nullable-target: a required annotated `$ref` body argument takes its annotation's description",
+        "annotated-ref-description-precedence",
+        "src/fern/client.py",
+        "        title : str\n            The title's wording.\n",
+        "        title : str\n            The draft's title as written.\n",
     ),
 ];
 

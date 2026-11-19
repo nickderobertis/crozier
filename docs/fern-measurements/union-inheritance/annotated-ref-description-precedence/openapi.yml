@@ -1,0 +1,127 @@
+openapi: 3.0.3
+info:
+  title: Ledger
+  version: 1.0.0
+paths:
+  /entries/{entryId}:
+    get:
+      operationId: getEntry
+      parameters:
+        - name: entryId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The entry
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Entry'
+  /drafts:
+    post:
+      operationId: createDraft
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+              properties:
+                title:
+                  description: The draft's title as written.
+                  allOf:
+                    - $ref: '#/components/schemas/Memo'
+                    - description: The title's wording.
+                subtitle:
+                  description: The draft's subtitle as written.
+                  allOf:
+                    - $ref: '#/components/schemas/Memo'
+                    - description: The subtitle's wording.
+      responses:
+        '200':
+          description: The draft
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - heading
+                properties:
+                  heading:
+                    description: The heading as written.
+                    allOf:
+                      - $ref: '#/components/schemas/Memo'
+                      - description: The heading's wording.
+components:
+  schemas:
+    Entry:
+      type: object
+      required:
+        - memo
+        - label
+        - caption
+        - tally
+        - mood
+      properties:
+        memo:
+          description: A note kept beside the entry.
+          allOf:
+            - $ref: '#/components/schemas/Memo'
+            - description: The wording.
+        aside:
+          description: An aside kept beside the entry.
+          allOf:
+            - $ref: '#/components/schemas/Memo'
+            - description: The aside's wording.
+        label:
+          allOf:
+            - $ref: '#/components/schemas/Memo'
+            - description: The label's wording.
+        caption:
+          description: The caption kept beside the entry.
+          allOf:
+            - $ref: '#/components/schemas/Memo'
+            - {}
+        tally:
+          description: The tally kept beside the entry.
+          allOf:
+            - $ref: '#/components/schemas/Count'
+            - description: The tally's wording.
+        spare:
+          description: The spare kept beside the entry.
+          allOf:
+            - $ref: '#/components/schemas/Count'
+            - description: The spare's wording.
+        mood:
+          description: The mood kept beside the entry.
+          allOf:
+            - $ref: '#/components/schemas/Mood'
+            - description: The mood's wording.
+        tone:
+          description: The tone kept beside the entry.
+          allOf:
+            - $ref: '#/components/schemas/Mood'
+            - description: The tone's wording.
+        alarm:
+          $ref: '#/components/schemas/Alarm'
+    Memo:
+      type: string
+    Count:
+      type: object
+      properties:
+        total:
+          type: integer
+    Mood:
+      type: string
+      enum:
+        - calm
+        - brisk
+    Alarm:
+      description: The alarm as a component.
+      allOf:
+        - $ref: '#/components/schemas/Count'
+        - description: The alarm's wording.

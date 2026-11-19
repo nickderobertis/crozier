@@ -8819,6 +8819,15 @@ fn hoist_inline_object(
             schema_body_example: false,
             docstring: declared_doc(
                 rewrapped_alias_description(prop_schema, hoister.schemas)
+                    // …ahead of the property's own description when the argument
+                    // is required, as on a model field: the
+                    // `annotated-ref-description-precedence` measurement's
+                    // `createDraft` documents `title` with `The title's wording.`.
+                    .or_else(|| {
+                        (!optional)
+                            .then(|| described_all_of_ref(prop_schema).and_then(|(_, doc)| doc))
+                            .flatten()
+                    })
                     .or(prop_schema.description.as_deref())
                     // An annotating `allOf` member documents the argument, as it
                     // documents a model field: the `617-annotated-inherited-union`
@@ -20324,19 +20333,23 @@ fn described_all_of_ref(schema: &Schema) -> Option<(&str, Option<&str>)> {
         return None;
     }
     let mut reference = None;
-    let mut description = schema.description.as_deref();
+    let mut annotation = None;
     for member in members {
         if let Some(candidate) = member.reference.as_deref() {
             if reference.replace(candidate).is_some() {
                 return None;
             }
         } else if is_unknown(member) {
-            description = description.or(member.description.as_deref());
+            annotation = annotation.or(member.description.as_deref());
         } else {
             return None;
         }
     }
-    reference.map(|reference| (reference, description))
+    // The annotating member's description documents the copy ahead of the
+    // schema's own: the `annotated-ref-description-precedence` measurement's
+    // `Entry.tally`, `Entry.mood` and `Alarm` each write both, and Fern's
+    // `EntryTally`, `EntryMood` and `Alarm` carry the member's.
+    reference.map(|reference| (reference, annotation.or(schema.description.as_deref())))
 }
 
 /// The description a required property whose alternatives all convert to one
@@ -20411,10 +20424,18 @@ fn property_description(schema: &Schema, optional: bool) -> Option<&str> {
     {
         return None;
     }
+    // A required annotated `$ref` is documented by its annotating member, and an
+    // optional one by its own description, which Fern's optional wrapper
+    // carries: the `annotated-ref-description-precedence` measurement's
+    // `Entry.memo` takes `The wording.`, and `Entry.aside` its own sentence.
+    let annotation = described_all_of_ref(schema).and_then(|(_, description)| description);
+    if !optional && annotation.is_some() {
+        return annotation;
+    }
     schema
         .description
         .as_deref()
-        .or_else(|| described_all_of_ref(schema).and_then(|(_, description)| description))
+        .or(annotation)
         // The lone alternative to `null` documents the property when the
         // composition does not: Fergus's `PricebookSearchItem.name` is
         // `anyOf: [{type: string, description}, null]`.
@@ -29025,9 +29046,19 @@ mod tests {
                 {}
             ]
         }));
+        // The annotating member documents the copy, and a required field; an
+        // optional field keeps its own description.
         assert_eq!(
             described_all_of_ref(&outer_description),
-            Some(("#/components/schemas/Target", Some("Outer docs.")))
+            Some(("#/components/schemas/Target", Some("Inner docs.")))
+        );
+        assert_eq!(
+            property_description(&outer_description, false),
+            Some("Inner docs.")
+        );
+        assert_eq!(
+            property_description(&outer_description, true),
+            Some("Outer docs.")
         );
 
         for invalid in [

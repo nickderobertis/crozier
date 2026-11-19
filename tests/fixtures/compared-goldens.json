@@ -639,6 +639,12 @@
       ]
     },
     "docs/fern-measurements/union-inheritance/allof-unrequired-tag-branches/fern-expected": {},
+    "docs/fern-measurements/union-inheritance/annotated-ref-description-precedence/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/union-inheritance/annotated-ref-description-precedence/fern-expected": {},
     "docs/fern-measurements/union-inheritance/declared-scalar-union-members/expected-literals/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
