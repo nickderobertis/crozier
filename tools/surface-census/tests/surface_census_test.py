@@ -19058,7 +19058,7 @@ class ShapePredicateSelectorControls(unittest.TestCase):
         one-member enum is that enum, and a dangling one is no tag; an inline
         member's unrequired one-member `enum` tags it beside `$ref`ed members; and
         an unrequired bare `const` on `$ref`-only members is no tag where a typed
-        one is.
+        one is, the `type` name included, where a required bare one is.
         """
 
         def tagged(prop: str, tag: dict, *, required: bool = True) -> dict:
@@ -19104,6 +19104,23 @@ class ShapePredicateSelectorControls(unittest.TestCase):
                 Sailboat=tagged("hull", {"type": "string", "const": "sail"}, required=False),
                 Barge=tagged("hull", {"type": "string", "const": "barge"}, required=False),
             ),
+            # The `type` name's own rule: a bare `const` the member leaves
+            # unrequired is no tag, where a required one and a typed one are.
+            "unrequired-bare-type-const": _root_document(
+                {"oneOf": [ref("Note"), ref("Reminder")]},
+                Note=tagged("type", {"const": "note"}, required=False),
+                Reminder=tagged("type", {"const": "reminder"}, required=False),
+            ),
+            "required-bare-type-const": _root_document(
+                {"oneOf": [ref("Note"), ref("Reminder")]},
+                Note=tagged("type", {"const": "note"}),
+                Reminder=tagged("type", {"const": "reminder"}),
+            ),
+            "unrequired-typed-type-const": _root_document(
+                {"oneOf": [ref("Note"), ref("Reminder")]},
+                Note=tagged("type", {"type": "string", "const": "note"}, required=False),
+                Reminder=tagged("type", {"type": "string", "const": "reminder"}, required=False),
+            ),
         }
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -19125,6 +19142,8 @@ class ShapePredicateSelectorControls(unittest.TestCase):
                 ("schema.oneOf:discriminated-union", "referenced-tag"): 1,
                 ("schema.anyOf:discriminated-union", "inline-unrequired-tag"): 1,
                 ("schema.anyOf:discriminated-union", "typed-const-tag"): 1,
+                ("schema.oneOf:discriminated-union", "required-bare-type-const"): 1,
+                ("schema.oneOf:discriminated-union", "unrequired-typed-type-const"): 1,
             },
             rows(completed),
         )
