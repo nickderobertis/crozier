@@ -10594,6 +10594,7 @@ const CORPORA: &[&Corpus] = &[
     &LITERALS_HASHGRAPH_63BA2735,
     &LITERALS_SAMEPAGE_BEA1554A,
     &LITERALS_EASA_FC03FD3C,
+    &LITERALS_RASK_672F1EF2,
     &LITERALS_APIS_GURU_608E22DC,
     &LITERALS_APIS_GURU_79291D99,
     &LITERALS_ATACAN_B306BF44,
@@ -33463,5 +33464,23 @@ const LITERALS_EASA_FC03FD3C: Corpus = Corpus {
 fn registered_literals_francineo_easa_dxcomponents_fc03fd3c_matches_fern_output() {
     assert_committed_corpus_matches(&LITERALS_EASA_FC03FD3C);
     overlay_goldens::assert_literals_match(&LITERALS_EASA_FC03FD3C);
+}
+
+/// Certified enum-mode witness, corpus row 6002.
+const LITERALS_RASK_672F1EF2: Corpus = Corpus {
+    api: "registered-literals-ai-riksarkivet-rask-672f1ef2",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn registered_literals_ai_riksarkivet_rask_672f1ef2_matches_fern_output() {
+    assert_committed_corpus_matches(&LITERALS_RASK_672F1EF2);
+    overlay_goldens::assert_literals_match(&LITERALS_RASK_672F1EF2);
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]

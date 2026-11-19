@@ -11867,6 +11867,12 @@ tests/fixtures/registered-literals-agentic-commerce-protocol-agentic-commerce-pr
 tests/fixtures/registered-literals-agentic-commerce-protocol-agentic-commerce-protocol-cea60d72/expected-literals	reference.md	295	reference-anchor-follows-corrected-client
 tests/fixtures/registered-literals-agentic-commerce-protocol-agentic-commerce-protocol-cea60d72/expected-literals	reference.md	413	reference-anchor-follows-corrected-client
 tests/fixtures/registered-literals-agentic-commerce-protocol-agentic-commerce-protocol-cea60d72/expected-literals	src/fern/checkout_sessions/client.py	74	date-header-constructor-example
+tests/fixtures/registered-literals-ai-riksarkivet-rask-672f1ef2/expected	src/fern/core/client_wrapper.py	42	sdk-identity-header-prefix
+tests/fixtures/registered-literals-ai-riksarkivet-rask-672f1ef2/expected	src/fern/core/client_wrapper.py	43	sdk-identity-header-prefix
+tests/fixtures/registered-literals-ai-riksarkivet-rask-672f1ef2/expected	src/fern/core/client_wrapper.py	44	sdk-identity-header-prefix
+tests/fixtures/registered-literals-ai-riksarkivet-rask-672f1ef2/expected	src/fern/core/client_wrapper.py	45	sdk-identity-header-prefix
+tests/fixtures/registered-literals-ai-riksarkivet-rask-672f1ef2/expected	src/fern/core/client_wrapper.py	46	sdk-identity-header-prefix
+tests/fixtures/registered-literals-ai-riksarkivet-rask-672f1ef2/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
 tests/fixtures/registered-literals-amrc-factoryplus-documentation-be5e3789/expected	README.md	46	schema-rejected-name-example
 tests/fixtures/registered-literals-amrc-factoryplus-documentation-be5e3789/expected	README.md	59	readme-environment-constructor-arguments
 tests/fixtures/registered-literals-amrc-factoryplus-documentation-be5e3789/expected	README.md	82	schema-rejected-name-example

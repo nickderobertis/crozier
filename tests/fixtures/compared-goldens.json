@@ -1644,6 +1644,12 @@
         ".crozier-overlay.json"
       ]
     },
+    "tests/fixtures/registered-literals-ai-riksarkivet-rask-672f1ef2/expected": {},
+    "tests/fixtures/registered-literals-ai-riksarkivet-rask-672f1ef2/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/registered-literals-amrc-factoryplus-documentation-be5e3789/expected": {},
     "tests/fixtures/registered-literals-amrc-factoryplus-documentation-be5e3789/expected-literals": {
       "excluded": [

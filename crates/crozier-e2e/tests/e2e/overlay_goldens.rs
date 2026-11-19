@@ -106,6 +106,7 @@ const KINDS: &[Kind] = &[
             // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Every Fern golden comparison — the corpus `*_matches_fern_output` tests, the hand-written, probe and measurement gates — runs in this one binary suite by the project's design (crates/crozier-e2e/AGENTS.md), which drives the binary crozier:build leaves; giving golden comparisons their own Nx edge is a graph change for that whole family, not for these cases.
             "registered-literals-hashgraph-guardian-63ba2735",
             "registered-literals-francineo-easa-dxcomponents-fc03fd3c",
+            "registered-literals-ai-riksarkivet-rask-672f1ef2",
             "registered-literals-samepage-network-openai-samepage-bea1554a",
             "registered-literals-apis-guru-openapi-directory-608e22dc",
             "registered-literals-apis-guru-openapi-directory-79291d99",

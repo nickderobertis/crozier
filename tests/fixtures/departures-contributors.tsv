@@ -1264,6 +1264,10 @@ tests/fixtures/registered-literals-agentic-commerce-protocol-agentic-commerce-pr
 tests/fixtures/registered-literals-agentic-commerce-protocol-agentic-commerce-protocol-cea60d72/expected	crozier-e2e::e2e	registered_literals_agentic_commerce_protocol_agentic_commerce_protocol_cea60d72_matches_fern_output
 tests/fixtures/registered-literals-agentic-commerce-protocol-agentic-commerce-protocol-cea60d72/expected-literals	crozier-e2e::e2e	overlay_goldens::overlay_goldens_match_fern_output
 tests/fixtures/registered-literals-agentic-commerce-protocol-agentic-commerce-protocol-cea60d72/expected-literals	crozier-e2e::e2e	registered_literals_agentic_commerce_protocol_agentic_commerce_protocol_cea60d72_matches_fern_output
+tests/fixtures/registered-literals-ai-riksarkivet-rask-672f1ef2/expected	crozier-e2e::e2e	overlay_goldens::overlay_goldens_match_fern_output
+tests/fixtures/registered-literals-ai-riksarkivet-rask-672f1ef2/expected	crozier-e2e::e2e	registered_literals_ai_riksarkivet_rask_672f1ef2_matches_fern_output
+tests/fixtures/registered-literals-ai-riksarkivet-rask-672f1ef2/expected-literals	crozier-e2e::e2e	overlay_goldens::overlay_goldens_match_fern_output
+tests/fixtures/registered-literals-ai-riksarkivet-rask-672f1ef2/expected-literals	crozier-e2e::e2e	registered_literals_ai_riksarkivet_rask_672f1ef2_matches_fern_output
 tests/fixtures/registered-literals-amrc-factoryplus-documentation-be5e3789/expected	crozier-e2e::e2e	overlay_goldens::overlay_goldens_match_fern_output
 tests/fixtures/registered-literals-amrc-factoryplus-documentation-be5e3789/expected	crozier-e2e::e2e	registered_literals_amrc_factoryplus_documentation_be5e3789_matches_fern_output
 tests/fixtures/registered-literals-amrc-factoryplus-documentation-be5e3789/expected-literals	crozier-e2e::e2e	overlay_goldens::overlay_goldens_match_fern_output
