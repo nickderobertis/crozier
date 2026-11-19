@@ -176,7 +176,7 @@ provenance and records scoped updates beside their rows.
   before/after trees in both generators recorded in [the shared table](openapi-surface/output-insensitive.tsv).
 - **0 are named gaps**, whose outstanding evidence is in [Unproven arms, named](#unproven-arms-named).
 
-1032 + 81 + 3 + 0 + 0 = 1116. `combo-allof-with-required` replaced `co-occurrence` with its promotion arm `own_required_promotion`, which `groupe-psa` reaches, and `combo-property-anyof-composed-sibling` and the two `combo-unrequired-tag-*-reference` rows became `golden` on the dedicated arms their registered declarers reach ([their record](openapi-surface/witness-search-combinations-schemas/README.md#keys)). Nine sites replaced `co-occurrence` with the body and response
+1032 + 81 + 3 + 0 + 0 = 1116. `combo-allof-with-required` replaced `co-occurrence` with its promotion arm `promote_parent_property`, which `groupe-psa` reaches, and `combo-property-anyof-composed-sibling` and the two `combo-unrequired-tag-*-reference` rows became `golden` on the dedicated arms their registered declarers reach ([their record](openapi-surface/witness-search-combinations-schemas/README.md#keys)). Nine sites replaced `co-occurrence` with the body and response
 interaction arms [their search record](openapi-surface/witness-search-combinations-bodies-responses/README.md#dedicated-regions)
 names, `combo-allof-schema-example` replaced it with its interaction branch in `Builder::add_object`, and the two `combo-oas31-*` rows left `golden` once decided output-insensitive. Fourteen sites left the table with the two functions
 that served only the `Body_*` exemption and the HTTP Basic header drop,

@@ -18,8 +18,8 @@ and executed by a byte-matching registered specification.
 
 `combo-allof-with-required`, `combo-property-anyof-composed-sibling` and the
 two `combo-unrequired-tag-*-reference` keys are in the manifest over dedicated
-arms (`own_required_promotion`, `composed_any_of_sibling` and
-`unrequired_reference_tag`), each split from a pooled condition with output
+arms (`promote_parent_property`, `composed_any_of_sibling` and
+`unrequired_reference_tag_value`), each split from a pooled condition with output
 unchanged; their witnesses are named in the co-occurrence audit.
 
 The other five previously listed controls are retained as diagnostic inputs,

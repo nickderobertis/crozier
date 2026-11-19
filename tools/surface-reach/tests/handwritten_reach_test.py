@@ -932,7 +932,7 @@ def emptied(statuses: str) -> str:
 
 
 FLATTEN_ALL = r"src/ir.rs::Builder::add_object[let inlined_by_base = if flatten_all \{]"
-PROMOTED = r"src/ir.rs::promote_required_parent_properties[if !required && !read_only && own_required_promotion\(schema, &key\) \{]"
+PROMOTED = r"src/ir.rs::promote_required_parent_properties[if !required && !read_only \{]"
 MAP_ARM = r"src/ir.rs::base_type_ref[^ {4}if is_map\(schema\) \{]"
 MAP_ANY_OF = r"src/ir.rs::prefer_map_to_union[if schema\.any_of\.is_some\(\)]"
 NULLABLE_SUCCESS_ONE_OF = r"src/ir.rs::nullable_success_union[if schema\.one_of\.is_some\(\) \{]"
@@ -944,7 +944,7 @@ VALUE_UNREFERENCED = (
     r"src/ir.rs::Builder::field_type_ref[=(?<=inline_value\.filter\(\x7cvalue\x7c )value\.reference\.is_none\(\)]"
 )
 NULLABLE_TARGET = r"src/ir.rs::referenced_schema_accepts_none[if target\.nullable_at_references\(\) \{]"
-READ_ONLY_OPERAND = r"src/ir.rs::promote_required_parent_properties[=!read_only && own_required_promotion]"
+READ_ONLY_OPERAND = r"src/ir.rs::promote_required_parent_properties[=!read_only \{]"
 ERROR_STRUCT = r"src/ir.rs::hoist_error_body_types[if is_inline_struct\(schema\) \{]"
 BODYLESS = r"src/ir.rs::build_endpoint[if has_bodyless_success\(response_op\) && !has_text_response\(response_op\) \{]"
 MIXED_MEDIA_ARM = (

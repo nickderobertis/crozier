@@ -13294,6 +13294,7 @@ pub(crate) fn inferred_discriminant_property(
                         .enum_values
                         .as_ref()
                         .is_some_and(|values| values.len() == 1);
+                let mut reference_tag = false;
                 if references_components && !tagged_by_enum {
                     // Members that are all `$ref`s, each tagging the property with
                     // one string (a one-member `enum` or a `const`) that `required`
@@ -13309,8 +13310,8 @@ pub(crate) fn inferred_discriminant_property(
                         && singleton_enum
                         && !untyped_const_tag(field)
                         && !variant.required.contains(property);
-                    let supported = (unrequired_tag
-                        && unrequired_reference_tag(schema, written, property, schemas))
+                    reference_tag = unrequired_tag;
+                    let supported = unrequired_tag
                         || match property.as_str() {
                             // A bare `const` the member leaves unrequired is no
                             // tag here either: open-managed-agents' session-event
@@ -13350,7 +13351,11 @@ pub(crate) fn inferred_discriminant_property(
                 } else if !singleton_enum || untyped_const_tag(field) {
                     return None;
                 }
-                let value = discriminant_value(field)?;
+                let value = if reference_tag {
+                    unrequired_reference_tag_value(schema, written, property, schemas, field)?
+                } else {
+                    discriminant_value(field)?
+                };
                 (property != "message_type" || !preserve_const_discriminant(&value))
                     .then_some(value)
             })
@@ -13383,19 +13388,19 @@ fn untyped_const_tag(tag: &Schema) -> bool {
     tag.const_value.is_some() && tag.enum_values.is_none() && !is_string_type(tag)
 }
 
-/// Whether an unrequired one-member string tag that every `$ref` member
-/// declares discriminates the union: always, under `oneOf` and `anyOf` alike
-/// (see [`inferred_discriminant_property`]). Each keyword reads apart, and a tag
+/// The discriminant an unrequired one-member string `tag` of a `$ref`-only
+/// union's member carries (see [`inferred_discriminant_property`]): its one
+/// value, under `oneOf` and `anyOf` alike. Each keyword reads apart, and a tag
 /// the member's own component writes inline as an `enum` apart from a typed
 /// `const` (waylay-queries' `data_axis`) or one reached through a `$ref` or a
-/// composition, so the reach ledger measures each on its own; the result is the
-/// same for all of them.
-fn unrequired_reference_tag(
+/// composition, so the reach ledger measures each on its own.
+fn unrequired_reference_tag_value(
     union: &Schema,
     written: &Schema,
     property: &str,
     schemas: &IndexMap<String, Schema>,
-) -> bool {
+    tag: &Schema,
+) -> Option<String> {
     let declared_inline = written
         .reference
         .as_deref()
@@ -13403,15 +13408,15 @@ fn unrequired_reference_tag(
         .and_then(|target| target.properties.get(property))
         .is_some_and(|tag| tag.reference.is_none() && tag.enum_values.is_some());
     if !declared_inline {
-        return true;
+        return discriminant_value(tag);
     }
     if union.one_of.is_some() {
-        return true;
+        return discriminant_value(tag);
     }
     if union.any_of.is_some() {
-        return true;
+        return discriminant_value(tag);
     }
-    true
+    discriminant_value(tag)
 }
 
 fn inferred_union_discriminant_property(
@@ -19663,16 +19668,33 @@ fn parent_property<'a>(
     })
 }
 
-/// Whether [`promote_required_parent_properties`] promotes `key`, a property a
-/// `$ref` parent declares without requiring: always, whether the composition's
-/// own `required` names it or an inline member's does (TAMS's `FlowAudio`).
-/// The composition's own list reads apart, so the reach ledger measures a
-/// schema writing `allOf` and `required` together on its own.
-fn own_required_promotion(schema: &Schema, key: &str) -> bool {
+/// Redeclare `key`, a property a `$ref` parent declares without requiring, as
+/// a required property of the composition's leading member, and record the
+/// component that declares it (see [`promote_required_parent_properties`]).
+/// The composition's own `required` naming it reads apart from an inline
+/// member's (TAMS's `FlowAudio`), so the reach ledger measures a schema writing
+/// `allOf` and `required` together on its own; both promote alike.
+fn promote_parent_property(
+    schema: &Schema,
+    key: &str,
+    property: &Schema,
+    owner: String,
+    promoted: &mut Schema,
+    owners: &mut IndexMap<String, String>,
+) {
     if schema.required.iter().any(|name| name == key) {
-        return true;
+        owners.insert(key.to_string(), owner);
+        promoted
+            .properties
+            .insert(key.to_string(), property.clone());
+        promoted.required.push(key.to_string());
+        return;
     }
-    true
+    owners.insert(key.to_string(), owner);
+    promoted
+        .properties
+        .insert(key.to_string(), property.clone());
+    promoted.required.push(key.to_string());
 }
 
 /// `schema` with each property it requires but declares nowhere itself, and
@@ -19744,10 +19766,8 @@ fn promote_required_parent_properties(
             ) else {
                 continue;
             };
-            if !required && !read_only && own_required_promotion(schema, &key) {
-                owners.insert(key.clone(), owner);
-                promoted.properties.insert(key.clone(), property.clone());
-                promoted.required.push(key.clone());
+            if !required && !read_only {
+                promote_parent_property(schema, &key, property, owner, &mut promoted, &mut owners);
             }
             break;
         }
