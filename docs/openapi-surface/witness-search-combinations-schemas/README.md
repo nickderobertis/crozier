@@ -116,8 +116,8 @@ follow-ups rather than repaired here.
 
 ## What the attributed rows are, and who owns them
 
-Under manager ruling a13, the screen's 264 `attributed-residual` rows (129
-documents x mode) and 16 `open-parity-gap` rows (7 documents) are **attributed,
+Under manager ruling a13, the screen's 264 `attributed-residual` rows (126
+documents, keyed and in both modes) and 16 `open-parity-gap` rows (7 documents) are **attributed,
 not byte-matched**: they are left neither repaired nor catalogued as departures
 here, and count in no byte-match total. Each `attributed-residual` row's detail
 ends `Owners:` with the root causes it shows, one owner each: an open issue, or
