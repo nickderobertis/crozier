@@ -15071,15 +15071,20 @@ impl Builder<'_> {
         // is airbyte's `SourceDefinitionSpecification`, the only two components
         // of this shape the corpus declares.
         if is_bare_object(schema) && !schema.properties.declared() {
-            self.push_alias(
-                name,
-                module,
-                TypeRef::Dict(
-                    Box::new(TypeRef::Primitive(Prim::Str)),
-                    Box::new(TypeRef::Primitive(Prim::Any)),
-                ),
-                docstring,
+            let map = TypeRef::Dict(
+                Box::new(TypeRef::Primitive(Prim::Str)),
+                Box::new(TypeRef::Primitive(Prim::Any)),
             );
+            // A nullable one keeps that nullability on its alias, as a
+            // nullability-only component does (#826): uploadcare's `metadata` is
+            // `{type: object, nullable: true}`, and the certified pair declares
+            // `Metadata = typing.Optional[typing.Dict[str, typing.Any]]`.
+            let target = if is_explicitly_nullable(schema) {
+                optional_type_ref(map)
+            } else {
+                map
+            };
+            self.push_alias(name, module, target, docstring);
             return;
         }
 
@@ -15693,6 +15698,7 @@ impl Builder<'_> {
         let mut first_conflict = vec![usize::MAX; base_refs.len()];
         let lowered_from = self.types.len();
         let mut restated_from = None;
+        let mut rehomed = false;
         if collides {
             let mut restated = std::collections::HashSet::new();
             for (index, (base_name, base)) in base_refs.iter().enumerate() {
@@ -15782,13 +15788,37 @@ impl Builder<'_> {
                     // checkout state."
                     let established = self.established_flat_fields(base_name, raw_bases[index]);
                     let mut chain_extends = Vec::new();
-                    let inline =
-                        self.inlined_part(raw_bases[index], &fields, &mut chain_extends, 0);
+                    let mut declared_by = IndexMap::new();
+                    let inline = self.inlined_part(
+                        raw_bases[index],
+                        base_name,
+                        &fields,
+                        &mut chain_extends,
+                        &mut declared_by,
+                        0,
+                    );
                     let inline_required: Vec<&str> =
                         inline.required.iter().map(String::as_str).collect();
                     let mut inherited = Vec::new();
                     let hoisted = self.types.len();
-                    self.collect_fields(base_name, &inline, &inline_required, &mut inherited);
+                    // A property a deeper parent declares hoists its types under
+                    // that parent, as Fern names them: epilot's automation
+                    // client's `AssignEntityAction` overrides `AutomationAction`,
+                    // itself `allOf: [$ref AutomationActionConfig, …]`, and the
+                    // certified pair types the inlined `reason` as
+                    // `AutomationActionConfigReason`.
+                    if declared_by.values().any(|owner| owner != base_name) {
+                        rehomed = true;
+                        self.collect_promoted(
+                            base_name,
+                            &inline,
+                            &declared_by,
+                            &inline_required,
+                            &mut inherited,
+                        );
+                    } else {
+                        self.collect_fields(base_name, &inline, &inline_required, &mut inherited);
+                    }
                     match established {
                         Some(mut established) => {
                             self.types.truncate(hoisted);
@@ -15858,6 +15888,38 @@ impl Builder<'_> {
                 self.types.remove(index);
             } else {
                 index += 1;
+            }
+        }
+        // …and, once an inlined parent's fields were lowered under the deeper
+        // component declaring them, whatever that comparison hoisted under the
+        // parent's own name: epilot's `AutomationActionReason`, which the
+        // certified pair never declares beside `AutomationActionConfigReason`.
+        if rehomed {
+            let mut reachable = std::collections::HashSet::new();
+            for field in &fields {
+                collect_named(&field.type_ref, &mut reachable);
+            }
+            for decl in self.types[..lowered_from].iter() {
+                reachable.extend(crate::emit::decl_refs(decl));
+            }
+            loop {
+                let before = reachable.len();
+                for decl in &self.types[lowered_from..] {
+                    if reachable.contains(decl.name()) {
+                        reachable.extend(crate::emit::decl_refs(decl));
+                    }
+                }
+                if reachable.len() == before {
+                    break;
+                }
+            }
+            let mut index = lowered_from;
+            while index < self.types.len() {
+                if reachable.contains(self.types[index].name()) {
+                    index += 1;
+                } else {
+                    self.types.remove(index);
+                }
             }
         }
         // An own property dropped as a restatement takes the types it hoisted
@@ -15952,14 +16014,22 @@ impl Builder<'_> {
     /// merged the way [`all_properties_of`] merges them. A parent the model leaves
     /// alone is not merged; its class is pushed to `extended` for the model to
     /// extend in the base's place.
+    ///
+    /// `declared_by` records, for each merged property, the component (`name`,
+    /// or a parent's class) whose own `properties` declare it.
     fn inlined_part(
         &mut self,
         schema: &Schema,
+        name: &str,
         local: &[Field],
         extended: &mut Vec<String>,
+        declared_by: &mut IndexMap<String, String>,
         depth: usize,
     ) -> Schema {
         let schemas = self.schemas;
+        for key in schema.properties.keys() {
+            declared_by.insert(key.clone(), name.to_string());
+        }
         let Some(members) = schema.all_of.as_deref() else {
             return schema.clone();
         };
@@ -15969,6 +16039,9 @@ impl Builder<'_> {
         let mut merged = schema.clone();
         merged.all_of = None;
         let mut properties = crate::openapi::SchemaProperties::default();
+        // The keys a level declares itself (its own and its inline members'),
+        // which lead those its `$ref` parents lend.
+        let mut own_keys: Vec<String> = Vec::new();
         let mut required = Vec::new();
         for member in members {
             let part = match member.reference.as_deref() {
@@ -15985,10 +16058,21 @@ impl Builder<'_> {
                         required.extend(chain_required(schemas, parent));
                         continue;
                     }
-                    self.inlined_part(parent, local, extended, depth + 1)
+                    let parent_name = ref_to_class(reference);
+                    self.inlined_part(
+                        parent,
+                        &parent_name,
+                        local,
+                        extended,
+                        declared_by,
+                        depth + 1,
+                    )
                 }
-                None => self.inlined_part(member, local, extended, depth + 1),
+                None => self.inlined_part(member, name, local, extended, declared_by, depth + 1),
             };
+            if member.reference.is_none() {
+                own_keys.extend(part.properties.keys().cloned());
+            }
             for (key, property) in part.properties.iter() {
                 properties.insert(key.clone(), property.clone());
             }
@@ -15996,10 +16080,26 @@ impl Builder<'_> {
         }
         for (key, property) in schema.properties.iter() {
             properties.insert(key.clone(), property.clone());
+            declared_by.insert(key.clone(), name.to_string());
+        }
+        own_keys.extend(schema.properties.keys().cloned());
+        // Each level's own properties come before those its parents lend, as
+        // the certified pair writes an inlined chain: Mistral's
+        // `FIMCompletionResponse` overrides `ResponseBase.model` through
+        // `ChatCompletionResponse` (`choices`) and `ChatCompletionResponseBase`
+        // (`created`), and its fields run `model`, `choices`, `created`, `id`,
+        // `object`, `usage`. Each value is still the last one merged.
+        let mut ordered = crate::openapi::SchemaProperties::default();
+        for key in own_keys.iter().chain(properties.keys()) {
+            if !ordered.contains_key(key) {
+                if let Some(property) = properties.get(key) {
+                    ordered.insert(key.clone(), property.clone());
+                }
+            }
         }
         required.extend(schema.required.iter().cloned());
         required.dedup();
-        merged.properties = properties;
+        merged.properties = ordered;
         merged.required = required.into();
         merged
     }
@@ -21235,6 +21335,14 @@ fn merge_restated_parent_properties(
                 }
                 if !restated.properties.declared() && base.properties.declared() {
                     restated.properties = base.properties.clone();
+                    changed = true;
+                }
+                // …and a restatement writing no `nullable` keeps the parent's:
+                // hyperdx's `AlertResponse` requires `displayName` and `tags`,
+                // restating `Alert`'s nullable ones without `nullable`, and the
+                // certified pair's fields are `Optional[…] = None`.
+                if restated.nullable.is_none() && base.nullable == Some(true) {
+                    restated.nullable = Some(true);
                     changed = true;
                 }
             }

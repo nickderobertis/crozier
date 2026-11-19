@@ -651,6 +651,12 @@
       ]
     },
     "docs/fern-measurements/union-inheritance/declared-scalar-union-members/fern-expected": {},
+    "docs/fern-measurements/union-inheritance/inlined-chain-inheritance/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/union-inheritance/inlined-chain-inheritance/fern-expected": {},
     "docs/fern-measurements/union-inheritance/map-beside-union/expected-literals/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"

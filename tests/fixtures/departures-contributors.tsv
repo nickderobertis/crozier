@@ -450,6 +450,8 @@ docs/fern-measurements/union-inheritance/annotated-ref-description-precedence/ex
 docs/fern-measurements/union-inheritance/annotated-ref-description-precedence/fern-expected	crozier-e2e::e2e	union_inheritance::union_inheritance_repairs_match_the_certified_pair
 docs/fern-measurements/union-inheritance/declared-scalar-union-members/expected-literals/fern-expected	crozier-e2e::e2e	union_inheritance::union_inheritance_repairs_match_the_certified_pair
 docs/fern-measurements/union-inheritance/declared-scalar-union-members/fern-expected	crozier-e2e::e2e	union_inheritance::union_inheritance_repairs_match_the_certified_pair
+docs/fern-measurements/union-inheritance/inlined-chain-inheritance/expected-literals/fern-expected	crozier-e2e::e2e	union_inheritance::union_inheritance_repairs_match_the_certified_pair
+docs/fern-measurements/union-inheritance/inlined-chain-inheritance/fern-expected	crozier-e2e::e2e	union_inheritance::union_inheritance_repairs_match_the_certified_pair
 docs/fern-measurements/union-inheritance/map-beside-union/expected-literals/fern-expected	crozier-e2e::e2e	union_inheritance::union_inheritance_repairs_match_the_certified_pair
 docs/fern-measurements/union-inheritance/map-beside-union/fern-expected	crozier-e2e::e2e	union_inheritance::union_inheritance_repairs_match_the_certified_pair
 docs/fern-measurements/union-inheritance/null-typed-composition/expected-literals/fern-expected	crozier-e2e::e2e	union_inheritance::union_inheritance_repairs_match_the_certified_pair

@@ -1,0 +1,130 @@
+openapi: 3.0.3
+info:
+  title: Kiln Studio
+  version: 1.0.0
+paths:
+  /firings/{firingId}:
+    get:
+      operationId: getFiring
+      parameters:
+        - name: firingId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The firing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bundle'
+components:
+  schemas:
+    Bundle:
+      type: object
+      properties:
+        glazing:
+          $ref: '#/components/schemas/GlazingStep'
+        summary:
+          $ref: '#/components/schemas/FiringSummary'
+        alarm:
+          $ref: '#/components/schemas/KilnAlarmView'
+        notes:
+          $ref: '#/components/schemas/FiringNotes'
+    StepConfig:
+      type: object
+      properties:
+        id:
+          type: string
+        kind:
+          type: string
+        reason:
+          type: object
+          properties:
+            message:
+              type: string
+    StepState:
+      type: object
+      properties:
+        status:
+          type: string
+    Step:
+      allOf:
+        - $ref: '#/components/schemas/StepConfig'
+        - $ref: '#/components/schemas/StepState'
+    GlazingStep:
+      allOf:
+        - $ref: '#/components/schemas/Step'
+        - type: object
+          properties:
+            kind:
+              enum:
+                - glazing
+            coats:
+              type: integer
+    SummaryBase:
+      type: object
+      properties:
+        id:
+          type: string
+        model:
+          type: string
+        usage:
+          type: integer
+    TimedSummary:
+      allOf:
+        - $ref: '#/components/schemas/SummaryBase'
+        - type: object
+          properties:
+            created:
+              type: integer
+    ShelfSummary:
+      allOf:
+        - $ref: '#/components/schemas/TimedSummary'
+        - type: object
+          required:
+            - shelves
+          properties:
+            shelves:
+              type: array
+              items:
+                type: string
+    FiringSummary:
+      allOf:
+        - $ref: '#/components/schemas/ShelfSummary'
+        - type: object
+          properties:
+            model:
+              type: string
+              description: The kiln model that fired.
+    KilnAlarm:
+      type: object
+      properties:
+        label:
+          type: string
+          nullable: true
+        codes:
+          type: array
+          nullable: true
+          items:
+            type: string
+    KilnAlarmView:
+      allOf:
+        - $ref: '#/components/schemas/KilnAlarm'
+        - type: object
+          required:
+            - label
+            - codes
+          properties:
+            label:
+              type: string
+              description: The alarm's label as shown.
+            codes:
+              type: array
+              items:
+                type: string
+    FiringNotes:
+      type: object
+      nullable: true
+      description: Free-form notes about the firing.

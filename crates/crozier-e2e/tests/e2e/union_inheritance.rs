@@ -191,6 +191,34 @@ const MEASUREMENTS: &[(&str, &str, &str, &str, &str)] = &[
         "        title : str\n            The title's wording.\n",
         "        title : str\n            The draft's title as written.\n",
     ),
+    (
+        "#827 (an inlined chain's inline type is named for the component declaring it)",
+        "inlined-chain-inheritance",
+        "src/fern/types/glazing_step.py",
+        "    reason: typing.Optional[StepConfigReason] = None\n",
+        "    reason: typing.Optional[StepReason] = None\n",
+    ),
+    (
+        "#827 (an inlined chain writes each level's own fields before its parent's)",
+        "inlined-chain-inheritance",
+        "src/fern/types/firing_summary.py",
+        "    shelves: typing.List[str]\n    created: typing.Optional[int] = None\n",
+        "    created: typing.Optional[int] = None\n    shelves: typing.List[str]\n",
+    ),
+    (
+        "#827 (a restatement writing no `nullable` keeps the parent's)",
+        "inlined-chain-inheritance",
+        "src/fern/types/kiln_alarm_view.py",
+        "    codes: typing.Optional[typing.List[str]] = None\n",
+        "    codes: typing.List[str]\n",
+    ),
+    (
+        "#826 (a nullable free-form object component keeps its nullability)",
+        "inlined-chain-inheritance",
+        "src/fern/types/firing_notes.py",
+        "FiringNotes = typing.Optional[typing.Dict[str, typing.Any]]",
+        "FiringNotes = typing.Dict[str, typing.Any]",
+    ),
 ];
 
 fn spec(case: &str) -> PathBuf {

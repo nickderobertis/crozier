@@ -2301,6 +2301,12 @@ docs/fern-measurements/union-inheritance/declared-scalar-union-members/fern-expe
 docs/fern-measurements/union-inheritance/declared-scalar-union-members/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/union-inheritance/declared-scalar-union-members/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/union-inheritance/declared-scalar-union-members/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/union-inheritance/inlined-chain-inheritance/expected-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
+docs/fern-measurements/union-inheritance/inlined-chain-inheritance/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/union-inheritance/inlined-chain-inheritance/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/union-inheritance/inlined-chain-inheritance/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/union-inheritance/inlined-chain-inheritance/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/union-inheritance/inlined-chain-inheritance/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/union-inheritance/map-beside-union/expected-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
 docs/fern-measurements/union-inheritance/map-beside-union/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/union-inheritance/map-beside-union/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
