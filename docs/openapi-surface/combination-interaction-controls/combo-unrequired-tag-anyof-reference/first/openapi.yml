@@ -1,0 +1,35 @@
+openapi: 3.0.3
+info:
+  title: sample
+  version: 1.0.0
+paths:
+  /tallies:
+    get:
+      operationId: getTally
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tally'
+components:
+  schemas:
+    Tally:
+      anyOf:
+        - $ref: '#/components/schemas/Cat'
+        - $ref: '#/components/schemas/Dog'
+    Cat:
+      type: object
+      properties:
+        kind:
+          type: string
+        purrs:
+          type: boolean
+    Dog:
+      type: object
+      properties:
+        kind:
+          type: string
+        barks:
+          type: boolean

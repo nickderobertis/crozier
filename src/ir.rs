@@ -4675,10 +4675,11 @@ fn build_endpoint(
                         min_length: None,
                         max_length: None,
                     }));
+                    let response = TypeRef::Named(name);
                     Some(if dropped_null {
-                        optional_type_ref(TypeRef::Named(name))
+                        nullable_success_union(schema, response)
                     } else {
-                        TypeRef::Named(name)
+                        response
                     })
                 }
             }
@@ -13308,7 +13309,8 @@ pub(crate) fn inferred_discriminant_property(
                         && singleton_enum
                         && !untyped_const_tag(field)
                         && !variant.required.contains(property);
-                    let supported = unrequired_tag
+                    let supported = (unrequired_tag
+                        && unrequired_reference_tag(schema, written, property, schemas))
                         || match property.as_str() {
                             // A bare `const` the member leaves unrequired is no
                             // tag here either: open-managed-agents' session-event
@@ -13379,6 +13381,36 @@ fn untyped_enum_tag(tag: &Schema) -> bool {
 /// their own rules.
 fn untyped_const_tag(tag: &Schema) -> bool {
     tag.const_value.is_some() && tag.enum_values.is_none() && !is_string_type(tag)
+}
+
+/// Whether an unrequired one-member string `enum` tag that every `$ref` member
+/// declares discriminates the union: always, under `oneOf` and `anyOf` alike
+/// (see [`inferred_discriminant_property`]). Each keyword reads apart, and a tag
+/// the member's own component declares inline apart from one reached through a
+/// `$ref` or a composition, so the reach ledger measures each on its own; the
+/// result is the same for all of them.
+fn unrequired_reference_tag(
+    union: &Schema,
+    written: &Schema,
+    property: &str,
+    schemas: &IndexMap<String, Schema>,
+) -> bool {
+    let declared_inline = written
+        .reference
+        .as_deref()
+        .and_then(|reference| resolve_ref_from_schemas(schemas, reference))
+        .and_then(|target| target.properties.get(property))
+        .is_some_and(|tag| tag.reference.is_none());
+    if !declared_inline {
+        return true;
+    }
+    if union.one_of.is_some() {
+        return true;
+    }
+    if union.any_of.is_some() {
+        return true;
+    }
+    true
 }
 
 fn inferred_union_discriminant_property(
@@ -14383,6 +14415,22 @@ fn append_member_fields(
 /// properties or map of its own. A one-member composition is that member, and
 /// one alternative beside `null` is that alternative made optional, so neither
 /// is a union of its own.
+/// Whether `member` is an inline `oneOf` offered beside at least one other
+/// non-`null` alternative of the property's `anyOf`: the OAL example's
+/// `obj3.stuff` (corpus row 312). Lowered as any composed member is; the
+/// property's `anyOf` and the member's `oneOf` read apart from the other
+/// spellings, so the reach ledger measures this pairing on its own.
+fn composed_any_of_sibling(property: &Schema, member: &Schema) -> bool {
+    member.one_of.is_some()
+        && property.any_of.as_ref().is_some_and(|alternatives| {
+            alternatives
+                .iter()
+                .filter(|alternative| !is_null_variant(alternative))
+                .count()
+                > 1
+        })
+}
+
 fn is_composed_member(member: &Schema) -> bool {
     member.reference.is_none()
         && member.all_of.is_none()
@@ -17855,6 +17903,9 @@ impl Builder<'_> {
                             // an inline `oneOf` first, and Fern declares
                             // `Obj3StuffZero` (corpus row 312).
                             if is_composed_member(m) {
+                                if composed_any_of_sibling(prop_schema, m) {
+                                    return self.variant_ref(&name, index, m, members);
+                                }
                                 return self.variant_ref(&name, index, m, members);
                             }
                             // An array of inline objects is a list of a model named
@@ -19611,6 +19662,18 @@ fn parent_property<'a>(
     })
 }
 
+/// Whether [`promote_required_parent_properties`] promotes `key`, a property a
+/// `$ref` parent declares without requiring: always, whether the composition's
+/// own `required` names it or an inline member's does (TAMS's `FlowAudio`).
+/// The composition's own list reads apart, so the reach ledger measures a
+/// schema writing `allOf` and `required` together on its own.
+fn own_required_promotion(schema: &Schema, key: &str) -> bool {
+    if schema.required.iter().any(|name| name == key) {
+        return true;
+    }
+    true
+}
+
 /// `schema` with each property it requires but declares nowhere itself, and
 /// that a `$ref` parent declares without requiring, redeclared as its own
 /// required property, or `None` when there is none. Fern's importer (measured
@@ -19680,7 +19743,7 @@ fn promote_required_parent_properties(
             ) else {
                 continue;
             };
-            if !required && !read_only {
+            if !required && !read_only && own_required_promotion(schema, &key) {
                 owners.insert(key.clone(), owner);
                 promoted.properties.insert(key.clone(), property.clone());
                 promoted.required.push(key.clone());
@@ -20002,6 +20065,25 @@ fn referenced_schema_accepts_none(schema: &Schema, schemas: &IndexMap<String, Sc
         }
         current = target;
     }
+}
+
+/// The return type of an inline success union whose `type: null` member was
+/// dropped: the union, returned optionally. Each keyword reads apart, so the
+/// reach ledger measures a nullable `oneOf` response and a nullable `anyOf` one
+/// each on its own; the result is the same for both.
+fn nullable_success_union(schema: &Schema, union: TypeRef) -> TypeRef {
+    if schema.one_of.is_some() {
+        return optional_type_ref(union);
+    }
+    // A normalized type list (`type: [string, integer, null]`) writes no anyOf
+    // keyword, though it is lowered as one.
+    if schema.multi_type_union {
+        return optional_type_ref(union);
+    }
+    if schema.any_of.is_some() {
+        return optional_type_ref(union);
+    }
+    optional_type_ref(union)
 }
 
 // Each keyword retains a conjunctive return arm for the reach measurement.
