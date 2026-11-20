@@ -23963,7 +23963,10 @@ COMBINATION_RESIDUAL_AREA = "combinations-"
 
 
 def witness_search_listed(root: pathlib.Path, hashes: set[str]) -> set[str]:
-    """The `hashes` some committed witness-search record lists, read smallest file first until all are found."""
+    """The `hashes` some committed witness-search record lists as a whole cell, smallest record first until all are found.
+
+    Only an exact 64-hex cell counts: a hash quoted inside a note or another field lists nothing.
+    """
     records = sorted(
         (root / "docs/openapi-surface").glob("witness-search-*/**/*.tsv"), key=lambda path: path.stat().st_size
     )
@@ -23971,8 +23974,10 @@ def witness_search_listed(root: pathlib.Path, hashes: set[str]) -> set[str]:
     for path in records:
         if found == hashes:
             break
-        text = path.read_text(encoding="utf-8")
-        found |= {sha for sha in hashes - found if sha in text}
+        with path.open(encoding="utf-8") as stream:
+            for line in stream:
+                cells = {cell.strip('"') for cell in line.rstrip("\n").split("\t")}
+                found |= hashes & cells
     return found
 
 
@@ -24037,7 +24042,9 @@ def reconcile_handed_off(root: pathlib.Path) -> None:
                 if row["area"].startswith(COMBINATION_RESIDUAL_AREA):
                     # A combination node's scoped-out screen candidate (manager ruling a15): no
                     # handed-off document, so its search record must list it and its note name an owner.
-                    assert "owner:" in row["note"], f"{row['sha256']}: combination residual names no owner"
+                    assert re.search(r"\bowner: [^\s;,]", row["note"]), (
+                        f"{row['sha256']}: combination residual names no owner"
+                    )
                     combination_residuals.add(str(HandedOffHash(row["sha256"])))
                     continue
                 residuals.setdefault(str(HandedOffHash(row["sha256"])), set()).add(row["file"])
@@ -24115,7 +24122,9 @@ def reconcile_handed_off(root: pathlib.Path) -> None:
 
     assert residuals.keys() <= hashes, "residual for an unmeasured document"
     unlisted_candidates = combination_residuals - witness_search_listed(root, combination_residuals)
-    assert not unlisted_candidates, f"combination residual no witness-search record lists: {sorted(unlisted_candidates)}"
+    assert not unlisted_candidates, (
+        f"combination residual no witness-search record lists: {sorted(unlisted_candidates)}"
+    )
     listed = {row.sha256: set(row.root_causes.split(";")) for row in documents}
     unlisted = sorted(
         str(attribution)
@@ -24426,7 +24435,6 @@ class HandedOffReconciliationTests(unittest.TestCase):
         evidence.write_text(valid, encoding="utf-8")
         reconcile_handed_off(self.root)
 
-
     def test_a_combination_residual_must_be_a_listed_screen_candidate_with_an_owner(self) -> None:
         sha = "c" * 64
         residuals = self.directory / "residuals.tsv"
@@ -24437,10 +24445,24 @@ class HandedOffReconciliationTests(unittest.TestCase):
         residuals.write_text(header + owned, encoding="utf-8")
         with self.assertRaisesRegex(AssertionError, f"combination residual no witness-search record lists: .*{sha}"):
             reconcile_handed_off(self.root)
-        record.write_text(f"key\tpopulation\tdocument\tsha256\toutcome\nk\tp\td\t{sha}\tfern-refusal\n", encoding="utf-8")
+        record.write_text(
+            f"key\tpopulation\tdocument\tsha256\toutcome\nk\tp\td\t{sha}\tfern-refusal\n", encoding="utf-8"
+        )
         reconcile_handed_off(self.root)
-        residuals.write_text(header + owned.replace("owner: ", ""), encoding="utf-8")
-        with self.assertRaisesRegex(AssertionError, f"{sha}: combination residual names no owner"):
+        for label, note in (
+            ("no owner marker", "a follow-up draft; root cause: measured"),
+            ("an empty owner", "owner: ; root cause: measured"),
+        ):
+            with self.subTest(owner=label):
+                residuals.write_text(
+                    f"{header}{sha}\t-\tsome-refusal\tcombinations-parameters\t{note}\n", encoding="utf-8"
+                )
+                with self.assertRaisesRegex(AssertionError, f"{sha}: combination residual names no owner"):
+                    reconcile_handed_off(self.root)
+        # A hash quoted inside another cell is not a listed candidate.
+        record.write_text(f"key\toutcome\nk\tsame document as {sha}\n", encoding="utf-8")
+        residuals.write_text(header + owned, encoding="utf-8")
+        with self.assertRaisesRegex(AssertionError, "combination residual no witness-search record lists"):
             reconcile_handed_off(self.root)
         # Outside a combination area the row is a handed-off residual again, and its document is unmeasured.
         residuals.write_text(header + owned.replace("combinations-parameters", "residual-repair-2"), encoding="utf-8")
