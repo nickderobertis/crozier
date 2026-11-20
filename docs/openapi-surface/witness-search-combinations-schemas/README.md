@@ -161,7 +161,7 @@ Not screen candidates: the real specifications tickets #825, #826, #827, #838 an
 |---|---|---|---|
 | APIs.guru `vercel.com/0.0.1/openapi.yaml` | `65e9c34e…` | #825 | 13 files differed on main. With this change, python-enums differs in 2 files and literals in 4. All are usage examples: Fern leaves the required `value` out of `PatchtEdgeConfigItemsRequestItemsItemValue(...)`, the Fern defect ticket 828's departure catalogues (owned by `combinations-examples-docs`), and writes `items=[]` in `reference.md`. The two literals-only files quote a string that holds `"` with escapes inside docstring examples, where Fern uses single quotes, which is unrelated. |
 | konfig-sdks `peach-payments/openapi.yaml` | `d7497fa8…` | #827, #838 | Byte-matches whole in both enum modes, re-compared on the finished tree. |
-| Hookdeck (`62844bc1…`) | `62844bc1…` | #826, #839 | No file of either ticket differs, in either mode. 18 files still differ: open tickets #815 (closed object query-union members) and #438 (parameter union member nullability). |
+| Hookdeck (`62844bc1…`) | `62844bc1…` | #826, #839 | No file of either ticket differs, in either mode. 18 files still differ and 11 exist only in the certified tree (the `*One` and `*CliIdAll` query-union member models), in both modes: open tickets #815 (closed object query-union members) and #438 (parameter union member nullability). |
 
 The from-scratch measurements under
 [`../../fern-measurements/union-inheritance/`](../../fern-measurements/union-inheritance/)
