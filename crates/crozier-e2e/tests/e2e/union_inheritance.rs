@@ -420,6 +420,28 @@ fn list_item_nested_union_markdown_lists_match_the_certified_pair() {
             "{doc}: the populated list must be an unexplained difference"
         );
     }
+    // The departure admits only the required field Fern omits: the docstring's
+    // corrected `payload=` line is explained, while any other argument added
+    // beside it in the same constructor is still a difference.
+    let rel = "src/fern/client.py";
+    let written = std::fs::read_to_string(out.join(rel)).expect("the client");
+    let fern = std::fs::read_to_string(expected.join(rel)).expect("the certified client");
+    let compare = |text: &str| {
+        crozier::parity::compare_file(&context, rel, text, &fern)
+            .unwrap_or_else(|error| panic!("{rel}: {error}"))
+    };
+    assert!(compare(&written).diff().is_none(), "{rel} differs");
+    let corrected = "                    payload=\"payload\",\n";
+    assert!(written.contains(corrected), "{written}");
+    let extra = written.replacen(
+        corrected,
+        &format!("{corrected}                    note=\"note\",\n"),
+        1,
+    );
+    assert!(
+        compare(&extra).diff().is_some(),
+        "an argument the model does not require is no departure"
+    );
 }
 
 /// A literal enum value holding `"` and no `'` is single-quoted in a client
@@ -546,6 +568,21 @@ fn sdk_env_required_null_union_field_examples_construct_where_fern_s_fail() {
         );
         assert!(!run(&fern, "valid").0, "{}", fern.display());
     }
+    // An SDK with no such construction proves nothing, so the script fails.
+    let other = repo_root().join(golden("query-union-member-models"));
+    let output = std::process::Command::new(&python)
+        .env("PYTHONDONTWRITEBYTECODE", "1")
+        .arg(&script)
+        .arg(&other)
+        .arg("invalid")
+        .output()
+        .expect("run the evidence script");
+    assert_eq!(output.status.code(), Some(1), "{}", other.display());
+    assert!(
+        String::from_utf8_lossy(&output.stderr).contains("no worked example constructs a model"),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
     let temp = tempfile::tempdir().expect("output tempdir");
     for mode in ["python-enums", "literals"] {
         let out = temp.path().join(mode);
