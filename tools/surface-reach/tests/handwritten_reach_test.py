@@ -190,26 +190,35 @@ verdict = "exhausted"
 )
 # A combination whose site cell reads `co-occurrence`: no measured branch joins both
 # features, so a fixture covering it is measured at each handling function the
-# committed audit names, over a document whose operation requires a basic scheme.
-COOCCURRING = "combo-basic-auth-operation-requirement"
-SECURITY_DOCUMENT = """openapi: 3.0.3
+# committed audit names, over a document whose body property is a map of nullable values.
+COOCCURRING = "combo-map-of-nullable-values"
+NULLABLE_MAP_BODY_DOCUMENT = """openapi: 3.0.3
 info:
   title: sample
   version: 1.0.0
 paths:
-  /ping:
-    get:
-      operationId: ping
-      security:
-        - basic: []
+  /labels:
+    post:
+      operationId: setLabels
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Labels"
       responses:
-        "200":
-          description: ok
+        "204":
+          description: done
 components:
-  securitySchemes:
-    basic:
-      type: http
-      scheme: basic
+  schemas:
+    Labels:
+      type: object
+      properties:
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+            nullable: true
 """
 
 
@@ -490,7 +499,7 @@ class HandwrittenReachRecipeTest(unittest.TestCase):
                     COMBINATION,
                     COMBINATION_DOCUMENT.format(labels=LABELS["array-of-nullable-unknown-items"]),
                 ),
-                ("basic-operation-requirement", COOCCURRING, SECURITY_DOCUMENT),
+                ("nullable-map-body", COOCCURRING, NULLABLE_MAP_BODY_DOCUMENT),
             ):
                 directory = base / name
                 directory.mkdir(parents=True)
@@ -505,7 +514,7 @@ class HandwrittenReachRecipeTest(unittest.TestCase):
             self.assertEqual(HEADER, rows[0])
             measured = {(row[0], row[1], row[2]): (int(row[3]), int(row[4])) for row in rows[1:]}
             expected = {("nullable-map-only", COMBINATION, INTERACTION)} | {
-                ("basic-operation-requirement", COOCCURRING, handler) for handler in handlers
+                ("nullable-map-body", COOCCURRING, handler) for handler in handlers
             }
             self.assertEqual(expected, set(measured), "a combination-only fixture was not measured at its sites")
             for site, (executed, total) in measured.items():
@@ -963,7 +972,7 @@ HEADER_ENUM_ARM = r"src/emit.rs::append_request_call_args[let value = if header_
 QUERY_EXAMPLE_DROPPED = r"src/ir.rs::build_endpoint[let example = if omit_synthesized_example]"
 QUERY_EXAMPLE_TAKEN = r"src/ir.rs::build_endpoint[=^ {16}query_parameter_example\(doc, p\)$]"
 ALIASED_TEMPORAL = r"src/ir.rs::build_endpoint[=TypeRef::Primitive\(Prim::Datetime\) => Some\(Prim::Datetime\),]"
-BODY_COLLISION = r"src/ir.rs::build_endpoint[if let Some\(prefix\) = &field\.collision_prefix]"
+BODY_COLLISION = r"src/ir.rs::build_endpoint[if let Some\(prefix\) = &collision_prefix]"
 QUERY_UNION_GLOBAL = r"src/ir.rs::parameter_union_is_global[=parameter\.required\.unwrap_or\(false\) == nullable]"
 ONE_OR_MANY = r"src/ir.rs::one_or_many_query_schema[=let nullable = non_null\.len\(\) < members\.len\(\)]"
 BASIC = "  securitySchemes:\n    basicAuth:\n      type: http\n      scheme: basic\n"
@@ -1040,7 +1049,9 @@ def tagged_union(location: str, keyword: str) -> str:
 FORM_JSON_MEDIA = r"src/ir.rs::resolve_request_body[if selected_json_request_media\(rb\)\.is_some\(\) \{]"
 FORM_UNION = r"src/ir.rs::resolve_request_body[if let Some\(members\) = obj\.one_of\.as_ref\(\)\.or\(obj\.any_of\.as_ref\(\)\) \{]"
 FORM_UNION_SUFFIX = r"src/ir.rs::resolve_request_body[^\s*RequestInputs::Own => \{$]"
-UNION_BODY_SUFFIX = r"src/ir.rs::resolve_request_body[^ {8}let request_body_name = if inputs != RequestInputs::None \{]"
+# The operation's own parameters beside an inline union body: one arm per keyword.
+ANY_OF_BODY_SUFFIX = r"src/ir.rs::resolve_request_body[=\(RequestInputs::Own, false\) => format!]"
+ONE_OF_BODY_SUFFIX = r"src/ir.rs::resolve_request_body[=\(RequestInputs::Own, true\) => format!]"
 COMPOSED_MEDIA_EXAMPLE = (
     r"src/emit.rs::build_example_inner[let mut example_fields: Vec<&BodyField> = if composed_request_media_example \{]"
 )
@@ -1048,9 +1059,8 @@ FALLBACKS_ONLY = r"src/ir.rs::resolve_request_body[=Some\(_\) => ComponentExampl
 UNION_EXAMPLE = r"src/emit.rs::ExampleCtx::value_from_example[if let TypeRef::Union\(variants\) = t \{]"
 MATCHED_VARIANT = r"src/emit.rs::ExampleCtx::value_from_example[if self\.example_matches_type\(variant, &value\) \{]"
 MULTIPART_CLAIMS = r"src/ir.rs::rename_claimed_path_params[Some\(RequestBody::Form\(form\)\) if form\.multipart => \{]"
-CLAIMED_RENAME = (
-    r'src/ir.rs::rename_claimed_path_params[=let mut renamed = format!\("\{\}PathParam", param\.wire_name\);]'
-)
+# A path parameter renamed for a name its request body claims.
+CLAIMED_RENAME = r'src/ir.rs::rename_claimed_path_params[=^\s+false => format!\("\{\}PathParam"]'
 
 
 def tally_post(content: str, parameters: str = "") -> str:
@@ -1732,12 +1742,12 @@ OUTCOMES = (
         "combo-params-beside-inline-anyof-body",
         Run(
             operation_document(tally_post(TALLY_JSON + TALLY_ANY, TALLY_QUERY)),
-            ran=(UNION_BODY_SUFFIX,),
+            ran=(ANY_OF_BODY_SUFFIX,),
             holds=((CLIENT, "request: PostTallyRequestBody,"),),
         ),
         Run(
             operation_document(tally_post(TALLY_JSON + TALLY_ANY)),
-            skipped=(UNION_BODY_SUFFIX,),
+            skipped=(ANY_OF_BODY_SUFFIX,),
             holds=((CLIENT, "request: PostTallyRequest,"),),
             lacks=((CLIENT, "PostTallyRequestBody"),),
         ),
@@ -1746,12 +1756,12 @@ OUTCOMES = (
         "combo-params-beside-inline-oneof-body",
         Run(
             operation_document(tally_post(TALLY_JSON + TALLY_UNION, TALLY_QUERY)),
-            ran=(UNION_BODY_SUFFIX,),
+            ran=(ONE_OF_BODY_SUFFIX,),
             holds=((CLIENT, "request: PostTallyRequestBody,"),),
         ),
         Run(
             operation_document(tally_post(TALLY_JSON + TALLY_UNION)),
-            skipped=(UNION_BODY_SUFFIX,),
+            skipped=(ONE_OF_BODY_SUFFIX,),
             holds=((CLIENT, "request: PostTallyRequest,"),),
             lacks=((CLIENT, "PostTallyRequestBody"),),
         ),
@@ -1763,12 +1773,12 @@ OUTCOMES = (
         Run(
             operation_document(tally_post(TALLY_FORM + TALLY_UNION, TALLY_QUERY)),
             ran=(FORM_UNION_SUFFIX,),
-            skipped=(UNION_BODY_SUFFIX,),
+            skipped=(ANY_OF_BODY_SUFFIX, ONE_OF_BODY_SUFFIX),
             holds=((CLIENT, "request: typing.Optional[PostTallyRequestBody] = None,"),),
         ),
         Run(
             operation_document(tally_post(TALLY_FORM + TALLY_UNION)),
-            skipped=(FORM_UNION_SUFFIX, UNION_BODY_SUFFIX),
+            skipped=(FORM_UNION_SUFFIX, ANY_OF_BODY_SUFFIX, ONE_OF_BODY_SUFFIX),
             holds=((CLIENT, "request: typing.Optional[PostTallyRequest] = None,"),),
             lacks=((CLIENT, "PostTallyRequestBody"),),
         ),
@@ -1955,7 +1965,7 @@ class RegionUnionReportTest(unittest.TestCase):
         reports = sorted(
             (REPO / "docs/openapi-surface/witness-search-operation-combinations/controls").glob("*/region-union.json")
         )
-        self.assertEqual(8, len(reports))
+        self.assertEqual(4, len(reports))
         pattern = golden_reach().HANDLER_SPEC
         for path in reports:
             with self.subTest(report=path.parent.name):
@@ -2143,6 +2153,96 @@ KIOSK_SCHEMAS = (
     "  schemas:\n    Kiosk:\n      type: object\n      properties:\n        label:\n          type: string\n"
     "        serial:\n          type: string\n          readOnly: true\n"
 )
+
+
+# A kiln parameter at `location`, with a second operation so a header stays a
+# per-call argument rather than a client-wide global.
+def kiln_parameter(schema: str, location: str = "query", required: bool = False) -> str:
+    return (
+        "  /kilns:\n    get:\n      operationId: listKilns\n      parameters:\n        - name: shelf\n"
+        f"          in: {location}\n"
+        + ("          required: true\n" if required else "")
+        + f"          schema:\n{schema}"
+        '      responses:\n        "204":\n          description: done\n'
+        '  /glazes:\n    get:\n      operationId: listGlazes\n      responses:\n        "204":\n          description: done\n'
+    )
+
+
+def kiln_union(keyword: str) -> str:
+    return f"            {keyword}:\n              - type: string\n              - type: integer\n"
+
+
+def kiln_array(items: str) -> str:
+    return "            type: array\n            items:\n" + items
+
+
+INLINE_FIRING_ITEMS = "              type: string\n              enum: [bisque, glaze]\n"
+FIRING_ITEMS = '              $ref: "#/components/schemas/Firing"\n'
+PLAIN_ITEMS = "              type: string\n"
+FIRING_SCHEMAS = "  schemas:\n    Firing:\n      type: string\n      enum: [bisque, glaze]\n"
+
+
+# A posted batch whose JSON body is `body`, beside `parameters` the operation
+# declares itself, and `shared` ones its path item declares.
+def batch_post(body: str, parameters: str = "", shared: str = "") -> str:
+    return (
+        "  /batches:\n"
+        + shared
+        + "    post:\n      operationId: createBatch\n"
+        + parameters
+        + "      requestBody:\n        required: true\n        content:\n          application/json:\n            schema:\n"
+        + body
+        + '      responses:\n        "204":\n          description: done\n'
+    )
+
+
+def batch_union(keyword: str) -> str:
+    return (
+        f"              {keyword}:\n"
+        "                - type: object\n                  properties:\n                    cone:\n"
+        "                      type: integer\n"
+        "                - type: object\n                  properties:\n                    clay:\n"
+        "                      type: string\n"
+    )
+
+
+BATCH_OBJECT = (
+    "              type: object\n              properties:\n                cone:\n                  type: integer\n"
+)
+BATCH_QUERY = (
+    "      parameters:\n        - name: dryRun\n          in: query\n          schema:\n            type: boolean\n"
+)
+SHARED_BATCH_QUERY = (
+    "    parameters:\n      - name: dryRun\n        in: query\n        schema:\n          type: boolean\n"
+)
+BASIC_SCHEME = "  securitySchemes:\n    gate:\n      type: http\n      scheme: basic\n"
+
+
+# One operation, so a header it declares rides every operation and is promoted.
+def kiln_version(schema: str, location: str = "header") -> str:
+    return (
+        "  /kilns:\n    get:\n      operationId: listKilns\n      parameters:\n        - name: X-Kiln-Version\n"
+        f"          in: {location}\n          schema:\n{schema}"
+        '      responses:\n        "204":\n          description: done\n'
+    )
+
+
+DEFAULTED_VERSION = "            type: string\n            default: '2025-10'\n"
+
+
+def job_update(properties: str) -> str:
+    return (
+        "  /jobs/{id}:\n    put:\n      operationId: updateJob\n      parameters:\n        - name: id\n"
+        "          in: path\n          required: true\n          schema:\n            type: string\n"
+        "      requestBody:\n        required: true\n        content:\n          application/json:\n"
+        "            schema:\n              type: object\n              properties:\n"
+        + properties
+        + '      responses:\n        "204":\n          description: done\n'
+    )
+
+
+JOB_NAME = "                name:\n                  type: string\n"
+JOB_ID = "                id:\n                  type: string\n"
 
 
 def schema_control(key: str, role: str) -> str:
@@ -2465,6 +2565,119 @@ INTERACTION_ARMS: dict[str, InteractionArm] = {
             "stream condition alone": operation_document(streamed_call(False, True), QUOTE_SCHEMAS),
         },
     ),
+    "combo-query-param-anyof": InteractionArm(
+        operation_document(kiln_parameter(kiln_union("anyOf"))),
+        {
+            "query alone": operation_document(kiln_parameter("            type: string\n")),
+            "anyOf alone": operation_document(kiln_parameter(kiln_union("anyOf"), "header", True)),
+            "query oneOf": operation_document(kiln_parameter(kiln_union("oneOf"))),
+        },
+    ),
+    "combo-query-param-oneof": InteractionArm(
+        operation_document(kiln_parameter(kiln_union("oneOf"))),
+        {
+            "query alone": operation_document(kiln_parameter("            type: string\n")),
+            "oneOf alone": operation_document(kiln_parameter(kiln_union("oneOf"), "header", True)),
+            "query anyOf": operation_document(kiln_parameter(kiln_union("anyOf"))),
+        },
+    ),
+    "combo-query-param-array-inline-enum-items": InteractionArm(
+        operation_document(kiln_parameter(kiln_array(INLINE_FIRING_ITEMS))),
+        {
+            "query array alone": operation_document(kiln_parameter(kiln_array(PLAIN_ITEMS))),
+            "inline enum items alone": operation_document(
+                kiln_parameter(kiln_array(INLINE_FIRING_ITEMS), "header", True)
+            ),
+            "referenced enum items": operation_document(kiln_parameter(kiln_array(FIRING_ITEMS)), FIRING_SCHEMAS),
+        },
+    ),
+    "combo-query-param-array-ref-enum-items": InteractionArm(
+        operation_document(kiln_parameter(kiln_array(FIRING_ITEMS)), FIRING_SCHEMAS),
+        {
+            "query array alone": operation_document(kiln_parameter(kiln_array(PLAIN_ITEMS)), FIRING_SCHEMAS),
+            "referenced enum items alone": operation_document(
+                kiln_parameter(kiln_array(FIRING_ITEMS), "header", True), FIRING_SCHEMAS
+            ),
+            "inline enum items": operation_document(kiln_parameter(kiln_array(INLINE_FIRING_ITEMS))),
+        },
+    ),
+    # The required key's selector holds every feature of the referenced one and
+    # requiredness besides, so each control drops one of them.
+    "combo-required-query-array-enum-items": InteractionArm(
+        operation_document(kiln_parameter(kiln_array(FIRING_ITEMS), required=True), FIRING_SCHEMAS),
+        {
+            "optional": operation_document(kiln_parameter(kiln_array(FIRING_ITEMS)), FIRING_SCHEMAS),
+            "plain items": operation_document(kiln_parameter(kiln_array(PLAIN_ITEMS), required=True), FIRING_SCHEMAS),
+            "header": operation_document(kiln_parameter(kiln_array(FIRING_ITEMS), "header", True), FIRING_SCHEMAS),
+        },
+    ),
+    # The query object's arm places it by its requiredness; an optional object and
+    # a required one both run it.
+    "combo-query-param-inline-object": InteractionArm(
+        operation_document(
+            kiln_parameter(
+                "            type: object\n            properties:\n              cone:\n                type: integer\n"
+            )
+        ),
+        {
+            "query alone": operation_document(kiln_parameter("            type: string\n")),
+            "inline object alone": operation_document(
+                kiln_parameter(
+                    "            type: object\n            properties:\n              cone:\n                type: integer\n",
+                    "cookie",
+                )
+            ),
+        },
+    ),
+    "combo-params-beside-inline-anyof-body": InteractionArm(
+        operation_document(batch_post(batch_union("anyOf"), BATCH_QUERY)),
+        {
+            "parameters alone": operation_document(batch_post(BATCH_OBJECT, BATCH_QUERY)),
+            "inline anyOf body alone": operation_document(batch_post(batch_union("anyOf"))),
+            "path-item parameters beside it": operation_document(
+                batch_post(batch_union("anyOf"), shared=SHARED_BATCH_QUERY)
+            ),
+            "parameters beside an inline oneOf": operation_document(batch_post(batch_union("oneOf"), BATCH_QUERY)),
+        },
+    ),
+    "combo-params-beside-inline-oneof-body": InteractionArm(
+        operation_document(batch_post(batch_union("oneOf"), BATCH_QUERY)),
+        {
+            "parameters alone": operation_document(batch_post(BATCH_OBJECT, BATCH_QUERY)),
+            "inline oneOf body alone": operation_document(batch_post(batch_union("oneOf"))),
+            "path-item parameters beside it": operation_document(
+                batch_post(batch_union("oneOf"), shared=SHARED_BATCH_QUERY)
+            ),
+            "parameters beside an inline anyOf": operation_document(batch_post(batch_union("anyOf"), BATCH_QUERY)),
+        },
+    ),
+    "combo-basic-auth-document-requirement": InteractionArm(
+        operation_document(gated_call(), BASIC_SCHEME, ROOT_GATE),
+        {
+            "basic scheme alone": operation_document(gated_call(), BASIC_SCHEME),
+            "document requirement alone": operation_document(gated_call(), BEARER_SCHEME, ROOT_GATE),
+        },
+    ),
+    "combo-basic-auth-operation-requirement": InteractionArm(
+        operation_document(gated_call(OWN_GATE), BASIC_SCHEME),
+        {
+            "basic scheme alone": operation_document(gated_call(), BASIC_SCHEME),
+            "operation requirement alone": operation_document(gated_call(OWN_GATE), BEARER_SCHEME),
+        },
+    ),
+    "combo-header-string-default": InteractionArm(
+        operation_document(kiln_version(DEFAULTED_VERSION)),
+        {
+            "header alone": operation_document(kiln_version("            type: string\n")),
+            "default alone": operation_document(kiln_version(DEFAULTED_VERSION, "query")),
+        },
+    ),
+    # The property named as a path parameter entails the request body, so the body
+    # alone is the only single-feature document there is.
+    "combo-body-property-named-as-path-param": InteractionArm(
+        operation_document(job_update(JOB_ID + JOB_NAME)),
+        {"request body alone": operation_document(job_update(JOB_NAME))},
+    ),
     # The schema's own example reaches a field its inline `allOf` member declares; every
     # document keeps the model's own `note`, so only the two features vary. The documents
     # are the manifest's, so this arm and the schema-control test drive the same inputs.
@@ -2776,7 +2989,7 @@ class CooccurrenceOutcomeTest(unittest.TestCase):
             (path, RegionUnionReport.read(path, reach.HANDLER_SPEC))
             for path in sorted(controls.glob("*/region-union.json"))
         ]
-        self.assertEqual(8, len(reports), "each completed failed-union experiment is replayed")
+        self.assertEqual(4, len(reports), "each completed failed-union experiment is replayed")
         audit, failures = reach.read_cooccurrence()
         self.assertEqual([], failures)
         crozier = handwritten.instrumented_crozier(REPO, reach)
@@ -3015,6 +3228,10 @@ SCHEMA_CONTROL_FEATURES = {
     "combo-allof-with-required": ControlFeatures("schema.allOf", "schema.required"),
     "combo-map-beside-anyof": ControlFeatures("schema.additionalProperties", "schema.anyOf"),
     "combo-map-beside-oneof": ControlFeatures("schema.additionalProperties", "schema.oneOf"),
+    "combo-required-query-array-enum-items": ControlFeatures(
+        "parameter.in=query&parameter.required&parameter.schema>schema.type:primary=array",
+        "schema.items>schema.$ref~>schema.enum:string-valued",
+    ),
     "combo-properties-beside-additional-properties": ControlFeatures(
         "schema.additionalProperties", "schema.properties:non-empty"
     ),

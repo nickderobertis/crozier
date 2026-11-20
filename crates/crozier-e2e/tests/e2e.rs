@@ -10591,6 +10591,9 @@ const OPENCODEUI: Corpus = Corpus {
 };
 
 const CORPORA: &[&Corpus] = &[
+    &PINECONE_INFERENCE,
+    &OPENAPI_CODE_GENERATOR_E2E,
+    &KRATOS_BLOG,
     &LITERALS_HASHGRAPH_63BA2735,
     &LITERALS_SAMEPAGE_BEA1554A,
     &LITERALS_EASA_FC03FD3C,
@@ -33482,5 +33485,65 @@ const LITERALS_RASK_672F1EF2: Corpus = Corpus {
 fn registered_literals_ai_riksarkivet_rask_672f1ef2_matches_fern_output() {
     assert_committed_corpus_matches(&LITERALS_RASK_672F1EF2);
     overlay_goldens::assert_literals_match(&LITERALS_RASK_672F1EF2);
+}
+
+/// `api-evangelist-pinecone-inference`: corpus row 6100, Pinecone's inference API —
+/// the registered witness of `combo-header-string-default`, whose
+/// `X-Pinecone-Api-Version` header carries a string default on every operation.
+const PINECONE_INFERENCE: Corpus = Corpus {
+    api: "api-evangelist-pinecone-inference",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn api_evangelist_pinecone_inference_matches_fern_output() {
+    assert_committed_corpus_matches(&PINECONE_INFERENCE);
+    overlay_goldens::assert_literals_match(&PINECONE_INFERENCE);
+}
+
+/// `mnahkies-openapi-code-generator-e2e`: corpus row 6101, the
+/// openapi-code-generator end-to-end document — its required query `filter`
+/// objects stay in their tag's `types/`, and its referenced urlencoded
+/// `ProductOrder` passes the component's own `ProductOrderAddress`.
+const OPENAPI_CODE_GENERATOR_E2E: Corpus = Corpus {
+    api: "mnahkies-openapi-code-generator-e2e",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn mnahkies_openapi_code_generator_e2e_matches_fern_output() {
+    assert_committed_corpus_matches(&OPENAPI_CODE_GENERATOR_E2E);
+    overlay_goldens::assert_literals_match(&OPENAPI_CODE_GENERATOR_E2E);
+}
+/// `go-kratos-examples-blog`: corpus row 6102, go-kratos's blog example API — the
+/// registered witness of `combo-body-property-named-as-path-param`, whose
+/// `PUT /v1/article/{id}` body declares the `id` its path parameter names.
+const KRATOS_BLOG: Corpus = Corpus {
+    api: "go-kratos-examples-blog",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn go_kratos_examples_blog_matches_fern_output() {
+    assert_committed_corpus_matches(&KRATOS_BLOG);
+    overlay_goldens::assert_literals_match(&KRATOS_BLOG);
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]

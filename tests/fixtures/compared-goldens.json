@@ -321,6 +321,8 @@
     "docs/fern-measurements/handed-off/union-modelling/pattern-properties-only-oneof-member/fern-expected": {},
     "docs/fern-measurements/handed-off/union-modelling/query-anyof-date-time-or-array-named/fern-expected": {},
     "docs/fern-measurements/handed-off/union-modelling/query-oneof-of-arrays/fern-expected": {},
+    "docs/fern-measurements/handed-off/union-modelling/query-union-object-members/fern-expected": {},
+    "docs/fern-measurements/handed-off/union-modelling/query-union-object-members/literals/fern-expected": {},
     "docs/fern-measurements/handed-off/union-modelling/union-modelling/annotated-reference-beside-null/fern-expected": {},
     "docs/fern-measurements/handed-off/union-modelling/union-modelling/annotated-reference-beside-null/literals/fern-expected": {},
     "docs/fern-measurements/handed-off/union-modelling/union-modelling/event-stream-beside-json/fern-expected": {},
@@ -1159,6 +1161,12 @@
     "tests/fixtures/apache.org-airflow/expected": {},
     "tests/fixtures/apache.org-qakka/expected": {},
     "tests/fixtures/apache.org/expected": {},
+    "tests/fixtures/api-evangelist-pinecone-inference/expected": {},
+    "tests/fixtures/api-evangelist-pinecone-inference/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/api-openverse-org/expected": {},
     "tests/fixtures/apicurio.local-registry/expected": {},
     "tests/fixtures/apideck.com-accounting/expected": {},
@@ -1356,6 +1364,12 @@
       ]
     },
     "tests/fixtures/go-kratos-casbin-admin/expected": {},
+    "tests/fixtures/go-kratos-examples-blog/expected": {},
+    "tests/fixtures/go-kratos-examples-blog/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/googleapis-monitoring-v1/expected": {},
     "tests/fixtures/googleapis-servicebroker/expected": {},
     "tests/fixtures/googleapis-speech-v2beta1/expected": {},
@@ -1510,6 +1524,12 @@
     "tests/fixtures/mindee-ocr/expected": {},
     "tests/fixtures/missing-operation-id/expected": {},
     "tests/fixtures/mistle-control-plane/expected": {},
+    "tests/fixtures/mnahkies-openapi-code-generator-e2e/expected": {},
+    "tests/fixtures/mnahkies-openapi-code-generator-e2e/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/mockserver/expected": {},
     "tests/fixtures/mockserver/expected-literals": {
       "excluded": [

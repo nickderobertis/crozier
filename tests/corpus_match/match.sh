@@ -60,6 +60,9 @@ cargo build --locked --quiet --profile e2e -p crozier --bin crozier
 threads=8
 
 inventory=(
+  api_evangelist_pinecone_inference_matches_fern_output
+  mnahkies_openapi_code_generator_e2e_matches_fern_output
+  go_kratos_examples_blog_matches_fern_output
   registered_literals_hashgraph_guardian_63ba2735_matches_fern_output
   registered_literals_samepage_network_openai_samepage_bea1554a_matches_fern_output
   registered_literals_francineo_easa_dxcomponents_fc03fd3c_matches_fern_output

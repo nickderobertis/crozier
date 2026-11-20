@@ -14843,6 +14843,12 @@ class FinishedStateGateTests(unittest.TestCase):
         self.assertEqual([], failures)
         placed, failures = gate.interaction_sites({witness: fixture}, sites, audit)
         self.assertEqual([], failures)
+        self.assertEqual(set(sites[key].sites), {row.site for row in placed if row.key == key})
+        # Every committed hand-written cover names an interaction site, so the same cover is
+        # also stood up as a `co-occurrence` row, which is measured at the audit's handlers.
+        sites = {**sites, key: sites[key]._replace(sites=(), cooccurrence=True)}
+        placed, failures = gate.interaction_sites({witness: fixture}, sites, audit)
+        self.assertEqual([], failures)
         self.assertEqual(set(reach.handler_specs(audit[key].handlers)), {row.site for row in placed if row.key == key})
         cover = next(cover for cover in fixture.covers if cover.key == key and cover.arm is None)
         undeclared = fixture._replace(covers=[cover._replace(key="combo-not-declared")])
@@ -14971,7 +14977,7 @@ class FinishedStateGateTests(unittest.TestCase):
         self.assertEqual([], [f for f in finished_state_failures(self.root) if "witness-blocked" in f or fixture in f])
 
     def test_an_open_row_presented_as_a_current_exhausted_handwritten_proof_is_refused(self) -> None:
-        key = "combo-body-property-named-as-path-param"
+        key = "combo-body-property-named-as-header-param"
         current = "docs/openapi-surface/witness-search-operation-combinations/README.md"
         historical = "witness-search-fixture-only-bodies-paths-continuation/README.md"
 
@@ -14991,7 +14997,7 @@ class FinishedStateGateTests(unittest.TestCase):
         self.edit(region, line, stale)
         self.assertTrue(presented(finished_state_failures(self.root)))
         self.edit(region, stale, line)
-        evidence = "docs/openapi-surface/handwritten/beacon-signal-results/evidence.toml"
+        evidence = "docs/openapi-surface/handwritten/ferry-desk-header-collision/evidence.toml"
         text = (self.root / evidence).read_text(encoding="utf-8")
         cover = f'key = "{key}"\nsearch = "{current}#verdicts"\nverdict = "search-incomplete"\nrenewed = "{current}"'
         self.assertIn(cover, text)
@@ -15003,9 +15009,9 @@ class FinishedStateGateTests(unittest.TestCase):
         self.assertTrue(presented(finished_state_failures(self.root)))
 
     def test_a_malformed_cover_is_reported_by_the_open_row_check(self) -> None:
-        root = self.root / "docs/openapi-surface/handwritten/beacon-signal-results"
+        root = self.root / "docs/openapi-surface/handwritten/ferry-desk-header-collision"
         record = "docs/openapi-surface/witness-search-operation-combinations/README.md"
-        key = "combo-body-property-named-as-path-param"
+        key = "combo-body-property-named-as-header-param"
         row = combination_rows(self.root)[key]
         (root / "evidence.toml").write_text('covers = "none"\n', encoding="utf-8")
         failures = open_handwritten_presentation_failures(self.root, key, record, row)
@@ -21707,7 +21713,7 @@ class CoverageRestatementTests(unittest.TestCase):
         source.write_text("openapi: 3.0.3\n", encoding="utf-8")
         digest = hashlib.sha256(source.read_bytes()).hexdigest()
         header = "schema_version\tcase\ttier\tkeys\tsource\tsha256\tsearch\n"
-        row = f"1\tcase\topen\tcombo-header-string-default\tcase.yml\t{digest}\tsearch.md\n"
+        row = f"1\tcase\topen\tcombo-header-array-accepted-placements\tcase.yml\t{digest}\tsearch.md\n"
         matrix.write_text(header + row, encoding="utf-8")
         for invalid in (
             header.replace("schema_version", "wrong_header") + row,
@@ -21730,7 +21736,7 @@ class CoverageRestatementTests(unittest.TestCase):
         rendered = self.index.read_text(encoding="utf-8")
         self.assertIn("1 decided, 0 undecided", rendered)
         self.assertIn("1 combination cases remain", rendered)
-        self.assertIn("| `combo-header-string-default` | `parameters` | `search incomplete`", rendered)
+        self.assertIn("| `combo-header-array-accepted-placements` | `parameters` | `search incomplete`", rendered)
         unrelated = next(line for line in rendered.splitlines() if line.startswith("| `combo-tag-only-operation-id` |"))
         matrix.write_text(header + row.replace("\topen\t", "\thandwritten\t"), encoding="utf-8")
         changed = self.run_restater("--write")
@@ -21792,13 +21798,13 @@ class CoverageRestatementTests(unittest.TestCase):
             "rows": [
                 {"selector": "openapi.paths", "fixture": "sample", "count": 1},
                 {"selector": "operation.operationId:digit-leading-method", "fixture": "sample", "count": 1},
-                {"selector": "parameter.in=header&parameter.schema>schema.default", "fixture": "sample", "count": 3},
+                {"selector": "parameter.in=header&parameter.schema>schema.type=array", "fixture": "sample", "count": 3},
             ],
         }
         snapshot = self.root / "snapshot.json"
         snapshot.write_text(json.dumps(payload), encoding="utf-8")
         region = self.root / "docs/openapi-surface/parameters.md"
-        key = "| combo-header-string-default |"
+        key = "| combo-header-array-accepted-placements |"
         original = next(line for line in region.read_text(encoding="utf-8").splitlines() if line.startswith(key))
         written = self.run_restater("--snapshot-json", str(snapshot), "--write")
         self.assertEqual(0, written.returncode, written.stderr)
@@ -21807,14 +21813,16 @@ class CoverageRestatementTests(unittest.TestCase):
         self.assertEqual(original.split("|")[:5], positive.split("|")[:5])
         self.assertEqual(original.split("|")[6:], positive.split("|")[6:])
         payload["rows"] = [
-            row for row in payload["rows"] if row["selector"] != "parameter.in=header&parameter.schema>schema.default"
+            row
+            for row in payload["rows"]
+            if row["selector"] != "parameter.in=header&parameter.schema>schema.type=array"
         ]
         snapshot.write_text(json.dumps(payload), encoding="utf-8")
         self.assertEqual(0, self.run_restater("--snapshot-json", str(snapshot), "--write").returncode)
         valid = region.read_text(encoding="utf-8")
         self.assertIn("0 declarations across 0 registered golden sources", valid)
         region.write_text(
-            valid.replace("census `parameter.in=header&parameter.schema>schema.default`", "missing selector"),
+            valid.replace("census `parameter.in=header&parameter.schema>schema.type=array`", "missing selector"),
             encoding="utf-8",
         )
         refused = self.run_restater("--snapshot-json", str(snapshot), "--write")
@@ -23992,6 +24000,28 @@ def handed_off_area_attributions(
     return found
 
 
+COMBINATION_RESIDUAL_AREA = "combinations-"
+
+
+def witness_search_listed(root: pathlib.Path, hashes: set[str]) -> set[str]:
+    """The `hashes` some committed witness-search record lists as a whole cell, smallest record first until all are found.
+
+    Only an exact 64-hex cell counts: a hash quoted inside a note or another field lists nothing.
+    """
+    records = sorted(
+        (root / "docs/openapi-surface").glob("witness-search-*/**/*.tsv"), key=lambda path: path.stat().st_size
+    )
+    found: set[str] = set()
+    for path in records:
+        if found == hashes:
+            break
+        with path.open(encoding="utf-8") as stream:
+            for line in stream:
+                cells = {cell.strip('"') for cell in line.rstrip("\n").split("\t")}
+                found |= hashes & cells
+    return found
+
+
 def reconcile_handed_off(root: pathlib.Path) -> None:
     """Read the source records and on-disk evidence, refusing triage drift."""
     directory = root / "docs/fern-measurements/handed-off"
@@ -24041,6 +24071,7 @@ def reconcile_handed_off(root: pathlib.Path) -> None:
         assert tuple(reader.fieldnames or ()) == DOCUMENT_COLUMNS, "documents header"
         documents = [HandedOffDocumentRecord.parse(row) for row in reader]
     residuals: dict[str, set[str]] = {}
+    combination_residuals: set[str] = set()
     residual_causes: set[HandedOffAttribution] = set()
     residual_path = directory / "residuals.tsv"
     if residual_path.is_file():
@@ -24049,6 +24080,14 @@ def reconcile_handed_off(root: pathlib.Path) -> None:
             assert tuple(reader.fieldnames or ()) == ("sha256", "file", "root_cause", "area", "note"), "residual header"
             for row in reader:
                 assert row["file"] and row["root_cause"] and row["area"] and row["note"], "incomplete residual"
+                if row["area"].startswith(COMBINATION_RESIDUAL_AREA):
+                    # A combination node's scoped-out screen candidate (manager ruling a15): no
+                    # handed-off document, so its search record must list it and its note name an owner.
+                    assert re.search(r"\bowner: [^\s;,]", row["note"]), (
+                        f"{row['sha256']}: combination residual names no owner"
+                    )
+                    combination_residuals.add(str(HandedOffHash(row["sha256"])))
+                    continue
                 residuals.setdefault(str(HandedOffHash(row["sha256"])), set()).add(row["file"])
                 if re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", row["root_cause"]):
                     residual_causes.add(
@@ -24137,6 +24176,10 @@ def reconcile_handed_off(root: pathlib.Path) -> None:
                 assert row.note.strip(), f"{sha}: missing could-not-check reason"
 
     assert residuals.keys() <= hashes, "residual for an unmeasured document"
+    unlisted_candidates = combination_residuals - witness_search_listed(root, combination_residuals)
+    assert not unlisted_candidates, (
+        f"combination residual no witness-search record lists: {sorted(unlisted_candidates)}"
+    )
     listed = {row.sha256: set(row.root_causes.split(";")) for row in documents}
     unlisted = sorted(
         str(attribution)
@@ -24486,6 +24529,40 @@ class HandedOffReconciliationTests(unittest.TestCase):
                     reconcile_handed_off(self.root)
         evidence.write_text(valid, encoding="utf-8")
         reconcile_handed_off(self.root)
+
+    def test_a_combination_residual_must_be_a_listed_screen_candidate_with_an_owner(self) -> None:
+        sha = "c" * 64
+        residuals = self.directory / "residuals.tsv"
+        header = "sha256\tfile\troot_cause\tarea\tnote\n"
+        owned = f"{sha}\t-\tsome-refusal\tcombinations-parameters\towner: a follow-up draft; root cause: measured\n"
+        record = self.root / "docs/openapi-surface/witness-search-sample-combinations/outcomes.tsv"
+        record.parent.mkdir(parents=True)
+        residuals.write_text(header + owned, encoding="utf-8")
+        with self.assertRaisesRegex(AssertionError, f"combination residual no witness-search record lists: .*{sha}"):
+            reconcile_handed_off(self.root)
+        record.write_text(
+            f"key\tpopulation\tdocument\tsha256\toutcome\nk\tp\td\t{sha}\tfern-refusal\n", encoding="utf-8"
+        )
+        reconcile_handed_off(self.root)
+        for label, note in (
+            ("no owner marker", "a follow-up draft; root cause: measured"),
+            ("an empty owner", "owner: ; root cause: measured"),
+        ):
+            with self.subTest(owner=label):
+                residuals.write_text(
+                    f"{header}{sha}\t-\tsome-refusal\tcombinations-parameters\t{note}\n", encoding="utf-8"
+                )
+                with self.assertRaisesRegex(AssertionError, f"{sha}: combination residual names no owner"):
+                    reconcile_handed_off(self.root)
+        # A hash quoted inside another cell is not a listed candidate.
+        record.write_text(f"key\toutcome\nk\tsame document as {sha}\n", encoding="utf-8")
+        residuals.write_text(header + owned, encoding="utf-8")
+        with self.assertRaisesRegex(AssertionError, "combination residual no witness-search record lists"):
+            reconcile_handed_off(self.root)
+        # Outside a combination area the row is a handed-off residual again, and its document is unmeasured.
+        residuals.write_text(header + owned.replace("combinations-parameters", "residual-repair-2"), encoding="utf-8")
+        with self.assertRaisesRegex(AssertionError, "residual for an unmeasured document"):
+            reconcile_handed_off(self.root)
 
 
 class HandedOffRepositoryRecordTests(unittest.TestCase):

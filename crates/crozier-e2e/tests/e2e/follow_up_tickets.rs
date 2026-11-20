@@ -97,7 +97,7 @@ fn follow_up_ticket_index_holds_every_ticket_once() {
         actual,
         [
             "602", "679", "685", "694", "696", "697", "698", "699", "700", "701", "702", "703",
-            "842"
+            "815", "842"
         ]
     );
     for row in rows {

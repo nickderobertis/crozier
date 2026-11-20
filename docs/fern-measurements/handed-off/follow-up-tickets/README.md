@@ -1,10 +1,11 @@
 # Generated-output follow-up tickets
 
-All thirteen ticket texts concern generated output. The triage is
+All fourteen ticket texts concern generated output. The triage is
 [`../follow-up-tickets.tsv`](../follow-up-tickets.tsv). Of the first twelve, eight reuse a
 landed certified measurement and name its clearing commit; #697 reuses the
 landed refusal measurement. The remaining three have fresh reductions here.
-No ticket was closed, commented on or moved.
+No ticket was closed, commented on or moved. #815 was settled later, by the
+parameter-combinations proof node, with a fresh certified reduction.
 
 Every successful tree in the table byte-matches on the finished tree through
 the catalogued departures; the two refusal rows refuse in both CLI modes.
@@ -28,6 +29,7 @@ their original provenance, runtime evidence and enum-mode proofs.
 | [#701](https://github.com/nickderobertis/crozier/issues/701) | `already-matching` | [R13](../union-modelling/R13/openapi.yml) | `6b30bffa91c98da1800f68f40a14a83b8f5d175aa7ffeea30f0434229b600c24` |
 | [#702](https://github.com/nickderobertis/crozier/issues/702) | `already-matching` | [R12](../client-structure/R12/openapi.yml) | `aae317cfb1c60c9c5d9ca0884462c284d59f7a57979fef72b03584ce5119c568` |
 | [#703](https://github.com/nickderobertis/crozier/issues/703) | `already-matching` | [R14](../document-acceptance/R14/openapi.yml) | `68a66b5edf38b080068b25e0db4b9e26731da597109349115648eb91663cfd89` |
+| [#815](https://github.com/nickderobertis/crozier/issues/815) | `parity-gap-repaired` | [query-union-object-members](../union-modelling/query-union-object-members/openapi.yml) | `9626d0e7ede79cb5c99bd8a312fb4a2ef3a81e55a29e8ae435c0de10413f1730` |
 | [#842](https://github.com/nickderobertis/crozier/issues/842) | `fern-defect-departed` | [842](842/openapi.yml) | `fe0477bf3e3c201fbf7d1e2fad45c01ebede27d165428320cf126051db8696e3` |
 
 The publisher document behind #697 is api-platform/schema-generator's

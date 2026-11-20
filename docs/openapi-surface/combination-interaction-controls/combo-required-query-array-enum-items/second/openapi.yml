@@ -1,0 +1,23 @@
+openapi: 3.0.3
+info:
+  title: Kiln firings
+  version: "1.0"
+paths:
+  /firings:
+    get:
+      operationId: listFirings
+      parameters:
+        - name: stage
+          in: query
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/Stage"
+      responses:
+        "204":
+          description: done
+components:
+  schemas:
+    Stage:
+      type: string
+      enum: [bisque, glaze]
