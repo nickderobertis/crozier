@@ -49,33 +49,20 @@ written without `payload`, and the single-level `tags` union writes
 and docstrings alike, each item with `payload="payload"`, and crozier already
 writes exactly that.
 
-## Why this is not repaired here
+## Repaired
 
-The trigger is the `null` member itself, and a `null` member inside a union is
-the shape of the separate residual `union-member-nullability-and-object-models`
-(Vercel rows 45–57): the certified pair types those members
-`typing.Optional[…]` and drops the `null` alternative, where crozier keeps it as
-`typing.Any`. Every document exhibiting #828 therefore also differs on that
-residual (the with-null comparison differs on all six `payload` type modules),
-so no reduction for #828 alone can byte-match whole, and a Markdown selection
-rule written against crozier's current union IR would have to be rewritten once
-that IR changes. By the manager's rulings `a5` and `a6`, the member-nullability
-repair belongs to the `combinations-schemas-2` node, and #828's emit rule (the
-empty Markdown list) and its `fern-defect` departure (the docstring's omitted
-required field) belong to a follow-on node that runs after it lands; these two
-documents are its measured trigger.
-
-## Scope of the departure the follow-on writes
-
-By the manager's ruling `c24.1`, `combinations-schemas` will cite this
-departure where Fern's union usage example omits a required field (its ticket
-#825: a union whose first alternative becomes `Optional`). The behaviour
-measured here is of that general kind: in every omission above, the field left
-out is required and typed by a union carrying a `null` member, whether the
-model holding it is a union item (`entries`) or a plain list item (`notes`, in
-`reference.md`). So the follow-on's `fern-defect` entry should be worded for a
-worked example, in a docstring or in Markdown, that omits a required field whose
-union type Fern makes `Optional`, not only for a list of union items. Its rule
-should then admit only the shapes it can hold to a certified tree. These two
-reductions measure the list-item and plain-item cases; #825's own measurement
-is that node's evidence.
+The `union-member-nullability-and-object-models` repair landed first, so the
+payload types match the certified pair, and the follow-on
+`union-member-nullability-2` then repaired #828 against
+[`union-inheritance/list-item-nested-union`](../../../union-inheritance/list-item-nested-union/openapi.yml),
+a copy of `with-null.openapi.yml` whose certified trees in both enum modes are
+committed there. The README's and `reference.md`'s `entries=[],` now match. So
+does `reference.md`'s `tags` item. The two omissions of a required field, in the
+docstrings and in `reference.md`'s `notes` item, are the `fern-defect` departure
+`required-null-union-field-example`. Its
+[evidence](../../../../departures/evidence/required-null-union-field-example.md)
+executes each certified construction and shows it raising pydantic's
+`ValidationError` for the missing `payload`. The departure entry covers any
+worked example, in a docstring or in Markdown, that omits a required field
+whose union opens with an optional member. Its rule admits only the one keyword
+line inside a constructor whose class requires that field in Fern's own tree.

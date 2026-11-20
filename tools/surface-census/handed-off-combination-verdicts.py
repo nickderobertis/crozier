@@ -76,6 +76,7 @@ HANDED_OFF_STATUSES = frozenset(
         "differs",
         "could-not-check",
         "registration-incomplete",
+        "byte-matches",
     }
 )
 CombinationKey = NewType("CombinationKey", str)
