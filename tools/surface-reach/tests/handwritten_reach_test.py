@@ -931,7 +931,7 @@ def emptied(statuses: str) -> str:
     )
 
 
-FLATTEN_ALL = r"src/ir.rs::Builder::add_object[let inlined_by_base = if flatten_all \{]"
+FLATTEN_ALL = r"src/ir.rs::Builder::add_object[let inlined_by_base = if nullable_annotation \x7c\x7c cyclic_parent \{]"
 PROMOTED = r"src/ir.rs::promote_required_parent_properties[if !required && !read_only \{]"
 MAP_ARM = r"src/ir.rs::base_type_ref[^ {4}if is_map\(schema\) \{]"
 MAP_ANY_OF = r"src/ir.rs::prefer_map_to_union[if schema\.any_of\.is_some\(\)]"
