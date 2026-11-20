@@ -22,6 +22,7 @@ import importlib
 import pathlib
 import re
 import sys
+from typing import NamedTuple
 
 UNION = re.compile(r"^(\w+) = typing\.Union\[\n?\s*typing\.Optional\[", re.M)
 CLASS = re.compile(r"^class (\w+)\(", re.M)
@@ -42,7 +43,14 @@ def required_null_union_fields(package: pathlib.Path) -> dict[str, set[str]]:
     return fields
 
 
-def constructions(root: pathlib.Path, classes: set[str]) -> list[tuple[str, str]]:
+class Construction(NamedTuple):
+    """One worked-example constructor: where it stands, and its expression on one line."""
+
+    where: str
+    expression: str
+
+
+def constructions(root: pathlib.Path, classes: set[str]) -> list[Construction]:
     """Every `Class(...)` expression of a worked example, with where it was found."""
     found = []
     texts = [(path, path.read_text(encoding="utf-8")) for path in sorted((root / "src").rglob("client.py"))]
@@ -56,7 +64,7 @@ def constructions(root: pathlib.Path, classes: set[str]) -> list[tuple[str, str]
             indent = opened.group(1)
             end = next(at for at in range(index + 1, len(lines)) if lines[at] == f"{indent})")
             expression = "\n".join(item.strip() for item in lines[index : end + 1])
-            found.append((f"{path.relative_to(root)}:{index + 1}", expression))
+            found.append(Construction(f"{path.relative_to(root)}:{index + 1}", expression))
     return found
 
 

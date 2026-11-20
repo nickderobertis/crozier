@@ -500,6 +500,12 @@ fn sdk_env_query_union_member_models_parse_their_payloads() {
             .output()
             .expect("run the journey")
     };
+    let usage = std::process::Command::new(&python)
+        .arg(&script)
+        .output()
+        .expect("run the journey");
+    assert_eq!(usage.status.code(), Some(2), "no SDK_SRC is a usage error");
+    assert!(String::from_utf8_lossy(&usage.stderr).contains("usage:"));
     let missing = run(&repo_root().join(DIR).join(case));
     assert_eq!(
         missing.status.code(),
@@ -568,6 +574,27 @@ fn sdk_env_required_null_union_field_examples_construct_where_fern_s_fail() {
         );
         assert!(!run(&fern, "valid").0, "{}", fern.display());
     }
+    // A usage error, or a root holding no generated package, exits 2.
+    for args in [
+        vec![],
+        vec![
+            repo_root().join(golden(case)).display().to_string(),
+            "maybe".to_string(),
+        ],
+        vec![
+            repo_root().join(DIR).join(case).display().to_string(),
+            "invalid".to_string(),
+        ],
+    ] {
+        let output = std::process::Command::new(&python)
+            .env("PYTHONDONTWRITEBYTECODE", "1")
+            .arg(&script)
+            .args(&args)
+            .output()
+            .expect("run the evidence script");
+        assert_eq!(output.status.code(), Some(2), "{args:?}");
+        assert!(!output.stderr.is_empty(), "{args:?}: a diagnostic");
+    }
     // An SDK with no such construction proves nothing, so the script fails.
     let other = repo_root().join(golden("query-union-member-models"));
     let output = std::process::Command::new(&python)
@@ -594,6 +621,8 @@ fn sdk_env_required_null_union_field_examples_construct_where_fern_s_fail() {
             5,
             "{mode}: {stdout}"
         );
+        // crozier's constructions succeed, so they are not Fern's failing ones.
+        assert!(!run(&out, "invalid").0, "{mode}");
         for doc in ["README.md", "reference.md"] {
             let text = std::fs::read_to_string(out.join(doc)).expect("a Markdown file");
             assert!(text.contains("    entries=[],\n"), "{mode} {doc}: {text}");
