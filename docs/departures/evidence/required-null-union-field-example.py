@@ -62,7 +62,9 @@ def constructions(root: pathlib.Path, classes: set[str]) -> list[Construction]:
             if not opened or opened.group(2) not in classes:
                 continue
             indent = opened.group(1)
-            end = next(at for at in range(index + 1, len(lines)) if lines[at] == f"{indent})")
+            end = next((at for at in range(index + 1, len(lines)) if lines[at] == f"{indent})"), None)
+            if end is None:
+                raise ValueError(f"{path.relative_to(root)}:{index + 1}: `{opened.group(2)}(` never closes")
             expression = "\n".join(item.strip() for item in lines[index : end + 1])
             found.append(Construction(f"{path.relative_to(root)}:{index + 1}", expression))
     return found
@@ -85,15 +87,19 @@ def main(argv: list[str]) -> int:
         return 2
     root, expect = pathlib.Path(argv[0]), argv[1]
     package = root / "src" / "fern"
-    if not (package / "__init__.py").is_file():
-        print(f"{root}: holds no src/fern package; pass a generated SDK's root", file=sys.stderr)
+    if not (package / "__init__.py").is_file() or not (root / "reference.md").is_file():
+        print(f"{root}: holds no src/fern package and reference.md; pass a generated SDK's root", file=sys.stderr)
         return 2
     sys.path.insert(0, str(root / "src"))
     import pydantic
 
     fern = importlib.import_module("fern")
     fields = required_null_union_fields(package)
-    found = constructions(root, set(fields))
+    try:
+        found = constructions(root, set(fields))
+    except ValueError as error:
+        print(f"{root}: {error}; pass an SDK whose examples are complete", file=sys.stderr)
+        return 1
     if not found:
         print(f"{root}: no worked example constructs a model with such a field", file=sys.stderr)
         return 1

@@ -622,6 +622,43 @@ fn sdk_env_required_null_union_field_examples_construct_where_fern_s_fail() {
         assert_eq!(output.status.code(), Some(2), "{args:?}");
         assert!(!output.stderr.is_empty(), "{args:?}: a diagnostic");
     }
+    // A copy of the certified tree without its `reference.md` is no SDK root
+    // (exit 2), and one whose constructor never closes is refused (exit 1).
+    let broken = tempfile::tempdir().expect("broken tree tempdir");
+    let copy = |name: &str| {
+        let root = broken.path().join(name);
+        let expected = repo_root().join(golden(case));
+        for rel in walk_files(&expected) {
+            let to = root.join(&rel);
+            std::fs::create_dir_all(to.parent().expect("a parent")).expect("mkdir");
+            std::fs::copy(expected.join(&rel), &to).expect("copy a Fern file");
+        }
+        root
+    };
+    let unreferenced = copy("unreferenced");
+    std::fs::remove_file(unreferenced.join("reference.md")).expect("remove reference.md");
+    let unclosed = copy("unclosed");
+    let client = unclosed.join("src/fern/client.py");
+    let text = std::fs::read_to_string(&client).expect("the certified client");
+    let opener = "                PatchShelfNotesRequestNotesItem(\n                    label=\"label\",\n                )\n";
+    assert!(text.contains(opener), "{text}");
+    std::fs::write(&client, text.replacen(opener, "                PatchShelfNotesRequestNotesItem(\n                    label=\"label\",\n", 1))
+        .expect("unclose");
+    for (root, code, said) in [
+        (&unreferenced, 2, "reference.md"),
+        (&unclosed, 1, "never closes"),
+    ] {
+        let output = std::process::Command::new(&python)
+            .env("PYTHONDONTWRITEBYTECODE", "1")
+            .arg(&script)
+            .arg(root)
+            .arg("invalid")
+            .output()
+            .expect("run the evidence script");
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert_eq!(output.status.code(), Some(code), "{stderr}");
+        assert!(stderr.contains(said), "{stderr}");
+    }
     // An SDK with no such construction proves nothing, so the script fails.
     let other = repo_root().join(golden("query-union-member-models"));
     let output = std::process::Command::new(&python)
