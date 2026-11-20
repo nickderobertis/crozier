@@ -540,7 +540,7 @@ impl Context {
 
     /// Every `(class, field)` of the reference's models whose field is required
     /// (no default) and typed by a union alias opening with an optional
-    /// alternative, as [`required_null_union_fields`] finds them.
+    /// alternative, as `required_null_union_fields` finds them.
     pub fn reference_null_union_fields(&self) -> &BTreeSet<(String, String)> {
         self.reference_null_union_fields.get_or_init(|| {
             let Some((root, _)) = self.roots.as_ref() else {
