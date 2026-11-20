@@ -651,9 +651,21 @@ fn sdk_env_required_null_union_field_examples_construct_where_fern_s_fail() {
     assert!(text.contains(opener), "{text}");
     std::fs::write(&client, text.replacen(opener, "                PatchShelfNotesRequestNotesItem(\n                    label=\"label\",\n", 1))
         .expect("unclose");
+    // Fern's constructions also missing another required field (`label`) fail
+    // for more than the omission the departure corrects.
+    let unlabelled = copy("unlabelled");
+    let client = unlabelled.join("src/fern/client.py");
+    let text = std::fs::read_to_string(&client).expect("the certified client");
+    let dropped: String = text
+        .split_inclusive('\n')
+        .filter(|line| line.trim() != "label=\"label\",")
+        .collect();
+    assert_ne!(dropped, text, "the certified client passes label");
+    std::fs::write(&client, dropped).expect("drop label");
     for (root, code, said) in [
         (&unreferenced, 2, "reference.md"),
         (&unclosed, 1, "never closes"),
+        (&unlabelled, 1, "ValidationError: missing label, payload"),
     ] {
         let output = std::process::Command::new(&python)
             .env("PYTHONDONTWRITEBYTECODE", "1")
@@ -662,9 +674,13 @@ fn sdk_env_required_null_union_field_examples_construct_where_fern_s_fail() {
             .arg("invalid")
             .output()
             .expect("run the evidence script");
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        assert_eq!(output.status.code(), Some(code), "{stderr}");
-        assert!(stderr.contains(said), "{stderr}");
+        let said_all = format!(
+            "{}{}",
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr)
+        );
+        assert_eq!(output.status.code(), Some(code), "{said_all}");
+        assert!(said_all.contains(said), "{said_all}");
     }
     // An SDK with no such construction proves nothing, so the script fails.
     let other = repo_root().join(golden("query-union-member-models"));
