@@ -48,10 +48,15 @@ committed golden.
 
 ## Unrelated residuals and refusals
 
-The outcomes name each one; follow-up drafts record them for the parity work:
-the Field-description tab escape (QuickBooks), the Cat/Dog discriminator property and
-referenced urlencoded arguments (three petstore-derived documents), a missing
-`feature_flags` client (RealDevSquad), the NWS and tonik example and union residuals
-that block every header-array witness, the OpenAPI 3.1 boolean schema and the
-relative-file `$ref` crozier refuses where Fern generates, and the invalid-example
-documents Fern refuses while crozier generates.
+Each one is scoped out in
+[`residuals.tsv`](../../fern-measurements/handed-off/residuals.tsv) (`area`
+`combinations-parameters`), which names its owner and root cause: one row per differing
+file where both generators write an SDK, and one row per document, `file` `-`, where
+either refuses. Each attributed row of `outcomes.tsv` names the same root causes.
+They are the Field-description tab escape (QuickBooks), the Cat/Dog discriminator
+property and referenced urlencoded arguments (three petstore-derived documents),
+operations dropped around a non-`components` `$ref` (RealDevSquad), the NWS, NWS-wrapper
+and tonik example, description and member-modelling residuals that block every
+header-array witness, the OpenAPI 3.1 boolean schema, relative-file `$ref` and null
+security scope list crozier refuses where Fern generates, and the documents Fern
+refuses while crozier generates (refusal-parity classes).

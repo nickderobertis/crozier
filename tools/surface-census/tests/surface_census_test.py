@@ -23959,6 +23959,23 @@ def handed_off_area_attributions(
     return found
 
 
+COMBINATION_RESIDUAL_AREA = "combinations-"
+
+
+def witness_search_listed(root: pathlib.Path, hashes: set[str]) -> set[str]:
+    """The `hashes` some committed witness-search record lists, read smallest file first until all are found."""
+    records = sorted(
+        (root / "docs/openapi-surface").glob("witness-search-*/**/*.tsv"), key=lambda path: path.stat().st_size
+    )
+    found: set[str] = set()
+    for path in records:
+        if found == hashes:
+            break
+        text = path.read_text(encoding="utf-8")
+        found |= {sha for sha in hashes - found if sha in text}
+    return found
+
+
 def reconcile_handed_off(root: pathlib.Path) -> None:
     """Read the source records and on-disk evidence, refusing triage drift."""
     directory = root / "docs/fern-measurements/handed-off"
@@ -24008,6 +24025,7 @@ def reconcile_handed_off(root: pathlib.Path) -> None:
         assert tuple(reader.fieldnames or ()) == DOCUMENT_COLUMNS, "documents header"
         documents = [HandedOffDocumentRecord.parse(row) for row in reader]
     residuals: dict[str, set[str]] = {}
+    combination_residuals: set[str] = set()
     residual_causes: set[HandedOffAttribution] = set()
     residual_path = directory / "residuals.tsv"
     if residual_path.is_file():
@@ -24016,6 +24034,12 @@ def reconcile_handed_off(root: pathlib.Path) -> None:
             assert tuple(reader.fieldnames or ()) == ("sha256", "file", "root_cause", "area", "note"), "residual header"
             for row in reader:
                 assert row["file"] and row["root_cause"] and row["area"] and row["note"], "incomplete residual"
+                if row["area"].startswith(COMBINATION_RESIDUAL_AREA):
+                    # A combination node's scoped-out screen candidate (manager ruling a15): no
+                    # handed-off document, so its search record must list it and its note name an owner.
+                    assert "owner:" in row["note"], f"{row['sha256']}: combination residual names no owner"
+                    combination_residuals.add(str(HandedOffHash(row["sha256"])))
+                    continue
                 residuals.setdefault(str(HandedOffHash(row["sha256"])), set()).add(row["file"])
                 if re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", row["root_cause"]):
                     residual_causes.add(
@@ -24090,6 +24114,8 @@ def reconcile_handed_off(root: pathlib.Path) -> None:
                 assert row.note.strip(), f"{sha}: missing could-not-check reason"
 
     assert residuals.keys() <= hashes, "residual for an unmeasured document"
+    unlisted_candidates = combination_residuals - witness_search_listed(root, combination_residuals)
+    assert not unlisted_candidates, f"combination residual no witness-search record lists: {sorted(unlisted_candidates)}"
     listed = {row.sha256: set(row.root_causes.split(";")) for row in documents}
     unlisted = sorted(
         str(attribution)
@@ -24399,6 +24425,27 @@ class HandedOffReconciliationTests(unittest.TestCase):
                     reconcile_handed_off(self.root)
         evidence.write_text(valid, encoding="utf-8")
         reconcile_handed_off(self.root)
+
+
+    def test_a_combination_residual_must_be_a_listed_screen_candidate_with_an_owner(self) -> None:
+        sha = "c" * 64
+        residuals = self.directory / "residuals.tsv"
+        header = "sha256\tfile\troot_cause\tarea\tnote\n"
+        owned = f"{sha}\t-\tsome-refusal\tcombinations-parameters\towner: a follow-up draft; root cause: measured\n"
+        record = self.root / "docs/openapi-surface/witness-search-sample-combinations/outcomes.tsv"
+        record.parent.mkdir(parents=True)
+        residuals.write_text(header + owned, encoding="utf-8")
+        with self.assertRaisesRegex(AssertionError, f"combination residual no witness-search record lists: .*{sha}"):
+            reconcile_handed_off(self.root)
+        record.write_text(f"key\tpopulation\tdocument\tsha256\toutcome\nk\tp\td\t{sha}\tfern-refusal\n", encoding="utf-8")
+        reconcile_handed_off(self.root)
+        residuals.write_text(header + owned.replace("owner: ", ""), encoding="utf-8")
+        with self.assertRaisesRegex(AssertionError, f"{sha}: combination residual names no owner"):
+            reconcile_handed_off(self.root)
+        # Outside a combination area the row is a handed-off residual again, and its document is unmeasured.
+        residuals.write_text(header + owned.replace("combinations-parameters", "residual-repair-2"), encoding="utf-8")
+        with self.assertRaisesRegex(AssertionError, "residual for an unmeasured document"):
+            reconcile_handed_off(self.root)
 
 
 class HandedOffRepositoryRecordTests(unittest.TestCase):
