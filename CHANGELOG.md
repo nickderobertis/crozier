@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.168](https://github.com/nickderobertis/crozier/compare/v0.0.167...v0.0.168) - 2026-11-20
+
+### Fixed
+
+- *(parity)* prove the parameter and security combinations and keep closed query-union members typed ([#875](https://github.com/nickderobertis/crozier/pull/875))
+
 ## [0.0.167](https://github.com/nickderobertis/crozier/compare/v0.0.166...v0.0.167) - 2026-11-20
 
 ### Fixed
