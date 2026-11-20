@@ -388,9 +388,7 @@ fn union_inheritance_repairs_match_the_certified_pair() {
 /// the README and `reference.md`, as the certified pair writes it, while the
 /// docstrings construct that member with the field (the
 /// `required-null-union-field-example` departure). Both enum modes match the
-/// certified trees whole. `crozier compare` against the certified tree passes,
-/// reporting the departure, and fails once Fern's side writes the list
-/// populated, or gives the field a default so that no omission remains.
+/// certified trees whole.
 #[test]
 fn list_item_nested_union_markdown_lists_match_the_certified_pair() {
     let case = "list-item-nested-union";
@@ -402,8 +400,17 @@ fn list_item_nested_union_markdown_lists_match_the_certified_pair() {
     generate(case, "literals", &literals);
     failures.extend(literals_failures(case, &literals));
     assert!(failures.is_empty(), "{}", failures.join("\n\n"));
-    // `crozier compare` against the certified tree, as a migrating user runs
-    // it, and against copies of that tree edited on Fern's side.
+}
+
+/// #828 through `crozier compare`, as a migrating user runs it: against the
+/// certified tree it passes, reporting the `required-null-union-field-example`
+/// departure, and it fails once Fern's side writes the list populated, or gives
+/// the field a default so that no omission remains. Unix only: on Windows
+/// crozier runs no reference command (`compare_on_windows_runs_no_reference_command`).
+#[cfg(unix)]
+#[test]
+fn list_item_nested_union_compare_reports_the_departure_and_holds_the_list() {
+    let case = "list-item-nested-union";
     let compare = |edit: &dyn Fn(&Path)| -> (Option<i32>, String) {
         let dir = tempfile::tempdir().expect("compare tempdir");
         let reference = dir.path().join("reference");
