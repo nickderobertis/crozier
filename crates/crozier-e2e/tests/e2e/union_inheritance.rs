@@ -544,7 +544,6 @@ fn sdk_env_required_null_union_field_examples_construct_where_fern_s_fail() {
             "{}: {stdout}",
             fern.display()
         );
-        // The certified examples are not the valid ones.
         assert!(!run(&fern, "valid").0, "{}", fern.display());
     }
     let temp = tempfile::tempdir().expect("output tempdir");
