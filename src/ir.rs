@@ -10281,12 +10281,12 @@ impl InlineHoister<'_> {
                 }
             }
             // An inline object alternative that declares its structure is a
-            // model of its own, named as a body union's variant is: Hookdeck's
-            // `GET /events` `cli_id` offers a string, a closed `{any, all}`
-            // object or a string array, and Fern declares
-            // `GetEventsRequestCliIdAll`; its `body` offers a string or a closed
-            // object declaring no properties, and Fern declares the empty model
-            // `GetEventsRequestBodyOne` rather than an unconstrained value.
+            // model of its own, named as a body union's variant is (#815). The
+            // `union-modelling/query-union-object-members` measurement holds it
+            // against the certified pair (Hookdeck's licence admits no golden):
+            // a closed empty `glaze` member is `ListFiringsRequestGlazeOne`, a
+            // closed `{any, all}` one `…KilnIdAll`, an open one `…ConeHigh` —
+            // `a_query_union_s_object_alternatives_keep_their_models`.
             if member.one_of.is_none()
                 && member.any_of.is_none()
                 && (is_inline_object(member) || is_declared_empty_object(member))
