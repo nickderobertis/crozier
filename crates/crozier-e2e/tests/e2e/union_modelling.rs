@@ -28,6 +28,7 @@ const CASES: &[(&str, bool)] = &[
     ("pattern-properties-only-oneof-member", false),
     ("query-anyof-date-time-or-array-named", false),
     ("query-oneof-of-arrays", false),
+    ("query-union-object-members", true),
     ("union-modelling/annotated-reference-beside-null", true),
     ("union-modelling/event-stream-beside-json", true),
     ("union-modelling/identical-primitive-members", false),
@@ -429,6 +430,42 @@ fn a_nullable_query_array_of_an_inline_enum_names_its_item() {
         "src/fern/client.py",
         "typing.Sequence[ToggleAssistantRequestChannelsItem]",
         "typing.Sequence[typing.Union[typing.Literal[\"portal\", \"chat\"], typing.Any]]",
+    );
+}
+
+/// Ticket #815: an inline object alternative of a query union is a model of
+/// its own, named as a body union's variant is, beside the union alias it
+/// belongs to, rather than an unconstrained `typing.Any` member: a closed
+/// object declaring no properties (`…GlazeOne`), a closed one named by its
+/// distinguishing property (`…KilnIdAll`), and a required open one
+/// (`…ConeHigh`).
+#[test]
+fn a_query_union_s_object_alternatives_keep_their_models() {
+    let case = "query-union-object-members";
+    let temp = matched(case);
+    let out = sdk(&temp);
+    assert!(read(&out, "src/fern/types/list_firings_request_glaze.py")
+        .contains("ListFiringsRequestGlaze = typing.Union[str, ListFiringsRequestGlazeOne]"));
+    assert!(
+        read(&out, "src/fern/types/list_firings_request_glaze_one.py")
+            .contains("class ListFiringsRequestGlazeOne(UniversalBaseModel):")
+    );
+    assert!(read(
+        &out,
+        "src/fern/firings/types/list_firings_request_kiln_id_all.py"
+    )
+    .contains("all_: typing_extensions.Annotated["));
+    assert!(read(
+        &out,
+        "src/fern/firings/types/list_firings_request_cone_high.py"
+    )
+    .contains("    low: int\n    high: int\n"));
+    mutation_is_named(
+        case,
+        &temp,
+        "src/fern/firings/types/list_firings_request_kiln_id.py",
+        "typing.Union[str, ListFiringsRequestKilnIdAll, typing.List[str]]",
+        "typing.Union[str, typing.Any, typing.List[str]]",
     );
 }
 

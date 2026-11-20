@@ -13,9 +13,3 @@ key = "combo-success-anyof-nullable"
 search = "docs/openapi-surface/witness-search-operation-combinations/README.md#verdicts"
 verdict = "search-incomplete"
 renewed = "docs/openapi-surface/witness-search-operation-combinations/README.md"
-
-[[covers]]
-key = "combo-body-property-named-as-path-param"
-search = "docs/openapi-surface/witness-search-operation-combinations/README.md#verdicts"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-operation-combinations/README.md"

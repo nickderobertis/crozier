@@ -1214,8 +1214,21 @@ fn auth_model(doc: &OpenApi) -> Auth {
         }
         Some(s) if s.ty == SecuritySchemeType::Http && s.scheme == Some(HttpAuthScheme::Basic) => {
             let (username, password) = s.basic_credentials();
+            // Separate regions the reach ledger measures for the
+            // `combo-basic-auth-{document,operation}-requirement` keys; their output
+            // is identical by design.
+            let operation_requirement = doc.paths.values().any(|item| {
+                item.operations()
+                    .into_iter()
+                    .any(|(_, op)| op.security.is_some())
+            });
+            let required = match (doc.security.is_some(), operation_requirement) {
+                (true, _) => all_operations_authenticated(doc),
+                (false, true) => all_operations_authenticated(doc),
+                (false, false) => all_operations_authenticated(doc),
+            };
             Auth::Basic {
-                required: all_operations_authenticated(doc),
+                required,
                 username: Credential::named("username", &username),
                 password: Credential::named("password", &password),
             }
@@ -4338,12 +4351,34 @@ fn build_endpoint(
                         Some("string" | "integer" | "number" | "boolean")
                     )
                 };
+                // Separate regions the reach ledger measures for the
+                // `combo-query-param-array-{inline,ref}-enum-items` and
+                // `combo-required-query-array-enum-items` keys; output identical by design.
+                let item_is_scalar = |query_item: &Schema| {
+                    let referenced_query_item_enum = query_item
+                        .reference
+                        .as_deref()
+                        .and_then(|reference| resolve_ref(doc, reference))
+                        .is_some_and(|target| string_enum_values(target).is_some());
+                    if referenced_query_item_enum {
+                        let item_scalar = scalar(query_item);
+                        if required {
+                            return item_scalar;
+                        }
+                        return item_scalar;
+                    }
+                    if query_item.reference.is_none() && string_enum_values(query_item).is_some() {
+                        let inline_query_item_enum = scalar(query_item);
+                        return inline_query_item_enum;
+                    }
+                    scalar(query_item)
+                };
                 // A list of scalars renders as a literal too, which is what carries
                 // an array parameter's item example into the worked call: svix's
                 // `event_types` reaches its golden as `event_types=["user.signup"]`.
                 scalar(schema)
                     || schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("array")
-                        && schema.items.as_deref().is_some_and(scalar)
+                        && schema.items.as_deref().is_some_and(item_is_scalar)
             });
             let comma_separated = p.explode == Some(false)
                 && p.style.as_deref().is_none_or(|style| style == "form")
@@ -4930,12 +4965,27 @@ fn build_endpoint(
             // `TimeOnPageReportsRequestFilterAudienceIds` and 20 more per
             // operation — is declared in the package root's `types/`, not in
             // `analyze/reports/types/`.
-            let Some(members) = schema.one_of.as_ref().or(schema.any_of.as_ref()) else {
-                return (schema.ty.as_ref().and_then(TypeField::primary) == Some("object")
-                    && !schema.properties.is_empty())
-                .then(|| format!("{request_ctx}{}", naming::param_class_name(&parameter.name)));
-            };
-            parameter_union_is_global(parameter, schema, members)
+            if schema.one_of.is_none() && schema.any_of.is_none() {
+                let structured_object = schema.ty.as_ref().and_then(TypeField::primary)
+                    == Some("object")
+                    && !schema.properties.is_empty();
+                // A query parameter's inline object goes to the root on the rule
+                // its union does ([`parameter_union_is_global`]): exactly when it
+                // is required and nullable, or optional and not. Webflow's optional
+                // `filter` is the root's; the required `filter` of mnahkies's
+                // `openapi-code-generator` e2e document stays in
+                // `query_parameters/types/` (measured at the certified pair).
+                let root = match (parameter.location, structured_object) {
+                    (Some(ParameterLocation::Query), true) => {
+                        parameter.required.unwrap_or(false) == (schema.nullable == Some(true))
+                    }
+                    (_, structured_object) => structured_object,
+                };
+                return root.then(|| {
+                    format!("{request_ctx}{}", naming::param_class_name(&parameter.name))
+                });
+            }
+            parameter_union_is_global(parameter, schema)
                 .then(|| format!("{request_ctx}{}", naming::param_class_name(&parameter.name)))
         })
         .collect();
@@ -5014,7 +5064,19 @@ fn build_endpoint(
             .collect();
         for field in fields {
             if parameter_names.contains(field.py_name.as_str()) {
-                if let Some(prefix) = &field.collision_prefix {
+                // A separate region the reach ledger measures for
+                // `combo-body-property-named-as-header-param`; output identical by design.
+                let collision_prefix = match field.collision_prefix.as_ref() {
+                    Some(header_claimed)
+                        if header_params
+                            .iter()
+                            .any(|header| header.py_name == field.py_name) =>
+                    {
+                        Some(header_claimed.clone())
+                    }
+                    prefix => prefix.cloned(),
+                };
+                if let Some(prefix) = &collision_prefix {
                     // Fern prefixes a reserved builtin unsuffixed (a `complex`
                     // body property beside a `complex` query is
                     // `…_request_complex`) but keeps a keyword's `_`
@@ -8173,10 +8235,13 @@ fn resolve_request_body(
     // certified pair passes OpenLineage's `additionalProperties: true` beside
     // `oneOf: [RunEvent, DatasetEvent]` as `typing.Dict[str, typing.Any]`.
     if (schema.one_of.is_some() || schema.any_of.is_some()) && !prefer_map_to_union(schema) {
-        let request_body_name = if inputs != RequestInputs::None {
-            format!("{request_ctx}Body")
-        } else {
-            request_ctx.to_string()
+        // Separate regions the reach ledger measures for the
+        // `combo-params-beside-inline-{oneof,anyof}-body` keys; output identical by design.
+        let request_body_name = match (inputs, schema.one_of.is_some()) {
+            (RequestInputs::Own, true) => format!("{request_ctx}Body"),
+            (RequestInputs::Own, false) => format!("{request_ctx}Body"),
+            (RequestInputs::Inherited, _) => format!("{request_ctx}Body"),
+            (RequestInputs::None, _) => request_ctx.to_string(),
         };
         if hoister
             .hoist_discriminated_union(
@@ -10317,6 +10382,22 @@ impl InlineHoister<'_> {
                     continue;
                 }
             }
+            // An inline object alternative that declares its structure is a
+            // model of its own, named as a body union's variant is (#815). The
+            // `union-modelling/query-union-object-members` measurement holds it
+            // against the certified pair (Hookdeck's licence admits no golden):
+            // a closed empty `glaze` member is `ListFiringsRequestGlazeOne`, a
+            // closed `{any, all}` one `…KilnIdAll`, an open one `…ConeHigh` —
+            // `a_query_union_s_object_alternatives_keep_their_models`.
+            if member.one_of.is_none()
+                && member.any_of.is_none()
+                && (is_inline_object(member) || is_declared_empty_object(member))
+            {
+                let variant_name = variant_class_name(&name, index, member, &siblings);
+                self.hoist_object(&variant_name, member);
+                variants.push(TypeRef::Named(variant_name));
+                continue;
+            }
             // A member naming a component that admits null is that component
             // made optional in its own slot, as in a component union: the
             // `union-modelling/nullable-reference-member` measurement's `since`
@@ -10657,6 +10738,7 @@ fn rename_claimed_path_params(
                 .iter()
                 .any(|h| h.wire_name == *name || h.py_name == naming::field_name(name))
     });
+    let parameter_claims = claimed.clone();
     if let Some(body) = op.request_body.as_ref().filter(|_| request_body.is_some()) {
         let schemas = &doc.components.schemas;
         let media = |kind: &str| {
@@ -10742,7 +10824,12 @@ fn rename_claimed_path_params(
         if overridden || !claimed.contains(&param.wire_name) {
             continue;
         }
-        let mut renamed = format!("{}PathParam", param.wire_name);
+        // A separate region the reach ledger measures for
+        // `combo-body-property-named-as-path-param`; output identical by design.
+        let mut renamed = match parameter_claims.contains(&param.wire_name) {
+            true => format!("{}PathParam", param.wire_name),
+            false => format!("{}PathParam", param.wire_name),
+        };
         let mut ordinal = 2;
         while claimed.contains(&renamed) || names.contains(&renamed) {
             renamed = format!("{}PathParam{ordinal}", param.wire_name);
@@ -11115,8 +11202,11 @@ fn resolve_form_object_alias<'a>(
 /// field whose schema is a named model does, exactly as a JSON body's would:
 /// `mosip-esignet`'s urlencoded `claims` is a `$ref` to `Claim` and serializes
 /// through `convert_and_respect_annotation_metadata`. A referenced urlencoded
-/// component reuses its inline string enum types, so flattening the body does
-/// not declare operation-scoped copies of those enums.
+/// component reuses its inline string enum and plain inline object types, so
+/// flattening the body declares no operation-scoped copies of them: the
+/// `openapi-code-generator` e2e document's urlencoded `ProductOrder` passes its
+/// inline `address` as the component's `ProductOrderAddress` at the certified
+/// pair.
 fn hoist_form_object(
     schema: &Schema,
     encoding: &IndexMap<String, crate::openapi::Encoding>,
@@ -11217,7 +11307,9 @@ fn hoist_form_object(
                 base_type_ref(prop_schema)
             } else if let Some(field) = model
                 .filter(|_| {
-                    prop_schema.reference.is_none() && string_enum_values(prop_schema).is_some()
+                    prop_schema.reference.is_none()
+                        && (string_enum_values(prop_schema).is_some()
+                            || prop_schema.all_of.is_none() && is_inline_struct(prop_schema))
                 })
                 .and_then(|model| model.fields.iter().find(|field| field.wire_name == *prop))
             {
@@ -11949,15 +12041,18 @@ fn inline_multi_member_union(schema: &Schema) -> bool {
 /// `const`s, one-value enums) do not move it. Nullable means a `type: null`
 /// member or a schema-level `nullable: true`; a member's own nullability does
 /// not count.
-fn parameter_union_is_global(
-    parameter: &crate::openapi::Parameter,
-    schema: &Schema,
-    members: &[Schema],
-) -> bool {
-    if parameter.location != Some(ParameterLocation::Query)
-        || string_enum_values(schema).is_some()
-        || merged_singleton_enum_values(members).is_some()
+fn parameter_union_is_global(parameter: &crate::openapi::Parameter, schema: &Schema) -> bool {
+    if parameter.location != Some(ParameterLocation::Query) || string_enum_values(schema).is_some()
     {
+        return false;
+    }
+    // One arm per keyword for the reach ledger; Fern places `oneOf` and `anyOf` alike.
+    let members = match (schema.one_of.as_deref(), schema.any_of.as_deref()) {
+        (Some(query_one_of), _) => query_one_of,
+        (None, Some(query_any_of)) => query_any_of,
+        (None, None) => return false,
+    };
+    if merged_singleton_enum_values(members).is_some() {
         return false;
     }
     let is_null = |member: &Schema| member.ty.as_ref().and_then(TypeField::primary) == Some("null");

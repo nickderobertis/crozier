@@ -280,6 +280,9 @@ docs/fern-measurements/handed-off/union-modelling/nullable-anyof-ref-member-opti
 docs/fern-measurements/handed-off/union-modelling/pattern-properties-only-oneof-member/fern-expected	crozier-e2e::e2e	union_modelling::a_reference_beside_a_union_and_a_pattern_only_member_read_as_fern_reads_them
 docs/fern-measurements/handed-off/union-modelling/query-anyof-date-time-or-array-named/fern-expected	crozier-e2e::e2e	union_modelling::a_query_any_of_nullable_scalar_or_array_is_a_named_union
 docs/fern-measurements/handed-off/union-modelling/query-oneof-of-arrays/fern-expected	crozier-e2e::e2e	union_modelling::a_query_one_of_two_like_arrays_is_one_or_many
+docs/fern-measurements/handed-off/union-modelling/query-union-object-members/fern-expected	crozier-e2e::e2e	follow_up_tickets::follow_up_ticket_matching_outputs_hold_against_the_certified_pair
+docs/fern-measurements/handed-off/union-modelling/query-union-object-members/fern-expected	crozier-e2e::e2e	union_modelling::a_query_union_s_object_alternatives_keep_their_models
+docs/fern-measurements/handed-off/union-modelling/query-union-object-members/literals/fern-expected	crozier-e2e::e2e	union_modelling::a_query_union_s_object_alternatives_keep_their_models
 docs/fern-measurements/handed-off/union-modelling/union-modelling/annotated-reference-beside-null/fern-expected	crozier-e2e::e2e	union_modelling::union_modelling_document_sub_rules_match_the_certified_pair
 docs/fern-measurements/handed-off/union-modelling/union-modelling/annotated-reference-beside-null/literals/fern-expected	crozier-e2e::e2e	union_modelling::union_modelling_document_sub_rules_match_the_certified_pair
 docs/fern-measurements/handed-off/union-modelling/union-modelling/event-stream-beside-json/fern-expected	crozier-e2e::e2e	union_modelling::union_modelling_document_sub_rules_match_the_certified_pair
@@ -926,6 +929,10 @@ tests/fixtures/andreychh-coopera/expected-literals	crozier-e2e::e2e	overlay_gold
 tests/fixtures/apache.org-airflow/expected	crozier-e2e::e2e	apache_org_airflow_matches_fern_output
 tests/fixtures/apache.org-qakka/expected	crozier-e2e::e2e	apache_qakka_matches_fern_output
 tests/fixtures/apache.org/expected	crozier-e2e::e2e	apache_airflow_matches_fern_output
+tests/fixtures/api-evangelist-pinecone-inference/expected	crozier-e2e::e2e	api_evangelist_pinecone_inference_matches_fern_output
+tests/fixtures/api-evangelist-pinecone-inference/expected	crozier-e2e::e2e	overlay_goldens::overlay_goldens_match_fern_output
+tests/fixtures/api-evangelist-pinecone-inference/expected-literals	crozier-e2e::e2e	api_evangelist_pinecone_inference_matches_fern_output
+tests/fixtures/api-evangelist-pinecone-inference/expected-literals	crozier-e2e::e2e	overlay_goldens::overlay_goldens_match_fern_output
 tests/fixtures/api-openverse-org/expected	crozier-e2e::e2e	api_openverse_org_matches_fern_output
 tests/fixtures/apicurio.local-registry/expected	crozier-e2e::e2e	apicurio_matches_fern_output
 tests/fixtures/apideck.com-accounting/expected	crozier-e2e::e2e	apideck_accounting_matches_fern_output
@@ -1069,6 +1076,10 @@ tests/fixtures/get-a-room/expected	crozier-e2e::e2e	get_a_room_matches_fern_outp
 tests/fixtures/get-a-room/expected	crozier-e2e::e2e	overlay_goldens::overlay_goldens_match_fern_output
 tests/fixtures/get-a-room/expected-literals	crozier-e2e::e2e	overlay_goldens::overlay_goldens_match_fern_output
 tests/fixtures/go-kratos-casbin-admin/expected	crozier-e2e::e2e	go_kratos_casbin_admin_matches_fern_output
+tests/fixtures/go-kratos-examples-blog/expected	crozier-e2e::e2e	go_kratos_examples_blog_matches_fern_output
+tests/fixtures/go-kratos-examples-blog/expected	crozier-e2e::e2e	overlay_goldens::overlay_goldens_match_fern_output
+tests/fixtures/go-kratos-examples-blog/expected-literals	crozier-e2e::e2e	go_kratos_examples_blog_matches_fern_output
+tests/fixtures/go-kratos-examples-blog/expected-literals	crozier-e2e::e2e	overlay_goldens::overlay_goldens_match_fern_output
 tests/fixtures/googleapis-monitoring-v1/expected	crozier-e2e::e2e	googleapis_monitoring_v1_matches_fern_output
 tests/fixtures/googleapis-servicebroker/expected	crozier-e2e::e2e	googleapis_servicebroker_matches_fern_output
 tests/fixtures/googleapis-speech-v2beta1/expected	crozier-e2e::e2e	googleapis_speech_v2beta1_matches_fern_output
@@ -1158,6 +1169,10 @@ tests/fixtures/milvus-vector-operations/expected	crozier-e2e::e2e	milvus_vector_
 tests/fixtures/mindee-ocr/expected	crozier-e2e::e2e	mindee_ocr_matches_fern_output
 tests/fixtures/missing-operation-id/expected	crozier-e2e::e2e	missing_operation_id_matches_fern_output
 tests/fixtures/mistle-control-plane/expected	crozier-e2e::e2e	mistle_control_plane_matches_fern_output
+tests/fixtures/mnahkies-openapi-code-generator-e2e/expected	crozier-e2e::e2e	mnahkies_openapi_code_generator_e2e_matches_fern_output
+tests/fixtures/mnahkies-openapi-code-generator-e2e/expected	crozier-e2e::e2e	overlay_goldens::overlay_goldens_match_fern_output
+tests/fixtures/mnahkies-openapi-code-generator-e2e/expected-literals	crozier-e2e::e2e	mnahkies_openapi_code_generator_e2e_matches_fern_output
+tests/fixtures/mnahkies-openapi-code-generator-e2e/expected-literals	crozier-e2e::e2e	overlay_goldens::overlay_goldens_match_fern_output
 tests/fixtures/mockserver/expected	crozier-e2e::e2e	mockserver_matches_fern_output
 tests/fixtures/mockserver/expected	crozier-e2e::e2e	overlay_goldens::overlay_goldens_match_fern_output
 tests/fixtures/mockserver/expected-literals	crozier-e2e::e2e	overlay_goldens::overlay_goldens_match_fern_output

@@ -1,0 +1,59 @@
+openapi: 3.0.3
+info:
+  title: Kiln log
+  version: "1.0"
+paths:
+  /firings:
+    get:
+      operationId: listFirings
+      tags: [firings]
+      parameters:
+        - name: glaze
+          in: query
+          description: A glaze name, or the glaze document to match.
+          schema:
+            anyOf:
+              - type: string
+              - type: object
+                properties: {}
+                additionalProperties: false
+        - name: kiln_id
+          in: query
+          description: Kiln identifiers, or `?[any]=true` for any kiln.
+          schema:
+            nullable: true
+            anyOf:
+              - type: string
+              - type: object
+                properties:
+                  any:
+                    type: boolean
+                  all:
+                    type: boolean
+                additionalProperties: false
+              - type: array
+                items:
+                  type: string
+        - name: cone
+          in: query
+          required: true
+          description: A cone number, or a range of cones.
+          schema:
+            oneOf:
+              - type: integer
+              - type: object
+                required: [low, high]
+                properties:
+                  low:
+                    type: integer
+                  high:
+                    type: integer
+      responses:
+        "200":
+          description: The firings.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string

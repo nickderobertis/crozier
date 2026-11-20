@@ -42,6 +42,10 @@ The residual record’s header names its fields.
 A registration residual names `expected-literals/`, rather than claiming a file
 already differs. Newly named residual causes describe missing behavior in their
 note; they are repair work, not undecided triage verdicts.
+Beside the handed-off documents, the table also records a combination proof node's
+scoped-out screen candidates: `area` starts with `combinations-`, the sha256 is one a
+`docs/openapi-surface/witness-search-*/` record lists, and the note names its `owner:`
+and root cause; a refusal on either side is one row per document with `file` `-`.
 
 The four disjoint outcomes are **104 registered**,
 **37 decided** (26 `refused-by-ruling`, 11 `byte-matches-not-admissible`),
