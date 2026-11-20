@@ -470,7 +470,7 @@ impl ValueConstraints {
         // `oneOf`, `anyOf`, `not` and the conditional applicators are keywords
         // out of scope, which neither reject nor block a repair; an `allOf`
         // load normalization discarded is still read, below.
-        self.incomplete |= schema.unresolved_reference;
+        self.incomplete |= schema.unresolved_reference();
         self.keywords.extend(own_keywords(schema));
         self.unique_items |= schema.unique_items == Some(true);
         if let Some(items) = &schema.items {

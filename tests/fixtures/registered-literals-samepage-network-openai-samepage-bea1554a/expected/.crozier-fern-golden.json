@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.25",
+  "corpus_spec_name": "registered-literals-samepage-network-openai-samepage-bea1554a",
+  "corpus_spec_ref": "698fa9efcda77e36dcb41c85c190d56e9e04efd6",
+  "corpus_spec_url": "https://raw.githubusercontent.com/samepage-network/openai-samepage/698fa9efcda77e36dcb41c85c190d56e9e04efd6/openapi.yaml"
+}

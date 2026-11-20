@@ -633,6 +633,90 @@
     "docs/fern-measurements/superseded-fixtures/request-example-nulls/fern-expected": {},
     "docs/fern-measurements/superseded-fixtures/reservoir-ledger/fern-expected": {},
     "docs/fern-measurements/superseded-fixtures/undiscriminated-ref-oneof-sibling-properties-dropped/fern-expected": {},
+    "docs/fern-measurements/union-inheritance/allof-unrequired-tag-branches/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/union-inheritance/allof-unrequired-tag-branches/fern-expected": {},
+    "docs/fern-measurements/union-inheritance/annotated-ref-description-precedence/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/union-inheritance/annotated-ref-description-precedence/fern-expected": {},
+    "docs/fern-measurements/union-inheritance/declared-scalar-union-members/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/union-inheritance/declared-scalar-union-members/fern-expected": {},
+    "docs/fern-measurements/union-inheritance/inlined-chain-inheritance/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/union-inheritance/inlined-chain-inheritance/fern-expected": {},
+    "docs/fern-measurements/union-inheritance/map-beside-union/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/union-inheritance/map-beside-union/fern-expected": {},
+    "docs/fern-measurements/union-inheritance/null-typed-composition/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/union-inheritance/null-typed-composition/fern-expected": {},
+    "docs/fern-measurements/union-inheritance/null-union-alternative/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/union-inheritance/null-union-alternative/fern-expected": {},
+    "docs/fern-measurements/union-inheritance/nullable-typeless-component/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/union-inheritance/nullable-typeless-component/fern-expected": {},
+    "docs/fern-measurements/union-inheritance/nullable-union-members/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/union-inheritance/nullable-union-members/fern-expected": {},
+    "docs/fern-measurements/union-inheritance/nullable-unknown-success-body/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/union-inheritance/nullable-unknown-success-body/fern-expected": {},
+    "docs/fern-measurements/union-inheritance/overridden-parent-layout/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/union-inheritance/overridden-parent-layout/fern-expected": {},
+    "docs/fern-measurements/union-inheritance/restated-default-inherits-enum/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/union-inheritance/restated-default-inherits-enum/fern-expected": {},
+    "docs/fern-measurements/union-inheritance/slash-named-component/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/union-inheritance/slash-named-component/fern-expected": {},
+    "docs/fern-measurements/union-inheritance/unrequired-const-tag-union/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/union-inheritance/unrequired-const-tag-union/fern-expected": {},
     "docs/fern-measurements/union-literals/atlas-untagged-inline-discriminator/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
@@ -1572,6 +1656,12 @@
         ".crozier-overlay.json"
       ]
     },
+    "tests/fixtures/registered-literals-ai-riksarkivet-rask-672f1ef2/expected": {},
+    "tests/fixtures/registered-literals-ai-riksarkivet-rask-672f1ef2/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/registered-literals-amrc-factoryplus-documentation-be5e3789/expected": {},
     "tests/fixtures/registered-literals-amrc-factoryplus-documentation-be5e3789/expected-literals": {
       "excluded": [
@@ -1760,6 +1850,12 @@
     },
     "tests/fixtures/registered-literals-fossology-fossology-rest-dotnet-7da1db69/expected": {},
     "tests/fixtures/registered-literals-fossology-fossology-rest-dotnet-7da1db69/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-francineo-easa-dxcomponents-fc03fd3c/expected": {},
+    "tests/fixtures/registered-literals-francineo-easa-dxcomponents-fc03fd3c/expected-literals": {
       "excluded": [
         ".crozier-overlay.json"
       ]
@@ -2018,6 +2114,12 @@
     },
     "tests/fixtures/registered-literals-revertinc-revert-698ea54a/expected": {},
     "tests/fixtures/registered-literals-revertinc-revert-698ea54a/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-samepage-network-openai-samepage-bea1554a/expected": {},
+    "tests/fixtures/registered-literals-samepage-network-openai-samepage-bea1554a/expected-literals": {
       "excluded": [
         ".crozier-overlay.json"
       ]

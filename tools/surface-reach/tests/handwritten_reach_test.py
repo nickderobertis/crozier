@@ -890,6 +890,21 @@ SIZED = (
 PICK = "          anyOf:\n            - type: string\n            - type: integer\n"
 
 
+def signal_answer(schema: str) -> str:
+    """`GET /signals`, whose success body is `schema` (written at the media type's indent)."""
+    return operation_document(
+        "  /signals:\n    get:\n      operationId: getSignal\n      responses:\n"
+        '        "200":\n          description: ok\n          content:\n            application/json:\n'
+        "              schema:\n" + schema
+    )
+
+
+def signal_union(keyword: str, null: bool) -> str:
+    """An inline success union of an integer and a boolean, with or without `type: null`."""
+    members = ["integer", "boolean"] + (["'null'"] if null else [])
+    return f"                {keyword}:\n" + "".join(f"                  - type: {member}\n" for member in members)
+
+
 def counts(schema: str) -> str:
     return tally(
         "    Tally:\n      type: object\n      properties:\n        counts:\n          type: object\n" + schema
@@ -916,10 +931,12 @@ def emptied(statuses: str) -> str:
     )
 
 
-FLATTEN_ALL = r"src/ir.rs::Builder::add_object[let inlined_by_base = if flatten_all \{]"
+FLATTEN_ALL = r"src/ir.rs::Builder::add_object[let inlined_by_base = if nullable_annotation \x7c\x7c cyclic_parent \{]"
 PROMOTED = r"src/ir.rs::promote_required_parent_properties[if !required && !read_only \{]"
 MAP_ARM = r"src/ir.rs::base_type_ref[^ {4}if is_map\(schema\) \{]"
 MAP_ANY_OF = r"src/ir.rs::prefer_map_to_union[if schema\.any_of\.is_some\(\)]"
+NULLABLE_SUCCESS_ONE_OF = r"src/ir.rs::nullable_success_union[if schema\.one_of\.is_some\(\) \{]"
+NULLABLE_SUCCESS_ANY_OF = r"src/ir.rs::nullable_success_union[if schema\.any_of\.is_some\(\) \{]"
 NULLABLE_VALUES = r"src/ir.rs::base_type_ref[if is_optional\(schema\) \x7c\x7c is_optional\(value\) \{]"
 VALUE_HOIST = r"src/ir.rs::Builder::field_type_ref[if let Some\(value\) = inline_value\.filter]"
 VALUE_PROPERTIES = r"src/ir.rs::Builder::field_type_ref[let inline_value = if !prop_schema\.properties\.is_empty\(\)]"
@@ -2206,6 +2223,54 @@ class InteractionArm(NamedTuple):
     controls: dict[str, str]
 
 
+# The pointer placements' controls: `Ledger` declares `entry` and not `missing`, and
+# `Shape` composes, so `Ledger/properties/missing` names nothing past a declared head,
+# `Ledger/properties/entry` resolves, `Absent` names no component at all, and
+# `Shape/oneOf/0` ends on a composition member.
+LEDGER_SCHEMAS = (
+    "  schemas:\n    Ledger:\n      type: object\n      properties:\n        entry:\n"
+    "          type: object\n          properties:\n            id:\n              type: string\n"
+    "    Shape:\n      oneOf:\n        - type: object\n          properties:\n            side:\n"
+    "              type: number\n        - type: string\n"
+)
+
+
+def pointer(target: str, indent: int) -> str:
+    return " " * indent + f'$ref: "#/components/schemas/{target}"\n'
+
+
+def ledger_response(schema: str) -> str:
+    return (
+        "  /ledgers:\n    get:\n      operationId: getLedger\n      responses:\n"
+        '        "200":\n          description: ok\n          content:\n            application/json:\n'
+        "              schema:\n" + schema
+    )
+
+
+def ledger_request(schema: str) -> str:
+    return (
+        "  /ledgers:\n    post:\n      operationId: postLedger\n      requestBody:\n        required: true\n"
+        "        content:\n          application/json:\n            schema:\n"
+        + schema
+        + '      responses:\n        "204":\n          description: done\n'
+    )
+
+
+def ledger_property(schema: str) -> str:
+    """`Ledger`'s components with a `Journal` component whose `lines` property is `schema`."""
+    return LEDGER_SCHEMAS + "    Journal:\n      type: object\n      properties:\n        lines:\n" + schema
+
+
+JOURNAL_PATHS = ledger_response(pointer("Journal", 16))
+MISSING_PROPERTY = "                type: object\n                properties:\n                  entry:\n" + pointer(
+    "Ledger/properties/missing", 20
+)
+
+
+def array_of(target: str) -> str:
+    return "          type: array\n          items:\n" + pointer(target, 12)
+
+
 # Each exclusive interaction arm: the document with both features, and the controls that
 # may each hold at most one of them. Where one feature entails the other, no valid
 # document has the entailing feature alone, so the controls hold the entailed one.
@@ -2221,6 +2286,40 @@ INTERACTION_ARMS: dict[str, InteractionArm] = {
             "inline body alone": operation_document(form_body("application/json", KIOSK_BODY.format(flag="")), ""),
             "referenced body with a readOnly property": operation_document(
                 form_body("application/json", '              $ref: "#/components/schemas/Kiosk"\n'), KIOSK_SCHEMAS
+            ),
+        },
+    ),
+    # A pointer past a declared component's head that names nothing, at the success
+    # response, the request body and an array's items: each placement's own arm reads it,
+    # where an undeclared component, a pointer that resolves, the same pointer at another
+    # placement, and (for an element) a pointer ending on a composition member do not.
+    "combo-response-unresolved-nested-pointer": InteractionArm(
+        operation_document(ledger_response(pointer("Ledger/properties/missing", 16)), LEDGER_SCHEMAS),
+        {
+            "undeclared component": operation_document(ledger_response(pointer("Absent", 16)), LEDGER_SCHEMAS),
+            "resolved nested pointer": operation_document(
+                ledger_response(pointer("Ledger/properties/entry", 16)), LEDGER_SCHEMAS
+            ),
+            "unresolved pointer at a property": operation_document(ledger_response(MISSING_PROPERTY), LEDGER_SCHEMAS),
+        },
+    ),
+    "combo-request-unresolved-nested-pointer": InteractionArm(
+        operation_document(ledger_request(pointer("Ledger/properties/missing", 14)), LEDGER_SCHEMAS),
+        {
+            "undeclared component": operation_document(ledger_request(pointer("Absent", 14)), LEDGER_SCHEMAS),
+            "unknown body": operation_document(ledger_request("              {}\n"), LEDGER_SCHEMAS),
+            "unresolved pointer at a response": operation_document(
+                ledger_response(pointer("Ledger/properties/missing", 16)), LEDGER_SCHEMAS
+            ),
+        },
+    ),
+    "combo-array-unresolved-nested-pointer": InteractionArm(
+        operation_document(JOURNAL_PATHS, ledger_property(array_of("Ledger/properties/missing"))),
+        {
+            "composition-member pointer": operation_document(JOURNAL_PATHS, ledger_property(array_of("Shape/oneOf/0"))),
+            "undeclared component": operation_document(JOURNAL_PATHS, ledger_property(array_of("Absent"))),
+            "unresolved pointer at a property": operation_document(
+                JOURNAL_PATHS, ledger_property(pointer("Ledger/properties/missing", 10))
             ),
         },
     ),
@@ -2790,6 +2889,50 @@ class CooccurrenceOutcomeTest(unittest.TestCase):
                     )
                     self.assertEqual(role is DocumentRole.BOTH, self.ran(reach, record.region, universe, hit))
 
+    def test_nullable_success_unions_reach_a_keyword_specific_region_only_with_both_features(self) -> None:
+        reach = golden_reach()
+        handwritten = _module("nullable_success_handwritten", "handwritten-fixtures.py")
+        census = _module("nullable_success_census", "openapi-surface-census.py")
+        sites = reach.read_sites_table()
+        crozier = handwritten.instrumented_crozier(REPO, reach)
+        for keyword, key, region, other in (
+            ("oneOf", "combo-success-oneof-nullable", NULLABLE_SUCCESS_ONE_OF, NULLABLE_SUCCESS_ANY_OF),
+            ("anyOf", "combo-success-anyof-nullable", NULLABLE_SUCCESS_ANY_OF, NULLABLE_SUCCESS_ONE_OF),
+        ):
+            self.assertEqual((region,), sites[key].sites)
+            selector = sites[key].selectors[0]
+            for label, document, expected in (
+                ("both", signal_answer(signal_union(keyword, True)), True),
+                ("union alone", signal_answer(signal_union(keyword, False)), False),
+                (
+                    "nullable scalar",
+                    signal_answer("                type: integer\n                nullable: true\n"),
+                    False,
+                ),
+                (
+                    "type list with null",
+                    signal_answer("                type: [integer, boolean, 'null']\n").replace(
+                        "openapi: 3.0.3", "openapi: 3.1.0"
+                    ),
+                    False,
+                ),
+            ):
+                with self.subTest(keyword=keyword, document=label), tempfile.TemporaryDirectory() as temporary:
+                    scratch = Path(temporary)
+                    package, universe, hit = self.generate(scratch, document, reach, crozier)
+                    counts = census.census_document(
+                        census.load_document(scratch / "openapi.yml"),
+                        {selector: census.compile_conjunction(selector)},
+                    )
+                    self.assertEqual(expected, counts.get(selector, 0) > 0, "the census disagrees with this document")
+                    self.assertEqual(expected, self.ran(reach, region, universe, hit))
+                    self.assertFalse(self.ran(reach, other, universe, hit))
+                    if expected:
+                        self.assertIn(
+                            "-> typing.Optional[GetSignalResponse]:",
+                            (package / "client.py").read_text(encoding="utf-8"),
+                        )
+
     def test_maps_beside_unions_reach_a_keyword_specific_region_only_with_both_features(self) -> None:
         reach = golden_reach()
         handwritten = _module("map_union_handwritten", "handwritten-fixtures.py")
@@ -2865,10 +3008,24 @@ class ControlFeatures(NamedTuple):
 
 
 SCHEMA_CONTROL_FEATURES = {
+    "combo-array-unresolved-nested-pointer": ControlFeatures(
+        "schema.type=array", "schema.$ref:unresolved-nested-local"
+    ),
     "combo-allof-schema-example": ControlFeatures("schema.allOf", "schema.example"),
+    "combo-allof-with-required": ControlFeatures("schema.allOf", "schema.required"),
     "combo-map-beside-anyof": ControlFeatures("schema.additionalProperties", "schema.anyOf"),
+    "combo-map-beside-oneof": ControlFeatures("schema.additionalProperties", "schema.oneOf"),
     "combo-properties-beside-additional-properties": ControlFeatures(
         "schema.additionalProperties", "schema.properties:non-empty"
+    ),
+    "combo-property-anyof-composed-sibling": ControlFeatures(
+        "schema.properties>schema.anyOf:several-non-null-members", "schema.anyOf>schema.oneOf"
+    ),
+    "combo-unrequired-tag-oneof-reference": ControlFeatures(
+        "schema.oneOf>schema.$ref", "schema.properties>!schema.discriminator&schema.enum:string-valued"
+    ),
+    "combo-unrequired-tag-anyof-reference": ControlFeatures(
+        "schema.anyOf>schema.$ref", "schema.properties>!schema.discriminator&schema.enum:string-valued"
     ),
 }
 

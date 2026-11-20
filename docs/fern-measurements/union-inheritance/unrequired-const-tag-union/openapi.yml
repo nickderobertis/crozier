@@ -1,0 +1,39 @@
+openapi: 3.1.0
+info:
+  title: Studio Log
+  version: "1.0"
+paths:
+  /entries:
+    post:
+      operationId: addEntry
+      tags: [entries]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/StudioNote"
+                - $ref: "#/components/schemas/StudioReminder"
+      responses:
+        "204":
+          description: Added.
+components:
+  schemas:
+    StudioNote:
+      type: object
+      required: [text]
+      properties:
+        type:
+          const: note
+          default: note
+        text:
+          type: string
+    StudioReminder:
+      type: object
+      required: [type, due]
+      properties:
+        type:
+          const: reminder
+        due:
+          type: string

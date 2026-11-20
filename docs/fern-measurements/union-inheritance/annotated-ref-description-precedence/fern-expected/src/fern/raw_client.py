@@ -1,0 +1,220 @@
+
+
+import typing
+from json.decoder import JSONDecodeError
+
+from .core.api_error import ApiError
+from .core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+from .core.http_response import AsyncHttpResponse, HttpResponse
+from .core.jsonable_encoder import encode_path_param
+from .core.parse_error import ParsingError
+from .core.pydantic_utilities import parse_obj_as
+from .core.request_options import RequestOptions
+from .types.create_draft_response import CreateDraftResponse
+from .types.entry import Entry
+from pydantic import ValidationError
+
+
+OMIT = typing.cast(typing.Any, ...)
+
+
+class RawFernApi:
+    def __init__(self, *, client_wrapper: SyncClientWrapper):
+        self._client_wrapper = client_wrapper
+
+    def get_entry(
+        self, entry_id: str, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> HttpResponse[Entry]:
+        """
+        Parameters
+        ----------
+        entry_id : str
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[Entry]
+            The entry
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"entries/{encode_path_param(entry_id)}",
+            method="GET",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    Entry,
+                    parse_obj_as(
+                        type_=Entry,
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    def create_draft(
+        self,
+        *,
+        title: str,
+        subtitle: typing.Optional[str] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[CreateDraftResponse]:
+        """
+        Parameters
+        ----------
+        title : str
+            The title's wording.
+
+        subtitle : typing.Optional[str]
+            The draft's subtitle as written.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[CreateDraftResponse]
+            The draft
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            "drafts",
+            method="POST",
+            json={
+                "title": title,
+                "subtitle": subtitle,
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    CreateDraftResponse,
+                    parse_obj_as(
+                        type_=CreateDraftResponse,
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+
+class AsyncRawFernApi:
+    def __init__(self, *, client_wrapper: AsyncClientWrapper):
+        self._client_wrapper = client_wrapper
+
+    async def get_entry(
+        self, entry_id: str, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> AsyncHttpResponse[Entry]:
+        """
+        Parameters
+        ----------
+        entry_id : str
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[Entry]
+            The entry
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"entries/{encode_path_param(entry_id)}",
+            method="GET",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    Entry,
+                    parse_obj_as(
+                        type_=Entry,
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def create_draft(
+        self,
+        *,
+        title: str,
+        subtitle: typing.Optional[str] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[CreateDraftResponse]:
+        """
+        Parameters
+        ----------
+        title : str
+            The title's wording.
+
+        subtitle : typing.Optional[str]
+            The draft's subtitle as written.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[CreateDraftResponse]
+            The draft
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            "drafts",
+            method="POST",
+            json={
+                "title": title,
+                "subtitle": subtitle,
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    CreateDraftResponse,
+                    parse_obj_as(
+                        type_=CreateDraftResponse,
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

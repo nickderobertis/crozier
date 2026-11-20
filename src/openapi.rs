@@ -1659,6 +1659,17 @@ impl From<String> for LiteralTypeOverride {
     }
 }
 
+/// What a degraded `$ref` named, which no declaration answers.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Unresolved {
+    /// A bare reference to a component the document never declares.
+    Component,
+    /// A component pointer with a tail that names nothing whole — past a declared
+    /// head, or under a head the document never declares. The lowering reads it
+    /// apart where a placement meets it.
+    Pointer,
+}
+
 /// A JSON-Schema-ish node. A node is either a `$ref` (when [`Schema::reference`]
 /// is set) or an inline schema described by the remaining fields.
 #[derive(Debug, Default, Clone, PartialEq, Deserialize)]
@@ -1907,13 +1918,23 @@ pub struct Schema {
     /// See [`normalize_boolean_property_objects`].
     #[serde(skip)]
     pub(crate) boolean_stand_in: bool,
-    /// Set when this node's `$ref` named a component schema the document never
-    /// declares, which `normalize_unresolvable_schema_refs` degraded to the
-    /// unknown type. Not a wire field. Fern guards such a success body against an
-    /// empty response where a written `{}` in a 3.0 document is not guarded, so
-    /// the origin has to outlive the rewrite.
+    /// Set when this node's `$ref` named nothing the document declares, which
+    /// `normalize_unresolvable_schema_refs` or `normalize_unresolved_schema_pointers`
+    /// degraded to the unknown type, with what it named. Not a wire field. Fern
+    /// guards such a success body against an empty response where a written `{}`
+    /// in a 3.0 document is not guarded, so the origin has to outlive the
+    /// rewrite. Read it through [`Self::unresolved_reference`] and
+    /// [`Self::unresolved_pointer`].
     #[serde(skip)]
-    pub unresolved_reference: bool,
+    pub unresolved: Option<Unresolved>,
+    /// Set on the copy `normalize_schema_pointer_refs` writes where a bare `$ref`
+    /// pointed inside a component. Not a wire field. Fern names a union member
+    /// written so by its ordinal, as it names any reference, where an inline
+    /// object is named by its distinguishing property: the EASA D-X interfaces
+    /// document's `GeoJSONGeometryType` offers `$ref …/properties/point_with_extent`
+    /// first, and the certified pair declares `…GeoJsonGeometryTypeZero`.
+    #[serde(skip)]
+    pub pointer_copy: bool,
     /// Set when `normalize_empty_compositions` discarded a non-empty composition
     /// from this scalar-typed node. Not a wire field. Fern generates the plain
     /// type too, but a constraint inside the composition still binds the value,
@@ -2203,6 +2224,19 @@ impl Schema {
                 }),
         );
         names.into_iter()
+    }
+
+    /// Whether this node's `$ref` named nothing the document declares.
+    #[must_use]
+    pub fn unresolved_reference(&self) -> bool {
+        self.unresolved.is_some()
+    }
+
+    /// Whether this node's `$ref` was a component pointer with a tail that names
+    /// nothing whole ([`Unresolved::Pointer`]).
+    #[must_use]
+    pub fn unresolved_pointer(&self) -> bool {
+        self.unresolved == Some(Unresolved::Pointer)
     }
 
     /// Whether the document says this schema admits `null`: the 3.0 `nullable`
@@ -3198,6 +3232,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     // normalizations run, so every later pass sees one self-contained document.
     let remote_origin = crate::refs::resolve(&mut doc, &crate::refs::CurlFetcher, path)?;
 
+    normalize_slash_named_schema_refs(&mut doc);
     normalize_float_type(&mut doc);
     normalize_parameter_schema_refs(&mut doc);
     normalize_webhook_operations(&mut doc);
@@ -3209,6 +3244,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     normalize_schema_pointer_refs(&mut doc);
     normalize_empty_compositions(&mut doc);
     normalize_single_scalar_all_of(&mut doc);
+    normalize_null_typed_compositions(&mut doc);
     normalize_null_only_compositions(&mut doc);
     normalize_sibling_one_of_constraints(&mut doc);
     normalize_any_of_all_of_members(&mut doc);
@@ -3520,6 +3556,98 @@ fn normalize_empty_compositions(doc: &mut OpenApi) {
                 }
             }
         });
+    });
+}
+
+/// Read a component pointer whose unescaped tail is the whole name of a
+/// component declaring `/` in its name as a reference to that component. The
+/// certified pair (Fern CLI 5.200.0, fern-python-sdk 5.41.25) resolves it so:
+/// samepage's `page/postResponse` component is named by `$ref:
+/// '#/components/schemas/page/postResponse'`, and Fern's `page` method returns
+/// `PagePostResponse` where a pointer walk finds no `page` component and would
+/// type the response unknown.
+///
+/// The component is renamed with `-` for each `/`, which names its class, its
+/// module and everything hoisted under it identically ([`crate::naming`] breaks
+/// a word at either), so no later pass has to read an escaped `~1` segment. A
+/// name whose renaming would collide with a declared one, or with another
+/// renaming, is left alone, and so is a tail that names no component whole: the
+/// pointer passes decide those.
+fn normalize_slash_named_schema_refs(doc: &mut OpenApi) {
+    let proposed: Vec<(String, String)> = doc
+        .components
+        .schemas
+        .keys()
+        .filter(|name| name.contains('/'))
+        .map(|name| (name.clone(), name.replace('/', "-")))
+        .collect();
+    // Two slash-named components can rename to one name (`a/b-c` and `a-b/c`
+    // both read `a-b-c`), and neither may then displace the other.
+    let shared = |renamed: &String| {
+        proposed
+            .iter()
+            .filter(|(_, other)| other == renamed)
+            .count()
+            > 1
+    };
+    let renames: IndexMap<String, String> = proposed
+        .iter()
+        .filter(|(_, renamed)| !doc.components.schemas.contains_key(renamed) && !shared(renamed))
+        .cloned()
+        .collect();
+    if renames.is_empty() {
+        return;
+    }
+    let mut schemas = IndexMap::new();
+    for (name, schema) in std::mem::take(&mut doc.components.schemas) {
+        schemas.insert(renames.get(&name).cloned().unwrap_or(name), schema);
+    }
+    doc.components.schemas = schemas;
+    let rewrite = |reference: &mut String| {
+        let renamed = reference
+            .strip_prefix("#/components/schemas/")
+            .map(|tail| tail.replace("~1", "/").replace("~0", "~"))
+            .and_then(|tail| renames.get(&tail));
+        if let Some(renamed) = renamed {
+            *reference = format!("#/components/schemas/{renamed}");
+        }
+    };
+    let mut visit = |schema: &mut Schema| {
+        for_each_schema_in(schema, &mut |node| {
+            if let Some(reference) = node.reference.as_mut() {
+                rewrite(reference);
+            }
+            if let Some(discriminator) = node.discriminator.as_mut() {
+                for target in discriminator.mapping.values_mut() {
+                    rewrite(target);
+                }
+            }
+        });
+    };
+    for_each_root_schema(doc, &mut visit);
+    for item in doc.webhooks.values_mut() {
+        for_each_path_item_schema(item, &mut visit);
+    }
+}
+
+/// Drop the sibling `type: "null"` of a `oneOf`/`anyOf`, which the certified
+/// pair (Fern CLI 5.200.0, fern-python-sdk 5.41.25) reads as no type at all:
+/// Vercel's `EdgeConfigItemValue` is `{oneOf: [string, number, boolean,
+/// object, array of EdgeConfigItemValue], type: "null"}`, and Fern's alias is
+/// `Union[str, float, bool, Dict[str, Any], List["EdgeConfigItemValue"]]`, its
+/// required `EdgeConfigItem.value` and `AuthUser`'s
+/// `gitNamespaceId: {oneOf: [string, number], type: "null"}` neither optional.
+/// Only the composition's own alternatives can make it nullable.
+fn normalize_null_typed_compositions(doc: &mut OpenApi) {
+    for_each_root_schema(doc, &mut |schema| {
+        for_each_schema_in(schema, &mut |node| {
+            let composed = node.one_of.as_ref().or(node.any_of.as_ref());
+            if composed.is_some_and(|members| !members.is_empty())
+                && matches!(&node.ty, Some(TypeField::Single(ty)) if ty == "null")
+            {
+                node.ty = None;
+            }
+        })
     });
 }
 
@@ -3973,6 +4101,7 @@ fn inline_schema_pointers(
         if !expanding.contains(&reference) {
             if let Some(target) = schema_pointer_target(components, &reference) {
                 *schema = target.clone();
+                schema.pointer_copy = true;
                 expanding.push(reference);
                 inline_schema_pointers(schema, components, expanding);
                 expanding.pop();
@@ -4504,6 +4633,28 @@ fn normalize_webhook_operations(doc: &mut OpenApi) {
     }
 }
 
+/// Whether a `oneOf`/`anyOf` alternative is one Fern keeps inline in the union
+/// even when it declares a type name: a primitive with no values of its own, or
+/// a map (an object declaring no properties). Only a structured alternative (an
+/// object with properties, an enum, an array, a composition) is named by its
+/// declaration.
+fn scalar_union_member(member: &Schema) -> bool {
+    let composed = member.one_of.is_some() || member.any_of.is_some() || member.all_of.is_some();
+    if member.reference.is_some()
+        || composed
+        || member.enum_values.is_some()
+        || member.const_value.is_some()
+        || member.items.is_some()
+        || !member.properties.is_empty()
+    {
+        return false;
+    }
+    matches!(
+        member.ty.as_ref().and_then(TypeField::primary),
+        Some("string" | "number" | "integer" | "boolean" | "object")
+    )
+}
+
 /// Lift every inline schema that declares a type name (`x-crozier-type-name`,
 /// or `x-fern-type-name`) into a component of that name, leaving a `$ref` where
 /// it stood, wherever Fern's type for it is a root type: under a component, or
@@ -4561,13 +4712,26 @@ fn normalize_inline_declared_type_names(doc: &mut OpenApi) {
         if let Some(AdditionalProperties::Schema(values)) = schema.additional_properties.as_mut() {
             lift_child(values, taken);
         }
-        for members in [&mut schema.one_of, &mut schema.any_of, &mut schema.all_of]
+        for members in [&mut schema.one_of, &mut schema.any_of]
             .into_iter()
             .flatten()
         {
             for member in members {
-                lift_child(member, taken);
+                // A scalar alternative stays inline whatever it declares:
+                // Hookdeck's `FilterRuleProperty` offers `FilterRulePropertyString`,
+                // `…Number`, `…Boolean` and `…JSON` alternatives, and the
+                // certified pair's alias is `Union[Optional[str],
+                // Optional[float], Optional[bool], Optional[Dict[str, Any]]]`
+                // with no type of their own.
+                if scalar_union_member(member) {
+                    lift(member, taken);
+                } else {
+                    lift_child(member, taken);
+                }
             }
+        }
+        for member in schema.all_of.iter_mut().flatten() {
+            lift_child(member, taken);
         }
     }
     let mut taken: Taken = doc
@@ -4825,8 +4989,20 @@ fn normalize_unresolvable_schema_refs(doc: &mut OpenApi) {
                 .and_then(referenced_component_schema)
                 .is_some_and(|name| !declared.contains(name));
             if unresolvable {
+                // A pointer with a tail names nothing whole either: the EASA D-X
+                // interfaces document points at `DigitalInterfacesMessages/
+                // properties/UASZonesReply`, a head it never declares.
+                let tailed = node.reference.as_deref().is_some_and(|reference| {
+                    reference
+                        .strip_prefix("#/components/schemas/")
+                        .is_some_and(|pointer| pointer.contains('/'))
+                });
                 node.reference = None;
-                node.unresolved_reference = true;
+                node.unresolved = Some(if tailed {
+                    Unresolved::Pointer
+                } else {
+                    Unresolved::Component
+                });
             }
         });
     });
@@ -4884,7 +5060,7 @@ fn degrade_unresolved_pointers(
         && lone_member.is_some_and(|reference| unresolved.contains(reference))
     {
         schema.all_of = None;
-        schema.unresolved_reference = true;
+        schema.unresolved = Some(Unresolved::Pointer);
     }
     if !array_item
         && schema
@@ -4893,7 +5069,7 @@ fn degrade_unresolved_pointers(
             .is_some_and(|reference| unresolved.contains(reference))
     {
         schema.reference = None;
-        schema.unresolved_reference = true;
+        schema.unresolved = Some(Unresolved::Pointer);
     }
     for property in schema.properties.values_mut() {
         degrade_unresolved_pointers(property, unresolved, false);
@@ -7285,7 +7461,7 @@ components:
         ] {
             let node = &holder.properties[unknown];
             assert!(
-                node.reference.is_none() && node.unresolved_reference,
+                node.reference.is_none() && node.unresolved_reference(),
                 "{unknown}"
             );
         }
@@ -7297,19 +7473,19 @@ components:
             Some(AdditionalProperties::Schema(value)) => value,
             other => panic!("{other:?}"),
         };
-        assert!(value.reference.is_none() && value.unresolved_reference);
+        assert!(value.reference.is_none() && value.unresolved_reference());
         // A lone member is its holder's schema, so the holder is unknown and
         // keeps its own annotations; beside a `type` it is only a member.
         let merged = &holder.properties["merged"];
-        assert!(merged.all_of.is_none() && merged.unresolved_reference);
+        assert!(merged.all_of.is_none() && merged.unresolved_reference());
         assert_eq!(merged.description.as_deref(), Some("kept"));
         let beside = &holder.properties["beside"];
-        assert!(!beside.unresolved_reference);
+        assert!(!beside.unresolved_reference());
         let member = &beside.all_of.as_ref().unwrap()[0];
-        assert!(member.reference.is_none() && member.unresolved_reference);
+        assert!(member.reference.is_none() && member.unresolved_reference());
         // An array's element keeps its pointer for the element lowering.
         let names = holder.properties["names"].items.as_deref().unwrap();
-        assert!(names.reference.is_some() && !names.unresolved_reference);
+        assert!(names.reference.is_some() && !names.unresolved_reference());
         // The lowering's unknown pointers, a whole component, an undeclared
         // head and a pointer outside the components are not this pass's.
         for kept in [
@@ -7322,13 +7498,13 @@ components:
         ] {
             let node = &holder.properties[kept];
             assert!(
-                node.reference.is_some() && !node.unresolved_reference,
+                node.reference.is_some() && !node.unresolved_reference(),
                 "{kept}"
             );
         }
         assert!(
             holder.properties["found"].reference.is_none()
-                && !holder.properties["found"].unresolved_reference
+                && !holder.properties["found"].unresolved_reference()
         );
         // Request and response bodies are degraded as any other position is.
         let operation = doc.paths["/holder"].post.as_ref().unwrap();
@@ -7336,12 +7512,12 @@ components:
             .schema
             .as_ref()
             .unwrap();
-        assert!(body.reference.is_none() && body.unresolved_reference);
+        assert!(body.reference.is_none() && body.unresolved_reference());
         let response = operation.responses["200"].content["application/json"]
             .schema
             .as_ref()
             .unwrap();
-        assert!(response.reference.is_none() && response.unresolved_reference);
+        assert!(response.reference.is_none() && response.unresolved_reference());
     }
 
     #[test]
@@ -7849,6 +8025,49 @@ components:
                 .reference,
             None
         );
+    }
+
+    #[test]
+    fn normalize_slash_named_schema_refs_renames_each_name_once_and_never_merges_two() {
+        let mut doc = parse(
+            r##"
+openapi: 3.0.0
+info: { title: T }
+components:
+  schemas:
+    page/postResponse: { type: object, properties: { id: { type: string } } }
+    a/b-c: { type: string }
+    a-b/c: { type: integer }
+    Holder:
+      type: object
+      properties:
+        raw: { $ref: "#/components/schemas/page/postResponse" }
+        escaped: { $ref: "#/components/schemas/page~1postResponse" }
+        first: { $ref: "#/components/schemas/a/b-c" }
+        second: { $ref: "#/components/schemas/a-b/c" }
+"##,
+        );
+        normalize_slash_named_schema_refs(&mut doc);
+        let schemas = &doc.components.schemas;
+        assert!(schemas.contains_key("page-postResponse"));
+        assert!(!schemas.contains_key("page/postResponse"));
+        let holder = &schemas["Holder"];
+        for property in ["raw", "escaped"] {
+            assert_eq!(
+                holder.properties[property].reference.as_deref(),
+                Some("#/components/schemas/page-postResponse"),
+                "{property}"
+            );
+        }
+        // `a/b-c` and `a-b/c` would both read `a-b-c`: both keep their own
+        // declarations, and their references stay as written.
+        assert!(schemas.contains_key("a/b-c") && schemas.contains_key("a-b/c"));
+        assert!(!schemas.contains_key("a-b-c"));
+        assert_eq!(
+            holder.properties["first"].reference.as_deref(),
+            Some("#/components/schemas/a/b-c")
+        );
+        assert_eq!(schemas.len(), 4);
     }
 
     /// Fern keeps a schema's nullability at its use sites rather than in the

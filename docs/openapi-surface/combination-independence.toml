@@ -5,4 +5,43 @@
 # [combinations.documents] has first, second and both inline tables; each has
 # document (the authored spec) and a complete certified tree path for every mode.
 schema_version = 1
-combinations = []
+
+# An annotated `$ref` (first) to a nullable target (second).
+[[combinations]]
+key = "combo-annotated-ref-to-nullable-target"
+modes = ["python_enums", "literals"]
+
+[[combinations.conditions]]
+feature = "first"
+handler = "src/ir.rs::Builder::collect_fields"
+condition = "described_all_of_ref(prop_schema)"
+
+[[combinations.conditions]]
+feature = "first"
+handler = "src/ir.rs::described_all_of_ref"
+condition = "if members.len() < 2 {"
+
+[[combinations.conditions]]
+feature = "first"
+handler = "src/ir.rs::described_all_of_ref"
+condition = "} else if is_unknown(member) {"
+
+[[combinations.conditions]]
+feature = "second"
+handler = "src/ir.rs::schema_accepts_none"
+condition = "is_optional(schema) || referenced_schema_accepts_none(schema, schemas)"
+
+[[combinations.conditions]]
+feature = "second"
+handler = "src/ir.rs::is_optional"
+condition = "(schema.reference.is_none() || schema.reference_nullable) && is_explicitly_nullable(schema)"
+
+[[combinations.conditions]]
+feature = "second"
+handler = "src/ir.rs::is_explicitly_nullable"
+condition = "schema.explicitly_nullable()"
+
+[combinations.documents]
+first = {document = "docs/fern-measurements/schema-independence/annotated-ref-nullable-target-first/openapi.yml", python_enums = "docs/fern-measurements/schema-independence/annotated-ref-nullable-target-first/fern-expected", literals = "docs/fern-measurements/schema-independence/annotated-ref-nullable-target-first/expected-literals/fern-expected"}
+second = {document = "docs/fern-measurements/schema-independence/annotated-ref-nullable-target-second/openapi.yml", python_enums = "docs/fern-measurements/schema-independence/annotated-ref-nullable-target-second/fern-expected", literals = "docs/fern-measurements/schema-independence/annotated-ref-nullable-target-second/expected-literals/fern-expected"}
+both = {document = "docs/fern-measurements/schema-independence/annotated-ref-nullable-target-both/openapi.yml", python_enums = "docs/fern-measurements/schema-independence/annotated-ref-nullable-target-both/fern-expected", literals = "docs/fern-measurements/schema-independence/annotated-ref-nullable-target-both/expected-literals/fern-expected"}

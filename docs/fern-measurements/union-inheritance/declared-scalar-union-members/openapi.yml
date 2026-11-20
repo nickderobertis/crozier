@@ -1,0 +1,59 @@
+openapi: 3.0.3
+info:
+  title: Orchard Sensors
+  version: "1.0"
+paths:
+  /readings:
+    post:
+      operationId: recordReading
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Reading"
+      responses:
+        "204":
+          description: Recorded.
+components:
+  schemas:
+    Reading:
+      type: object
+      required: [sensor]
+      properties:
+        sensor:
+          type: string
+        value:
+          $ref: "#/components/schemas/ReadingValue"
+        threshold:
+          $ref: "#/components/schemas/ReadingThreshold"
+    ReadingValue:
+      description: A sensor value in whichever form the sensor reports.
+      nullable: true
+      anyOf:
+        - type: string
+          nullable: true
+          x-fern-type-name: ReadingValueText
+        - type: number
+          format: float
+          nullable: true
+          x-fern-type-name: ReadingValueNumber
+        - type: boolean
+          nullable: true
+          x-fern-type-name: ReadingValueFlag
+        - type: object
+          properties: {}
+          additionalProperties: true
+          nullable: true
+          x-fern-type-name: ReadingValueBlob
+    ReadingThreshold:
+      oneOf:
+        - type: integer
+          x-fern-type-name: ThresholdCount
+        - type: object
+          x-fern-type-name: ThresholdBand
+          properties:
+            low:
+              type: number
+            high:
+              type: number

@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.25",
+  "corpus_spec_name": "registered-literals-ai-riksarkivet-rask-672f1ef2",
+  "corpus_spec_ref": "debde3cc790d121b28ddf2b6a0f34a78d1728203",
+  "corpus_spec_url": "https://raw.githubusercontent.com/AI-Riksarkivet/rask/debde3cc790d121b28ddf2b6a0f34a78d1728203/docs/lineage-openapi.json"
+}

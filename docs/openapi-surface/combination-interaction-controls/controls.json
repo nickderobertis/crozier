@@ -11,6 +11,24 @@
       }
     },
     {
+      "key": "combo-allof-with-required",
+      "region": "src/ir.rs::promote_parent_property[if schema\\.required\\.iter\\(\\)\\.any\\(\\x7cname\\x7c name == key\\) \\{]",
+      "documents": {
+        "first": "docs/openapi-surface/combination-interaction-controls/combo-allof-with-required/first/openapi.yml",
+        "second": "docs/openapi-surface/combination-interaction-controls/combo-allof-with-required/second/openapi.yml",
+        "both": "docs/openapi-surface/combination-interaction-controls/combo-allof-with-required/both/openapi.yml"
+      }
+    },
+    {
+      "key": "combo-array-unresolved-nested-pointer",
+      "region": "src/ir.rs::Builder::field_type_ref[if unresolved_pointer \\{]",
+      "documents": {
+        "first": "docs/openapi-surface/combination-interaction-controls/combo-array-unresolved-nested-pointer/first/openapi.yml",
+        "second": "docs/openapi-surface/combination-interaction-controls/combo-array-unresolved-nested-pointer/second/openapi.yml",
+        "both": "docs/openapi-surface/combination-interaction-controls/combo-array-unresolved-nested-pointer/both/openapi.yml"
+      }
+    },
+    {
       "key": "combo-map-beside-anyof",
       "region": "src/ir.rs::prefer_map_to_union[if schema\\.any_of\\.is_some\\(\\)]",
       "documents": {
@@ -20,12 +38,48 @@
       }
     },
     {
+      "key": "combo-map-beside-oneof",
+      "region": "src/ir.rs::prefer_map_to_union[if schema\\.one_of\\.is_some\\(\\)]",
+      "documents": {
+        "first": "docs/openapi-surface/combination-interaction-controls/combo-map-beside-oneof/first/openapi.yml",
+        "second": "docs/openapi-surface/combination-interaction-controls/combo-map-beside-oneof/second/openapi.yml",
+        "both": "docs/openapi-surface/combination-interaction-controls/combo-map-beside-oneof/both/openapi.yml"
+      }
+    },
+    {
       "key": "combo-properties-beside-additional-properties",
       "region": "src/ir.rs::Builder::field_type_ref[let inline_value = if !prop_schema\\.properties\\.is_empty\\(\\)]",
       "documents": {
         "first": "docs/openapi-surface/combination-interaction-controls/combo-properties-beside-additional-properties/first/openapi.yml",
         "second": "docs/openapi-surface/combination-interaction-controls/combo-properties-beside-additional-properties/second/openapi.yml",
         "both": "docs/openapi-surface/combination-interaction-controls/combo-properties-beside-additional-properties/both/openapi.yml"
+      }
+    },
+    {
+      "key": "combo-property-anyof-composed-sibling",
+      "region": "src/ir.rs::Builder::field_type_ref[if composed_any_of_sibling\\(prop_schema\\x2c m\\) \\{]",
+      "documents": {
+        "first": "docs/openapi-surface/combination-interaction-controls/combo-property-anyof-composed-sibling/first/openapi.yml",
+        "second": "docs/openapi-surface/combination-interaction-controls/combo-property-anyof-composed-sibling/second/openapi.yml",
+        "both": "docs/openapi-surface/combination-interaction-controls/combo-property-anyof-composed-sibling/both/openapi.yml"
+      }
+    },
+    {
+      "key": "combo-unrequired-tag-anyof-reference",
+      "region": "src/ir.rs::unrequired_reference_tag_value[if union\\.any_of\\.is_some\\(\\) \\{]",
+      "documents": {
+        "first": "docs/openapi-surface/combination-interaction-controls/combo-unrequired-tag-anyof-reference/first/openapi.yml",
+        "second": "docs/openapi-surface/combination-interaction-controls/combo-unrequired-tag-anyof-reference/second/openapi.yml",
+        "both": "docs/openapi-surface/combination-interaction-controls/combo-unrequired-tag-anyof-reference/both/openapi.yml"
+      }
+    },
+    {
+      "key": "combo-unrequired-tag-oneof-reference",
+      "region": "src/ir.rs::unrequired_reference_tag_value[if union\\.one_of\\.is_some\\(\\) \\{]",
+      "documents": {
+        "first": "docs/openapi-surface/combination-interaction-controls/combo-unrequired-tag-oneof-reference/first/openapi.yml",
+        "second": "docs/openapi-surface/combination-interaction-controls/combo-unrequired-tag-oneof-reference/second/openapi.yml",
+        "both": "docs/openapi-surface/combination-interaction-controls/combo-unrequired-tag-oneof-reference/both/openapi.yml"
       }
     }
   ]

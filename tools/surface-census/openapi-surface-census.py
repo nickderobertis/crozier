@@ -27,7 +27,7 @@ Four rules make the number honest; none of them a `grep` obeys.
   `default`, `enum`, `const`) are never descended into for the same reason.
 * **A missing source is a hard failure, not a silent skip.** A missing committed
   document would otherwise report as declaring nothing,
-  and 388 of the 419 registered sources live in `corpus-sources/` (a split
+  and 391 of the 422 registered sources live in `corpus-sources/` (a split
   `tools/surface-census/tests/surface_census_test.py` holds to the registry, so it cannot drift). Pass
   `--allow-missing` to downgrade that to a warning, or `--original-fixtures-only` to
   census only the original fixture directories on purpose.
@@ -2675,7 +2675,7 @@ PORT_PINS = (
         "CASES",
         "src/ir.rs::hoist_union_variant",
         "that the ordered hoist_union_variant case reading still covers the same gates, arms and fallthroughs",
-        "998bfae7abc02baf",
+        "c6ebbe5d6d16b547",
     ),
     PortPin(
         "CASES.prop_type_ref",
@@ -2899,7 +2899,7 @@ PORT_PINS = (
         "_candidate_tag_values",
         "src/ir.rs::inferred_discriminant_property",
         "that tag inference still applies the same required-property exceptions for referenced and inline members",
-        "542f37ec0b505cab",
+        "77902e58b762442b",
     ),
     PortPin(
         "untyped_enum_tag",
@@ -6241,8 +6241,11 @@ def _candidate_tag_values(
             ):
                 supported = True
             elif candidate == "type":
+                # A bare `const` the member leaves unrequired is no tag.
                 supported = (candidate in required_names(variant) and isinstance(schema_example(field), str)) or (
-                    written(field, "const") and isinstance(field["const"], str)
+                    written(field, "const")
+                    and isinstance(field["const"], str)
+                    and (candidate in required_names(variant) or not untyped_const_tag(field))
                 )
             elif candidate in ("role", "status"):
                 supported = candidate in required_names(variant)

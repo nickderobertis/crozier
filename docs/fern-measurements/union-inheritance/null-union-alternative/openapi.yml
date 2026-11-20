@@ -1,0 +1,81 @@
+openapi: 3.1.0
+info:
+  title: Kiln Registry
+  version: "1.0"
+paths:
+  /kilns:
+    post:
+      operationId: registerKiln
+      tags: [kilns]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                settings:
+                  type: object
+                  additionalProperties:
+                    oneOf:
+                      - oneOf:
+                          - type: string
+                          - type: number
+                          - type: boolean
+                          - type: "null"
+                          - type: object
+                      - type: array
+                        items:
+                          oneOf:
+                            - type: string
+                            - type: number
+                            - type: boolean
+                            - type: "null"
+                            - type: object
+      responses:
+        "204":
+          description: Registered.
+  /kilns/{kilnId}/settings:
+    patch:
+      operationId: adjustKilnSettings
+      tags: [kilns]
+      parameters:
+        - name: kilnId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [changes]
+              properties:
+                changes:
+                  type: array
+                  items:
+                    type: object
+                    required: [setting]
+                    properties:
+                      setting:
+                        type: string
+                      reading:
+                        oneOf:
+                          - oneOf:
+                              - type: string
+                              - type: integer
+                              - type: "null"
+                          - type: array
+                            items:
+                              oneOf:
+                                - type: integer
+                                - type: "null"
+                                - type: boolean
+      responses:
+        "204":
+          description: Adjusted.

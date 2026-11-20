@@ -148,6 +148,15 @@ mod emission_parity;
 mod handed_off_type_declarations;
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates one small SDK per ticket and compares it whole, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+/// The union-nullability and inherited-model repairs of tickets #825, #826,
+/// #827, #838 and #839, each settled against a from-scratch document under
+/// `docs/fern-measurements/union-inheritance/` and held whole against the
+/// certified pair's tree in both enum modes.
+#[path = "e2e/union_inheritance.rs"]
+mod union_inheritance;
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
 // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These nine local generator journeys and their canonical-header controls generate small SDKs without network access or SDK installation; they exercise the existing real-binary boundary and introduce no promoted-tier setup.
 #[path = "e2e/remeasure.rs"]
 mod remeasure;
@@ -1053,6 +1062,7 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         (refusal_parity::REFUSAL_PARITY_DIR, "fern-expected"),
         (emission_parity::EMISSION_PARITY_DIR, "fern-expected"),
         (handed_off_type_declarations::DIR, "fern-expected"),
+        (union_inheritance::DIR, "fern-expected"),
         (handed_off_example_values::AREA_DIR, "fern-expected"),
         (handed_off_snippet_rendering::AREA_DIR, "fern-expected"),
         (bodies_media::BODIES_MEDIA_DIR, "fern-expected"),
@@ -1096,7 +1106,11 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
             }
         }
     }
-    for dir in [handed_off_type_declarations::DIR, remeasure::DIR] {
+    for dir in [
+        handed_off_type_declarations::DIR,
+        remeasure::DIR,
+        union_inheritance::DIR,
+    ] {
         if let Ok(entries) = std::fs::read_dir(root.join(dir)) {
             for entry in entries.filter_map(Result::ok) {
                 if entry
@@ -10578,6 +10592,9 @@ const OPENCODEUI: Corpus = Corpus {
 
 const CORPORA: &[&Corpus] = &[
     &LITERALS_HASHGRAPH_63BA2735,
+    &LITERALS_SAMEPAGE_BEA1554A,
+    &LITERALS_EASA_FC03FD3C,
+    &LITERALS_RASK_672F1EF2,
     &LITERALS_APIS_GURU_608E22DC,
     &LITERALS_APIS_GURU_79291D99,
     &LITERALS_ATACAN_B306BF44,
@@ -17935,6 +17952,31 @@ fn digit_leading_schema_name_generates_valid_python() {
         model.contains("class FiveGmmCause(UniversalBaseModel):"),
         "digit-leading schema should become a legal Python class: {model}"
     );
+    assert_valid_python(&out);
+}
+
+/// Digit-leading enum values whose numbers spell one member name keep only the
+/// first, as the certified pair does for the dibbs eCR refiner's
+/// `NarrativeOnlySection` (`10154-3` and `10187-3` both spell `UNDEFINED3`):
+/// two members of one name would fail the enum's class creation at import.
+#[test]
+fn digit_leading_enum_values_spelling_one_name_keep_the_first() {
+    let (_dir, out) = generate_ok(
+        "openapi: 3.0.3\ninfo: { title: Refiner API, version: 1.0.0 }\npaths:\n  /sections:\n    \
+         get:\n      operationId: getSection\n      responses:\n        '200': { description: OK, \
+         content: { application/json: { schema: { $ref: '#/components/schemas/Section' } } } }\n\
+         components:\n  schemas:\n    Section:\n      type: string\n      \
+         enum: ['10154-3', '29299-5', '10187-3']\n",
+    );
+    let section = std::fs::read_to_string(out.join("src/acme/types/section.py"))
+        .expect("the section enum is generated");
+    assert!(section.contains("UNDEFINED3 = \"10154-3\""), "{section}");
+    assert!(section.contains("UNDEFINED5 = \"29299-5\""), "{section}");
+    assert!(
+        !section.contains("10187-3"),
+        "the later value spelling UNDEFINED3 is dropped: {section}"
+    );
+    assert_eq!(section.matches("UNDEFINED3 = ").count(), 1, "{section}");
     assert_valid_python(&out);
 }
 
@@ -33386,5 +33428,59 @@ const LITERALS_HASHGRAPH_63BA2735: Corpus = Corpus {
 fn registered_literals_hashgraph_guardian_63ba2735_matches_fern_output() {
     assert_committed_corpus_matches(&LITERALS_HASHGRAPH_63BA2735);
     overlay_goldens::assert_literals_match(&LITERALS_HASHGRAPH_63BA2735);
+}
+
+/// Certified enum-mode witness, corpus row 6000.
+const LITERALS_SAMEPAGE_BEA1554A: Corpus = Corpus {
+    api: "registered-literals-samepage-network-openai-samepage-bea1554a",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn registered_literals_samepage_network_openai_samepage_bea1554a_matches_fern_output() {
+    assert_committed_corpus_matches(&LITERALS_SAMEPAGE_BEA1554A);
+    overlay_goldens::assert_literals_match(&LITERALS_SAMEPAGE_BEA1554A);
+}
+
+/// Certified enum-mode witness, corpus row 6001.
+const LITERALS_EASA_FC03FD3C: Corpus = Corpus {
+    api: "registered-literals-francineo-easa-dxcomponents-fc03fd3c",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn registered_literals_francineo_easa_dxcomponents_fc03fd3c_matches_fern_output() {
+    assert_committed_corpus_matches(&LITERALS_EASA_FC03FD3C);
+    overlay_goldens::assert_literals_match(&LITERALS_EASA_FC03FD3C);
+}
+
+/// Certified enum-mode witness, corpus row 6002.
+const LITERALS_RASK_672F1EF2: Corpus = Corpus {
+    api: "registered-literals-ai-riksarkivet-rask-672f1ef2",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn registered_literals_ai_riksarkivet_rask_672f1ef2_matches_fern_output() {
+    assert_committed_corpus_matches(&LITERALS_RASK_672F1EF2);
+    overlay_goldens::assert_literals_match(&LITERALS_RASK_672F1EF2);
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
