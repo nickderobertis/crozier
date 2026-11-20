@@ -10255,6 +10255,11 @@ impl InlineHoister<'_> {
                 .is_none()
                 .then(|| string_enum_values(member))
                 .flatten();
+            // …keeping its own `nullable: true` in its slot, as a component
+            // union's member does: Hookdeck's `log_level` is `anyOf: [nullable
+            // enum, array of nullable enum]`, and the certified pair (Fern CLI
+            // 5.200.0, fern-python-sdk 5.41.25) types it
+            // `Union[Optional[…LogLevelZero], List[Optional[…LogLevelOneItem]]]`.
             if let Some(values) = hoisted {
                 let variant_name = variant_class_name(&name, index, member, &siblings);
                 self.out.push(TypeDecl::Enum(build_enum(
@@ -10263,7 +10268,7 @@ impl InlineHoister<'_> {
                     values,
                     clean_doc(member.description.as_deref()),
                 )));
-                variants.push(TypeRef::Named(variant_name));
+                variants.push(nullable_in_slot(member, TypeRef::Named(variant_name)));
                 continue;
             }
             // An array member whose element is an inline string enum names that
@@ -10289,7 +10294,24 @@ impl InlineHoister<'_> {
                     values,
                     clean_doc(items.description.as_deref()),
                 )));
-                variants.push(sequence_of(member, TypeRef::Named(item_name)));
+                variants.push(sequence_of(
+                    member,
+                    nullable_in_slot(items, TypeRef::Named(item_name)),
+                ));
+                continue;
+            }
+            // An inline object member declaring its structure is a model named
+            // for its position, as in a component union
+            // (`Builder::hoist_union_variant`), never the unknown type:
+            // Hookdeck's `cli_id` is `anyOf: [string, {any, all} closed
+            // object, array]` and the certified pair declares
+            // `GetEventsRequestCliIdAll`, and its `body` filter's
+            // `{properties: {}, additionalProperties: false}` member is the
+            // empty model `GetEventsRequestBodyOne`.
+            if is_inline_object_member(member) {
+                let variant_name = variant_class_name(&name, index, member, &siblings);
+                self.hoist_object(&variant_name, member);
+                variants.push(TypeRef::Named(variant_name));
                 continue;
             }
             // An array member whose element is an annotated `$ref` copies
@@ -20021,6 +20043,25 @@ fn is_declared_empty_object(schema: &Schema) -> bool {
             None | Some(AdditionalProperties::Bool(false))
         )
         && schema.ty.as_ref().and_then(TypeField::primary) == Some("object")
+}
+
+/// An inline parameter-union member that is an object declaring its structure:
+/// properties of its own, or an explicitly empty closed `properties: {}`. An
+/// `allOf` member is not one; it composes rather than declares.
+fn is_inline_object_member(schema: &Schema) -> bool {
+    schema.reference.is_none()
+        && schema.all_of.is_none()
+        && (!schema.properties.is_empty() || is_declared_empty_object(schema))
+}
+
+/// `type_ref` made optional where the inline `member` writes its own
+/// nullability, the slot it fills in a union then accepting `None`.
+fn nullable_in_slot(member: &Schema, type_ref: TypeRef) -> TypeRef {
+    if is_explicitly_nullable(member) {
+        optional_type_ref(type_ref)
+    } else {
+        type_ref
+    }
 }
 
 /// A bare `type: object` with no declared structure (no properties, `allOf`, or

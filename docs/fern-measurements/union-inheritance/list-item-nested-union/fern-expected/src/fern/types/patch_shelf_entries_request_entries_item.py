@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .patch_shelf_entries_request_entries_item_one import PatchShelfEntriesRequestEntriesItemOne
+from .patch_shelf_entries_request_entries_item_payload import PatchShelfEntriesRequestEntriesItemPayload
+
+PatchShelfEntriesRequestEntriesItem = typing.Union[
+    PatchShelfEntriesRequestEntriesItemPayload, PatchShelfEntriesRequestEntriesItemOne
+]

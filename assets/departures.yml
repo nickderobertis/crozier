@@ -856,6 +856,28 @@
   reason: Binding the advertised request argument to the actual generated signature raises an unexpected-keyword error. The correction documents the arguments the method accepts.
   evidence: docs/departures/evidence/request-alias-reference-parameters.md
 
+- id: required-null-union-field-example
+  kind: fern-defect
+  trigger: >-
+    A worked example in a generated client's docstring or `reference.md` that
+    constructs a model with a required field whose union type opens with an
+    optional alternative (a nested union carrying a `null` member, which Fern
+    makes `Optional`), the field's own value fitting on one line.
+  fern: >-
+    The constructor without that field (Vercel's
+    `PatchtEdgeConfigItemsRequestItemsItemValue(key="key", operation=…)`),
+    although the model declares it with no default.
+  crozier: >-
+    The same constructor with the field's synthesized example
+    (`value="value",`), a value its union admits; every other argument, the
+    imports and the method signature are unchanged.
+  reason: >-
+    Executing the documented construction against the generated model raises
+    pydantic's `ValidationError` for the missing required field, so the
+    example does not match the code. The correction passes the field and
+    constructs a valid model.
+  evidence: docs/departures/evidence/required-null-union-field-example.md
+
 - id: schema-rejected-array-length-example
   kind: fern-defect
   trigger: >-

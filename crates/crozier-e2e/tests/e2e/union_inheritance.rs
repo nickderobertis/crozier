@@ -4,10 +4,12 @@
 //! repairs the certified screen of `combo-success-anyof-nullable`,
 //! `combo-map-beside-oneof` and `combo-unrequired-tag-oneof-reference` exposed,
 //! and the annotated-`$ref` description precedence the
-//! `combo-annotated-ref-to-nullable-target` independence documents exposed),
-//! each settled against a from-scratch document under
-//! [`DIR`] and the certified pair's complete tree for it (Fern CLI 5.200.0,
-//! fern-python-sdk 5.41.25), in both enum modes.
+//! `combo-annotated-ref-to-nullable-target` independence documents exposed,
+//! and the Hookdeck and Vercel `union-member-nullability-and-object-models`
+//! residual with ticket #828's list-item worked examples), each settled
+//! against a from-scratch document under [`DIR`] and the certified pair's
+//! complete tree for it (Fern CLI 5.200.0, fern-python-sdk 5.41.25), in both
+//! enum modes.
 //!
 //! Every measurement runs the real binary and compares its SDK with the
 //! certified tree file for file; each is shown to fail for its own rule by
@@ -220,6 +222,34 @@ const MEASUREMENTS: &[(&str, &str, &str, &str, &str)] = &[
         "FiringNotes = typing.Dict[str, typing.Any]",
     ),
     (
+        "union-member-nullability-and-object-models: a query union's closed object member is its named model",
+        "query-union-member-models",
+        "src/fern/firings/types/list_firings_request_kiln.py",
+        "ListFiringsRequestKiln = typing.Union[str, ListFiringsRequestKilnAll, typing.List[str]]",
+        "ListFiringsRequestKiln = typing.Union[str, typing.Any, typing.List[str]]",
+    ),
+    (
+        "union-member-nullability-and-object-models: a query union's empty closed object member is an empty model",
+        "query-union-member-models",
+        "src/fern/types/list_firings_request_glaze.py",
+        "ListFiringsRequestGlaze = typing.Union[str, ListFiringsRequestGlazeOne]",
+        "ListFiringsRequestGlaze = typing.Union[str, typing.Any]",
+    ),
+    (
+        "union-member-nullability-and-object-models: a query union's open object member is its named model",
+        "query-union-member-models",
+        "src/fern/types/list_firings_request_cone.py",
+        "ListFiringsRequestCone = typing.Union[str, ListFiringsRequestConeCone]",
+        "ListFiringsRequestCone = typing.Union[str, typing.Any]",
+    ),
+    (
+        "union-member-nullability-and-object-models: a query union's nullable enum members keep their nullability",
+        "query-union-member-models",
+        "src/fern/types/list_firings_request_atmosphere.py",
+        "typing.Optional[ListFiringsRequestAtmosphereZero], typing.List[typing.Optional[ListFiringsRequestAtmosphereOneItem]]",
+        "ListFiringsRequestAtmosphereZero, typing.List[ListFiringsRequestAtmosphereOneItem]",
+    ),
+    (
         "#827 (overlapping parents are inlined, and an untouched parent stays a base)",
         "inlined-chain-inheritance",
         "src/fern/types/kiln_plate.py",
@@ -273,13 +303,11 @@ fn removed(overlay: &Path) -> Vec<String> {
         .collect()
 }
 
-/// crozier's literals SDK for `case` against the certified pair's literals
-/// tree: the base less the files the overlay removes, with the overlay's own
-/// files laid over it.
-fn literals_failures(case: &str, out: &Path) -> Vec<String> {
+/// The certified pair's literals tree for `case`: the base less the files the
+/// overlay removes, with the overlay's own files laid over it.
+fn literals_tree(case: &str) -> (tempfile::TempDir, BTreeSet<String>, Vec<String>) {
     let base = repo_root().join(golden(case));
-    let overlay_golden = format!("{DIR}/{case}/{LITERALS}");
-    let overlay = repo_root().join(&overlay_golden);
+    let overlay = repo_root().join(format!("{DIR}/{case}/{LITERALS}"));
     let removed = removed(&overlay);
     let tree = tempfile::tempdir().expect("literals tree tempdir");
     let copy = |from: &Path, rel: &str| {
@@ -299,6 +327,14 @@ fn literals_failures(case: &str, out: &Path) -> Vec<String> {
     for rel in &own {
         copy(&overlay, rel);
     }
+    (tree, own, removed)
+}
+
+/// crozier's literals SDK for `case` against the certified pair's literals
+/// tree ([`literals_tree`]).
+fn literals_failures(case: &str, out: &Path) -> Vec<String> {
+    let overlay_golden = format!("{DIR}/{case}/{LITERALS}");
+    let (tree, own, removed) = literals_tree(case);
     let inherited = departure_ledger()
         .golden(&golden(case), &[])
         .unwrap_or_else(|failures| panic!("{}", failures.join("\n")));
@@ -346,6 +382,188 @@ fn union_inheritance_repairs_match_the_certified_pair() {
     }
     assert!(failures.is_empty(), "{}", failures.join("\n\n"));
 }
+
+/// #828's Markdown half: a list whose items are a union whose first member
+/// requires a field typed by a null-bearing nested union is written empty in
+/// the README and `reference.md`, as the certified pair writes it, while the
+/// docstrings construct that member with the field (the
+/// `required-null-union-field-example` departure). Both enum modes match the
+/// certified trees whole; writing back the populated list crozier wrote before
+/// is a difference no departure explains. The tampered files are compared
+/// through the engine alone, so the ledger records only the real comparison.
+#[test]
+fn list_item_nested_union_markdown_lists_match_the_certified_pair() {
+    let case = "list-item-nested-union";
+    let temp = tempfile::tempdir().expect("output tempdir");
+    let out = temp.path().join("sdk");
+    generate(case, "python-enums", &out);
+    let mut failures = enum_failures(case, &out);
+    let literals = temp.path().join("literals");
+    generate(case, "literals", &literals);
+    failures.extend(literals_failures(case, &literals));
+    assert!(failures.is_empty(), "{}", failures.join("\n\n"));
+    let expected = repo_root().join(golden(case));
+    let context = crozier::departures::Context::from_trees(&expected, &out);
+    let populated = "entries=[\n        PatchShelfEntriesRequestEntriesItemPayload(\n            label=\"label\",\n            operation=PatchShelfEntriesRequestEntriesItemPayloadOperation.CREATE,\n            payload=\"payload\",\n        )\n    ],";
+    for doc in ["README.md", "reference.md"] {
+        let written = std::fs::read_to_string(out.join(doc)).expect("a Markdown file");
+        let fern = std::fs::read_to_string(expected.join(doc)).expect("the certified file");
+        assert!(written.contains("    entries=[],\n"), "{doc}: {written}");
+        let compare = |text: &str| {
+            crozier::parity::compare_file(&context, doc, text, &fern)
+                .unwrap_or_else(|error| panic!("{doc}: {error}"))
+        };
+        assert!(compare(&written).diff().is_none(), "{doc} differs");
+        let tampered = written.replacen("entries=[],", populated, 1);
+        assert!(
+            compare(&tampered).diff().is_some(),
+            "{doc}: the populated list must be an unexplained difference"
+        );
+    }
+}
+
+/// A literal enum value holding `"` and no `'` is single-quoted in a client
+/// docstring, as Python's `repr` writes it, and keeps its escaped
+/// double-quoted spelling in the Markdown (Vercel's `create_webhook` events),
+/// while a value holding `'` stays double-quoted. Both enum modes match the
+/// certified pair, and writing the escaped spelling back into the docstring
+/// fails the literals comparison.
+#[test]
+fn literal_enum_docstring_quotes_match_the_certified_pair() {
+    let case = "literal-enum-docstring-quotes";
+    let temp = tempfile::tempdir().expect("output tempdir");
+    let out = temp.path().join("sdk");
+    generate(case, "python-enums", &out);
+    let mut failures = enum_failures(case, &out);
+    let literals = temp.path().join("literals");
+    generate(case, "literals", &literals);
+    failures.extend(literals_failures(case, &literals));
+    assert!(failures.is_empty(), "{}", failures.join("\n\n"));
+    let client = literals.join("src/fern/signs/client.py");
+    let written = std::fs::read_to_string(&client).expect("the signs client");
+    let certified = "wordings=['say \"cheese\"'],";
+    assert!(written.contains(certified), "{written}");
+    assert!(written.contains("motto=\"the 'early' bird\","), "{written}");
+    std::fs::write(
+        &client,
+        written.replace(certified, "wordings=[\"say \\\"cheese\\\"\"],"),
+    )
+    .expect("tamper");
+    let tampered = literals_failures(case, &literals);
+    assert!(
+        tampered
+            .iter()
+            .any(|failure| failure.contains("src/fern/signs/client.py")),
+        "the escaped double-quoted docstring spelling must fail: {tampered:?}"
+    );
+}
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This `sdk_env_*` journey runs only in the `sdk-env` project (tests/sdk_env/project.json: `tier:promoted`, `cache: false`), which AGENTS.md promotes out of the affected tier into its own required CI leg; crates/crozier-e2e/AGENTS.md makes `#[ignore]` the one mechanism that routes a journey to that project.
+/// The repaired query-union members, imported from crozier's SDK in both enum
+/// modes and from the certified tree: a closed or open object member's payload
+/// parses into its named model with its fields, and `None` is accepted only by
+/// the members the document declares nullable.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_query_union_member_models_parse_their_payloads() {
+    let python = super::runtime_python_env().expect("SDK runtime environment");
+    let script = repo_root().join("crates/crozier-e2e/tests/e2e/union_member_models_journey.py");
+    let case = "query-union-member-models";
+    let run = |src: &Path| {
+        std::process::Command::new(&python)
+            .env("PYTHONDONTWRITEBYTECODE", "1")
+            .arg(&script)
+            .arg(src)
+            .output()
+            .expect("run the journey")
+    };
+    let missing = run(&repo_root().join(DIR).join(case));
+    assert_eq!(
+        missing.status.code(),
+        Some(2),
+        "a directory without the package"
+    );
+    let temp = tempfile::tempdir().expect("output tempdir");
+    let mut sources = vec![repo_root().join(golden(case)).join("src")];
+    for mode in ["python-enums", "literals"] {
+        let out = temp.path().join(mode);
+        generate(case, mode, &out);
+        sources.push(out.join("src"));
+    }
+    for src in &sources {
+        let output = run(src);
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        assert!(
+            output.status.success(),
+            "{}: {stdout}{}",
+            src.display(),
+            String::from_utf8_lossy(&output.stderr)
+        );
+        assert!(
+            stdout.contains("kiln: {any, all} parses into ListFiringsRequestKilnAll")
+                && stdout.contains("null: accepted by atmosphere's nullable members only"),
+            "{}: {stdout}",
+            src.display()
+        );
+    }
+}
+
+/// #828's departure, executed: every worked-example construction of a model
+/// whose required field is typed by a null-bearing union raises pydantic's
+/// `ValidationError` for that field in the certified trees (both enum modes),
+/// and constructs in crozier's SDKs, whose `reference.md` and README also
+/// write the list of such union items empty, as the certified pair does.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_required_null_union_field_examples_construct_where_fern_s_fail() {
+    let python = super::runtime_python_env().expect("SDK runtime environment");
+    let script = repo_root().join("docs/departures/evidence/required-null-union-field-example.py");
+    let case = "list-item-nested-union";
+    let run = |root: &Path, expect: &str| {
+        let output = std::process::Command::new(&python)
+            .env("PYTHONDONTWRITEBYTECODE", "1")
+            .arg(&script)
+            .arg(root)
+            .arg(expect)
+            .output()
+            .expect("run the evidence script");
+        let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
+        (output.status.success(), stdout)
+    };
+    let (literals, _, _) = literals_tree(case);
+    for fern in [
+        repo_root().join(golden(case)),
+        literals.path().to_path_buf(),
+    ] {
+        let (ok, stdout) = run(&fern, "invalid");
+        assert!(ok, "{}: {stdout}", fern.display());
+        assert_eq!(
+            stdout.matches("ValidationError: missing payload").count(),
+            5,
+            "{}: {stdout}",
+            fern.display()
+        );
+        // The certified examples are not the valid ones.
+        assert!(!run(&fern, "valid").0, "{}", fern.display());
+    }
+    let temp = tempfile::tempdir().expect("output tempdir");
+    for mode in ["python-enums", "literals"] {
+        let out = temp.path().join(mode);
+        generate(case, mode, &out);
+        let (ok, stdout) = run(&out, "valid");
+        assert!(ok, "{mode}: {stdout}");
+        assert_eq!(
+            stdout.matches(": constructs").count(),
+            5,
+            "{mode}: {stdout}"
+        );
+        for doc in ["README.md", "reference.md"] {
+            let text = std::fs::read_to_string(out.join(doc)).expect("a Markdown file");
+            assert!(text.contains("    entries=[],\n"), "{mode} {doc}: {text}");
+        }
+    }
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 /// #839's other half: a structured alternative declaring a type name is still
 /// named by it, while the scalar alternatives beside it stay inline and no

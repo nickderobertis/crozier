@@ -452,6 +452,10 @@ docs/fern-measurements/union-inheritance/declared-scalar-union-members/expected-
 docs/fern-measurements/union-inheritance/declared-scalar-union-members/fern-expected	crozier-e2e::e2e	union_inheritance::union_inheritance_repairs_match_the_certified_pair
 docs/fern-measurements/union-inheritance/inlined-chain-inheritance/expected-literals/fern-expected	crozier-e2e::e2e	union_inheritance::union_inheritance_repairs_match_the_certified_pair
 docs/fern-measurements/union-inheritance/inlined-chain-inheritance/fern-expected	crozier-e2e::e2e	union_inheritance::union_inheritance_repairs_match_the_certified_pair
+docs/fern-measurements/union-inheritance/list-item-nested-union/expected-literals/fern-expected	crozier-e2e::e2e	union_inheritance::list_item_nested_union_markdown_lists_match_the_certified_pair
+docs/fern-measurements/union-inheritance/list-item-nested-union/fern-expected	crozier-e2e::e2e	union_inheritance::list_item_nested_union_markdown_lists_match_the_certified_pair
+docs/fern-measurements/union-inheritance/literal-enum-docstring-quotes/expected-literals/fern-expected	crozier-e2e::e2e	union_inheritance::literal_enum_docstring_quotes_match_the_certified_pair
+docs/fern-measurements/union-inheritance/literal-enum-docstring-quotes/fern-expected	crozier-e2e::e2e	union_inheritance::literal_enum_docstring_quotes_match_the_certified_pair
 docs/fern-measurements/union-inheritance/map-beside-union/expected-literals/fern-expected	crozier-e2e::e2e	union_inheritance::union_inheritance_repairs_match_the_certified_pair
 docs/fern-measurements/union-inheritance/map-beside-union/fern-expected	crozier-e2e::e2e	union_inheritance::union_inheritance_repairs_match_the_certified_pair
 docs/fern-measurements/union-inheritance/null-typed-composition/expected-literals/fern-expected	crozier-e2e::e2e	union_inheritance::union_inheritance_repairs_match_the_certified_pair
@@ -466,6 +470,8 @@ docs/fern-measurements/union-inheritance/nullable-unknown-success-body/expected-
 docs/fern-measurements/union-inheritance/nullable-unknown-success-body/fern-expected	crozier-e2e::e2e	union_inheritance::union_inheritance_repairs_match_the_certified_pair
 docs/fern-measurements/union-inheritance/overridden-parent-layout/expected-literals/fern-expected	crozier-e2e::e2e	union_inheritance::union_inheritance_repairs_match_the_certified_pair
 docs/fern-measurements/union-inheritance/overridden-parent-layout/fern-expected	crozier-e2e::e2e	union_inheritance::union_inheritance_repairs_match_the_certified_pair
+docs/fern-measurements/union-inheritance/query-union-member-models/expected-literals/fern-expected	crozier-e2e::e2e	union_inheritance::union_inheritance_repairs_match_the_certified_pair
+docs/fern-measurements/union-inheritance/query-union-member-models/fern-expected	crozier-e2e::e2e	union_inheritance::union_inheritance_repairs_match_the_certified_pair
 docs/fern-measurements/union-inheritance/restated-default-inherits-enum/expected-literals/fern-expected	crozier-e2e::e2e	union_inheritance::union_inheritance_repairs_match_the_certified_pair
 docs/fern-measurements/union-inheritance/restated-default-inherits-enum/fern-expected	crozier-e2e::e2e	union_inheritance::union_inheritance_repairs_match_the_certified_pair
 docs/fern-measurements/union-inheritance/slash-named-component/expected-literals/fern-expected	crozier-e2e::e2e	union_inheritance::union_inheritance_repairs_match_the_certified_pair
