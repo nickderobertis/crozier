@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.167](https://github.com/nickderobertis/crozier/compare/v0.0.166...v0.0.167) - 2026-11-20
+
+### Fixed
+
+- *(parity)* prove the schema combinations and match the certified pair on union nullability and inherited models ([#876](https://github.com/nickderobertis/crozier/pull/876))
+
 ## [0.0.166](https://github.com/nickderobertis/crozier/compare/v0.0.165...v0.0.166) - 2026-11-18
 
 ### Fixed
