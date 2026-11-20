@@ -623,6 +623,17 @@ fn sdk_env_required_null_union_field_examples_construct_where_fern_s_fail() {
         );
         // crozier's constructions succeed, so they are not Fern's failing ones.
         assert!(!run(&out, "invalid").0, "{mode}");
+        // A construction failing for another reason (a mistyped `label`)
+        // is not the omission the departure corrects.
+        let client = out.join("src/fern/client.py");
+        let text = std::fs::read_to_string(&client).expect("the client");
+        std::fs::write(&client, text.replace("label=\"label\",", "label=1,")).expect("mistype");
+        let (ok, stdout) = run(&out, "invalid");
+        let other_failures = stdout
+            .lines()
+            .filter(|line| line.ends_with("ValidationError: missing "))
+            .count();
+        assert!(!ok && other_failures == 4, "{mode}: {stdout}");
         for doc in ["README.md", "reference.md"] {
             let text = std::fs::read_to_string(out.join(doc)).expect("a Markdown file");
             assert!(text.contains("    entries=[],\n"), "{mode} {doc}: {text}");
