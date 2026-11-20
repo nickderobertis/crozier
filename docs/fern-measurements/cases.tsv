@@ -378,4 +378,5 @@ handed-off/union-modelling/R9/literals	docs/fern-measurements/handed-off/union-m
 handed-off/union-modelling/R13	docs/fern-measurements/handed-off/union-modelling/R13/openapi.yml	python-enums	packaged	-
 handed-off/union-modelling/R13/literals	docs/fern-measurements/handed-off/union-modelling/R13/openapi.yml	literals	packaged	-
 handed-off/union-modelling/query-union-object-members	docs/fern-measurements/handed-off/union-modelling/query-union-object-members/openapi.yml	python-enums	packaged	-
+handed-off/union-modelling/query-union-object-members/literals	docs/fern-measurements/handed-off/union-modelling/query-union-object-members/openapi.yml	literals	packaged	-
 handed-off/follow-up-tickets/842	docs/fern-measurements/handed-off/follow-up-tickets/842/openapi.yml	python-enums	packaged	-

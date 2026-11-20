@@ -28,7 +28,7 @@ const CASES: &[(&str, bool)] = &[
     ("pattern-properties-only-oneof-member", false),
     ("query-anyof-date-time-or-array-named", false),
     ("query-oneof-of-arrays", false),
-    ("query-union-object-members", false),
+    ("query-union-object-members", true),
     ("union-modelling/annotated-reference-beside-null", true),
     ("union-modelling/event-stream-beside-json", true),
     ("union-modelling/identical-primitive-members", false),
