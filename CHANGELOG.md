@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.169](https://github.com/nickderobertis/crozier/compare/v0.0.168...v0.0.169) - 2026-11-20
+
+### Fixed
+
+- *(parity)* match Fern's union-member nullability and member models, and emit a valid list-union example ([#879](https://github.com/nickderobertis/crozier/pull/879))
+
 ## [0.0.168](https://github.com/nickderobertis/crozier/compare/v0.0.167...v0.0.168) - 2026-11-20
 
 ### Fixed
