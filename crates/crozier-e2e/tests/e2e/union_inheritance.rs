@@ -458,6 +458,7 @@ fn literal_enum_docstring_quotes_match_the_certified_pair() {
     );
 }
 
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This `sdk_env_*` journey runs only in the `sdk-env` project (tests/sdk_env/project.json: `tier:promoted`, `cache: false`), which AGENTS.md promotes out of the affected tier into its own required CI leg; crates/crozier-e2e/AGENTS.md makes `#[ignore]` the one mechanism that routes a journey to that project.
 /// The repaired query-union members, imported from crozier's SDK in both enum
 /// modes and from the certified tree: a closed or open object member's payload
@@ -564,6 +565,7 @@ fn sdk_env_required_null_union_field_examples_construct_where_fern_s_fail() {
     }
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These journeys generate one small SDK per measurement row in each enum mode, comparing each whole against its certified tree, and two more without one, on the crozier-e2e edge every other golden comparison shares; a narrower edge for generator-replay journeys is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 
 /// #839's other half: a structured alternative declaring a type name is still
 /// named by it, while the scalar alternatives beside it stay inline and no
