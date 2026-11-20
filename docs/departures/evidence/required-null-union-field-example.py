@@ -9,8 +9,8 @@ required (no default) and typed by a union alias opening with
 `typing.Optional[`, then every constructor of such a model in a client
 docstring or a `reference.md` example, and evaluates each against the
 generated package. `invalid` expects each construction to raise pydantic's
-`ValidationError` naming only missing fields of that kind (Fern's examples); `valid` expects each to
-construct (crozier's). Each construction is printed with its outcome; the exit
+`ValidationError` whose every error is a missing field of that kind (Fern's
+examples); `valid` expects each to construct (crozier's). Each construction is printed with its outcome; the exit
 status is 0 only when every construction behaves as expected and at least one
 was found. Needs pydantic and httpx importable.
 """
@@ -108,13 +108,20 @@ def main(argv: list[str]) -> int:
         try:
             eval(expression, {"__builtins__": builtins}, Package(fern))
         except pydantic.ValidationError as error:
-            missing = sorted(
-                ".".join(map(str, problem["loc"])) for problem in error.errors() if problem["type"] == "missing"
+            problems = error.errors()
+            missing = sorted(".".join(map(str, problem["loc"])) for problem in problems if problem["type"] == "missing")
+            other = sorted(
+                f"{'.'.join(map(str, problem['loc']))} ({problem['type']})"
+                for problem in problems
+                if problem["type"] != "missing"
             )
             outcome = f"ValidationError: missing {', '.join(missing)}"
-            # Only an omission of the model's own discovered field is Fern's defect.
+            if other:
+                outcome += f"; also {', '.join(other)}"
+            # Fern's defect is exactly an omission of the model's own discovered
+            # field: any other error, or another missing field, is not it.
             expected = fields[expression.split("(", 1)[0]]
-            failures += expect == "valid" or not missing or not set(missing) <= expected
+            failures += expect == "valid" or not missing or bool(other) or not set(missing) <= expected
         else:
             outcome = "constructs"
             failures += expect == "invalid"

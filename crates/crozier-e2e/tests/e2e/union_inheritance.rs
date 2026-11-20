@@ -662,8 +662,20 @@ fn sdk_env_required_null_union_field_examples_construct_where_fern_s_fail() {
         .collect();
     assert_ne!(dropped, text, "the certified client passes label");
     std::fs::write(&client, dropped).expect("drop label");
+    // Nor are they when another argument is also invalid (a mistyped `label`).
+    let mistyped = copy("mistyped");
+    let client = mistyped.join("src/fern/client.py");
+    let text = std::fs::read_to_string(&client).expect("the certified client");
+    let retyped = text.replace("label=\"label\",", "label=1,");
+    assert_ne!(retyped, text, "the certified client passes label");
+    std::fs::write(&client, retyped).expect("mistype label");
     for (root, code, said) in [
         (&unreferenced, 2, "reference.md"),
+        (
+            &mistyped,
+            1,
+            "ValidationError: missing payload; also label (string_type)",
+        ),
         (&unclosed, 1, "never closes"),
         (&unlabelled, 1, "ValidationError: missing label, payload"),
     ] {
@@ -718,7 +730,7 @@ fn sdk_env_required_null_union_field_examples_construct_where_fern_s_fail() {
         let (ok, stdout) = run(&out, "invalid");
         let other_failures = stdout
             .lines()
-            .filter(|line| line.ends_with("ValidationError: missing "))
+            .filter(|line| line.ends_with("ValidationError: missing ; also label (string_type)"))
             .count();
         assert!(!ok && other_failures == 4, "{mode}: {stdout}");
         for doc in ["README.md", "reference.md"] {
