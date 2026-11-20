@@ -23888,6 +23888,10 @@ class HandedOffStatus(StrEnum):
     DIFFERS = "differs"
     COULD_NOT_CHECK = "could-not-check"
     INCOMPLETE = "registration-incomplete"
+    # Measured byte-identical to the certified pair in both enum modes, its
+    # corpus registration not yet decided (manager ruling a16): no residual
+    # row, and never counted as a registered golden.
+    BYTE_MATCHES = "byte-matches"
 
 
 @dataclass(frozen=True)
@@ -24102,7 +24106,13 @@ def reconcile_handed_off(root: pathlib.Path) -> None:
         assert re.search(rf"^sha256: {sha}$", text, re.MULTILINE), f"{sha}: comparison hash disagrees"
         expected = (
             "byte-matches"
-            if status in {HandedOffStatus.REGISTERED, HandedOffStatus.INADMISSIBLE, HandedOffStatus.INCOMPLETE}
+            if status
+            in {
+                HandedOffStatus.REGISTERED,
+                HandedOffStatus.INADMISSIBLE,
+                HandedOffStatus.INCOMPLETE,
+                HandedOffStatus.BYTE_MATCHES,
+            }
             else status
         )
         assert re.search(rf"^result: {re.escape(expected)}$", text, re.MULTILINE), f"{sha}: comparison result disagrees"
@@ -24113,7 +24123,12 @@ def reconcile_handed_off(root: pathlib.Path) -> None:
             for line in text.split("differing files:\n", 1)[-1].split("\n\n", 1)[0].splitlines()
             if line.startswith("- ")
         }
-        if status in {HandedOffStatus.REGISTERED, HandedOffStatus.INADMISSIBLE, HandedOffStatus.INCOMPLETE}:
+        if status in {
+            HandedOffStatus.REGISTERED,
+            HandedOffStatus.INADMISSIBLE,
+            HandedOffStatus.INCOMPLETE,
+            HandedOffStatus.BYTE_MATCHES,
+        }:
             assert not differing, f"{sha}: byte-match lists differing files"
         if status == HandedOffStatus.DIFFERS:
             assert differing == residuals.get(sha), f"{sha}: residual file list disagrees"
@@ -24151,6 +24166,9 @@ def reconcile_handed_off(root: pathlib.Path) -> None:
                 assert re.search(r"^certified diagnostic: .+", text, re.MULTILINE), f"{sha}: missing certified refusal"
             case HandedOffStatus.DIFFERS:
                 assert sha in residuals, f"{sha}: differing document has no residual record"
+            case HandedOffStatus.BYTE_MATCHES:
+                assert sha not in residuals, f"{sha}: a byte-matching document has residual rows"
+                assert row.corpus_row == "-", f"{sha}: a byte-matching document is not registered"
             case HandedOffStatus.INCOMPLETE:
                 assert residuals.get(sha) == {"expected-literals/"}, f"{sha}: missing literals residual"
                 assert "literals" in row.note, f"{sha}: missing registration reason"
@@ -24288,6 +24306,46 @@ class HandedOffReconciliationTests(unittest.TestCase):
         with self.assertRaisesRegex(AssertionError, "unknown cause"):
             reconcile_handed_off(self.root)
         (self.directory / "other-tickets.tsv").rename(path)
+        reconcile_handed_off(self.root)
+
+    def test_a_byte_matching_document_carries_no_residual_and_no_corpus_row(self) -> None:
+        sha = "c" * 64
+        document = HandedOffDocumentRecord(
+            document="publisher/api:openapi.yml@" + "d" * 40,
+            sha256=HandedOffHash(sha),
+            source=HANDED_OFF_SOURCES[0],
+            root_causes="cause-0",
+            status=HandedOffStatus.BYTE_MATCHES,
+            corpus_row="-",
+            note="Measured byte-identical in both enum modes; registration not yet decided.",
+        )
+        row = {key: str(value) for key, value in asdict(document).items()}
+        row["sha256"] = sha
+        self.write_rows(self.directory / "documents.tsv", DOCUMENT_COLUMNS, [row])
+        evidence = self.directory / "comparisons" / f"{sha}.txt"
+        evidence.parent.mkdir()
+        valid = f"sha256: {sha}\nresult: byte-matches\ncommand: crozier compare measurement.yml\ndiffering files:\n\n"
+        evidence.write_text(valid, encoding="utf-8")
+        reconcile_handed_off(self.root)
+        residual = {"sha256": sha, "file": "reference.md", "root_cause": "cause-0", "area": "a", "note": "n"}
+        columns = ("sha256", "file", "root_cause", "area", "note")
+        for label, change in (
+            ("byte-match lists differing files", lambda: evidence.write_text(valid + "- reference.md\n")),
+            ("has residual rows", lambda: self.write_rows(self.directory / "residuals.tsv", columns, [residual])),
+            (
+                "is not registered",
+                lambda: self.write_rows(
+                    self.directory / "documents.tsv", DOCUMENT_COLUMNS, [{**row, "corpus_row": "5050 (sample)"}]
+                ),
+            ),
+        ):
+            with self.subTest(drift=label):
+                change()
+                with self.assertRaisesRegex(AssertionError, label):
+                    reconcile_handed_off(self.root)
+                evidence.write_text(valid, encoding="utf-8")
+                (self.directory / "residuals.tsv").unlink(missing_ok=True)
+                self.write_rows(self.directory / "documents.tsv", DOCUMENT_COLUMNS, [row])
         reconcile_handed_off(self.root)
 
     def test_document_evidence_and_admitted_index_agree(self) -> None:
@@ -24521,6 +24579,7 @@ class HandedOffRepositoryRecordTests(unittest.TestCase):
             "decided": counts[HandedOffStatus.REFUSED] + counts[HandedOffStatus.INADMISSIBLE],
             "listed residuals": counts[HandedOffStatus.DIFFERS] + counts[HandedOffStatus.INCOMPLETE],
             "could-not-check": counts[HandedOffStatus.COULD_NOT_CHECK],
+            "byte-matches": counts[HandedOffStatus.BYTE_MATCHES],
         }
         self.assertEqual(sum(totals.values()), len(documents))
         readme = (directory / "README.md").read_text(encoding="utf-8")

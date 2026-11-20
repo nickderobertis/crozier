@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .patch_shelf_tags_request_tags_item_one import PatchShelfTagsRequestTagsItemOne
+from .patch_shelf_tags_request_tags_item_payload import PatchShelfTagsRequestTagsItemPayload
+
+PatchShelfTagsRequestTagsItem = typing.Union[PatchShelfTagsRequestTagsItemPayload, PatchShelfTagsRequestTagsItemOne]

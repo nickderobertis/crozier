@@ -38,6 +38,9 @@ names the fields of each document record.
 The planner's land-now amendments allow `differs` and `registration-incomplete`
 only with a corresponding [`residuals.tsv`](residuals.tsv) record; the latter
 means the `python_enums` comparison matches but the literals overlay is missing.
+`byte-matches` is the opposite case: the whole tree matches in both enum modes,
+so the document has no residual record, and its corpus registration is still
+to be decided.
 The residual record’s header names its fields.
 A registration residual names `expected-literals/`, rather than claiming a file
 already differs. Newly named residual causes describe missing behavior in their
@@ -47,9 +50,13 @@ scoped-out screen candidates: `area` starts with `combinations-`, the sha256 is 
 `docs/openapi-surface/witness-search-*/` record lists, and the note names its `owner:`
 and root cause; a refusal on either side is one row per document with `file` `-`.
 
-The four disjoint outcomes are **104 registered**,
+The five disjoint outcomes are **104 registered**,
 **37 decided** (26 `refused-by-ruling`, 11 `byte-matches-not-admissible`),
-**4 listed residuals** (4 `differs`, 0 `registration-incomplete`), and
+**2 listed residuals** (2 `differs`, 0 `registration-incomplete`),
+**2 byte-matches** (Hookdeck and Vercel, each measured byte-identical to the
+certified pair in both enum modes after the union member repair, with no
+residual row and no corpus row: their registration is not yet decided, under
+manager ruling a16, and they count as no registered golden), and
 **1 could-not-check** (lolesports' evaluated valid-OpenAPI exception: its useful
 crozier SDK cannot byte-match the certified pair's empty scaffold). They sum to
 146. Each comparison record names the exact command and source digest; refusals

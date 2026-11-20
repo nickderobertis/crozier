@@ -213,7 +213,7 @@ when the two differ.
 
 | Kind | Entries | Meaning |
 | --- | --- | --- |
-| `fern-defect` | 41 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
+| `fern-defect` | 42 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
 | `branding` | 1 | crozier names itself where Fern names itself. |
 | `packaging` | 1 | crozier writes the packaged SDK's publishing details from its own settings. |
 | `provenance` | 1 | crozier writes a fixed record of how the SDK was generated. |
@@ -607,6 +607,15 @@ when the two differ.
 - **crozier writes:** The reference lists the actual flattened arguments and their types and descriptions; generated code and usage examples remain matched.
 - **Why:** Binding the advertised request argument to the actual generated signature raises an unexpected-keyword error. The correction documents the arguments the method accepts.
 - **Evidence:** [`docs/departures/evidence/request-alias-reference-parameters.md`](../../docs/departures/evidence/request-alias-reference-parameters.md)
+
+### `required-null-union-field-example`
+
+- **Kind:** `fern-defect`
+- **Trigger:** A worked example in a generated client's docstring or `reference.md` that constructs a model with a required field whose union type opens with an optional alternative (a nested union carrying a `null` member, which Fern makes `Optional`), the field's own value fitting on one line.
+- **Fern writes:** The constructor without that field (Vercel's `PatchtEdgeConfigItemsRequestItemsItemValue(key="key", operation=…)`), although the model declares it with no default.
+- **crozier writes:** The same constructor with the field's synthesized example (`value="value",`), a value its union admits; every other argument, the imports and the method signature are unchanged.
+- **Why:** Executing the documented construction against the generated model raises pydantic's `ValidationError` for the missing required field, so the example does not match the code. The correction passes the field and constructs a valid model.
+- **Evidence:** [`docs/departures/evidence/required-null-union-field-example.md`](../../docs/departures/evidence/required-null-union-field-example.md)
 
 ### `schema-rejected-array-length-example`
 

@@ -2229,6 +2229,7 @@ corrections the shared comparison engine applies. All other bytes must match.
 | reference-heading-escaped-method-name | Reference headings naming a method the SDK escapes | Fern defect | `certify-new-pair` | tests/fixtures/apideck.com-accounting/expected | `apideck_accounting_matches_fern_output` | `reference-heading-escaped-method-name` |
 | reference-anchor-follows-corrected-client | Reference line anchors following the client lines crozier corrects | Fern defect | `certify-new-pair` | tests/fixtures/letta/expected | `letta_matches_fern_output` | `reference-anchor-follows-corrected-client` |
 | flat-reference-link-target | Flat-layout reference links to the client file the SDK writes | Fern defect | `certify-new-pair` | tests/fixtures/swagger-petstore/expected-flat | `compare::compare_holds_each_reference_link_departure_to_its_own_shape` | `flat-reference-link-target` |
+| list-item-nested-union-required-field | List of union items whose member requires a field typed by a null-bearing nested union: the README and reference.md item list written empty as Fern writes it; the docstring constructions' omitted required field corrected | Fern behaviour + Fern defect | `union-member-nullability` | docs/fern-measurements/union-inheritance/list-item-nested-union/fern-expected | `list_item_nested_union_markdown_lists_match_the_certified_pair; sdk_env_required_null_union_field_examples_construct_where_fern_s_fail` | `required-null-union-field-example` |
 
 Additional boundaries of these rows are held by the same gate: the
 `empty-body-guard` row also uses

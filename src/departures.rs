@@ -312,6 +312,7 @@ pub struct Context {
     crozier_lifted: OnceLock<BTreeSet<String>>,
     crozier_constant_headers: OnceLock<BTreeSet<(String, String)>>,
     reference_nullable_items: OnceLock<BTreeSet<String>>,
+    reference_null_union_fields: OnceLock<BTreeSet<(String, String)>>,
     crozier_project: OnceLock<Option<String>>,
     crozier_returns: OnceLock<BTreeMap<(String, String), String>>,
     request_examples: OnceLock<RequestExampleContext>,
@@ -395,6 +396,9 @@ impl Context {
                     .iter()
                     .filter(|(path, _)| *path == "reference.md")
                     .map(|(_, text)| *text),
+            )),
+            reference_null_union_fields: OnceLock::from(required_null_union_fields(
+                reference.iter().copied(),
             )),
             crozier_project: OnceLock::from(project),
             empty_namespace: OnceLock::from(EmptyNamespace::default()),
@@ -531,6 +535,23 @@ impl Context {
             };
             let text = std::fs::read_to_string(root.join("reference.md")).unwrap_or_default();
             nullable_item_parameters([text.as_str()])
+        })
+    }
+
+    /// Every `(class, field)` of the reference's models whose field is required
+    /// (no default) and typed by a union alias opening with an optional
+    /// alternative, as `required_null_union_fields` finds them.
+    pub fn reference_null_union_fields(&self) -> &BTreeSet<(String, String)> {
+        self.reference_null_union_fields.get_or_init(|| {
+            let Some((root, _)) = self.roots.as_ref() else {
+                return BTreeSet::new();
+            };
+            let sources = python_sources(root);
+            required_null_union_fields(
+                sources
+                    .iter()
+                    .map(|(rel, text)| (rel.as_str(), text.as_str())),
+            )
         })
     }
 
@@ -2019,7 +2040,7 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 55] = [
+pub const RULE_IDS: [&str; 56] = [
     "anyof-path-param-schema-example",
     "binary-json-body-example",
     "body-query-parameter-value",
@@ -2063,6 +2084,7 @@ pub const RULE_IDS: [&str; 55] = [
     "repeated-credential-example-keyword",
     "repeated-query-body-example-keyword",
     "request-alias-reference-parameters",
+    "required-null-union-field-example",
     "schema-rejected-array-length-example",
     "schema-rejected-name-example",
     "schema-rejected-number-example",
@@ -2138,6 +2160,11 @@ pub fn rule(id: &str) -> Option<Rule> {
         },
         "optional-lowered-required-query-array-example" => Rule {
             added_at: Some(optional_lowered_required_query_array_example),
+            ..none
+        },
+        // llmlint: ignore[changed_behavior_has_e2e] The list-item-nested-union journey proves acceptance, and rejection where Fern's model defaults the field, through `crozier compare`; another field, another class, a multi-line value or a union opening with a required member each need a Fern tree Fern never writes, so the unit test feeds the rule those crafted inputs.
+        "required-null-union-field-example" => Rule {
+            added_at: Some(required_null_union_field_example),
             ..none
         },
         "text-response-optional-query-examples" => Rule {
@@ -5812,6 +5839,101 @@ fn optional_lowered_required_query_array_example(pair: &Pair<'_>, at: usize) -> 
                 })
         })
     })
+}
+
+/// Whether crozier's line `at` is the one-line keyword argument `<field>=<value>,`
+/// of a worked example's `<Class>(` constructor, where the reference's model
+/// `Class` requires `field` and types it by a union opening with an optional
+/// alternative: the argument Fern's example omits (`required-null-union-field-example`).
+fn required_null_union_field_example(pair: &Pair<'_>, at: usize) -> bool {
+    if !example_file(pair.rel) {
+        return false;
+    }
+    let Some((indent, name, value)) = pair
+        .crozier
+        .get(at)
+        .and_then(|line| keyword_argument_line(line))
+    else {
+        return false;
+    };
+    // One line only: a value opening a bracket continues onto lines of its own.
+    if value.is_empty() || value.ends_with(['(', '[', '{']) {
+        return false;
+    }
+    let Some(opener) = pair.crozier[..at].iter().rev().find(|line| {
+        let trimmed = line.trim_start();
+        !trimmed.is_empty() && line.len() - trimmed.len() < indent.len()
+    }) else {
+        return false;
+    };
+    let Some(class) = opener.trim_start().strip_suffix('(') else {
+        return false;
+    };
+    python_identifier(class)
+        && pair
+            .context
+            .reference_null_union_fields()
+            .contains(&(class.to_string(), name.to_string()))
+}
+
+/// Every `(class, field)` of the models `sources` define whose field line is
+/// `    field: Alias` with no default, where `Alias` is a module-level
+/// `typing.Union[…]` whose first alternative is `typing.Optional[…]`: a required
+/// field Fern examples as null, since its union opens with a nullable member.
+fn required_null_union_fields<'a>(
+    sources: impl IntoIterator<Item = (&'a str, &'a str)>,
+) -> BTreeSet<(String, String)> {
+    let sources: Vec<(&str, &str)> = sources
+        .into_iter()
+        .filter(|(rel, _)| rel.ends_with(".py"))
+        .collect();
+    let mut nullable_unions = BTreeSet::new();
+    for (_, text) in &sources {
+        let lines: Vec<&str> = text.lines().collect();
+        for (index, line) in lines.iter().enumerate() {
+            let Some((alias, rest)) = line.split_once(" = typing.Union[") else {
+                continue;
+            };
+            if !python_identifier(alias) {
+                continue;
+            }
+            let first = if rest.is_empty() {
+                lines.get(index + 1).map_or("", |next| next.trim_start())
+            } else {
+                rest
+            };
+            if first.starts_with("typing.Optional[") {
+                nullable_unions.insert(alias.to_string());
+            }
+        }
+    }
+    let mut fields = BTreeSet::new();
+    for (_, text) in &sources {
+        let mut class = None;
+        for line in text.lines() {
+            if let Some(rest) = line.strip_prefix("class ") {
+                class = rest
+                    .split_once('(')
+                    .map(|(name, _)| name.to_string())
+                    .filter(|name| python_identifier(name));
+                continue;
+            }
+            if !line.starts_with(' ') && !line.trim().is_empty() {
+                class = None;
+                continue;
+            }
+            let (Some(class), Some(field)) = (class.as_ref(), line.strip_prefix("    ")) else {
+                continue;
+            };
+            let Some((name, annotation)) = field.split_once(": ") else {
+                continue;
+            };
+            if python_identifier(name) && nullable_unions.contains(annotation) {
+                fields.insert((class.clone(), name.to_string()));
+            }
+        }
+    }
+    fields
 }
 
 /// The descriptions of every source property that is an `anyOf`/`oneOf` of two
@@ -9653,6 +9775,83 @@ mod tests {
             fern: &[],
             crozier: &[],
             context,
+        }
+    }
+
+    #[test]
+    fn required_null_union_field_example_admits_only_the_reference_model_s_required_field() {
+        let alias = "import typing\n\nShelfItemPayload = typing.Union[\n    typing.Optional[ShelfItemPayloadZero],\n    typing.List[typing.Optional[ShelfItemPayloadOneItem]],\n]\n";
+        let model = |payload: &str| {
+            format!("class ShelfItem(UniversalBaseModel):\n    label: str\n    payload: {payload}\n\n    if IS_PYDANTIC_V2:\n        model_config = 1\n")
+        };
+        let required = model("ShelfItemPayload");
+        let context = |model: &str, alias: &str| {
+            Context::from_sources(
+                [
+                    ("src/fern/types/shelf_item.py", model.to_string()),
+                    ("src/fern/types/shelf_item_payload.py", alias.to_string()),
+                ]
+                .iter()
+                .map(|(rel, text)| (*rel, text.as_str()))
+                .collect::<Vec<_>>(),
+                [],
+            )
+        };
+        let rule: AddedAtRule = required_null_union_field_example;
+        let docstring = "            items=[\n                ShelfItem(\n                    label=\"label\",\n                    payload=\"payload\",\n                )\n            ],";
+        let held = context(&required, alias);
+        assert_eq!(
+            added_at_holds(rule, "src/fern/shelves/client.py", &held, docstring),
+            [false, false, false, true, false, false]
+        );
+        assert_eq!(
+            added_at_holds(rule, "reference.md", &held, docstring),
+            [false, false, false, true, false, false]
+        );
+        // A raw client, another field, a multi-line value, another class, a
+        // field Fern gives a default, or a union opening with a required
+        // member: no departure.
+        let defaulted = model("typing.Optional[ShelfItemPayload] = None");
+        let opens_required = alias.replace(
+            "typing.Optional[ShelfItemPayloadZero]",
+            "ShelfItemPayloadZero",
+        );
+        for (rel, context, text) in [
+            (
+                "src/fern/shelves/raw_client.py",
+                &held,
+                docstring.to_string(),
+            ),
+            (
+                "src/fern/shelves/client.py",
+                &held,
+                docstring.replace("payload=", "label="),
+            ),
+            (
+                "src/fern/shelves/client.py",
+                &held,
+                docstring.replace("payload=\"payload\",", "payload=["),
+            ),
+            (
+                "src/fern/shelves/client.py",
+                &held,
+                docstring.replace("ShelfItem(", "ShelfNote("),
+            ),
+            (
+                "src/fern/shelves/client.py",
+                &context(&defaulted, alias),
+                docstring.to_string(),
+            ),
+            (
+                "src/fern/shelves/client.py",
+                &context(&required, &opens_required),
+                docstring.to_string(),
+            ),
+        ] {
+            assert!(
+                !added_at_holds(rule, rel, context, &text).contains(&true),
+                "{rel}: {text}"
+            );
         }
     }
 

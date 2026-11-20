@@ -1,0 +1,28 @@
+openapi: 3.0.3
+info:
+  title: Sign Shop
+  version: "1.0"
+paths:
+  /signs:
+    post:
+      operationId: hangSigns
+      tags: [signs]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [wordings, motto]
+              properties:
+                wordings:
+                  type: array
+                  items:
+                    type: string
+                    enum: ['say "cheese"', 'open late']
+                motto:
+                  type: string
+                  enum: ["the 'early' bird", 'plain']
+      responses:
+        "204":
+          description: Hung.

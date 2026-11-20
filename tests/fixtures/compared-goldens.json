@@ -659,6 +659,18 @@
       ]
     },
     "docs/fern-measurements/union-inheritance/inlined-chain-inheritance/fern-expected": {},
+    "docs/fern-measurements/union-inheritance/list-item-nested-union/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/union-inheritance/list-item-nested-union/fern-expected": {},
+    "docs/fern-measurements/union-inheritance/literal-enum-docstring-quotes/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/union-inheritance/literal-enum-docstring-quotes/fern-expected": {},
     "docs/fern-measurements/union-inheritance/map-beside-union/expected-literals/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
@@ -701,6 +713,12 @@
       ]
     },
     "docs/fern-measurements/union-inheritance/overridden-parent-layout/fern-expected": {},
+    "docs/fern-measurements/union-inheritance/query-union-member-models/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/union-inheritance/query-union-member-models/fern-expected": {},
     "docs/fern-measurements/union-inheritance/restated-default-inherits-enum/expected-literals/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"

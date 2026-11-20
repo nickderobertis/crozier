@@ -1,72 +1,89 @@
 sha256: 62844bc1320077d8476be3eff02fb0b252a19913541ecc262e70386c8925558e
-result: differs
-command: crozier compare <scratch>/python_enums/crozier.yml ; crozier compare <scratch>/literals/crozier.yml (generators.python: spec the cached document, package-name fern, project-name default-package-name, enum-type python-enums|literals, reference.command cp -R the certified tree)
-crozier binary sha256: a4dd398ee098dad361a1e14ab3d5d0ea030f7f53a979c7448514de7b31c1ef53
-compare exit: python_enums 3, literals 3
+result: byte-matches
+command: /home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/worktree/target/debug/crozier compare /tmp/umn/out/62844bc1320077d8476be3eff02fb0b252a19913541ecc262e70386c8925558e/python_enums/crozier.yml ; /home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/worktree/target/debug/crozier compare /tmp/umn/out/62844bc1320077d8476be3eff02fb0b252a19913541ecc262e70386c8925558e/literals/crozier.yml
+crozier binary sha256: e5b8fc762b160168af4e42adbc03151d9ddd2a5beb24de10a6470fd85717eaa4
+crozier commit: fc5f14310a524de2dd858168ec6342ac7c4e1a12
+compare exit: python_enums 0, literals 0
 certified pair: CLI 5.200.0 / Python SDK 5.41.25
 certified cache document sha256: 62844bc1320077d8476be3eff02fb0b252a19913541ecc262e70386c8925558e
 enum modes: python_enums, literals
 
-Re-measured by the parameter-combinations proof node after the #815 repair (query union object members); the measurement at CLI 5.163.1 / Python SDK 5.41.3 this record held before is in git history.
-
 differing files:
-- src/fern/__init__.py
-- src/fern/types/__init__.py
-- src/fern/types/destination_config_cli_auth_empty.py
-- src/fern/types/destination_config_http_auth_empty.py
-- src/fern/types/destination_config_mock_api_auth_empty.py
-- src/fern/types/event_attempt_body.py
-- src/fern/types/filter_rule_property.py
-- src/fern/types/filter_rule_property_boolean.py
-- src/fern/types/filter_rule_property_json.py
-- src/fern/types/filter_rule_property_number.py
-- src/fern/types/filter_rule_property_string.py
-- src/fern/types/get_transformation_executions_request_log_level.py
-- src/fern/types/source_config_http_auth_empty.py
-- src/fern/types/source_config_webhook_auth_empty.py
-- src/fern/types/transformation_executor_output_request_query.py
 
-compare report (python_enums):
-    differing (11):
-      src/fern/__init__.py
-      src/fern/types/__init__.py
-      src/fern/types/destination_config_cli_auth_empty.py
-      src/fern/types/destination_config_http_auth_empty.py
-      src/fern/types/destination_config_mock_api_auth_empty.py
-      src/fern/types/event_attempt_body.py
-      src/fern/types/filter_rule_property.py
-      src/fern/types/get_transformation_executions_request_log_level.py
-      src/fern/types/source_config_http_auth_empty.py
-      src/fern/types/source_config_webhook_auth_empty.py
-      src/fern/types/transformation_executor_output_request_query.py
-    only in crozier (4):
-      src/fern/types/filter_rule_property_boolean.py
-      src/fern/types/filter_rule_property_json.py
-      src/fern/types/filter_rule_property_number.py
-      src/fern/types/filter_rule_property_string.py
+compare log (python_enums):
+compare: found config /tmp/umn/out/62844bc1320077d8476be3eff02fb0b252a19913541ecc262e70386c8925558e/python_enums/crozier.yml
+compare: /tmp/umn/out/62844bc1320077d8476be3eff02fb0b252a19913541ecc262e70386c8925558e/python_enums/crozier.yml python: reference command starting: cp -R /home/whoop/.cache/crozier/certified-trees/fern-5.200.0_python-5.41.25/62844bc1320077d8476be3eff02fb0b252a19913541ecc262e70386c8925558e/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+compare: /tmp/umn/out/62844bc1320077d8476be3eff02fb0b252a19913541ecc262e70386c8925558e/python_enums/crozier.yml python: reference command finished in 0.13s (exit 0)
+compare: /tmp/umn/out/62844bc1320077d8476be3eff02fb0b252a19913541ecc262e70386c8925558e/python_enums/crozier.yml python: crozier generation starting
+compare: /tmp/umn/out/62844bc1320077d8476be3eff02fb0b252a19913541ecc262e70386c8925558e/python_enums/crozier.yml python: crozier generation finished in 24.91s
+compare: /tmp/umn/out/62844bc1320077d8476be3eff02fb0b252a19913541ecc262e70386c8925558e/python_enums/crozier.yml python: matched
+
+crozier compare report
+
+/tmp/umn/out/62844bc1320077d8476be3eff02fb0b252a19913541ecc262e70386c8925558e/python_enums/crozier.yml
+  python: matched (layout packaged, 1238 file(s) compared)
+    reference command: cp -R /home/whoop/.cache/crozier/certified-trees/fern-5.200.0_python-5.41.25/62844bc1320077d8476be3eff02fb0b252a19913541ecc262e70386c8925558e/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+    intended departures applied (18):
       README.md:59 readme-environment-constructor-arguments
-    diff: /tmp/tmp.MsfduNaDYa/diffs/001-_tmp_tmp.MsfduNaDYa_crozier.yml-python.diff
-    timing: reference 0.54s, crozier 13.18s, speed-up 0.04x, saved -12.64s
+      reference.md:5072 reference-anchor-follows-corrected-client
+      reference.md:5107 minimal-worked-call-optional-parameter
+      reference.md:5255 reference-anchor-follows-corrected-client
+      reference.md:5290 minimal-worked-call-optional-parameter
+      reference.md:5438 reference-anchor-follows-corrected-client
+      reference.md:5511 reference-anchor-follows-corrected-client
+      reference.md:5594 reference-anchor-follows-corrected-client
+      src/fern/__init__.py:1017 init-type-checking-import-order
+      src/fern/core/client_wrapper.py:36 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:37 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:38 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:39 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:40 sdk-identity-header-prefix
+      src/fern/issues/client.py:136 minimal-worked-call-optional-parameter
+      src/fern/issues/client.py:243 minimal-worked-call-optional-parameter
+      src/fern/issues/client.py:472 minimal-worked-call-optional-parameter
+      src/fern/issues/client.py:587 minimal-worked-call-optional-parameter
+    timing: reference 0.13s, crozier 24.91s, speed-up 0.01x, saved -24.78s
 
-compare report (literals):
-    differing (11):
-      src/fern/__init__.py
-      src/fern/types/__init__.py
-      src/fern/types/destination_config_cli_auth_empty.py
-      src/fern/types/destination_config_http_auth_empty.py
-      src/fern/types/destination_config_mock_api_auth_empty.py
-      src/fern/types/event_attempt_body.py
-      src/fern/types/filter_rule_property.py
-      src/fern/types/get_transformation_executions_request_log_level.py
-      src/fern/types/source_config_http_auth_empty.py
-      src/fern/types/source_config_webhook_auth_empty.py
-      src/fern/types/transformation_executor_output_request_query.py
-    only in crozier (4):
-      src/fern/types/filter_rule_property_boolean.py
-      src/fern/types/filter_rule_property_json.py
-      src/fern/types/filter_rule_property_number.py
-      src/fern/types/filter_rule_property_string.py
+Totals: 1 matched, 0 mismatched, 0 could not check
+Timing totals (1 generator(s) where both sides ran): reference 0.13s, crozier 24.91s, speed-up 0.01x, saved -24.78s
+Result: every checked generator matched the reference (1 of 1, exit 0)
+
+compare log (literals):
+compare: found config /tmp/umn/out/62844bc1320077d8476be3eff02fb0b252a19913541ecc262e70386c8925558e/literals/crozier.yml
+compare: /tmp/umn/out/62844bc1320077d8476be3eff02fb0b252a19913541ecc262e70386c8925558e/literals/crozier.yml python: reference command starting: cp -R /home/whoop/.cache/crozier/certified-trees/fern-5.200.0_python-5.41.25/62844bc1320077d8476be3eff02fb0b252a19913541ecc262e70386c8925558e/literals/tree/. "$CROZIER_REFERENCE_OUTPUT"
+compare: /tmp/umn/out/62844bc1320077d8476be3eff02fb0b252a19913541ecc262e70386c8925558e/literals/crozier.yml python: reference command finished in 0.11s (exit 0)
+compare: /tmp/umn/out/62844bc1320077d8476be3eff02fb0b252a19913541ecc262e70386c8925558e/literals/crozier.yml python: crozier generation starting
+compare: /tmp/umn/out/62844bc1320077d8476be3eff02fb0b252a19913541ecc262e70386c8925558e/literals/crozier.yml python: crozier generation finished in 47.48s
+compare: /tmp/umn/out/62844bc1320077d8476be3eff02fb0b252a19913541ecc262e70386c8925558e/literals/crozier.yml python: matched
+
+crozier compare report
+
+/tmp/umn/out/62844bc1320077d8476be3eff02fb0b252a19913541ecc262e70386c8925558e/literals/crozier.yml
+  python: matched (layout packaged, 1237 file(s) compared)
+    reference command: cp -R /home/whoop/.cache/crozier/certified-trees/fern-5.200.0_python-5.41.25/62844bc1320077d8476be3eff02fb0b252a19913541ecc262e70386c8925558e/literals/tree/. "$CROZIER_REFERENCE_OUTPUT"
+    intended departures applied (19):
       .fern/metadata.json:5 fern-metadata-generator-config
       README.md:59 readme-environment-constructor-arguments
-    diff: /tmp/tmp.43I2TvyTlz/diffs/001-_tmp_tmp.43I2TvyTlz_crozier.yml-python.diff
-    timing: reference 0.17s, crozier 12.41s, speed-up 0.01x, saved -12.24s
+      reference.md:5072 reference-anchor-follows-corrected-client
+      reference.md:5107 minimal-worked-call-optional-parameter
+      reference.md:5255 reference-anchor-follows-corrected-client
+      reference.md:5290 minimal-worked-call-optional-parameter
+      reference.md:5438 reference-anchor-follows-corrected-client
+      reference.md:5511 reference-anchor-follows-corrected-client
+      reference.md:5593 reference-anchor-follows-corrected-client
+      src/fern/__init__.py:1017 init-type-checking-import-order
+      src/fern/core/client_wrapper.py:36 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:37 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:38 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:39 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:40 sdk-identity-header-prefix
+      src/fern/issues/client.py:136 minimal-worked-call-optional-parameter
+      src/fern/issues/client.py:243 minimal-worked-call-optional-parameter
+      src/fern/issues/client.py:470 minimal-worked-call-optional-parameter
+      src/fern/issues/client.py:585 minimal-worked-call-optional-parameter
+    timing: reference 0.11s, crozier 47.48s, speed-up 0.00x, saved -47.37s
+
+Totals: 1 matched, 0 mismatched, 0 could not check
+Timing totals (1 generator(s) where both sides ran): reference 0.11s, crozier 47.48s, speed-up 0.00x, saved -47.37s
+Result: every checked generator matched the reference (1 of 1, exit 0)
+

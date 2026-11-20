@@ -1,0 +1,70 @@
+openapi: 3.0.3
+info:
+  title: Kiln Log
+  version: "1.0"
+paths:
+  /firings:
+    get:
+      operationId: listFirings
+      tags: [firings]
+      parameters:
+        - name: kiln
+          in: query
+          description: A kiln name, any or all kilns, or a list of names.
+          schema:
+            anyOf:
+              - type: string
+              - type: object
+                properties:
+                  any:
+                    type: boolean
+                  all:
+                    type: boolean
+                additionalProperties: false
+              - type: array
+                items:
+                  type: string
+            nullable: true
+        - name: glaze
+          in: query
+          description: A glaze filter as text, or an empty object.
+          schema:
+            anyOf:
+              - type: string
+              - type: object
+                properties: {}
+                additionalProperties: false
+        - name: cone
+          in: query
+          description: A cone filter as text, or a cone and a shelf.
+          schema:
+            anyOf:
+              - type: string
+              - type: object
+                properties:
+                  cone:
+                    type: integer
+                  shelf:
+                    type: string
+        - name: atmosphere
+          in: query
+          description: One atmosphere, or several.
+          schema:
+            anyOf:
+              - type: string
+                enum: [oxidation, reduction, neutral]
+                nullable: true
+              - type: array
+                items:
+                  type: string
+                  enum: [oxidation, reduction, neutral]
+                  nullable: true
+      responses:
+        "200":
+          description: The matching firings.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string

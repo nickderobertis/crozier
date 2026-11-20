@@ -4,10 +4,12 @@
 //! repairs the certified screen of `combo-success-anyof-nullable`,
 //! `combo-map-beside-oneof` and `combo-unrequired-tag-oneof-reference` exposed,
 //! and the annotated-`$ref` description precedence the
-//! `combo-annotated-ref-to-nullable-target` independence documents exposed),
-//! each settled against a from-scratch document under
-//! [`DIR`] and the certified pair's complete tree for it (Fern CLI 5.200.0,
-//! fern-python-sdk 5.41.25), in both enum modes.
+//! `combo-annotated-ref-to-nullable-target` independence documents exposed,
+//! and the Hookdeck and Vercel `union-member-nullability-and-object-models`
+//! residual with ticket #828's list-item worked examples), each settled
+//! against a from-scratch document under [`DIR`] and the certified pair's
+//! complete tree for it (Fern CLI 5.200.0, fern-python-sdk 5.41.25), in both
+//! enum modes.
 //!
 //! Every measurement runs the real binary and compares its SDK with the
 //! certified tree file for file; each is shown to fail for its own rule by
@@ -220,6 +222,34 @@ const MEASUREMENTS: &[(&str, &str, &str, &str, &str)] = &[
         "FiringNotes = typing.Dict[str, typing.Any]",
     ),
     (
+        "union-member-nullability-and-object-models: a query union's closed object member is its named model",
+        "query-union-member-models",
+        "src/fern/firings/types/list_firings_request_kiln.py",
+        "ListFiringsRequestKiln = typing.Union[str, ListFiringsRequestKilnAll, typing.List[str]]",
+        "ListFiringsRequestKiln = typing.Union[str, typing.Any, typing.List[str]]",
+    ),
+    (
+        "union-member-nullability-and-object-models: a query union's empty closed object member is an empty model",
+        "query-union-member-models",
+        "src/fern/types/list_firings_request_glaze.py",
+        "ListFiringsRequestGlaze = typing.Union[str, ListFiringsRequestGlazeOne]",
+        "ListFiringsRequestGlaze = typing.Union[str, typing.Any]",
+    ),
+    (
+        "union-member-nullability-and-object-models: a query union's open object member is its named model",
+        "query-union-member-models",
+        "src/fern/types/list_firings_request_cone.py",
+        "ListFiringsRequestCone = typing.Union[str, ListFiringsRequestConeCone]",
+        "ListFiringsRequestCone = typing.Union[str, typing.Any]",
+    ),
+    (
+        "union-member-nullability-and-object-models: a query union's nullable enum members keep their nullability",
+        "query-union-member-models",
+        "src/fern/types/list_firings_request_atmosphere.py",
+        "typing.Optional[ListFiringsRequestAtmosphereZero], typing.List[typing.Optional[ListFiringsRequestAtmosphereOneItem]]",
+        "ListFiringsRequestAtmosphereZero, typing.List[ListFiringsRequestAtmosphereOneItem]",
+    ),
+    (
         "#827 (overlapping parents are inlined, and an untouched parent stays a base)",
         "inlined-chain-inheritance",
         "src/fern/types/kiln_plate.py",
@@ -273,13 +303,11 @@ fn removed(overlay: &Path) -> Vec<String> {
         .collect()
 }
 
-/// crozier's literals SDK for `case` against the certified pair's literals
-/// tree: the base less the files the overlay removes, with the overlay's own
-/// files laid over it.
-fn literals_failures(case: &str, out: &Path) -> Vec<String> {
+/// The certified pair's literals tree for `case`: the base less the files the
+/// overlay removes, with the overlay's own files laid over it.
+fn literals_tree(case: &str) -> (tempfile::TempDir, BTreeSet<String>, Vec<String>) {
     let base = repo_root().join(golden(case));
-    let overlay_golden = format!("{DIR}/{case}/{LITERALS}");
-    let overlay = repo_root().join(&overlay_golden);
+    let overlay = repo_root().join(format!("{DIR}/{case}/{LITERALS}"));
     let removed = removed(&overlay);
     let tree = tempfile::tempdir().expect("literals tree tempdir");
     let copy = |from: &Path, rel: &str| {
@@ -299,6 +327,14 @@ fn literals_failures(case: &str, out: &Path) -> Vec<String> {
     for rel in &own {
         copy(&overlay, rel);
     }
+    (tree, own, removed)
+}
+
+/// crozier's literals SDK for `case` against the certified pair's literals
+/// tree ([`literals_tree`]).
+fn literals_failures(case: &str, out: &Path) -> Vec<String> {
+    let overlay_golden = format!("{DIR}/{case}/{LITERALS}");
+    let (tree, own, removed) = literals_tree(case);
     let inherited = departure_ledger()
         .golden(&golden(case), &[])
         .unwrap_or_else(|failures| panic!("{}", failures.join("\n")));
@@ -346,6 +382,365 @@ fn union_inheritance_repairs_match_the_certified_pair() {
     }
     assert!(failures.is_empty(), "{}", failures.join("\n\n"));
 }
+
+/// #828's Markdown half: a list whose items are a union whose first member
+/// requires a field typed by a null-bearing nested union is written empty in
+/// the README and `reference.md`, as the certified pair writes it, while the
+/// docstrings construct that member with the field (the
+/// `required-null-union-field-example` departure). Both enum modes match the
+/// certified trees whole.
+#[test]
+fn list_item_nested_union_markdown_lists_match_the_certified_pair() {
+    let case = "list-item-nested-union";
+    let temp = tempfile::tempdir().expect("output tempdir");
+    let out = temp.path().join("sdk");
+    generate(case, "python-enums", &out);
+    let mut failures = enum_failures(case, &out);
+    let literals = temp.path().join("literals");
+    generate(case, "literals", &literals);
+    failures.extend(literals_failures(case, &literals));
+    assert!(failures.is_empty(), "{}", failures.join("\n\n"));
+}
+
+/// #828 through `crozier compare`, as a migrating user runs it: against the
+/// certified tree it passes, reporting the `required-null-union-field-example`
+/// departure, and it fails once Fern's side writes the list populated, or gives
+/// the field a default so that no omission remains. Unix only: on Windows
+/// crozier runs no reference command (`compare_on_windows_runs_no_reference_command`).
+#[cfg(unix)]
+#[test]
+fn list_item_nested_union_compare_reports_the_departure_and_holds_the_list() {
+    let case = "list-item-nested-union";
+    let compare = |edit: &dyn Fn(&Path)| -> (Option<i32>, String) {
+        let dir = tempfile::tempdir().expect("compare tempdir");
+        let reference = dir.path().join("reference");
+        let expected = repo_root().join(golden(case));
+        for rel in walk_files(&expected) {
+            let to = reference.join(&rel);
+            std::fs::create_dir_all(to.parent().expect("a parent")).expect("mkdir");
+            std::fs::copy(expected.join(&rel), &to).expect("copy a Fern file");
+        }
+        edit(&reference);
+        let config = dir.path().join("crozier.yml");
+        std::fs::write(
+            &config,
+            format!(
+                "reference:\n  command: cp -R '{}/.' \"$CROZIER_REFERENCE_OUTPUT\"\n\
+                 generators:\n  python:\n    spec: '{}'\n    output: ./sdk\n    package-name: fern\n\
+                 \x20   project-name: default_package_name\n    layout: packaged\n",
+                reference.display(),
+                spec(case).display()
+            ),
+        )
+        .expect("write the config");
+        let output = super::crozier()
+            .arg("compare")
+            .arg(&config)
+            .output()
+            .expect("run crozier compare");
+        let said = format!(
+            "{}{}",
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr)
+        );
+        (output.status.code(), said)
+    };
+    let differing = |said: &str, rel: &str| {
+        said.split("differing (")
+            .nth(1)
+            .and_then(|rest| rest.split("intended departures").next())
+            .is_some_and(|list| list.lines().any(|line| line.trim() == rel))
+    };
+    let edit = |rel: &'static str, from: &'static str, to: &'static str| {
+        move |root: &Path| {
+            let path = root.join(rel);
+            let text = std::fs::read_to_string(&path).expect("a certified file");
+            assert!(text.contains(from), "{rel} lacks {from:?}");
+            std::fs::write(&path, text.replacen(from, to, 1)).expect("edit");
+        }
+    };
+    let (code, said) = compare(&|_| {});
+    assert_eq!(code, Some(0), "{said}");
+    assert!(said.contains("required-null-union-field-example"), "{said}");
+    // Fern's side writing a populated list is a difference no departure explains.
+    let populated = "entries=[\n        PatchShelfEntriesRequestEntriesItemPayload(\n            label=\"label\",\n            operation=PatchShelfEntriesRequestEntriesItemPayloadOperation.CREATE,\n            payload=\"payload\",\n        )\n    ],";
+    let (code, said) = compare(&edit("reference.md", "entries=[],", populated));
+    assert_eq!(code, Some(3), "{said}");
+    assert!(differing(&said, "reference.md"), "{said}");
+    // A model of Fern's that gives the field a default is no omission, so
+    // crozier's added argument is no departure there.
+    let (code, said) = compare(&edit(
+        "src/fern/types/patch_shelf_entries_request_entries_item_payload.py",
+        "    payload: PatchShelfEntriesRequestEntriesItemPayloadPayload\n",
+        "    payload: typing.Optional[PatchShelfEntriesRequestEntriesItemPayloadPayload] = None\n",
+    ));
+    assert_eq!(code, Some(3), "{said}");
+    assert!(differing(&said, "src/fern/client.py"), "{said}");
+}
+
+/// A literal enum value holding `"` and no `'` is single-quoted in a client
+/// docstring, as Python's `repr` writes it, and keeps its escaped
+/// double-quoted spelling in the Markdown (Vercel's `create_webhook` events),
+/// while a value holding `'` stays double-quoted. Both enum modes match the
+/// certified pair, and writing the escaped spelling back into the docstring
+/// fails the literals comparison.
+#[test]
+fn literal_enum_docstring_quotes_match_the_certified_pair() {
+    let case = "literal-enum-docstring-quotes";
+    let temp = tempfile::tempdir().expect("output tempdir");
+    let out = temp.path().join("sdk");
+    generate(case, "python-enums", &out);
+    let mut failures = enum_failures(case, &out);
+    let literals = temp.path().join("literals");
+    generate(case, "literals", &literals);
+    failures.extend(literals_failures(case, &literals));
+    assert!(failures.is_empty(), "{}", failures.join("\n\n"));
+    let client = literals.join("src/fern/signs/client.py");
+    let written = std::fs::read_to_string(&client).expect("the signs client");
+    let certified = "wordings=['say \"cheese\"'],";
+    assert!(written.contains(certified), "{written}");
+    assert!(written.contains("motto=\"the 'early' bird\","), "{written}");
+    std::fs::write(
+        &client,
+        written.replace(certified, "wordings=[\"say \\\"cheese\\\"\"],"),
+    )
+    .expect("tamper");
+    let tampered = literals_failures(case, &literals);
+    assert!(
+        tampered
+            .iter()
+            .any(|failure| failure.contains("src/fern/signs/client.py")),
+        "the escaped double-quoted docstring spelling must fail: {tampered:?}"
+    );
+}
+
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This `sdk_env_*` journey runs only in the `sdk-env` project (tests/sdk_env/project.json: `tier:promoted`, `cache: false`), which AGENTS.md promotes out of the affected tier into its own required CI leg; crates/crozier-e2e/AGENTS.md makes `#[ignore]` the one mechanism that routes a journey to that project.
+/// The repaired query-union members, imported from crozier's SDK in both enum
+/// modes and from the certified tree: a closed or open object member's payload
+/// parses into its named model with its fields, and `None` is accepted only by
+/// the members the document declares nullable.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_query_union_member_models_parse_their_payloads() {
+    let python = super::runtime_python_env().expect("SDK runtime environment");
+    let script = repo_root().join("crates/crozier-e2e/tests/e2e/union_member_models_journey.py");
+    let case = "query-union-member-models";
+    let run = |src: &Path| {
+        std::process::Command::new(&python)
+            .env("PYTHONDONTWRITEBYTECODE", "1")
+            .arg(&script)
+            .arg(src)
+            .output()
+            .expect("run the journey")
+    };
+    let usage = std::process::Command::new(&python)
+        .arg(&script)
+        .output()
+        .expect("run the journey");
+    assert_eq!(usage.status.code(), Some(2), "no SDK_SRC is a usage error");
+    assert!(String::from_utf8_lossy(&usage.stderr).contains("usage:"));
+    let missing = run(&repo_root().join(DIR).join(case));
+    assert_eq!(
+        missing.status.code(),
+        Some(2),
+        "a directory without the package"
+    );
+    let temp = tempfile::tempdir().expect("output tempdir");
+    let mut sources = vec![repo_root().join(golden(case)).join("src")];
+    for mode in ["python-enums", "literals"] {
+        let out = temp.path().join(mode);
+        generate(case, mode, &out);
+        sources.push(out.join("src"));
+    }
+    for src in &sources {
+        let output = run(src);
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        assert!(
+            output.status.success(),
+            "{}: {stdout}{}",
+            src.display(),
+            String::from_utf8_lossy(&output.stderr)
+        );
+        assert!(
+            stdout.contains("kiln: {any, all} parses into ListFiringsRequestKilnAll")
+                && stdout.contains("null: accepted by atmosphere's nullable members only"),
+            "{}: {stdout}",
+            src.display()
+        );
+    }
+}
+
+/// #828's departure, executed: every worked-example construction of a model
+/// whose required field is typed by a null-bearing union raises pydantic's
+/// `ValidationError` for that field in the certified trees (both enum modes),
+/// and constructs in crozier's SDKs, whose `reference.md` and README also
+/// write the list of such union items empty, as the certified pair does.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_required_null_union_field_examples_construct_where_fern_s_fail() {
+    let python = super::runtime_python_env().expect("SDK runtime environment");
+    let script = repo_root().join("docs/departures/evidence/required-null-union-field-example.py");
+    let case = "list-item-nested-union";
+    let run = |root: &Path, expect: &str| {
+        let output = std::process::Command::new(&python)
+            .env("PYTHONDONTWRITEBYTECODE", "1")
+            .arg(&script)
+            .arg(root)
+            .arg(expect)
+            .output()
+            .expect("run the evidence script");
+        let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
+        (output.status.success(), stdout)
+    };
+    let (literals, _, _) = literals_tree(case);
+    for fern in [
+        repo_root().join(golden(case)),
+        literals.path().to_path_buf(),
+    ] {
+        let (ok, stdout) = run(&fern, "invalid");
+        assert!(ok, "{}: {stdout}", fern.display());
+        assert_eq!(
+            stdout.matches("ValidationError: missing payload").count(),
+            5,
+            "{}: {stdout}",
+            fern.display()
+        );
+        assert!(!run(&fern, "valid").0, "{}", fern.display());
+    }
+    // A usage error, or a root holding no generated package, exits 2.
+    for args in [
+        vec![],
+        vec![
+            repo_root().join(golden(case)).display().to_string(),
+            "maybe".to_string(),
+        ],
+        vec![
+            repo_root().join(DIR).join(case).display().to_string(),
+            "invalid".to_string(),
+        ],
+    ] {
+        let output = std::process::Command::new(&python)
+            .env("PYTHONDONTWRITEBYTECODE", "1")
+            .arg(&script)
+            .args(&args)
+            .output()
+            .expect("run the evidence script");
+        assert_eq!(output.status.code(), Some(2), "{args:?}");
+        assert!(!output.stderr.is_empty(), "{args:?}: a diagnostic");
+    }
+    // A copy of the certified tree without its `reference.md` is no SDK root
+    // (exit 2), and one whose constructor never closes is refused (exit 1).
+    let broken = tempfile::tempdir().expect("broken tree tempdir");
+    let copy = |name: &str| {
+        let root = broken.path().join(name);
+        let expected = repo_root().join(golden(case));
+        for rel in walk_files(&expected) {
+            let to = root.join(&rel);
+            std::fs::create_dir_all(to.parent().expect("a parent")).expect("mkdir");
+            std::fs::copy(expected.join(&rel), &to).expect("copy a Fern file");
+        }
+        root
+    };
+    let unreferenced = copy("unreferenced");
+    std::fs::remove_file(unreferenced.join("reference.md")).expect("remove reference.md");
+    let unclosed = copy("unclosed");
+    let client = unclosed.join("src/fern/client.py");
+    let text = std::fs::read_to_string(&client).expect("the certified client");
+    let opener = "                PatchShelfNotesRequestNotesItem(\n                    label=\"label\",\n                )\n";
+    assert!(text.contains(opener), "{text}");
+    std::fs::write(&client, text.replacen(opener, "                PatchShelfNotesRequestNotesItem(\n                    label=\"label\",\n", 1))
+        .expect("unclose");
+    // Fern's constructions also missing another required field (`label`) fail
+    // for more than the omission the departure corrects.
+    let unlabelled = copy("unlabelled");
+    let client = unlabelled.join("src/fern/client.py");
+    let text = std::fs::read_to_string(&client).expect("the certified client");
+    let dropped: String = text
+        .split_inclusive('\n')
+        .filter(|line| line.trim() != "label=\"label\",")
+        .collect();
+    assert_ne!(dropped, text, "the certified client passes label");
+    std::fs::write(&client, dropped).expect("drop label");
+    // Nor are they when another argument is also invalid (a mistyped `label`).
+    let mistyped = copy("mistyped");
+    let client = mistyped.join("src/fern/client.py");
+    let text = std::fs::read_to_string(&client).expect("the certified client");
+    let retyped = text.replace("label=\"label\",", "label=1,");
+    assert_ne!(retyped, text, "the certified client passes label");
+    std::fs::write(&client, retyped).expect("mistype label");
+    for (root, code, said) in [
+        (&unreferenced, 2, "reference.md"),
+        (
+            &mistyped,
+            1,
+            "ValidationError: missing payload; also label (string_type)",
+        ),
+        (&unclosed, 1, "never closes"),
+        (&unlabelled, 1, "ValidationError: missing label, payload"),
+    ] {
+        let output = std::process::Command::new(&python)
+            .env("PYTHONDONTWRITEBYTECODE", "1")
+            .arg(&script)
+            .arg(root)
+            .arg("invalid")
+            .output()
+            .expect("run the evidence script");
+        let said_all = format!(
+            "{}{}",
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr)
+        );
+        assert_eq!(output.status.code(), Some(code), "{said_all}");
+        assert!(said_all.contains(said), "{said_all}");
+    }
+    // An SDK with no such construction proves nothing, so the script fails.
+    let other = repo_root().join(golden("query-union-member-models"));
+    let output = std::process::Command::new(&python)
+        .env("PYTHONDONTWRITEBYTECODE", "1")
+        .arg(&script)
+        .arg(&other)
+        .arg("invalid")
+        .output()
+        .expect("run the evidence script");
+    assert_eq!(output.status.code(), Some(1), "{}", other.display());
+    assert!(
+        String::from_utf8_lossy(&output.stderr).contains("no worked example constructs a model"),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let temp = tempfile::tempdir().expect("output tempdir");
+    for mode in ["python-enums", "literals"] {
+        let out = temp.path().join(mode);
+        generate(case, mode, &out);
+        let (ok, stdout) = run(&out, "valid");
+        assert!(ok, "{mode}: {stdout}");
+        assert_eq!(
+            stdout.matches(": constructs").count(),
+            5,
+            "{mode}: {stdout}"
+        );
+        // crozier's constructions succeed, so they are not Fern's failing ones.
+        assert!(!run(&out, "invalid").0, "{mode}");
+        // A construction failing for another reason (a mistyped `label`)
+        // is not the omission the departure corrects.
+        let client = out.join("src/fern/client.py");
+        let text = std::fs::read_to_string(&client).expect("the client");
+        std::fs::write(&client, text.replace("label=\"label\",", "label=1,")).expect("mistype");
+        let (ok, stdout) = run(&out, "invalid");
+        let other_failures = stdout
+            .lines()
+            .filter(|line| line.ends_with("ValidationError: missing ; also label (string_type)"))
+            .count();
+        assert!(!ok && other_failures == 4, "{mode}: {stdout}");
+        for doc in ["README.md", "reference.md"] {
+            let text = std::fs::read_to_string(out.join(doc)).expect("a Markdown file");
+            assert!(text.contains("    entries=[],\n"), "{mode} {doc}: {text}");
+        }
+    }
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These journeys generate one small SDK per measurement row in each enum mode, comparing each whole against its certified tree, and two more without one, on the crozier-e2e edge every other golden comparison shares; a narrower edge for generator-replay journeys is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 
 /// #839's other half: a structured alternative declaring a type name is still
 /// named by it, while the scalar alternatives beside it stay inline and no

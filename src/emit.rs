@@ -5066,6 +5066,21 @@ pub(super) fn literal_enum_value(value: &str) -> String {
     format!("\"{}\"", value.replace('\\', "\\\\").replace('"', "\\\""))
 }
 
+/// A literal enum value as a client docstring spells it: Python's `repr`, so a
+/// value holding `"` and no `'` is single-quoted, as a string example is. The
+/// certified pair (Fern CLI 5.200.0, fern-python-sdk 5.41.25) writes Vercel's
+/// `create_webhook` events item
+/// `'mport("/vercel/path0/utils/webhooks/webhooks/types").WebhookName.DomainCreate'`
+/// in `webhooks/client.py`, where `reference.md` keeps the escaped
+/// double-quoted spelling of [`literal_enum_value`].
+fn docstring_literal_enum_value(value: &str) -> String {
+    if value.contains('"') && !value.contains('\'') {
+        format!("'{}'", value.replace('\\', "\\\\"))
+    } else {
+        literal_enum_value(value)
+    }
+}
+
 /// Render a string enum as Fern does with `enum_type` unset (its `literals`
 /// default): an open alias, `{Name} = typing.Union[typing.Literal["a", "b"],
 /// typing.Any]`, that takes any value besides the listed ones, so a response
@@ -9526,7 +9541,11 @@ impl<'a> ExampleCtx<'a> {
                     .find(|member| member.value == value)
                     .or_else(|| enum_type.members.first())?;
                 if self.enum_type == EnumType::Literals {
-                    return Some(Example::Atom(literal_enum_value(&member.value)));
+                    return Some(Example::Atom(if self.documentation {
+                        literal_enum_value(&member.value)
+                    } else {
+                        docstring_literal_enum_value(&member.value)
+                    }));
                 }
                 let member_name = member.name.clone();
                 self.record_ref(name);
@@ -10357,6 +10376,50 @@ impl<'a> ExampleCtx<'a> {
         }
     }
 
+    /// Whether Fern's Markdown writers example a list of this element as the
+    /// empty list: an undiscriminated union whose first alternative is a model
+    /// with a required field whose own union opens with an optional
+    /// alternative (a nested union carrying a `null` member), which Fern
+    /// examples as null. The certified pair (Fern CLI 5.200.0, fern-python-sdk
+    /// 5.41.25) writes Vercel's `patcht_edge_config_items` `items=[]` in
+    /// `reference.md`, and the `union-inheritance/list-item-nested-union`
+    /// measurement's `entries=[]` in its README and `reference.md`, where the
+    /// docstrings construct the first alternative.
+    fn union_item_without_markdown_value(&self, t: &TypeRef) -> bool {
+        let first = match t {
+            TypeRef::Union(variants) => variants.first(),
+            TypeRef::Named(name) => match self.find(name) {
+                Some(TypeDecl::Alias(alias)) => match &alias.target {
+                    TypeRef::Union(variants) => variants.first(),
+                    _ => None,
+                },
+                _ => None,
+            },
+            _ => None,
+        };
+        let Some(TypeRef::Named(first)) = first else {
+            return false;
+        };
+        match self.find(first) {
+            Some(TypeDecl::Object(object)) => object.fields.iter().any(|field| {
+                field.spec_required && !field.optional && self.opens_with_optional(&field.type_ref)
+            }),
+            _ => false,
+        }
+    }
+
+    /// Whether a union, through aliases, opens with an optional alternative.
+    fn opens_with_optional(&self, t: &TypeRef) -> bool {
+        match t {
+            TypeRef::Union(variants) => matches!(variants.first(), Some(TypeRef::Optional(_))),
+            TypeRef::Named(name) => match self.find(name) {
+                Some(TypeDecl::Alias(alias)) => self.opens_with_optional(&alias.target),
+                _ => false,
+            },
+            _ => false,
+        }
+    }
+
     /// Whether Fern can synthesize no example for this type at all. Its
     /// `unknown` kind supplies none, and an object one of whose *required*
     /// fields is a bare unknown inherits that: oSPARC's
@@ -10493,6 +10556,7 @@ impl<'a> ExampleCtx<'a> {
                 if self.resolves_to_building(inner)
                     || self.resolves_to_any(inner)
                     || self.example_has_no_value(inner)
+                    || self.documentation && self.union_item_without_markdown_value(inner)
                 {
                     if self.documentation {
                         Example::ReferenceList(vec![])
@@ -10978,7 +11042,7 @@ impl<'a> ExampleCtx<'a> {
                     Some(m) if self.documentation => {
                         Example::Atom(literal_enum_value(&m.value).replace('\'', "\\'"))
                     }
-                    Some(m) => Example::Atom(literal_enum_value(&m.value)),
+                    Some(m) => Example::Atom(docstring_literal_enum_value(&m.value)),
                     None => Example::Atom("None".to_string()),
                 }
             }
