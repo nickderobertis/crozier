@@ -388,9 +388,9 @@ fn union_inheritance_repairs_match_the_certified_pair() {
 /// the README and `reference.md`, as the certified pair writes it, while the
 /// docstrings construct that member with the field (the
 /// `required-null-union-field-example` departure). Both enum modes match the
-/// certified trees whole; writing back the populated list crozier wrote before
-/// is a difference no departure explains. The tampered files are compared
-/// through the engine alone, so the ledger records only the real comparison.
+/// certified trees whole. `crozier compare` against the certified tree passes,
+/// reporting the departure, and fails once Fern's side writes the list
+/// populated, or gives the field a default so that no omission remains.
 #[test]
 fn list_item_nested_union_markdown_lists_match_the_certified_pair() {
     let case = "list-item-nested-union";
@@ -402,46 +402,73 @@ fn list_item_nested_union_markdown_lists_match_the_certified_pair() {
     generate(case, "literals", &literals);
     failures.extend(literals_failures(case, &literals));
     assert!(failures.is_empty(), "{}", failures.join("\n\n"));
-    let expected = repo_root().join(golden(case));
-    let context = crozier::departures::Context::from_trees(&expected, &out);
-    let populated = "entries=[\n        PatchShelfEntriesRequestEntriesItemPayload(\n            label=\"label\",\n            operation=PatchShelfEntriesRequestEntriesItemPayloadOperation.CREATE,\n            payload=\"payload\",\n        )\n    ],";
-    for doc in ["README.md", "reference.md"] {
-        let written = std::fs::read_to_string(out.join(doc)).expect("a Markdown file");
-        let fern = std::fs::read_to_string(expected.join(doc)).expect("the certified file");
-        assert!(written.contains("    entries=[],\n"), "{doc}: {written}");
-        let compare = |text: &str| {
-            crozier::parity::compare_file(&context, doc, text, &fern)
-                .unwrap_or_else(|error| panic!("{doc}: {error}"))
-        };
-        assert!(compare(&written).diff().is_none(), "{doc} differs");
-        let tampered = written.replacen("entries=[],", populated, 1);
-        assert!(
-            compare(&tampered).diff().is_some(),
-            "{doc}: the populated list must be an unexplained difference"
+    // `crozier compare` against the certified tree, as a migrating user runs
+    // it, and against copies of that tree edited on Fern's side.
+    let compare = |edit: &dyn Fn(&Path)| -> (Option<i32>, String) {
+        let dir = tempfile::tempdir().expect("compare tempdir");
+        let reference = dir.path().join("reference");
+        let expected = repo_root().join(golden(case));
+        for rel in walk_files(&expected) {
+            let to = reference.join(&rel);
+            std::fs::create_dir_all(to.parent().expect("a parent")).expect("mkdir");
+            std::fs::copy(expected.join(&rel), &to).expect("copy a Fern file");
+        }
+        edit(&reference);
+        let config = dir.path().join("crozier.yml");
+        std::fs::write(
+            &config,
+            format!(
+                "reference:\n  command: cp -R '{}/.' \"$CROZIER_REFERENCE_OUTPUT\"\n\
+                 generators:\n  python:\n    spec: '{}'\n    output: ./sdk\n    package-name: fern\n\
+                 \x20   project-name: default_package_name\n    layout: packaged\n",
+                reference.display(),
+                spec(case).display()
+            ),
+        )
+        .expect("write the config");
+        let output = super::crozier()
+            .arg("compare")
+            .arg(&config)
+            .output()
+            .expect("run crozier compare");
+        let said = format!(
+            "{}{}",
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr)
         );
-    }
-    // The departure admits only the required field Fern omits: the docstring's
-    // corrected `payload=` line is explained, while any other argument added
-    // beside it in the same constructor is still a difference.
-    let rel = "src/fern/client.py";
-    let written = std::fs::read_to_string(out.join(rel)).expect("the client");
-    let fern = std::fs::read_to_string(expected.join(rel)).expect("the certified client");
-    let compare = |text: &str| {
-        crozier::parity::compare_file(&context, rel, text, &fern)
-            .unwrap_or_else(|error| panic!("{rel}: {error}"))
+        (output.status.code(), said)
     };
-    assert!(compare(&written).diff().is_none(), "{rel} differs");
-    let corrected = "                    payload=\"payload\",\n";
-    assert!(written.contains(corrected), "{written}");
-    let extra = written.replacen(
-        corrected,
-        &format!("{corrected}                    note=\"note\",\n"),
-        1,
-    );
-    assert!(
-        compare(&extra).diff().is_some(),
-        "an argument the model does not require is no departure"
-    );
+    let differing = |said: &str, rel: &str| {
+        said.split("differing (")
+            .nth(1)
+            .and_then(|rest| rest.split("intended departures").next())
+            .is_some_and(|list| list.lines().any(|line| line.trim() == rel))
+    };
+    let edit = |rel: &'static str, from: &'static str, to: &'static str| {
+        move |root: &Path| {
+            let path = root.join(rel);
+            let text = std::fs::read_to_string(&path).expect("a certified file");
+            assert!(text.contains(from), "{rel} lacks {from:?}");
+            std::fs::write(&path, text.replacen(from, to, 1)).expect("edit");
+        }
+    };
+    let (code, said) = compare(&|_| {});
+    assert_eq!(code, Some(0), "{said}");
+    assert!(said.contains("required-null-union-field-example"), "{said}");
+    // Fern's side writing a populated list is a difference no departure explains.
+    let populated = "entries=[\n        PatchShelfEntriesRequestEntriesItemPayload(\n            label=\"label\",\n            operation=PatchShelfEntriesRequestEntriesItemPayloadOperation.CREATE,\n            payload=\"payload\",\n        )\n    ],";
+    let (code, said) = compare(&edit("reference.md", "entries=[],", populated));
+    assert_eq!(code, Some(3), "{said}");
+    assert!(differing(&said, "reference.md"), "{said}");
+    // A model of Fern's that gives the field a default is no omission, so
+    // crozier's added argument is no departure there.
+    let (code, said) = compare(&edit(
+        "src/fern/types/patch_shelf_entries_request_entries_item_payload.py",
+        "    payload: PatchShelfEntriesRequestEntriesItemPayloadPayload\n",
+        "    payload: typing.Optional[PatchShelfEntriesRequestEntriesItemPayloadPayload] = None\n",
+    ));
+    assert_eq!(code, Some(3), "{said}");
+    assert!(differing(&said, "src/fern/client.py"), "{said}");
 }
 
 /// A literal enum value holding `"` and no `'` is single-quoted in a client

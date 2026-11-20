@@ -2162,7 +2162,7 @@ pub fn rule(id: &str) -> Option<Rule> {
             added_at: Some(optional_lowered_required_query_array_example),
             ..none
         },
-        // llmlint: ignore[changed_behavior_has_e2e] The list-item-nested-union journey proves acceptance and an added unrequired argument's rejection through real trees; a defaulted field, another class or a union opening with a required member each need a Fern tree Fern never writes, so the unit test feeds the rule those crafted inputs.
+        // llmlint: ignore[changed_behavior_has_e2e] The list-item-nested-union journey proves acceptance, and rejection where Fern's model defaults the field, through `crozier compare`; another field, another class, a multi-line value or a union opening with a required member each need a Fern tree Fern never writes, so the unit test feeds the rule those crafted inputs.
         "required-null-union-field-example" => Rule {
             added_at: Some(required_null_union_field_example),
             ..none
