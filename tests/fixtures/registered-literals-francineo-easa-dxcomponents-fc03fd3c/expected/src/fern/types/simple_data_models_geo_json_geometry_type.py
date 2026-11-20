@@ -1,0 +1,19 @@
+
+
+import typing
+
+from .simple_data_models_geo_json_geometry_type_five import SimpleDataModelsGeoJsonGeometryTypeFive
+from .simple_data_models_geo_json_geometry_type_four import SimpleDataModelsGeoJsonGeometryTypeFour
+from .simple_data_models_geo_json_geometry_type_one import SimpleDataModelsGeoJsonGeometryTypeOne
+from .simple_data_models_geo_json_geometry_type_three import SimpleDataModelsGeoJsonGeometryTypeThree
+from .simple_data_models_geo_json_geometry_type_two import SimpleDataModelsGeoJsonGeometryTypeTwo
+from .simple_data_models_geo_json_geometry_type_zero import SimpleDataModelsGeoJsonGeometryTypeZero
+
+SimpleDataModelsGeoJsonGeometryType = typing.Union[
+    SimpleDataModelsGeoJsonGeometryTypeZero,
+    SimpleDataModelsGeoJsonGeometryTypeOne,
+    SimpleDataModelsGeoJsonGeometryTypeTwo,
+    SimpleDataModelsGeoJsonGeometryTypeThree,
+    SimpleDataModelsGeoJsonGeometryTypeFour,
+    SimpleDataModelsGeoJsonGeometryTypeFive,
+]

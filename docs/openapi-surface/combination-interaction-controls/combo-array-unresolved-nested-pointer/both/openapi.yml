@@ -1,0 +1,39 @@
+openapi: 3.0.3
+info:
+  title: sample
+  version: 1.0.0
+paths:
+  /ledgers:
+    get:
+      operationId: getLedger
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Journal"
+components:
+  schemas:
+    Ledger:
+      type: object
+      properties:
+        entry:
+          type: object
+          properties:
+            id:
+              type: string
+    Shape:
+      oneOf:
+        - type: object
+          properties:
+            side:
+              type: number
+        - type: string
+    Journal:
+      type: object
+      properties:
+        lines:
+          type: array
+          items:
+            $ref: "#/components/schemas/Ledger/properties/missing"

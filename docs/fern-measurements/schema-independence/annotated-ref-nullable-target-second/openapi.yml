@@ -1,0 +1,35 @@
+openapi: 3.0.3
+info:
+  title: Ledger
+  version: 1.0.0
+paths:
+  /entries/{entryId}:
+    get:
+      operationId: getEntry
+      parameters:
+        - name: entryId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The entry
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Entry'
+components:
+  schemas:
+    Entry:
+      type: object
+      required:
+        - note
+      properties:
+        id:
+          type: string
+        note:
+          $ref: '#/components/schemas/Remark'
+    Remark:
+      type: string
+      nullable: true

@@ -1,0 +1,101 @@
+openapi: 3.0.3
+info:
+  title: Drying Racks
+  version: "1.0"
+paths:
+  /shelves/{shelfId}:
+    get:
+      operationId: getShelf
+      tags: [shelves]
+      parameters:
+        - name: shelfId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The shelf.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Shelf"
+  /carts/{cartId}:
+    get:
+      operationId: getCart
+      tags: [carts]
+      parameters:
+        - name: cartId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The cart.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cart"
+components:
+  schemas:
+    ShelfBase:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+    Shelf:
+      allOf:
+        - $ref: "#/components/schemas/ShelfBase"
+        - oneOf:
+            - $ref: "#/components/schemas/WallShelf"
+            - $ref: "#/components/schemas/FloorShelf"
+    WallShelf:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [wall]
+          description: Mounted on the wall.
+        brackets:
+          type: integer
+    FloorShelf:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [floor]
+          description: Standing on the floor.
+        height:
+          type: number
+    Cart:
+      allOf:
+        - $ref: "#/components/schemas/ShelfBase"
+        - type: object
+          discriminator:
+            propertyName: type
+            mapping:
+              rolling: "#/components/schemas/RollingCart"
+              fixed: "#/components/schemas/FixedCart"
+          oneOf:
+            - $ref: "#/components/schemas/RollingCart"
+            - $ref: "#/components/schemas/FixedCart"
+    RollingCart:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [rolling]
+        wheels:
+          type: integer
+    FixedCart:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [fixed]
+        anchors:
+          type: integer

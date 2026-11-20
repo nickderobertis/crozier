@@ -1,0 +1,39 @@
+openapi: 3.1.0
+info:
+  title: Kiln Probes
+  version: "1.0"
+paths:
+  /probes/{probeId}/reading:
+    get:
+      operationId: readProbe
+      tags: [probes]
+      parameters:
+        - name: probeId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The probe's last reading, when it has taken one.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - {}
+                  - type: "null"
+  /probes/labels:
+    get:
+      operationId: listProbeLabels
+      tags: [probes]
+      responses:
+        "200":
+          description: Each probe's label, where one is set.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  anyOf:
+                    - type: string
+                    - type: "null"

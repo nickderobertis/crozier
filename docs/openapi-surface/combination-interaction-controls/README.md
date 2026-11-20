@@ -1,6 +1,6 @@
 # Schema interaction controls
 
-`controls.json` names the three registered-interaction schema conjunction arms tested by
+`controls.json` names the registered-interaction schema conjunction arms tested by
 `CooccurrenceOutcomeTest.test_schema_interaction_controls_reach_their_region_only_with_both_features`.
 Each document is authored from scratch. The test checks its two feature
 selectors as well as its combination selector, then invokes the instrumented
@@ -16,12 +16,22 @@ inputs do not certify an anyOf-specific interaction. The audit leaves that
 combination open until a consumer arm distinguishing its origin is located
 and executed by a byte-matching registered specification.
 
-The other six previously listed controls are retained as diagnostic inputs,
+`combo-allof-with-required`, `combo-property-anyof-composed-sibling` and the
+two `combo-unrequired-tag-*-reference` keys are in the manifest over dedicated
+arms (`promote_parent_property`, `composed_any_of_sibling` and
+`unrequired_reference_tag_value`), each split from a pooled condition with output
+unchanged; their witnesses are named in the co-occurrence audit.
+
+The other five previously listed controls are retained as diagnostic inputs,
 outside the interaction manifest. Their added conjunction guards repeated the
-generic path's result and were removed: allOf/required, annotated-reference/
-nullable-target, parameter-example/reference and the three composition/media
-example combinations. Earlier counter execution for those guards is withdrawn
-as interaction proof; their rows are open.
+generic path's result and were removed: annotated-reference/nullable-target,
+parameter-example/reference and the three composition/media example
+combinations. Earlier counter execution for those guards is withdrawn as
+interaction proof. The annotated-reference/nullable-target row is settled as
+independent instead, on the three documents of
+[`combination-independence.toml`](../combination-independence.toml), whose both
+document also holds each single feature so the union test compares like with
+like; the copies here stay diagnostic.
 
 The genuine map/oneOf arm remains covered separately by
 `test_maps_beside_unions_reach_a_keyword_specific_region_only_with_both_features`.
