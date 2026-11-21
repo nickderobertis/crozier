@@ -18,6 +18,7 @@ import importlib
 import re
 import sys
 import threading
+from dataclasses import dataclass, field
 from pathlib import Path
 
 LEAD = "A request is deemed retryable when any of the following HTTP status codes is returned:"
@@ -53,12 +54,20 @@ def is_listed(status: int, codes: list[str]) -> bool:
     return str(status) in codes or f"{status // 100}XX" in codes
 
 
-def serve(hits: list[int], status: list[int]) -> http.server.HTTPServer:
+@dataclass
+class Script:
+    """What the local server answers (`status`), and the status of every request it received (`hits`)."""
+
+    status: int = 0
+    hits: list[int] = field(default_factory=list)
+
+
+def serve(script: Script) -> http.server.HTTPServer:
     class Scripted(http.server.BaseHTTPRequestHandler):
         def do_GET(self) -> None:
-            hits.append(status[0])
+            script.hits.append(script.status)
             body = b'{"message": "scripted"}'
-            self.send_response(status[0])
+            self.send_response(script.status)
             self.send_header("Content-Type", "application/json")
             self.send_header("Retry-After-Ms", "1")
             self.send_header("Content-Length", str(len(body)))
@@ -90,12 +99,15 @@ def main() -> int:
     sdk = importlib.import_module(args.package)
     api_error = importlib.import_module(f"{args.package}.core.api_error").ApiError
     request_options = importlib.import_module(f"{args.package}.core.request_options").RequestOptions
-    hits: list[int] = []
-    status = [0]
-    server = serve(hits, status)
+    clients = [
+        client for name in (args.client, f"Async{args.client}") if isinstance(client := getattr(sdk, name, None), type)
+    ]
+    if len(clients) != 2:
+        parser.error(f"{args.package} defines no client classes {args.client} and Async{args.client}")
+    script = Script()
+    server = serve(script)
     base_url = f"http://127.0.0.1:{server.server_port}"
-    sync_client = getattr(sdk, args.client)(base_url=base_url)
-    async_client = getattr(sdk, f"Async{args.client}")(base_url=base_url)
+    sync_client, async_client = (client(base_url=base_url) for client in clients)
     options = request_options(max_retries=1)
 
     def sync_call() -> None:
@@ -108,8 +120,8 @@ def main() -> int:
     wrong = []
     for name, call in (("sync", sync_call), ("async", async_call)):
         for code in STATUSES:
-            status[0] = code
-            before = len(hits)
+            script.status = code
+            before = len(script.hits)
             try:
                 call()
             except api_error as error:
@@ -119,7 +131,7 @@ def main() -> int:
             else:
                 wrong.append(f"{name} {code}: did not raise")
                 continue
-            attempts = len(hits) - before
+            attempts = len(script.hits) - before
             expected = 2 if is_listed(code, codes) else 1
             if attempts != expected:
                 wrong.append(f"{name} {code}: {attempts} attempt(s), the README implies {expected}")

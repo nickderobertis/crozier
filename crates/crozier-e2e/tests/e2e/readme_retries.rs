@@ -174,5 +174,17 @@ fn sdk_env_client_retries_exactly_what_its_readme_lists() {
         .assert()
         .code(2)
         .stderr(predicate::str::contains("no `### Retries` section"));
+    // A client class the package does not define is refused before any request.
+    std::process::Command::new(&python)
+        .env("PYTHONDONTWRITEBYTECODE", "1")
+        .arg(&script)
+        .arg(dir.path().join("packaged/README.md"))
+        .arg(dir.path().join("packaged/src"))
+        .args(["beacon", "LanternApi"])
+        .assert()
+        .code(2)
+        .stderr(predicate::str::contains(
+            "beacon defines no client classes LanternApi and AsyncLanternApi",
+        ));
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
