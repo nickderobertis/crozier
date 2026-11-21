@@ -54,6 +54,7 @@
         "{workspaceRoot}/scripts/release-branch-guard.mjs",
         "{workspaceRoot}/scripts/update-major-tag.sh",
         "{workspaceRoot}/scripts/install.sh",
+        "{workspaceRoot}/scripts/install-dev-tools.sh",
         "{workspaceRoot}/tools/fern-goldens/weekly.py",
         "{workspaceRoot}/release-plz.toml",
         "{workspaceRoot}/budgets.yaml",

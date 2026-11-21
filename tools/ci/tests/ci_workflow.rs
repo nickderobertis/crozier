@@ -930,6 +930,90 @@ fn required_tools(step: &Value) -> Option<Vec<&str>> {
     Some(line.split_whitespace().collect())
 }
 
+const FERN_GOLDENS: &str = include_str!("../../../.github/workflows/fern-goldens.yml");
+const INSTALL_DEV_TOOLS: &str = include_str!("../../../scripts/install-dev-tools.sh");
+
+/// The cargo tools `scripts/install-dev-tools.sh` builds from source when one is missing,
+/// read from its own `tools=(…)` list.
+fn dev_tools() -> Vec<&'static str> {
+    let listed = INSTALL_DEV_TOOLS
+        .lines()
+        .find_map(|line| line.trim().strip_prefix("tools=("))
+        .and_then(|rest| rest.strip_suffix(')'))
+        .expect("scripts/install-dev-tools.sh lists its tools as `tools=(…)`");
+    let tools: Vec<&str> = listed.split_whitespace().collect();
+    assert!(!tools.is_empty(), "install-dev-tools.sh lists no tool");
+    tools
+}
+
+/// Bootstrap builds no dev tool from source; why: docs/fern-goldens.md, "The weekly run", Decide.
+#[test]
+fn every_bootstrapping_job_installs_each_dev_tool_prebuilt_and_proves_it_before_bootstrap() {
+    let wanted = dev_tools();
+    let mut checked = Vec::new();
+    for (file, source) in [
+        ("ci.yml", CI_WORKFLOW),
+        ("ci-caches.yml", CI_CACHES),
+        ("fern-goldens.yml", FERN_GOLDENS),
+    ] {
+        let workflow: Value =
+            crate::yaml::from_str(source).unwrap_or_else(|_| panic!("{file} is valid YAML"));
+        for (name, job) in workflow["jobs"].as_object().expect("jobs") {
+            let Some(steps) = job.get("steps").and_then(Value::as_array) else {
+                continue;
+            };
+            let Some(bootstrap) = steps
+                .iter()
+                .position(|step| text(step, "run") == Some("just bootstrap"))
+            else {
+                continue;
+            };
+            let installed = |tool: &str| {
+                (0..bootstrap).find(|&index| {
+                    let step = &steps[index];
+                    text(step, "uses")
+                        .is_some_and(|uses| uses.starts_with("taiki-e/install-action@"))
+                        && step
+                            .get("with")
+                            .and_then(|with| text(with, "tool"))
+                            .is_some_and(|tools| {
+                                tools.split(',').any(|listed| listed.trim() == tool)
+                            })
+                })
+            };
+            let proof = (0..bootstrap).find(|&index| required_tools(&steps[index]).is_some());
+            let installs: Vec<usize> = wanted
+                .iter()
+                .map(|tool| {
+                    installed(tool).unwrap_or_else(|| {
+                        panic!(
+                            "{file}: `{name}` runs `just bootstrap` without installing {tool} from a \
+                             prebuilt installer first, so install-dev-tools.sh would build it from source"
+                        )
+                    })
+                })
+                .collect();
+            let proof = proof
+                .unwrap_or_else(|| panic!("{file}: `{name}` bootstraps without proving its tools"));
+            let proved = required_tools(&steps[proof]).expect("the proof names tools");
+            for (tool, install) in wanted.iter().zip(installs) {
+                assert!(
+                    install < proof
+                        && proved
+                            .iter()
+                            .any(|listed| listed.split('@').next() == Some(*tool)),
+                    "{file}: `{name}` never proves {tool} runs after installing it and before `just bootstrap`"
+                );
+            }
+            checked.push(format!("{file}:{name}"));
+        }
+    }
+    assert!(
+        checked.contains(&"fern-goldens.yml:decide".to_string()),
+        "the weekly decision bootstraps: {checked:?}"
+    );
+}
+
 /// Every job that bootstraps proves each tool its install steps put on PATH runs, after
 /// the last of them and before `just bootstrap`, so an installer that reported success
 /// without its executable is named there and not by the gate (#814); and `just` is held
@@ -937,7 +1021,11 @@ fn required_tools(step: &Value) -> Option<Vec<&str>> {
 #[test]
 fn every_bootstrapping_job_proves_its_installed_tools_before_the_gate() {
     let mut proved = Vec::new();
-    for (file, source) in [("ci.yml", CI_WORKFLOW), ("ci-caches.yml", CI_CACHES)] {
+    for (file, source) in [
+        ("ci.yml", CI_WORKFLOW),
+        ("ci-caches.yml", CI_CACHES),
+        ("fern-goldens.yml", FERN_GOLDENS),
+    ] {
         let workflow: Value =
             crate::yaml::from_str(source).unwrap_or_else(|_| panic!("{file} is valid YAML"));
         for (name, job) in workflow["jobs"].as_object().expect("jobs") {
@@ -1007,7 +1095,7 @@ fn every_bootstrapping_job_proves_its_installed_tools_before_the_gate() {
             proved.push(format!("{file}:{name}"));
         }
     }
-    assert_eq!(proved.len(), 7, "the bootstrapping jobs: {proved:?}");
+    assert_eq!(proved.len(), 8, "the bootstrapping jobs: {proved:?}");
 }
 
 /// The proof the lanes run, read from `test-linux`, over a PATH of stand-ins: one the

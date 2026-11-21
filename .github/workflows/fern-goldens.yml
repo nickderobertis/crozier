@@ -4,8 +4,8 @@ name: Fern goldens
 # crozier byte-matches against, and propose what changed as one pull request on
 # `fern-goldens/update`. Each job is one phase of tools/fern-goldens/weekly.py,
 # which holds every decision; see docs/fern-goldens.md. An item that failed to
-# generate, or whose shard uploaded nothing, is named and the rest still decided
-# and published; the last job then turns the run red for it.
+# generate, or whose shard or isolated job uploaded nothing, is named and the
+# rest still decided and published; the last job then turns the run red for it.
 on:
   schedule:
     # Monday 05:17 UTC. Scheduled workflows run from the default branch.
@@ -44,6 +44,9 @@ jobs:
       cli: ${{ steps.resolve.outputs.cli }}
       generator: ${{ steps.resolve.outputs.generator }}
       matrix: ${{ steps.plan.outputs.matrix }}
+      shards: ${{ steps.plan.outputs.shards }}
+      isolated: ${{ steps.plan.outputs.isolated }}
+      isolated_matrix: ${{ steps.plan.outputs.isolated_matrix }}
     steps:
       - uses: actions/checkout@v4
 
@@ -89,7 +92,8 @@ jobs:
 
   shard:
     needs: plan
-    if: needs.plan.outputs.run == 'true'
+    # A subset of isolated items alone plans no shard, and an empty matrix is an error.
+    if: needs.plan.outputs.run == 'true' && needs.plan.outputs.shards != '0'
     runs-on: ubuntu-latest
     # The planner keeps every shard's predicted generation well inside this,
     # which is itself inside GitHub's six-hour job limit.
@@ -138,8 +142,62 @@ jobs:
           retention-days: 14
           overwrite: true
 
+  # Each item weekly.py's ISOLATED_ITEMS names, beside the shards, so a runner
+  # it starves loses only its own answer (docs/fern-goldens.md#an-item-in-a-job-of-its-own).
+  isolated:
+    needs: plan
+    if: needs.plan.outputs.run == 'true' && needs.plan.outputs.isolated != '0'
+    name: isolated (${{ matrix.item }})
+    runs-on: ubuntu-latest
+    # Inside the shard job's timeout, which the planner holds every job to.
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.plan.outputs.isolated_matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: extractions/setup-just@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install the Fern CLI under check
+        env:
+          CLI: ${{ needs.plan.outputs.cli }}
+        run: npm install -g "fern-api@$CLI"
+
+      - name: Build the comment stripper
+        # llmlint: ignore[diagnostics_error_or_absent, work_goes_through_command_surface] The shard job's build, verbatim, so the isolated job generates with the same release binary: the crate's warnings are already errors in the required gate (`cargo clippy -- -D warnings`, src/project.json), the command surface's `crozier:build` is a debug build, and a flag or a new target here alone would let the isolated job differ from the shards.
+        run: cargo build --release --locked --bin crozier
+
+      - name: Install pinned ruff
+        run: ./scripts/install-ruff.sh
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: fern-goldens-plan
+          path: .local/fern-goldens-weekly
+
+      - name: Generate this job's item
+        env:
+          INDEX: ${{ matrix.index }}
+        run: |
+          python3 tools/fern-goldens/weekly.py shard --plan .local/fern-goldens-weekly/plan.json \
+            --index "$INDEX" --output ".local/fern-goldens-weekly/isolated-$INDEX" --summary "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload this job's references and logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fern-goldens-isolated-${{ matrix.index }}
+          path: .local/fern-goldens-weekly/isolated-${{ matrix.index }}/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+          overwrite: true
+
   assemble:
-    needs: [plan, shard]
+    needs: [plan, shard, isolated]
     if: always() && needs.plan.outputs.run == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -151,11 +209,17 @@ jobs:
           name: fern-goldens-plan
           path: .local/fern-goldens-weekly
 
-      # A shard that uploaded nothing is named by the assembly, not here.
+      # A shard or isolated job that uploaded nothing is named by the assembly, not here.
       - uses: actions/download-artifact@v4
         continue-on-error: true
         with:
           pattern: fern-goldens-shard-*
+          path: .local/fern-goldens-weekly/shards
+
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          pattern: fern-goldens-isolated-*
           path: .local/fern-goldens-weekly/shards
 
       - name: Combine every shard into one tree
@@ -185,17 +249,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: extractions/setup-just@v2
+        with:
+          just-version: "1.58.0"
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version-file: package.json
+      # Prebuilt, so `just bootstrap` builds no cargo tool from source; why:
+      # docs/fern-goldens.md, "The weekly run", Decide.
       - name: Install cargo tools
         uses: taiki-e/install-action@v2
         with:
-          tool: cargo-nextest
+          tool: cargo-nextest,cargo-llvm-cov,cargo-deny,cargo-machete
       - uses: astral-sh/setup-uv@v8.3.2
+      # An installer can report success without its executable on PATH; this
+      # names the tool before bootstrap does, as a late, misleading failure.
+      - name: Prove the installed tools run
+        run: node tools/ci/require-tools.mjs just@1.58.0 node bun cargo cargo-nextest cargo-llvm-cov cargo-deny cargo-machete uv
 
       # The resources before each setup step, so a runner that dies in one leaves
       # a log naming the step and what it had left (decide logs its own).

@@ -1,0 +1,161 @@
+{
+  "schema_version": 5,
+  "pair": {
+    "cli": "5.216.0",
+    "generator": "5.42.0"
+  },
+  "base": "f462ef8f00e09bbfda1c69d8f6aee4b881a15fcf",
+  "complete": true,
+  "items": [
+    {
+      "family": "corpus",
+      "item": "6-dot-authentiqio.appspot.com",
+      "status": "ok",
+      "detail": "",
+      "seconds": 25.7,
+      "changed": [
+        "tests/fixtures/6-dot-authentiqio.appspot.com/expected/.crozier-fern-golden.json",
+        "tests/fixtures/6-dot-authentiqio.appspot.com/expected/.fern/metadata.json",
+        "tests/fixtures/6-dot-authentiqio.appspot.com/expected/README.md"
+      ],
+      "log": "logs/corpus/6-dot-authentiqio.appspot.com.log",
+      "shard": 0
+    },
+    {
+      "family": "corpus",
+      "item": "airbyte.local-config",
+      "status": "ok",
+      "detail": "",
+      "seconds": 16.6,
+      "changed": [
+        "tests/fixtures/airbyte.local-config/expected/.crozier-fern-golden.json",
+        "tests/fixtures/airbyte.local-config/expected/.fern/metadata.json",
+        "tests/fixtures/airbyte.local-config/expected/README.md"
+      ],
+      "log": "logs/corpus/airbyte.local-config.log",
+      "shard": 0
+    },
+    {
+      "family": "refusals",
+      "item": "heap-exhausted",
+      "status": "refusal-changed",
+      "detail": "unsettled: recorded: the check stage exits 1 and the generation 1, with `FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory`, at Fern CLI 5.163.1 / fern-python-sdk 5.41.3; now: unsettled: `fern check` and `fern generate` ran past the probe's 900-second bound (check exit timeout, generate exit timeout), printing no diagnostic matching the template; a run cut short says nothing about whether Fern refuses given more time or memory",
+      "seconds": 1803.8,
+      "changed": [
+        "docs/openapi-surface/fern-refusals/probe-logs/heap-exhausted.check.log",
+        "docs/openapi-surface/fern-refusals/probe-logs/heap-exhausted.generate.log"
+      ],
+      "log": "logs/refusals/heap-exhausted.log",
+      "shard": 0
+    },
+    {
+      "family": "corpus",
+      "item": "ably-sdk-test-proxy",
+      "status": "ok",
+      "detail": "",
+      "seconds": 22.9,
+      "changed": [
+        "tests/fixtures/ably-sdk-test-proxy/expected/.crozier-fern-golden.json",
+        "tests/fixtures/ably-sdk-test-proxy/expected/.fern/metadata.json",
+        "tests/fixtures/ably-sdk-test-proxy/expected/README.md"
+      ],
+      "log": "logs/corpus/ably-sdk-test-proxy.log",
+      "shard": 1
+    },
+    {
+      "family": "corpus",
+      "item": "adyen-capital",
+      "status": "ok",
+      "detail": "",
+      "seconds": 8.9,
+      "changed": [
+        "tests/fixtures/adyen-capital/expected/.crozier-fern-golden.json",
+        "tests/fixtures/adyen-capital/expected/.fern/metadata.json",
+        "tests/fixtures/adyen-capital/expected/README.md"
+      ],
+      "log": "logs/corpus/adyen-capital.log",
+      "shard": 1
+    },
+    {
+      "family": "corpus",
+      "item": "fergus",
+      "status": "spec-unfetchable",
+      "detail": "spec fetch failed: ./tools/corpus/fetch-corpus.sh --fixture fergus",
+      "seconds": 3.7,
+      "changed": [],
+      "log": "logs/corpus/fergus.log",
+      "shard": 1
+    },
+    {
+      "family": "corpus",
+      "item": "openaire-graph",
+      "status": "spec-unfetchable",
+      "detail": "spec fetch failed: ./tools/corpus/fetch-corpus.sh --fixture openaire-graph",
+      "seconds": 4.3,
+      "changed": [],
+      "log": "logs/corpus/openaire-graph.log",
+      "shard": 1
+    },
+    {
+      "family": "corpus",
+      "item": "outreach",
+      "status": "spec-unfetchable",
+      "detail": "spec fetch failed: ./tools/corpus/fetch-corpus.sh --fixture outreach",
+      "seconds": 3.7,
+      "changed": [],
+      "log": "logs/corpus/outreach.log",
+      "shard": 1
+    },
+    {
+      "family": "corpus",
+      "item": "adyen-acs-notification",
+      "status": "ok",
+      "detail": "",
+      "seconds": 18.3,
+      "changed": [
+        "tests/fixtures/adyen-acs-notification/expected/.crozier-fern-golden.json",
+        "tests/fixtures/adyen-acs-notification/expected/.fern/metadata.json"
+      ],
+      "log": "logs/corpus/adyen-acs-notification.log",
+      "shard": 2
+    },
+    {
+      "family": "corpus",
+      "item": "agco-ats",
+      "status": "ok",
+      "detail": "",
+      "seconds": 18.1,
+      "changed": [
+        "tests/fixtures/agco-ats/expected/.crozier-fern-golden.json",
+        "tests/fixtures/agco-ats/expected/.fern/metadata.json",
+        "tests/fixtures/agco-ats/expected/README.md"
+      ],
+      "log": "logs/corpus/agco-ats.log",
+      "shard": 2
+    },
+    {
+      "family": "corpus",
+      "item": "calorieninjas.com",
+      "status": "known-upstream-failure",
+      "detail": "the exact known upstream Fern failure, reproduced",
+      "seconds": 5.8,
+      "changed": [
+        "tests/fixtures/calorieninjas.com/known-fern-failure.json"
+      ],
+      "log": "logs/corpus/calorieninjas.com.log",
+      "shard": 2
+    },
+    {
+      "family": "corpus",
+      "item": "groupe-psa",
+      "status": "spec-unfetchable",
+      "detail": "spec fetch failed: ./tools/corpus/fetch-corpus.sh --fixture groupe-psa",
+      "seconds": 3.3,
+      "changed": [],
+      "log": "logs/corpus/groupe-psa.log",
+      "shard": 2
+    }
+  ],
+  "deleted": [],
+  "failures": []
+}

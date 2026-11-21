@@ -1,0 +1,78 @@
+{
+  "schema_version": 5,
+  "outcome": "diff",
+  "complete": true,
+  "pair": {
+    "cli": "5.216.0",
+    "generator": "5.42.0"
+  },
+  "bundle": "18916bf0d7f65092b50c498f5074baa5ed737c691c92f94f4bb6047cf57ed353",
+  "failing": {
+    "corpus": [
+      {
+        "item": "ably-sdk-test-proxy",
+        "report": "\u001b[7m\u001b[1m\u001b[36m NX \u001b[39m\u001b[22m\u001b[27m  \u001b[36mRunning target \u001b[1mfixtures-diff\u001b[22m for project crozier-e2e and \u001b[1m1\u001b[22m task it depends on:\u001b[39m\n\n\u001b[2m\u001b[36m\u001b[39m\u001b[22m\n\n::group::\u2705 \u001b[2m> \u001b[22m\u001b[2mnx run\u001b[22m crozier:build\n\n\u001b[2m> \u001b[22mcargo build -\u2026"
+      }
+    ],
+    "handwritten": [
+      {
+        "item": "atlas-untagged-inline-discriminator",
+        "report": "`cargo nextest run --locked --no-fail-fast --status-level fail --final-status-level fail -p crozier-e2e`:\n    atlas-untagged-inline-discriminator: generated README.md differs from the committed Fern measurement (fix the generator, never the\u2026"
+      }
+    ]
+  },
+  "unfetchable": [
+    {
+      "item": "fergus",
+      "detail": "spec fetch failed: ./tools/corpus/fetch-corpus.sh --fixture fergus"
+    }
+  ],
+  "cannot_run": [],
+  "gates": [
+    {
+      "command": "just fixtures-diff {item}",
+      "family": "corpus",
+      "item": "ably-sdk-test-proxy",
+      "verdict": "reject",
+      "exit": 0,
+      "report": "0000-corpus-ably-sdk-test-proxy.log"
+    },
+    {
+      "command": "just fixtures-diff {item}",
+      "family": "corpus",
+      "item": "adyen-capital",
+      "verdict": "reject",
+      "exit": 0,
+      "report": "0001-corpus-adyen-capital.log"
+    }
+  ],
+  "title": "test(fern-goldens): regenerate at Fern CLI 5.216.0 / fern-python-sdk 5.42.0",
+  "unchecked": [
+    {
+      "family": "corpus",
+      "item": "6-dot-authentiqio.appspot.com",
+      "status": "not-generated",
+      "detail": "shard 0 uploaded no result; its job failed or was cancelled before uploading",
+      "log": ""
+    },
+    {
+      "family": "corpus",
+      "item": "airbyte.local-config",
+      "status": "not-generated",
+      "detail": "shard 0 uploaded no result; its job failed or was cancelled before uploading",
+      "log": ""
+    }
+  ],
+  "ledger": {
+    "schema_version": 5,
+    "outcome": "refused",
+    "detail": "\u001b[31;1m        FAIL\u001b[0m [   8.703s] (1038/1044) \u001b[35;1mcrozier-e2e::e2e\u001b[0m \u001b[34;1mzulip_jentic_entry_matches_fern_output\u001b[0m\n\u001b[31;1m        FAIL\u001b[0m [   1.282s] (1039/1044) \u001b[35;1mcrozier-e2e::e2e\u001b[0m \u001b[34;1mzylon_private_gpt_matches_fern_\u2026",
+    "changes": []
+  },
+  "known_reproduced": [
+    {
+      "family": "corpus",
+      "item": "calorieninjas.com"
+    }
+  ]
+}

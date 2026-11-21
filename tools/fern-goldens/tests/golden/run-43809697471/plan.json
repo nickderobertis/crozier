@@ -1,0 +1,96 @@
+{
+  "schema_version": 5,
+  "complete": true,
+  "items": "",
+  "base": "f462ef8f00e09bbfda1c69d8f6aee4b881a15fcf",
+  "pair": {
+    "cli": "5.216.0",
+    "generator": "5.42.0"
+  },
+  "budget_minutes": 180.0,
+  "shard_limit_minutes": 94.5,
+  "default_seconds": 14.47,
+  "families": {
+    "corpus": {
+      "items": 6,
+      "seconds": 122.6
+    },
+    "refusals": {
+      "items": 1,
+      "seconds": 1806.0
+    }
+  },
+  "units": 869,
+  "shards": [
+    {
+      "index": 0,
+      "seconds": 4965.4,
+      "minutes": 86.76,
+      "items": [
+        {
+          "family": "corpus",
+          "item": "6-dot-authentiqio.appspot.com",
+          "seconds": 20.5
+        },
+        {
+          "family": "corpus",
+          "item": "airbyte.local-config",
+          "seconds": 16.3
+        },
+        {
+          "family": "refusals",
+          "item": "heap-exhausted",
+          "seconds": 1806.0
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "seconds": 4965.9,
+      "minutes": 86.77,
+      "items": [
+        {
+          "family": "corpus",
+          "item": "ably-sdk-test-proxy",
+          "seconds": 24.9
+        },
+        {
+          "family": "corpus",
+          "item": "adyen-capital",
+          "seconds": 23.6
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "seconds": 4965.4,
+      "minutes": 86.76,
+      "items": [
+        {
+          "family": "corpus",
+          "item": "adyen-acs-notification",
+          "seconds": 8.6
+        },
+        {
+          "family": "corpus",
+          "item": "agco-ats",
+          "seconds": 28.7
+        }
+      ]
+    }
+  ],
+  "estimate": {
+    "minutes": 136.76,
+    "stages": {
+      "plan": 5.0,
+      "shards": 86.77,
+      "assembly": 6.0,
+      "decision": 34.0,
+      "publication": 5.0
+    },
+    "waves": 1,
+    "setup_minutes_per_job": 4.0,
+    "assembly_minutes": 6.0,
+    "longest_shard_minutes": 86.77
+  }
+}

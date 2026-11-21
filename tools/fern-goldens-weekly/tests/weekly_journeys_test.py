@@ -264,9 +264,28 @@ workspace = pathlib.Path.cwd()
 text = (workspace / "openapi" / "openapi.yml").read_text(encoding="utf-8")
 title = re.search(r"(?m)^  title: (.+)$", text).group(1).strip()
 config = json.loads(pathlib.Path(os.environ["STAND_IN_FERN"]).read_text(encoding="utf-8"))
-rule = config.get("rules", {}).get(title, {})
+# A rule for a document holding a phrase, before one for its title: probes share the title `probe`.
+rule = next(
+    (rule for phrase, rule in config.get("phrases", {}).items() if phrase in text),
+    config.get("rules", {}).get(title, {}),
+)
+# What started this stage: the heap it was given, and its parent's command line and
+# environment (Fern's caller starts it directly, so the parent is that caller).
+# Where there is no `/proc` (macOS), the command line comes from `ps`, split on
+# whitespace (the paths it names hold none), and the environment is this
+# stage's own, which its caller passes on whole with only its own additions.
+parent = pathlib.Path(os.environ.get("STAND_IN_PROC", "/proc")) / str(os.getppid())
+if parent.is_dir():
+    command = (parent / "cmdline").read_bytes().decode().split("\0")[:-1]
+    environment = [entry.split("=", 1)[0] for entry in (parent / "environ").read_bytes().decode(errors="replace").split("\0") if entry]
+else:
+    import subprocess
+    listed = subprocess.run(["ps", "-o", "args=", "-p", str(os.getppid())], capture_output=True, text=True, check=True)
+    command = listed.stdout.split()
+    environment = list(os.environ)
+started = {"node_options": os.environ.get("NODE_OPTIONS"), "parent": command, "parent_env": sorted(environment)}
 with open(config["calls"], "a", encoding="utf-8") as calls:
-    calls.write(json.dumps({"command": args[0], "title": title}) + "\n")
+    calls.write(json.dumps({"command": args[0], "title": title, "started": started}) + "\n")
 if rule.get("hang") in (True, args[0]):
     # A run past its caller's time bound, which ends it: every stage, or the one named.
     import time
@@ -478,13 +497,14 @@ class Journey:
     resolve: Completed | None = None
     plan: Completed | None = None
     shards: list[Completed] = field(default_factory=list)
+    isolated: list[Completed] = field(default_factory=list)
     assemble: Completed | None = None
     apply: Completed | None = None
     decide: Completed | None = None
     decision: dict[str, object] | None = None
     publish: Completed | None = None
     conclude: Completed | None = None
-    # A shard whose job died before uploading anything.
+    # A shard or isolated job whose runner died before uploading anything.
     lost: int | None = None
 
     def ran(self, phase: str) -> Completed:
@@ -536,9 +556,29 @@ class Journey:
     def status(self) -> str:
         """How the workflow concludes: a failed job (a phase exiting non-zero,
         or a shard whose job died) fails the run."""
-        ran = [self.resolve, self.plan, *self.shards, self.assemble, self.decide, self.publish, self.conclude]
+        ran = [
+            self.resolve,
+            self.plan,
+            *self.shards,
+            *self.isolated,
+            self.assemble,
+            self.decide,
+            self.publish,
+            self.conclude,
+        ]
         failed = self.lost is not None or any(phase is not None and phase.returncode != 0 for phase in ran)
         return "failure" if failed else "success"
+
+
+def planned_jobs(path: Path) -> dict[str, Any]:
+    """The plan at `path`, its `shards` list split into the shards and the
+    isolated jobs recorded after them, each marked `isolated`."""
+    # A JSON object whose fields the plan phase wrote: `Any` is json's own value type.
+    record: dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
+    jobs = record["shards"]
+    record["shards"] = [job for job in jobs if not job.get("isolated")]
+    record["isolated"] = [job for job in jobs if job.get("isolated")]
+    return record
 
 
 def write_executable(path: Path, source: str) -> None:
@@ -837,8 +877,9 @@ class WeeklyRunTests(unittest.TestCase):
         where a job's failure stops the workflow as its `needs` and `if` do: a
         red assembly or decision skips every phase after it, and the conclusion
         runs after any decision. `lose` names an item, `family:item`, whose
-        shard's job dies before uploading anything, so its artifact never
-        reaches the assembly."""
+        shard's or isolated job's runner dies before uploading anything, so its
+        artifact never reaches the assembly. Each isolated job runs beside the
+        shards as the workflow's `isolated` job does, through the same phase."""
         artifacts = self.scratch / f"artifacts-{self.clones}"
         outputs = artifacts / "outputs"
         artifacts.mkdir()
@@ -882,29 +923,45 @@ class WeeklyRunTests(unittest.TestCase):
             self.git(planner, "rev-parse", "HEAD"),
             "--output",
             str(plan),
+            "--github-output",
+            str(scheduled := artifacts / "plan-outputs"),
             **env,
         )
         state.plan = planned
         if planned.returncode != 0:
             return state
-        shards = json.loads(plan.read_text(encoding="utf-8"))["shards"]
-        for shard in shards:
+        # The jobs start as the workflow starts them: from the plan step's
+        # outputs, each job's `if:` reading its count and its matrix the list.
+        given = dict(line.split("=", 1) for line in scheduled.read_text(encoding="utf-8").splitlines())
+        planned = planned_jobs(plan)
+        by_index = {job["index"]: job for job in (*planned["shards"], *planned["isolated"])}
+        shard_indices = json.loads(given["matrix"])["shard"] if given["shards"] != "0" else []
+        isolated_include = json.loads(given["isolated_matrix"])["include"] if given["isolated"] != "0" else []
+        self.assertEqual(
+            ([job["index"] for job in planned["shards"]], len(planned["shards"])),
+            (shard_indices, int(given["shards"])),
+        )
+        self.assertEqual(
+            [
+                {"index": job["index"], "item": f"{e['family']}:{e['item']}"}
+                for job in planned["isolated"]
+                for e in job["items"]
+            ],
+            isolated_include,
+        )
+        self.assertEqual(len(isolated_include), int(given["isolated"]))
+        jobs = [("shard", by_index[index]) for index in shard_indices]
+        jobs += [("isolated", by_index[entry["index"]]) for entry in isolated_include]
+        for kind, shard in jobs:
             job = self.clone()
+            uploaded = artifacts / f"fern-goldens-{kind}-{shard['index']}"
             result = self.phase(
-                job,
-                "shard",
-                "--plan",
-                str(plan),
-                "--index",
-                str(shard["index"]),
-                "--output",
-                str(artifacts / f"fern-goldens-shard-{shard['index']}"),
-                **env,
+                job, "shard", "--plan", str(plan), "--index", str(shard["index"]), "--output", str(uploaded), **env
             )
-            state.shards.append(result)
+            (state.shards if kind == "shard" else state.isolated).append(result)
             if lose in {f"{entry['family']}:{entry['item']}" for entry in shard["items"]}:
                 state.lost = shard["index"]
-                shutil.rmtree(artifacts / f"fern-goldens-shard-{shard['index']}")
+                shutil.rmtree(uploaded)
         if stop_after == "shards":
             return state
         bundle = artifacts / "bundle"
@@ -1783,9 +1840,10 @@ class WeeklyRunTests(unittest.TestCase):
         self.publish_seed()
         self.stand_in({"rules": {"probe": {"hang": True}}})
         state = self.run_workflow(CROZIER_FERN_REFUSALS_PROBE_TIMEOUT="2")
-        shard = next(state.artifacts.glob("fern-goldens-shard-*/result.json"))
-        items: list[ShardItem] = json.loads(shard.read_text(encoding="utf-8"))["items"]
-        (item,) = [entry for entry in items if (entry["family"], entry["item"]) == ("refusals", "heap-exhausted")]
+        # The probe ran in its own job, beside the shards.
+        (job,) = state.artifacts.glob("fern-goldens-isolated-*/result.json")
+        (item,) = json.loads(job.read_text(encoding="utf-8"))["items"]
+        self.assertEqual(("refusals", "heap-exhausted"), (item["family"], item["item"]))
         now = (
             "unsettled: `fern check` and `fern generate` ran past the probe's 2-second bound (check exit timeout, "
             "generate exit timeout), printing no diagnostic matching the template; a run cut short says nothing "
@@ -1808,6 +1866,261 @@ class WeeklyRunTests(unittest.TestCase):
         self.assertNotIn("## Items not checked", pull["body"])
         self.assertEqual(0, state.ran("conclude").returncode, state.ran("conclude").stderr)
         self.assertEqual("success", state.status(), "a diff with every item checked concludes green")
+
+    HEAP_MESSAGE = (
+        "FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory"
+    )
+    REFUSAL_TABLES = ("docs/fern-refusals/classes.tsv", "docs/fern-refusals/findings.tsv")
+
+    def seed_heap_exhausted_beside_other_classes(self) -> None:
+        """The seed's registry holding `heap-exhausted` beside two other refusal
+        classes, `heap-exhausted` and `default-not-enum-value` each still without
+        a record, so the run's probe of each rewrites its own `classes.tsv` row:
+        one in the shard, one in the isolated job."""
+        self.add_refused_class()
+        registry = self.seed / "docs/fern-refusals"
+        real = REPO / "docs/fern-refusals"
+        (registry / "heap-exhausted").mkdir()
+        shutil.copy2(real / "heap-exhausted/probe.yml", registry / "heap-exhausted/probe.yml")
+        header, *rows = (registry / "classes.tsv").read_text(encoding="utf-8").splitlines()
+        heap = next(
+            row
+            for row in (real / "classes.tsv").read_text(encoding="utf-8").splitlines()
+            if row.startswith("heap-exhausted\t")
+        )
+        columns = header.split("\t")
+
+        def unrecorded(row: str) -> str:
+            # A class not yet probed: the stage and exit its first record will write, unknown.
+            cells = row.split("\t")
+            cells[columns.index("fern_stage")], cells[columns.index("fern_exit")] = "generate", "0"
+            return "\t".join(cells)
+
+        rows = [unrecorded(row) if row.startswith(f"{REFUSAL_CLASS}\t") else row for row in rows]
+        (registry / "classes.tsv").write_text(
+            "\n".join([header, *sorted([*rows, unrecorded(heap)])]) + "\n", encoding="utf-8"
+        )
+        (registry / REFUSAL_CLASS / "fern-refusal.txt").unlink()
+        # Fern's check exhausting its heap over the probe, as `heap-exhausted` records it.
+        self.stand_in(
+            {
+                "rules": {
+                    "probe": self.refusal_rule,
+                    "Refused Lanterns": {"generate": [1, "Lantern 'harbour' cannot be lit"]},
+                },
+                "phrases": {"composition:": {"check": [1, self.HEAP_MESSAGE], "generate": [1, ""]}},
+            }
+        )
+        self.publish_seed()
+
+    def one_shard_tables(self, state: Journey) -> dict[str, str]:
+        """The refusal tables as the run before isolation wrote them: this plan
+        with `heap-exhausted` back in the shard holding every other refusal
+        item, in inventory order, generated by the same shard phase."""
+        planned = planned_jobs(state.artifacts / "plan.json")
+        (job,) = planned.pop("isolated")
+        shard = next(s for s in planned["shards"] if any(e["family"] == "refusals" for e in s["items"]))
+        refusals = [entry for entry in shard["items"] if entry["family"] == "refusals"]
+        at = shard["items"].index(refusals[0])
+        inventory = sorted([*refusals, *job["items"]], key=lambda entry: entry["item"])
+        shard["items"][at : at + len(refusals)] = inventory
+        together = self.scratch / "one-shard-plan.json"
+        together.write_text(json.dumps(planned), encoding="utf-8")
+        output = self.scratch / "one-shard"
+        ran = self.phase(
+            self.clone(), "shard", "--plan", str(together), "--index", str(shard["index"]), "--output", str(output)
+        )
+        self.assertEqual(0, ran.returncode, ran.stderr)
+        return {
+            path: ((output / "files" / path) if (output / "files" / path).is_file() else self.seed / path).read_text(
+                encoding="utf-8"
+            )
+            for path in self.REFUSAL_TABLES
+        }
+
+    def test_heap_exhausted_runs_in_a_job_of_its_own_and_its_rows_merge_as_one_shard_writes_them(self) -> None:
+        """The plan puts `heap-exhausted` in a job of its own and in no shard;
+        its job's result is recorded with its outcome, and the refusal tables it
+        shares with the shard's refusal classes are what one shard running every
+        refusal item writes."""
+        self.seed_heap_exhausted_beside_other_classes()
+        state = self.run_workflow()
+        planned = planned_jobs(state.artifacts / "plan.json")
+        sharded = {(entry["family"], entry["item"]) for shard in planned["shards"] for entry in shard["items"]}
+        self.assertNotIn(("refusals", "heap-exhausted"), sharded)
+        self.assertLessEqual({("refusals", REFUSAL_CLASS), ("refusals", "lantern-refused")}, sharded)
+        (job,) = planned["isolated"]
+        # Recorded after the shards in the plan's own `shards` list, so a reader
+        # counting that list's items (the weekly budget's) still finds every item.
+        recorded = json.loads((state.artifacts / "plan.json").read_text(encoding="utf-8"))
+        self.assertEqual([*planned["shards"], job], recorded["shards"])
+        self.assertNotIn("isolated", recorded)
+        self.assertIs(True, job["isolated"])
+        self.assertEqual(len(planned["shards"]), job["index"])
+        self.assertEqual([("refusals", "heap-exhausted")], [(e["family"], e["item"]) for e in job["items"]])
+        self.assertEqual([0], [run.returncode for run in state.isolated], state.isolated[0].stderr)
+        self.assertEqual(0, state.ran("assemble").returncode, state.ran("assemble").stderr)
+        bundle = json.loads((state.artifacts / "bundle/bundle.json").read_text(encoding="utf-8"))
+        items = {(entry["family"], entry["item"]): entry for entry in bundle["items"]}
+        heap = items[("refusals", "heap-exhausted")]
+        self.assertEqual(("ok", ""), (heap["status"], heap["detail"]), "Fern refused the probe as the record will say")
+        self.assertNotIn("shard", heap, "an isolated job is no shard")
+        record = (state.artifacts / "bundle/files/docs/fern-refusals/heap-exhausted/fern-refusal.txt").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn(f"diagnostic: {self.HEAP_MESSAGE}\n", record)
+        self.assertIn(f"fern_cli_version: {CANDIDATE.cli}\n", record)
+        # Both rows changed, one in each job, and the bundle holds both changes.
+        classes = (state.artifacts / "bundle/files/docs/fern-refusals/classes.tsv").read_text(encoding="utf-8")
+        for name in (REFUSAL_CLASS, "heap-exhausted"):
+            self.assertRegex(classes, rf"(?m)^{name}\t[^\t]+\tcheck\t1\t")
+        self.assertEqual(
+            self.one_shard_tables(state),
+            {
+                path: (
+                    (state.artifacts / "bundle/files" / path)
+                    if (state.artifacts / "bundle/files" / path).is_file()
+                    else self.seed / path
+                ).read_text(encoding="utf-8")
+                for path in self.REFUSAL_TABLES
+            },
+        )
+        self.assertEqual(0, state.ran("decide").returncode, state.ran("decide").stderr + self.summary())
+        self.assertEqual([], state.unchecked())
+        self.assertIn(("refusals", "heap-exhausted"), state.gated())
+        self.assertEqual("success", state.status(), state.ran("conclude").stderr)
+
+    def test_a_lost_heap_exhausted_job_leaves_it_alone_not_compared_and_every_shard_decided(self) -> None:
+        """Run 43809697471 lost a runner carrying `heap-exhausted` and, with it,
+        385 references. Now the probe's job alone is lost: every shard's items
+        are generated and compared, and `decide` names `heap-exhausted` alone as
+        not compared, with why."""
+        self.seed_heap_exhausted_beside_other_classes()
+        state = self.run_workflow(lose="refusals:heap-exhausted")
+        planned = planned_jobs(state.artifacts / "plan.json")
+        self.assertEqual(planned["isolated"][0]["index"], state.lost)
+        self.assertEqual([0] * len(planned["shards"]), [run.returncode for run in state.shards])
+        self.assertEqual(0, state.ran("assemble").returncode, state.ran("assemble").stderr)
+        self.assertEqual(0, state.ran("decide").returncode, state.ran("decide").stderr + self.summary())
+        reason = (
+            f"the isolated job for refusals `heap-exhausted` (job {state.lost}) uploaded no result; its runner was "
+            "lost, or its job failed or was cancelled, before uploading"
+        )
+        self.assertEqual(
+            [{"family": "refusals", "item": "heap-exhausted", "status": "not-generated", "detail": reason, "log": ""}],
+            state.unchecked(),
+        )
+        sharded = {(entry["family"], entry["item"]) for shard in planned["shards"] for entry in shard["items"]}
+        bundle = json.loads((state.artifacts / "bundle/bundle.json").read_text(encoding="utf-8"))
+        statuses = {(entry["family"], entry["item"]): entry["status"] for entry in bundle["items"]}
+        self.assertEqual({"ok"}, {statuses[key] for key in sharded}, "every shard's item generated")
+        self.assertLessEqual(sharded, state.gated(), "and compared")
+        self.assertNotIn(("refusals", "heap-exhausted"), state.gated())
+        # The shard's own row change is carried, with nothing of the lost job's.
+        classes = (state.artifacts / "bundle/files/docs/fern-refusals/classes.tsv").read_text(encoding="utf-8")
+        self.assertRegex(classes, rf"(?m)^{REFUSAL_CLASS}\t[^\t]+\tcheck\t1\t")
+        self.assertRegex(classes, r"(?m)^heap-exhausted\t[^\t]+\tgenerate\t0\t")
+        published = self.git(self.remote, "ls-tree", "-r", "--name-only", "fern-goldens/update").splitlines()
+        self.assertNotIn("docs/fern-refusals/heap-exhausted/fern-refusal.txt", published)
+        (pull,) = self.pulls()
+        section = pull["body"].split("## Items not checked", 1)[1]
+        self.assertIn(f"refusals `heap-exhausted`: not-generated: {reason}", section)
+        self.assertNotIn("uploaded no result** (its job failed", pull["body"], "no shard was lost")
+        self.assertEqual("failure", state.status(), "a run with an item not compared concludes red")
+        self.assertNotEqual(0, state.ran("conclude").returncode)
+
+    def test_the_isolated_job_probes_heap_exhausted_with_its_16_gib_heap_and_900_second_bound(self) -> None:
+        """The isolated job's own invocation of `fern-refusals.py probe` for
+        `heap-exhausted`: each Fern stage starts with Node's 16 GiB heap, under
+        the probe's own 900-second bound (no override), and a run past that
+        bound in both stages reports what `docs/fern-refusals/heap-exhausted/`
+        records for it, `unsettled` with both stages at `timeout`."""
+        self.assert_isolated_heap_probe()
+
+    def test_on_a_platform_without_proc_the_isolated_heap_probe_is_read_through_ps(self) -> None:
+        """macOS has no `/proc`: the stood-in Fern reads what started each
+        stage through `ps`, and the isolated job's invocation holds all the same."""
+        self.assert_isolated_heap_probe(STAND_IN_PROC=str(self.scratch / "no-proc"))
+
+    def assert_isolated_heap_probe(self, **env: str) -> None:
+        """The isolated `heap-exhausted` job's Fern stages, as the two tests above name them."""
+        registry = self.seed / "docs/fern-refusals"
+        real = REPO / "docs/fern-refusals"
+        header, *rows = (registry / "classes.tsv").read_text(encoding="utf-8").splitlines()
+        heap = next(
+            row
+            for row in (real / "classes.tsv").read_text(encoding="utf-8").splitlines()
+            if row.startswith("heap-exhausted\t")
+        )
+        (registry / "classes.tsv").write_text("\n".join([header, *sorted([*rows, heap])]) + "\n", encoding="utf-8")
+        (registry / "heap-exhausted").mkdir()
+        for name in ("probe.yml", "fern-refusal.txt"):
+            shutil.copy2(real / "heap-exhausted" / name, registry / "heap-exhausted" / name)
+        self.publish_seed()
+        heap_rule = {"phrases": {"composition:": {"check": [1, self.HEAP_MESSAGE], "generate": [1, ""]}}}
+        self.stand_in({"rules": {"probe": self.refusal_rule}, **heap_rule})
+        (self.scratch / "fern-calls.jsonl").unlink(missing_ok=True)
+        state = self.run_workflow("refusals:heap-exhausted", stop_after="assemble", **env)
+        planned = planned_jobs(state.artifacts / "plan.json")
+        self.assertEqual(([], [0]), (planned["shards"], [job["index"] for job in planned["isolated"]]))
+        self.assertEqual([0], [run.returncode for run in state.isolated], state.isolated[0].stderr)
+        calls = [
+            json.loads(line) for line in (self.scratch / "fern-calls.jsonl").read_text(encoding="utf-8").splitlines()
+        ]
+        stages = [call for call in calls if "started" in call]
+        self.assertEqual(["check", "generate"], [call["command"] for call in stages])
+        probe: list[str] = []
+        for call in stages:
+            started = call["started"]
+            self.assertEqual("--max-old-space-size=16384", started["node_options"], "Node's 16 GiB heap, unchanged")
+            probe = started["parent"]
+            self.assertTrue(probe[1].endswith("/tools/fern-refusals/fern-refusals.py"), probe)
+            self.assertEqual(["probe", "--jobs", "1", "--changes"], probe[2:6])
+            self.assertTrue(probe[6].endswith("/.local/fern-references/refusals/probe.heap-exhausted.changes.jsonl"))
+            self.assertEqual(["heap-exhausted"], probe[7:], "no --timeout: the probe's own bound")
+            self.assertNotIn("CROZIER_FERN_REFUSALS_PROBE_TIMEOUT", started["parent_env"], "and no override of it")
+
+        # That invocation over a Fern that never answers either stage: each wait
+        # is recorded at the bound it was given, then ended early, as the bound
+        # would end it 900 seconds in.
+        checkout = self.clone()
+        changes = self.scratch / "unsettled.changes.jsonl"
+        self.stand_in({"rules": {"probe": self.refusal_rule}, "phrases": {"composition:": {"hang": True}}})
+        bounds: list[float] = []
+        waited = subprocess.Popen.communicate
+
+        def bounded(
+            process: subprocess.Popen[str], input: str | None = None, timeout: float | None = None
+        ) -> tuple[str, str]:
+            if timeout is not None:
+                bounds.append(timeout)
+                timeout = min(timeout, 2)
+            return waited(process, input, timeout)
+
+        environment = self.environment(checkout, **env)
+        with (
+            unittest.mock.patch.dict(os.environ, environment, clear=True),
+            unittest.mock.patch.object(subprocess.Popen, "communicate", bounded),
+        ):
+            loaded = runpy.run_path(str(checkout / "tools/fern-refusals/fern-refusals.py"), run_name="fern_refusals")
+            code = loaded["main"]([*probe[2:6], str(changes), *probe[7:]])
+        self.assertEqual(loaded["CHANGED_EXIT"], code)
+        self.assertEqual([900, 900], bounds, "`fern check` and `fern generate` each bounded at 900 seconds")
+        recorded = dict(
+            line.split(": ", 1)
+            for line in (real / "heap-exhausted/unsettled.txt").read_text(encoding="utf-8").splitlines()
+        )
+        (change,) = [json.loads(line) for line in changes.read_text(encoding="utf-8").splitlines()]
+        self.assertEqual(("heap-exhausted", "unsettled"), (change["class"], change["outcome"]))
+        self.assertIn(
+            f"ran past the probe's {recorded['bound_seconds']}-second bound (check exit {recorded['check_exit']}, "
+            f"generate exit {recorded['generate_exit']})",
+            change["now"],
+        )
+        self.assertEqual(
+            ("timeout", "timeout", "900"),
+            (recorded["check_exit"], recorded["generate_exit"], recorded["bound_seconds"]),
+        )
 
     def test_a_refusal_whose_phrase_fern_prints_with_other_exits_is_a_reported_change(self) -> None:
         said = "Default value '-createdAt' is not a valid enum value"
