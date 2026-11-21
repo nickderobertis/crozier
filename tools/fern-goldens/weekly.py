@@ -2030,11 +2030,21 @@ def table_rows(text: str, key: str, where: str) -> tuple[str, list[tuple[str, st
     return header, rows
 
 
-def merge_table(path: str, committed: str, writers: list[tuple[str, Path, set[str]]]) -> str:
+class TableWriter(NamedTuple):
+    """A job that rewrote a shared table: how summaries name it, its copy of
+    the table, and the rows its items own."""
+
+    label: str
+    source: Path
+    owned: set[str]
+
+
+def merge_table(path: str, committed: str, writers: list[TableWriter]) -> str:
     """`path` as one job running every writer's items in turn writes it: the
     committed rows, each replaced by the one writer whose items own it. A
     writer that changed the header, added, dropped or reordered a row, or
-    changed a row its items do not own, cannot be merged."""
+    changed a row its items do not own, cannot be merged; one writer alone is
+    held to the same."""
     key = SHARED_TABLES[path].key
     header, rows = table_rows(committed, key, f"the committed {path}")
     keys = [name for name, _line in rows]
@@ -2068,7 +2078,7 @@ def assemble(args: argparse.Namespace) -> int:
     results: list[ItemResult] = []
     owners: dict[str, int] = {}
     deleted: list[str] = []
-    tables: dict[str, list[tuple[str, Path, set[str]]]] = {}
+    tables: dict[str, list[TableWriter]] = {}
     uploaded = uploaded_results(Path(args.shards), failures)
     failures += unplanned(uploaded, made)
     for planned in made.jobs():
@@ -2109,7 +2119,7 @@ def assemble(args: argparse.Namespace) -> int:
             if path in SHARED_TABLES and path in record.written:
                 # Each job rewrote its own items' rows; they are merged below.
                 owned = SHARED_TABLES[path].owned(record.items)
-                tables.setdefault(path, []).append((label, shard_dir / "files" / path, owned))
+                tables.setdefault(path, []).append(TableWriter(label, shard_dir / "files" / path, owned))
             elif path in owners and owners[path] != index:
                 failures.append(f"{path} was written by shards {owners[path]} and {index}; plan their items together")
             owners[path] = index
@@ -2139,13 +2149,12 @@ def assemble(args: argparse.Namespace) -> int:
             shutil.copy2(source, target)
         results += [replace(entry, shard=shard_index) for entry in record.items]
     for path, writers in tables.items():
-        if len(writers) > 1:
-            try:
-                merged = merge_table(path, checkout_text(base, path), writers)
-            except WeeklyError as error:
-                failures.append(str(error))
-                continue
-            inside(output / "files", path, "the merged tables").write_text(merged, encoding="utf-8", newline="\n")
+        try:
+            merged = merge_table(path, checkout_text(base, path), writers)
+        except WeeklyError as error:
+            failures.append(str(error))
+            continue
+        inside(output / "files", path, "the merged tables").write_text(merged, encoding="utf-8", newline="\n")
     write_timings(base, made, results, output / "files" / TIMINGS)
     metadata = output / "files" / METADATA
     metadata.parent.mkdir(parents=True, exist_ok=True)

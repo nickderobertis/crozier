@@ -704,11 +704,11 @@ class AssemblyTests(unittest.TestCase):
     def table(self, rows: dict[str, str], header: str = "class\tfern_exit") -> str:
         return f"{header}\n" + "".join(f"{name}\t{cell}\n" for name, cell in rows.items())
 
-    def write_table(self, index: int, item: str, text: str) -> None:
-        """Job `index`'s result: refusal class `item`, having written `text` as classes.tsv."""
-        self.shard(index, item, [self.CLASSES])
+    def write_table(self, index: int, item: str, text: str, path: str = CLASSES) -> None:
+        """Job `index`'s result: refusal item `item`, having written `text` as `path`."""
+        self.shard(index, item, [path])
         directory = self.scratch / "artifacts" / f"fern-goldens-shard-{index}"
-        (directory / "files" / self.CLASSES).write_text(text, encoding="utf-8")
+        (directory / "files" / path).write_text(text, encoding="utf-8")
         record = json.loads((directory / "result.json").read_text(encoding="utf-8"))
         record["items"][0]["family"] = "refusals"
         (directory / "result.json").write_text(json.dumps(record), encoding="utf-8")
@@ -766,6 +766,46 @@ class AssemblyTests(unittest.TestCase):
                 result = self.merged(ours, theirs)
                 self.assertEqual(1, result.returncode, result.stderr)
                 self.assertIn(expected, result.stderr)
+
+    def test_one_job_alone_rewriting_a_row_its_items_do_not_own_is_a_failure(self) -> None:
+        """With the isolated job lost, shard 0's table is still held to its own rows."""
+        self.isolate()
+        self.write_table(0, "a", self.table({"a": "2", "heap-exhausted": "0", "z": "1"}))
+        self.shard(1, "b", [])
+        result = self.assemble()
+        self.assertEqual(1, result.returncode, result.stderr)
+        self.assertIn(
+            f"shard 0 rewrote {self.CLASSES}'s `heap-exhausted` row, which none of its items owns", result.stderr
+        )
+
+    def test_findings_rows_merge_by_the_finding_each_item_measures(self) -> None:
+        """`findings.tsv` rows belong to `findings/<name>` items; a class probe owns none of them."""
+        findings = "docs/fern-refusals/findings.tsv"
+        plan = weekly.Plan.from_json(json.loads((self.scratch / "plan.json").read_text(encoding="utf-8")), "plan")
+        first = weekly.replace(plan.shards[0], items=(weekly.PlannedItem("refusals", "findings/f1", 1.0),))
+        job = weekly.PlannedShard(2, 1.0, 4.02, (weekly.PlannedItem("refusals", "findings/f2", 1.0),))
+        families = {"corpus": weekly.FamilyTotal(1, 1.0), "refusals": weekly.FamilyTotal(2, 2.0)}
+        changed = weekly.replace(plan, shards=(first, *plan.shards[1:]), isolated=(job,), families=families, units=3)
+        (self.scratch / "plan.json").write_text(json.dumps(changed.to_json()), encoding="utf-8")
+        (self.root / "docs/fern-refusals").mkdir(parents=True)
+        header = "finding\tcheck_exit"
+        (self.root / findings).write_text(self.table({"f1": "1", "f2": "1", "f3": "1"}, header), encoding="utf-8")
+        for ours, expected in (
+            ({"f1": "0", "f2": "1", "f3": "1"}, None),
+            ({"f1": "1", "f2": "1", "f3": "0"}, f"shard 0 rewrote {findings}'s `f3` row, which none of its items owns"),
+        ):
+            with self.subTest(ours=ours):
+                self.write_table(0, "findings/f1", self.table(ours, header), findings)
+                self.shard(1, "b", [])
+                self.write_table(2, "findings/f2", self.table({"f1": "1", "f2": "0", "f3": "1"}, header), findings)
+                result = self.assemble()
+                if expected is None:
+                    self.assertEqual(0, result.returncode, result.stderr)
+                    merged = (self.scratch / "bundle/files" / findings).read_text(encoding="utf-8")
+                    self.assertEqual(self.table({"f1": "0", "f2": "0", "f3": "1"}, header), merged)
+                else:
+                    self.assertEqual(1, result.returncode, result.stderr)
+                    self.assertIn(expected, result.stderr)
 
     def test_an_isolated_job_that_uploaded_nothing_leaves_its_item_alone_not_generated(self) -> None:
         self.isolate()
