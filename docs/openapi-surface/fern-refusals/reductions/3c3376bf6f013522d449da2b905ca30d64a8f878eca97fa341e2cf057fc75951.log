@@ -1,5 +1,5 @@
 fern-refusals: reduction of 5ce68565710ca03a17792aaccccb4949d135632e69898d665aa349dbf710385a: /components/schemas/DiscoveryAssetLog/properties/history_type/enum/0
-fern-refusals: Fern CLI 5.200.0, fernapi/fern-python-sdk 5.41.25
+fern-refusals: Fern CLI 5.216.0, fernapi/fern-python-sdk 5.42.0
 check exit: 1
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
@@ -13,3 +13,4 @@ Warnings for generators.yml:
         issue: DomainVerificationMethod is already declared in domains.yml
 
 Found 2 errors and 38 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+For guidance, run `fern instructions spec`.
