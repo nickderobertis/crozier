@@ -43,11 +43,14 @@ directory.
 measured at Fern CLI 5.200.0 / fern-python-sdk 5.41.25; "the new pair" in this
 note means that one. At the current certified pair, Fern CLI 5.216.0 /
 fern-python-sdk 5.42.0, the audit was re-run once over Fern's side of every
-tree the record names: each tree carries exactly its recorded findings, the
-README rows after its Retries section ten lines earlier (5.42.0 states the
-retried status codes in ten fewer lines), and none appeared or disappeared.
-The file was not rewritten, so its line numbers are 5.41.25's, and it does not
-cover goldens registered since. The gate above, over crozier's own output for
+golden `compared-goldens.json` names, each overlay rebuilt over the base its
+`cases.tsv` row or sibling tree gives. Of this record's rows, 2,335 recur
+unchanged and 24 recur ten lines earlier (README rows after the Retries
+section, which 5.42.0 states in ten fewer lines); the other 188 are the nine
+partial snapshots' rows described below, which a tree rebuilt over its base
+does not have. No other finding appeared in those trees. Six trees registered
+since carry 13 more, all `call`. The file was not rewritten, so its rows and
+line numbers are 5.41.25's. The gate above, over crozier's own output for
 every compared golden, is what holds the current trees.
 
 [`fern-findings.tsv`](fern-findings.tsv) is the audit of Fern's side of the
