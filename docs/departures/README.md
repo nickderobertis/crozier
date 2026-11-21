@@ -186,8 +186,8 @@ A fix node that makes crozier depart from Fern on purpose — correcting a Fern
 defect, say — adds it this way:
 
 1. **Show it.** Generate the smallest crozier-authored document that triggers
-   it with the certified pair (Fern CLI 5.200.0, `fernapi/fern-python-sdk`
-   5.41.25, as `assets/scaffolding/metadata.json` declares), and record the
+   it with the certified pair (Fern CLI 5.216.0, `fernapi/fern-python-sdk`
+   5.42.0, as `assets/scaffolding/metadata.json` declares), and record the
    command and its result in a note under
    `docs/departures/evidence/<id>.md`. For a `fern-defect`, show why Fern's
    output is wrong under the defect rule — an import that fails, a call that
