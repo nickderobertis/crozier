@@ -1,6 +1,6 @@
-fern_cli_version = "5.200.0"
-fern_python_sdk_version = "5.41.25"
-digest = "eeb339c4220f589f7b852da915c22092a339b1ca4d2e7379e98a635390d857c3"
+fern_cli_version = "5.216.0"
+fern_python_sdk_version = "5.42.0"
+digest = "1cf68464420e3705c28bbf549072e6d0e14ef409906da4a78551ddbca9b01625"
 
 [[covers]]
 key = "property-oneof-residual"

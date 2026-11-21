@@ -1,6 +1,6 @@
-fern_cli_version = "5.200.0"
-fern_python_sdk_version = "5.41.25"
-digest = "f34f4a7c76b46bef3b8f58452b7576e8e406f225d3b6de9a843bc0d7743857e0"
+fern_cli_version = "5.216.0"
+fern_python_sdk_version = "5.42.0"
+digest = "71bdc51a0c640b98719cac2152975b875380ffd8a3d7985fc6a2c7f5751d3e66"
 
 [[covers]]
 key = "union-of-enum-ref-const-and-string-members"

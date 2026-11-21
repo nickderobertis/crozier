@@ -1,6 +1,6 @@
-fern_cli_version = "5.200.0"
-fern_python_sdk_version = "5.41.25"
-digest = "2722f1a06fb5c9a9ef2cdbdc4b8b29aabd6e067e0f852a25f41e9292f822ccbd"
+fern_cli_version = "5.216.0"
+fern_python_sdk_version = "5.42.0"
+digest = "7dc2a7c465c30e7b8181b1902f780a37aa91676686b8b88908e4d5f930970524"
 
 source_digest = "bbba844f967a0a60ae7f67f53688e84c4a5f2491416728678ecbb1bd51c3f03d"
 reason = "Registered goldens reach the successful JSON-suffix media selection anchor; this fixture no longer claims a handwritten coverage gap."

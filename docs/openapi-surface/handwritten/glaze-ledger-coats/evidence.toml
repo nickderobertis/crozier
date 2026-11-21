@@ -1,6 +1,6 @@
-fern_cli_version = "5.200.0"
-fern_python_sdk_version = "5.41.25"
-digest = "95aceac79052a45654e26675b9b5c9b1c55e0230d7fd761c38fc2a69c5ff7fed"
+fern_cli_version = "5.216.0"
+fern_python_sdk_version = "5.42.0"
+digest = "1ca594309de65f05fd9ee051d49073d6b3af813ca3ec1af86a4fdebede5cca1c"
 
 [[covers]]
 key = "annotated-ref-target-inheritance-union"

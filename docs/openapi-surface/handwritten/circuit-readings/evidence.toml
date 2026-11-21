@@ -1,6 +1,6 @@
-fern_cli_version = "5.200.0"
-fern_python_sdk_version = "5.41.25"
-digest = "0649751d2a59b06b841045c04c35b11a5aecc2d261e1e52e1fedcdbdd66a0ffe"
+fern_cli_version = "5.216.0"
+fern_python_sdk_version = "5.42.0"
+digest = "4c9c200c23c50d4e28fe82b2d1e6d00df3b5777405c36dd527e534a27a240071"
 
 [[covers]]
 key = "allof-base-in-cycle-imported-after-class"
