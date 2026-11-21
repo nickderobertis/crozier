@@ -1130,6 +1130,59 @@ class ContractGoldenTests(unittest.TestCase):
         )
 
 
+RUN_43809697471 = REPO / "tools/fern-goldens/tests/golden/run-43809697471"
+
+
+class RecordedRunTests(unittest.TestCase):
+    """Run 43809697471's own `plan.json`, `bundle.json` and `decision.json`,
+    reduced to a few items each (long report and detail strings cut short),
+    still read by the phases that read them: schema version 5 written before
+    the plan could isolate an item."""
+
+    def golden(self, name: str) -> dict[str, Any]:
+        # A JSON object whose fields each reader validates: `Any` is json's own value type.
+        return json.loads((RUN_43809697471 / name).read_text(encoding="utf-8"))
+
+    def test_the_runs_plan_reads_with_no_isolated_job_and_heap_exhausted_in_shard_0(self) -> None:
+        record = self.golden("plan.json")
+        self.assertNotIn("isolated", record)
+        plan = weekly.Plan.from_json(record, "plan.json")
+        self.assertEqual((), plan.isolated)
+        self.assertEqual(plan.shards, plan.jobs())
+        self.assertEqual(["shard 0", "shard 1", "shard 2"], [plan.label(job.index) for job in plan.jobs()])
+        self.assertIn(("refusals", "heap-exhausted"), [entry.key() for entry in plan.shards[0].items])
+        self.assertEqual(record, plan.to_json(), "an old plan writes back exactly as it was")
+
+    def test_the_runs_bundle_and_decision_read_and_a_lost_shard_0_is_still_named(self) -> None:
+        bundle = weekly.Bundle.from_json(self.golden("bundle.json"), "bundle.json")
+        self.assertEqual(self.golden("bundle.json"), bundle.to_json())
+        heap = next(entry for entry in bundle.items if entry.item == "heap-exhausted")
+        self.assertEqual((weekly.Status.REFUSAL_CHANGED, 0), (heap.status, heap.shard))
+        decision = weekly.RecordedDecision.from_json(self.golden("decision.json"), "decision.json")
+        self.assertEqual(weekly.Outcome.DIFF, decision.outcome)
+        self.assertEqual(
+            [
+                (
+                    "corpus",
+                    weekly.Status.NOT_GENERATED,
+                    "shard 0 uploaded no result; its job failed or was cancelled before uploading",
+                )
+            ]
+            * 2,
+            [(entry.family, entry.status, entry.detail) for entry in decision.unchecked],
+        )
+        lost = weekly.replace(
+            bundle,
+            items=tuple(
+                weekly.replace(entry, status=weekly.Status.NOT_GENERATED, detail=decision.unchecked[0].detail)
+                if entry.shard == 0
+                else entry
+                for entry in bundle.items
+            ),
+        )
+        self.assertEqual([0], list(weekly.lost_shards(lost)))
+
+
 class DecisionRecordTests(unittest.TestCase):
     """The decision the publication job reads back is the one written."""
 
