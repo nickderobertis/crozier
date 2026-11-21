@@ -271,14 +271,19 @@ rule = next(
 )
 # What started this stage: the heap it was given, and its parent's command line and
 # environment (Fern's caller starts it directly, so the parent is that caller).
-parent = pathlib.Path(f"/proc/{os.getppid()}")
-started = {
-    "node_options": os.environ.get("NODE_OPTIONS"),
-    "parent": (parent / "cmdline").read_bytes().decode().split("\0")[:-1] if parent.is_dir() else None,
-    "parent_env": sorted(
-        entry.split("=", 1)[0] for entry in (parent / "environ").read_bytes().decode(errors="replace").split("\0") if entry
-    ) if parent.is_dir() else None,
-}
+# Where there is no `/proc` (macOS), the command line comes from `ps`, split on
+# whitespace (the paths it names hold none), and the environment is this
+# stage's own, which its caller passes on whole with only its own additions.
+parent = pathlib.Path(os.environ.get("STAND_IN_PROC", "/proc")) / str(os.getppid())
+if parent.is_dir():
+    command = (parent / "cmdline").read_bytes().decode().split("\0")[:-1]
+    environment = [entry.split("=", 1)[0] for entry in (parent / "environ").read_bytes().decode(errors="replace").split("\0") if entry]
+else:
+    import subprocess
+    listed = subprocess.run(["ps", "-o", "args=", "-p", str(os.getppid())], capture_output=True, text=True, check=True)
+    command = listed.stdout.split()
+    environment = list(os.environ)
+started = {"node_options": os.environ.get("NODE_OPTIONS"), "parent": command, "parent_env": sorted(environment)}
 with open(config["calls"], "a", encoding="utf-8") as calls:
     calls.write(json.dumps({"command": args[0], "title": title, "started": started}) + "\n")
 if rule.get("hang") in (True, args[0]):
@@ -2030,6 +2035,15 @@ class WeeklyRunTests(unittest.TestCase):
         the probe's own 900-second bound (no override), and a run past that
         bound in both stages reports what `docs/fern-refusals/heap-exhausted/`
         records for it, `unsettled` with both stages at `timeout`."""
+        self.assert_isolated_heap_probe()
+
+    def test_on_a_platform_without_proc_the_isolated_heap_probe_is_read_through_ps(self) -> None:
+        """macOS has no `/proc`: the stood-in Fern reads what started each
+        stage through `ps`, and the isolated job's invocation holds all the same."""
+        self.assert_isolated_heap_probe(STAND_IN_PROC=str(self.scratch / "no-proc"))
+
+    def assert_isolated_heap_probe(self, **env: str) -> None:
+        """The isolated `heap-exhausted` job's Fern stages, as the two tests above name them."""
         registry = self.seed / "docs/fern-refusals"
         real = REPO / "docs/fern-refusals"
         header, *rows = (registry / "classes.tsv").read_text(encoding="utf-8").splitlines()
@@ -2046,7 +2060,7 @@ class WeeklyRunTests(unittest.TestCase):
         heap_rule = {"phrases": {"composition:": {"check": [1, self.HEAP_MESSAGE], "generate": [1, ""]}}}
         self.stand_in({"rules": {"probe": self.refusal_rule}, **heap_rule})
         (self.scratch / "fern-calls.jsonl").unlink(missing_ok=True)
-        state = self.run_workflow("refusals:heap-exhausted", stop_after="assemble")
+        state = self.run_workflow("refusals:heap-exhausted", stop_after="assemble", **env)
         planned = planned_jobs(state.artifacts / "plan.json")
         self.assertEqual(([], [0]), (planned["shards"], [job["index"] for job in planned["isolated"]]))
         self.assertEqual([0], [run.returncode for run in state.isolated], state.isolated[0].stderr)
@@ -2083,7 +2097,7 @@ class WeeklyRunTests(unittest.TestCase):
                 timeout = min(timeout, 2)
             return waited(process, input, timeout)
 
-        environment = self.environment(checkout)
+        environment = self.environment(checkout, **env)
         with (
             unittest.mock.patch.dict(os.environ, environment, clear=True),
             unittest.mock.patch.object(subprocess.Popen, "communicate", bounded),
