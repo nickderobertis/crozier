@@ -70,6 +70,9 @@ At Fern CLI 5.200.0 / fern-python-sdk 5.41.25 it was re-recorded after checking
 that only the files every SDK shares had moved (the hyphenated distribution
 name, the vendored runtime, `.fern/metadata.json` and `reference.md`'s link
 ranges).
+At Fern CLI 5.216.0 / fern-python-sdk 5.42.0 it was re-recorded after checking
+that only `.fern/metadata.json` (the pair) and `README.md` (its Retries
+section) had moved.
 `crates/crozier-e2e/tests/e2e/empty_sdk_documents.rs` holds the tree to that manifest, the pair's empty SDK to its log and file
 count, and the control to its generation.
 

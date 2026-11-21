@@ -1,9 +1,9 @@
-fern_cli_version: 5.200.0
-fern_python_sdk_version: 5.41.25
+fern_cli_version: 5.216.0
+fern_python_sdk_version: 5.42.0
 check_exit: timeout
-check_seconds: 897.7
+check_seconds: 902.0
 generate_exit: timeout
-generate_seconds: 898.8
+generate_seconds: 903.0
 bound_seconds: 900
-reason: not compared at Fern CLI 5.200.0 / fern-python-sdk 5.41.25: one serial bounded rerun (`fern-refusals.py probe heap-exhausted --jobs 1 --timeout 900`, NODE_OPTIONS=--max-old-space-size=16384, node v26.8.2, 94 GiB host, load average about 63 on 20 CPUs) ran `fern check` and `fern generate` each to the 900-second bound, printing nothing, as the Fern goldens run 43423270787 did; a run cut short says nothing about whether Fern refuses given more time or memory, so fern-refusal.txt and the class's shape logs stay the Fern CLI 5.163.1 / fern-python-sdk 5.41.3 history and no refusal is certified at this pair
+reason: not compared at Fern CLI 5.216.0 / fern-python-sdk 5.42.0: the Fern goldens run 44880783817 ran the probe in a job of its own (`fern-references.py generate refusals heap-exhausted`, NODE_OPTIONS=--max-old-space-size=16384, 16 GB runner) and `fern check` and `fern generate` each ran to the 900-second bound (1,805.2 s for both), printing nothing, as attempt 2 of run 43809697471 did (1,803.8 s); the spike-shard-loss measurement (node v20.20.2, 16g ceiling) timed the stages at 902.0 s and 903.0 s with peaks of 10,687 and 10,787 MiB and no OOM kill; a run cut short says nothing about whether Fern refuses given more time or memory, so fern-refusal.txt and the class's shape logs stay the Fern CLI 5.163.1 / fern-python-sdk 5.41.3 history and no refusal is certified at this pair
 follow_up: Settle crozier's heap-exhausted refusal class at Fern CLI 5.200.0 / fern-python-sdk 5.41.25
