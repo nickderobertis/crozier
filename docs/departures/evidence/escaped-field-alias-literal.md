@@ -75,3 +75,13 @@ holds those cases; the follow-up ticket journeys compare both measurements'
 whole trees with this departure applied, and
 `sdk_env_wire_aliases_are_literal_data_in_crozier_and_not_in_the_certified_pair`
 runs this script over both sides.
+
+**Historical.** This record was measured at Fern CLI 5.200.0 /
+`fernapi/fern-python-sdk` 5.41.25, the pair certified when it was taken; where it
+says "the certified pair" it means that pair. It has not been re-measured at
+the current certified pair, Fern CLI 5.216.0 / fern-python-sdk 5.42.0. There
+the goldens it cites were regenerated and differ from 5.41.25's only in each
+README's Retries section and `.fern/metadata.json`, and the departure's rows in
+`tests/fixtures/departures-ledger.tsv` recur on the same lines of Fern's output
+(a README row after the Retries section ten lines earlier), so the defective
+lines the record shows failing are Fern's at that pair too.

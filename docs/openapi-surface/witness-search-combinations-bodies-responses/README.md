@@ -134,3 +134,8 @@ instrumented union has 29 regions only in the single-feature union, because each
 feature-alone control runs the absent feature's own code, and that test is not
 weakened. It settles only once crozier has a condition that reads the group
 beside the pagination.
+
+**Historical.** This record was measured at Fern CLI 5.200.0 /
+`fernapi/fern-python-sdk` 5.41.25, the pair certified when it was taken; where it
+says "the certified pair" it means that pair. It has not been re-measured at
+the current certified pair, Fern CLI 5.216.0 / fern-python-sdk 5.42.0.

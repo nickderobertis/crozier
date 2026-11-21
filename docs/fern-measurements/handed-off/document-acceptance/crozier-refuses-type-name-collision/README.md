@@ -31,8 +31,8 @@ One type crozier refused as declared twice where the certified pair declares it 
 - Unit tests: `ir::document_acceptance_tests::a_multipart_components_nested_types_leave_the_root`, `name_refusals::tests::a_group_placed_component_enum_is_no_collision`, `name_refusals::tests::components_differing_in_first_letter_case_are_no_refusal`, `document_refusals::examples::tests::an_earlier_enum_whose_first_value_the_later_drops_collides`.
 
 **Regenerated at the certified pair.** Every tree this record holds is at Fern
-CLI 5.200.0 / `fernapi/fern-python-sdk` 5.41.25, the certified pair: the Fern
-goldens workflow (run 43423270787) regenerated those its measurements family
+CLI 5.216.0 / `fernapi/fern-python-sdk` 5.42.0, the certified pair: the Fern
+goldens workflow (run 44880783817) regenerated those its measurements family
 covers, and this change regenerated `expected-literals/` the same way, one Fern
 run at a time through `tools/fern-goldens/fern-references.py`'s own
 `generated_tree` (and `reduce_overlay` for an overlay). crozier's comparison

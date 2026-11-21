@@ -20,3 +20,8 @@ the model parses, dumps and writes every field under exactly its declared wire
 name. The departure's [evidence note](../../../../departures/evidence/escaped-field-alias-literal.md)
 records both runs. The whole tree byte-matches the certified pair with that
 departure applied (`follow_up_ticket_matching_outputs_hold_against_the_certified_pair`).
+
+**Historical.** This record was measured at Fern CLI 5.200.0 /
+`fernapi/fern-python-sdk` 5.41.25, the pair certified when it was taken; where it
+says "the certified pair" it means that pair. It has not been re-measured at
+the current certified pair, Fern CLI 5.216.0 / fern-python-sdk 5.42.0.

@@ -33,8 +33,8 @@ The body is a `$ref` to the component, so its arguments are the component model'
 - Unit tests: `ir::document_acceptance_tests::branch_properties_a_parent_redeclares_are_one_field_each`, `ir::document_acceptance_tests::parents_with_inline_members_rewrites_only_parents_beside_plain_members`.
 
 **Regenerated at the certified pair.** Every tree this record holds is at Fern
-CLI 5.200.0 / `fernapi/fern-python-sdk` 5.41.25, the certified pair: the Fern
-goldens workflow (run 43423270787) regenerated those its measurements family
+CLI 5.216.0 / `fernapi/fern-python-sdk` 5.42.0, the certified pair: the Fern
+goldens workflow (run 44880783817) regenerated those its measurements family
 covers, and this change regenerated `expected-literals/` the same way, one Fern
 run at a time through `tools/fern-goldens/fern-references.py`'s own
 `generated_tree` (and `reduce_overlay` for an overlay). crozier's comparison
