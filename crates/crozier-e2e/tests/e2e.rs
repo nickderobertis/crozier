@@ -35,6 +35,10 @@ mod literals;
 #[path = "e2e/default_max_retries.rs"]
 mod default_max_retries;
 
+/// The README's Retries section: Fern's text, and what the client retries.
+#[path = "e2e/readme_retries.rs"]
+mod readme_retries;
+
 /// Non-default settings against Fern's overlay goldens (`expected-literals/`, …).
 #[path = "e2e/overlay_goldens.rs"]
 mod overlay_goldens;
