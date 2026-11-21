@@ -360,6 +360,9 @@ class PlannedJob:
     seconds: float
     minutes: float
     items: tuple[PlannedItem, ...]
+    # Recorded in the plan's `shards` list beside the shards, so every reader
+    # counting the shards' items still finds every item; omitted when false.
+    isolated: bool = False
 
     def to_json(self) -> dict[str, object]:
         return {
@@ -367,6 +370,7 @@ class PlannedJob:
             "seconds": self.seconds,
             "minutes": self.minutes,
             "items": [vars(entry) for entry in self.items],
+            **({"isolated": True} if self.isolated else {}),
         }
 
     @classmethod
@@ -379,7 +383,12 @@ class PlannedJob:
             )
             for entry in field_of(record, "items", list, where)
         )
-        return cls(index, non_negative_of(record, "seconds", where), non_negative_of(record, "minutes", where), items)
+        isolated = (
+            field_of(record, "isolated", bool, where) if isinstance(record, dict) and "isolated" in record else False
+        )
+        return cls(
+            index, non_negative_of(record, "seconds", where), non_negative_of(record, "minutes", where), items, isolated
+        )
 
 
 @dataclass(frozen=True)
@@ -430,10 +439,13 @@ class Plan:
             "default_seconds": self.default_seconds,
             "families": {name: vars(total) for name, total in self.families.items()},
             "units": self.units,
-            "shards": [shard.to_json() for shard in self.shards],
+            # An isolated job follows the shards in this list, marked `isolated`:
+            # a plan isolating nothing reads exactly as before.
+            "shards": [
+                *(shard.to_json() for shard in self.shards),
+                *(replace(job, isolated=True).to_json() for job in self.isolated),
+            ],
             "estimate": vars(self.estimate),
-            # Optional, and omitted when empty: a plan isolating nothing reads as before.
-            **({"isolated": [job.to_json() for job in self.isolated]} if self.isolated else {}),
         }
 
     @classmethod
@@ -441,15 +453,14 @@ class Plan:
         if field_of(record, "schema_version", int, where) != SCHEMA_VERSION:
             raise WeeklyError(f"{where} is no plan of this tool's schema; re-run the plan job")
         assert isinstance(record, dict)
-        shards = tuple(
-            PlannedJob.from_json(shard, index, f"{where} shard {index}")
-            for index, shard in enumerate(field_of(record, "shards", list, where))
+        jobs = tuple(
+            PlannedJob.from_json(job, index, f"{where} shard {index}")
+            for index, job in enumerate(field_of(record, "shards", list, where))
         )
-        # An isolated job is numbered after the shards, in order.
-        isolated = tuple(
-            PlannedJob.from_json(job, len(shards) + offset, f"{where} isolated job {offset}")
-            for offset, job in enumerate(field_of(record, "isolated", list, where) if "isolated" in record else [])
-        )
+        shards = tuple(job for job in jobs if not job.isolated)
+        isolated = jobs[len(shards) :]
+        if not all(job.isolated for job in isolated):
+            raise WeeklyError(f"{where}: shards must be numbered from 0 in order, and isolated jobs after them")
         if any(len(job.items) != 1 for job in isolated):
             raise WeeklyError(f"{where}: an isolated job runs exactly one item; re-run the plan job")
         keys = [entry.key() for shard in (*shards, *isolated) for entry in shard.items]
@@ -1667,6 +1678,7 @@ def make_plan(base: Path, items: str, pair: Pair | None, commit: str | None = No
             seconds=round(weights[key], 1),
             minutes=round(JOB_SETUP_MINUTES + weights[key] / 60, 2),
             items=(PlannedItem(key[0], key[1], round(weights[key], 1)),),
+            isolated=True,
         )
         for offset, key in enumerate(isolated)
     )

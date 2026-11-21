@@ -890,11 +890,20 @@ class ArtifactTests(unittest.TestCase):
         # Shard 1's item moved to an isolated job, which is numbered 1, after shard 0.
         def isolate(r: dict[str, Any], index: int = 1, extra: bool = False) -> None:
             moved = r["shards"].pop()["items"]
-            r["isolated"] = [{"index": index, "seconds": 1.0, "minutes": 4.02, "items": moved * (1 + extra)}]
+            r["shards"].append(
+                {"index": index, "seconds": 1.0, "minutes": 4.02, "items": moved * (1 + extra), "isolated": True}
+            )
 
-        fault("isolated jobs after them", lambda r: isolate(r, index=2))
+        fault("shards must be numbered from 0 in order", lambda r: isolate(r, index=2))
         fault("an isolated job runs exactly one item", lambda r: isolate(r, extra=True))
-        fault("must be list", lambda r: r.update(isolated={}))
+        fault("must be bool", lambda r: r["shards"][1].update(isolated="yes"))
+
+        def shard_after_isolated(r: dict[str, Any]) -> None:
+            isolate(r)
+            r["shards"][0]["isolated"] = True
+            r["shards"][1].pop("isolated")
+
+        fault("isolated jobs after them", shard_after_isolated)
         fault("no plan of this tool's schema", lambda r: r.update(schema_version=1))
         fault("`complete` must say whether it plans the whole inventory", lambda r: r.update(items="probes"))
         fault(
@@ -909,10 +918,15 @@ class ArtifactTests(unittest.TestCase):
     def test_an_isolated_job_round_trips_and_a_plan_isolating_nothing_omits_it(self) -> None:
         self.assertNotIn("isolated", small_plan().to_json())
         self.assertEqual((), weekly.Plan.from_json(small_plan().to_json(), "plan").isolated)
-        job = weekly.PlannedJob(1, 1.0, 4.02, (weekly.PlannedItem("corpus", "b", 1.0),))
+        job = weekly.PlannedJob(1, 1.0, 4.02, (weekly.PlannedItem("corpus", "b", 1.0),), isolated=True)
         plan = small_plan(shards=small_plan().shards[:1], isolated=(job,))
         record = plan.to_json()
-        self.assertEqual([job.to_json()], record["isolated"])
+        # The isolated job is recorded after the shards in `shards`, marked: a
+        # reader counting that list's items finds every item the plan holds.
+        self.assertEqual([*(shard.to_json() for shard in plan.shards), job.to_json()], record["shards"])
+        self.assertNotIn("isolated", record)
+        self.assertIs(True, record["shards"][1]["isolated"])
+        self.assertNotIn("isolated", record["shards"][0])
         read = weekly.Plan.from_json(json.loads(json.dumps(record)), "plan")
         self.assertEqual(plan, read)
         self.assertEqual(("shard 0", "the isolated job for corpus `b` (job 1)"), (read.label(0), read.label(1)))

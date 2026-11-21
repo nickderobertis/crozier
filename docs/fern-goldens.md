@@ -393,8 +393,10 @@ phases.
    count therefore grows with the inventory, never from a hand-edited constant.
    Each item `weekly.py`'s `ISOLATED_ITEMS` names (today the refusal class
    `heap-exhausted`) is planned in no shard but in a job of its own, numbered
-   after the shards in `plan.json`'s optional `isolated` list; see
-   [An item in a job of its own](#an-item-in-a-job-of-its-own).
+   after the shards and recorded after them in `plan.json`'s `shards` list,
+   marked `"isolated": true` (omitted on a shard), so every reader counting
+   that list's items — the weekly minutes budget's among them — still finds
+   every item; see [An item in a job of its own](#an-item-in-a-job-of-its-own).
 3. **Shard** (one `shard` job per planned shard, and one `isolated` job per
    isolated item beside them, at most 20 at once, each with a
    `timeout-minutes` inside GitHub's six-hour limit). The shard moves
