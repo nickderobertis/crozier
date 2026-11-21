@@ -1,4 +1,4 @@
-fern-refusals: Fern CLI 5.200.0, fernapi/fern-python-sdk 5.41.25
+fern-refusals: Fern CLI 5.216.0, fernapi/fern-python-sdk 5.42.0
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
 [sdk] 21 errors
@@ -87,3 +87,4 @@ Warnings for generators.yml:
         issue: Tag name "重排序(Rerank)" contains non-ASCII characters: 重, 排, 序. Non-ASCII characters in tag names will be included in URL paths and HTTP headers, which only support ASCII characters. This will cause runtime errors (ERR_INVALID_CHAR). Remove non-ASCII characters from the tag name.
 
 Found 21 errors and 0 warnings in <n> seconds.
+For guidance, run `fern instructions spec`.

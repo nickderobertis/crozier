@@ -1,4 +1,4 @@
-fern-refusals: Fern CLI 5.200.0, fernapi/fern-python-sdk 5.41.25
+fern-refusals: Fern CLI 5.216.0, fernapi/fern-python-sdk 5.42.0
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
 [api]: Discriminated union "SecurityDetectionsApiSetAlertsStatusByIds (Security_Detections_API_SetAlertsStatusByIds)" lists "#/components/schemas/Security_Detections_API_SetAlertsStatusByIdsBase" in its oneOf/anyOf, but it is not present in the discriminator mapping. This variant will be omitted from the generated union, so payloads using it will fail to serialize or deserialize. Add it to the discriminator mapping to include it.
@@ -155,3 +155,4 @@ Warnings for generators.yml:
   - Body property: <Request Body> -> version (name: "version")
 
 Found 36 errors and 52 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+For guidance, run `fern instructions spec`.

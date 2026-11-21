@@ -1,4 +1,4 @@
-fern-refusals: Fern CLI 5.200.0, fernapi/fern-python-sdk 5.41.25
+fern-refusals: Fern CLI 5.216.0, fernapi/fern-python-sdk 5.42.0
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
 [api]: Skipping body parameter, body, in POST /api/users
@@ -8,3 +8,4 @@ Warnings for generators.yml:
         issue: Error is not defined.
 
 Found 1 error and 0 warnings in <n> seconds.
+For guidance, run `fern instructions spec`.

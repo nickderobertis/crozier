@@ -1,6 +1,8 @@
-fern-refusals: Fern CLI 5.200.0, fernapi/fern-python-sdk 5.41.25
+fern-refusals: Fern CLI 5.216.0, fernapi/fern-python-sdk 5.42.0
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
 [api]: Failed to parse an OpenAPI schema at the following location: postV2VectordbEntitiesSearch->Request->ids->Item. Coercing to unknown.
 [api]: Failed to parse an OpenAPI schema at the following location: postV2VectordbEntitiesSearch->Request->ids->Item. Coercing to unknown.
 Found 0 errors and 7 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+[api]: Warnings for generators.yml:
+[api]: 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.

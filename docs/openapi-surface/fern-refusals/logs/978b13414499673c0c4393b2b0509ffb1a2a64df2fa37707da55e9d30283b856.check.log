@@ -1,7 +1,9 @@
-fern-refusals: Fern CLI 5.200.0, fernapi/fern-python-sdk 5.41.25
+fern-refusals: Fern CLI 5.216.0, fernapi/fern-python-sdk 5.42.0
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
 [api]: Failed to parse openapi document Flight Control Image Builder API
 [api]: Failed to resolve ../../core/v1beta1/openapi.yaml#/components/securitySchemes/bearerAuth 
        CliError: Failed to resolve ../../core/v1beta1/openapi.yaml#/components/securitySchemes/bearerAuth
 All checks passed
+[api]: Warnings for generators.yml:
+[api]: 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.

@@ -1,4 +1,4 @@
-fern-refusals: Fern CLI 5.200.0, fernapi/fern-python-sdk 5.41.25
+fern-refusals: Fern CLI 5.216.0, fernapi/fern-python-sdk 5.42.0
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
 [sdk] 5 errors
@@ -23,3 +23,4 @@ Warnings for generators.yml:
         issue: Path parameter is unreferenced in endpoint: videoId.
 
 Found 5 errors and 48 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+For guidance, run `fern instructions spec`.
