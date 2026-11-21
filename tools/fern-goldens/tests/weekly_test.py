@@ -51,10 +51,34 @@ class RealPlanTests(unittest.TestCase):
         cls.inventory = weekly.inventory(REPO)
 
     def planned(self) -> list[tuple[str, str]]:
-        return [entry.key() for shard in self.plan.shards for entry in shard.items]
+        return [entry.key() for job in self.plan.jobs() for entry in job.items]
 
     def shard_of(self) -> dict[tuple[str, str], int]:
         return {entry.key(): shard.index for shard in self.plan.shards for entry in shard.items}
+
+    def test_heap_exhausted_runs_in_a_job_of_its_own_and_in_no_shard(self) -> None:
+        """Run 43809697471 lost shard 0's runner while it carried `heap-exhausted`:
+        the probe now runs alone, numbered after the shards, and every other
+        refusal item still shares one shard."""
+        self.assertIn("heap-exhausted", self.inventory["refusals"])
+        self.assertNotIn(("refusals", "heap-exhausted"), self.shard_of())
+        (job,) = self.plan.isolated
+        table, _default = weekly.timings(REPO)
+        self.assertEqual(len(self.plan.shards), job.index)
+        self.assertEqual(
+            (weekly.PlannedItem("refusals", "heap-exhausted", table[("refusals", "heap-exhausted")]),), job.items
+        )
+        self.assertLess(job.minutes, weekly.SHARD_TIMEOUT_MINUTES)
+        self.assertEqual(round(weekly.JOB_SETUP_MINUTES + job.seconds / 60, 2), job.minutes)
+        self.assertEqual(
+            f"the isolated job for refusals `heap-exhausted` (job {job.index})", self.plan.label(job.index)
+        )
+        others = [item for item in self.inventory["refusals"] if item != "heap-exhausted"]
+        self.assertEqual(1, len({self.shard_of()[("refusals", item)] for item in others}))
+        # The isolated job runs beside the shards, so the longest of either sets the shards' stage.
+        longest = max(job.minutes for job in self.plan.jobs())
+        self.assertEqual(longest, self.plan.estimate.longest_shard_minutes)
+        self.assertEqual(self.plan.to_json(), weekly.Plan.from_json(self.plan.to_json(), "plan").to_json())
 
     def test_every_item_of_every_family_is_planned_once(self) -> None:
         expected = [(family, item) for family, items in self.inventory.items() for item in items]
@@ -135,7 +159,8 @@ class RealPlanTests(unittest.TestCase):
         self.assertGreater(overlaid["measurements"], 0)
         for family in weekly.SHARED_TABLE_FAMILIES:
             with self.subTest(family=family):
-                self.assertEqual(1, len({shard[(family, item)] for item in self.inventory[family]}))
+                shared = [item for item in self.inventory[family] if (family, item) not in weekly.ISOLATED_ITEMS]
+                self.assertEqual(1, len({shard[(family, item)] for item in shared}))
         literals = [item for item in self.inventory["measurements"] if item.startswith("parameter-literals/")]
         self.assertEqual(1, len({shard[("measurements", item)] for item in literals}))
         # Each claim generates after the python-enums tree it reads: a hand-written
@@ -167,7 +192,7 @@ class RealPlanTests(unittest.TestCase):
         corpus = [seconds for (family, _item), seconds in table.items() if family == "corpus"]
         self.assertTrue(corpus, "the table is seeded with corpus timings")
         self.assertAlmostEqual(sum(corpus) / len(corpus), default)
-        for shard in self.plan.shards:
+        for shard in self.plan.jobs():
             for entry in shard.items:
                 with self.subTest(item=entry.key()):
                     self.assertAlmostEqual(entry.seconds, round(table.get(entry.key(), default), 1))
@@ -182,7 +207,7 @@ class RealPlanTests(unittest.TestCase):
             timings.write_text("".join(line for line in lines if line is not dropped), encoding="utf-8")
             with unittest.mock.patch.object(weekly, "TIMINGS", timings):
                 plan = weekly.make_plan(REPO, "", weekly.Pair("1.0.0", "1.0.0"))
-        priced = {entry.key(): entry.seconds for shard in plan.shards for entry in shard.items}
+        priced = {entry.key(): entry.seconds for job in plan.jobs() for entry in job.items}
         self.assertAlmostEqual(priced[("handwritten", item)], round(default, 1))
 
     def test_the_budget_the_planner_sizes_against_is_the_registered_one(self) -> None:
@@ -659,6 +684,82 @@ class AssemblyTests(unittest.TestCase):
         self.assertEqual(1, result.returncode)
         self.assertIn("tests/fixtures/a/x.py is a symbolic link", result.stderr)
 
+    CLASSES = "docs/fern-refusals/classes.tsv"
+
+    def isolate(self) -> None:
+        """The plan with one refusal class in a job of its own, numbered after the shards."""
+        plan = weekly.Plan.from_json(json.loads((self.scratch / "plan.json").read_text(encoding="utf-8")), "plan")
+        job = weekly.PlannedShard(2, 1.0, 4.02, (weekly.PlannedItem("refusals", "heap-exhausted", 1.0),))
+        families = {**plan.families, "refusals": weekly.FamilyTotal(1, 1.0)}
+        isolated = weekly.replace(plan, isolated=(job,), families=families, units=3)
+        (self.scratch / "plan.json").write_text(json.dumps(isolated.to_json()), encoding="utf-8")
+
+    def table(self, rows: dict[str, str]) -> str:
+        return "class\tfern_exit\n" + "".join(f"{name}\t{cell}\n" for name, cell in rows.items())
+
+    def write_table(self, index: int, item: str, rows: dict[str, str]) -> None:
+        family = "refusals" if index == 2 else "corpus"
+        self.shard(index, item, [self.CLASSES])
+        directory = self.scratch / "artifacts" / f"fern-goldens-shard-{index}"
+        (directory / "files" / self.CLASSES).write_text(self.table(rows), encoding="utf-8")
+        record = json.loads((directory / "result.json").read_text(encoding="utf-8"))
+        record["items"][0]["family"] = family
+        (directory / "result.json").write_text(json.dumps(record), encoding="utf-8")
+
+    def test_a_shared_table_two_jobs_each_rewrote_a_row_of_is_merged_row_by_row(self) -> None:
+        self.isolate()
+        (self.root / "docs/fern-refusals").mkdir(parents=True)
+        (self.root / self.CLASSES).write_text(self.table({"a": "1", "heap-exhausted": "1", "z": "1"}), encoding="utf-8")
+        self.write_table(0, "a", {"a": "2", "heap-exhausted": "1", "z": "2"})
+        self.shard(1, "b", [])
+        self.write_table(2, "heap-exhausted", {"a": "1", "heap-exhausted": "0", "z": "1"})
+        result = self.assemble()
+        self.assertEqual(0, result.returncode, result.stderr)
+        merged = (self.scratch / "bundle/files" / self.CLASSES).read_text(encoding="utf-8")
+        self.assertEqual(self.table({"a": "2", "heap-exhausted": "0", "z": "2"}), merged)
+        bundle = json.loads((self.scratch / "bundle/bundle.json").read_text(encoding="utf-8"))
+        shards = {entry["item"]: entry.get("shard") for entry in bundle["items"]}
+        self.assertEqual({"a": 0, "b": 1, "heap-exhausted": None}, shards, "an isolated job is no shard")
+
+    def test_two_jobs_rewriting_one_row_differently_or_beyond_their_rows_is_a_failure(self) -> None:
+        self.isolate()
+        (self.root / "docs/fern-refusals").mkdir(parents=True)
+        (self.root / self.CLASSES).write_text(self.table({"a": "1", "heap-exhausted": "1"}), encoding="utf-8")
+        for theirs, expected in (
+            (
+                {"a": "0", "heap-exhausted": "1"},
+                "shard 0 and the isolated job for refusals `heap-exhausted` (job 2) "
+                f"each rewrote {self.CLASSES}'s `a` row",
+            ),
+            ({"a": "1"}, f"the isolated job for refusals `heap-exhausted` (job 2) rewrote {self.CLASSES} beyond"),
+        ):
+            with self.subTest(theirs=theirs):
+                self.write_table(0, "a", {"a": "2", "heap-exhausted": "1"})
+                self.shard(1, "b", [])
+                self.write_table(2, "heap-exhausted", theirs)
+                result = self.assemble()
+                self.assertEqual(1, result.returncode)
+                self.assertIn(expected, result.stderr)
+
+    def test_an_isolated_job_that_uploaded_nothing_leaves_its_item_alone_not_generated(self) -> None:
+        self.isolate()
+        self.shard(0, "a", ["tests/fixtures/a/x.py"])
+        self.shard(1, "b", [])
+        result = self.assemble()
+        self.assertEqual(0, result.returncode, result.stderr)
+        bundle = json.loads((self.scratch / "bundle/bundle.json").read_text(encoding="utf-8"))
+        statuses = {entry["item"]: (entry["status"], entry["detail"]) for entry in bundle["items"]}
+        self.assertEqual(("ok", "boom"), statuses["a"])
+        self.assertEqual(
+            (
+                "not-generated",
+                "the isolated job for refusals `heap-exhausted` (job 2) uploaded no result; its runner was lost, "
+                "or its job failed or was cancelled, before uploading",
+            ),
+            statuses["heap-exhausted"],
+        )
+        self.assertNotIn("shard", bundle["items"][-1])
+
     def test_a_shard_listing_a_file_it_does_not_carry_is_a_failure(self) -> None:
         self.shard(0, "a", ["tests/fixtures/a/x.py"])
         self.shard(1, "b", [])
@@ -719,6 +820,15 @@ class ArtifactTests(unittest.TestCase):
         )
         fault("shards must be numbered from 0 in order", lambda r: r["shards"][1].update(index=5))
         fault("must be a non-negative number", lambda r: r["estimate"].update(minutes=float("nan")))
+
+        # Shard 1's item moved to an isolated job, which is numbered 1, after shard 0.
+        def isolate(r: dict[str, Any], index: int = 1, extra: bool = False) -> None:
+            moved = r["shards"].pop()["items"]
+            r["isolated"] = [{"index": index, "seconds": 1.0, "minutes": 4.02, "items": moved * (1 + extra)}]
+
+        fault("isolated jobs after them", lambda r: isolate(r, index=2))
+        fault("an isolated job runs exactly one item", lambda r: isolate(r, extra=True))
+        fault("must be list", lambda r: r.update(isolated={}))
         fault("no plan of this tool's schema", lambda r: r.update(schema_version=1))
         fault("`complete` must say whether it plans the whole inventory", lambda r: r.update(items="probes"))
         fault(
@@ -729,6 +839,21 @@ class ArtifactTests(unittest.TestCase):
             with self.subTest(message), self.assertRaises(weekly.WeeklyError) as raised:
                 weekly.Plan.from_json(record, "plan.json")
             self.assertIn(expected, str(raised.exception))
+
+    def test_an_isolated_job_round_trips_and_a_plan_isolating_nothing_omits_it(self) -> None:
+        self.assertNotIn("isolated", small_plan().to_json())
+        self.assertEqual((), weekly.Plan.from_json(small_plan().to_json(), "plan").isolated)
+        job = weekly.PlannedShard(1, 1.0, 4.02, (weekly.PlannedItem("corpus", "b", 1.0),))
+        plan = small_plan(shards=small_plan().shards[:1], isolated=(job,))
+        record = plan.to_json()
+        self.assertEqual([job.to_json()], record["isolated"])
+        read = weekly.Plan.from_json(json.loads(json.dumps(record)), "plan")
+        self.assertEqual(plan, read)
+        self.assertEqual(("shard 0", "the isolated job for corpus `b` (job 1)"), (read.label(0), read.label(1)))
+        with self.assertRaises(weekly.WeeklyError) as raised:
+            two = weekly.replace(job, items=(*job.items, weekly.PlannedItem("corpus", "c", 1.0)))
+            weekly.Plan.from_json(weekly.replace(plan, isolated=(two,)).to_json(), "plan")
+        self.assertIn("an isolated job runs exactly one item", str(raised.exception))
 
     def test_a_shard_result_or_bundle_naming_a_path_outside_the_checkout_is_refused(self) -> None:
         item = {

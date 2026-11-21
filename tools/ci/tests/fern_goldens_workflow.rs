@@ -109,7 +109,7 @@ fn fern_goldens_workflow_runs_weekly_sharded_and_least_privilege() {
     let jobs = mapping(&workflow, "jobs");
     assert_eq!(
         jobs.keys().map(String::as_str).collect::<Vec<_>>(),
-        ["plan", "shard", "assemble", "decide", "publish", "conclude"]
+        ["plan", "shard", "isolated", "assemble", "decide", "publish", "conclude"]
     );
     for (name, job) in jobs {
         let job = job.as_object().expect("a job is a mapping");
@@ -145,7 +145,10 @@ fn fern_goldens_workflow_runs_weekly_sharded_and_least_privilege() {
     // The shard matrix is the planner's, never a hand-edited constant.
     let shard = nested_mapping(jobs, "shard");
     assert_eq!(text(shard, "needs"), "plan");
-    assert_eq!(text(shard, "if"), "needs.plan.outputs.run == 'true'");
+    assert_eq!(
+        text(shard, "if"),
+        "needs.plan.outputs.run == 'true' && needs.plan.outputs.shards != '0'"
+    );
     let strategy = nested_mapping(shard, "strategy");
     assert_eq!(
         strategy.get("fail-fast").and_then(Value::as_bool),
@@ -173,26 +176,109 @@ fn fern_goldens_workflow_runs_weekly_sharded_and_least_privilege() {
         "Fern's .fern/metadata.json and the golden provenance are hidden files"
     );
 
-    // One assembly over every shard, even when one failed, so it names it.
+    // Each isolated item runs in a job of its own beside the shards: the
+    // planner's matrix, the shard's timeout and the shard's own phase, with no
+    // memory bound of its own, so its outcome and evidence are a shard's.
+    let isolated = nested_mapping(jobs, "isolated");
+    assert_eq!(text(isolated, "needs"), "plan");
+    assert_eq!(
+        text(isolated, "if"),
+        "needs.plan.outputs.run == 'true' && needs.plan.outputs.isolated != '0'"
+    );
+    assert_eq!(
+        text(nested_mapping(isolated, "strategy"), "matrix"),
+        "${{ fromJSON(needs.plan.outputs.isolated_matrix) }}"
+    );
+    assert_eq!(
+        nested_mapping(isolated, "strategy")
+            .get("fail-fast")
+            .and_then(Value::as_bool),
+        Some(false)
+    );
+    for output in ["shards", "isolated", "isolated_matrix"] {
+        assert_eq!(
+            text(nested_mapping(plan, "outputs"), output),
+            format!("${{{{ steps.plan.outputs.{output} }}}}")
+        );
+    }
+    assert_eq!(
+        isolated.get("timeout-minutes"),
+        shard.get("timeout-minutes"),
+        "an isolated job is held to the shard's timeout, never a longer one"
+    );
+    // Everything up to and including the plan's download, step for step.
+    let setup = |job: &Mapping| -> Vec<Value> {
+        let steps = steps(job);
+        let (download, _) = uses_steps(steps, "actions/download-artifact@v4")[0];
+        steps[..=download].to_vec()
+    };
+    assert_eq!(
+        setup(shard),
+        setup(isolated),
+        "an isolated job sets up exactly as a shard does"
+    );
+    let (_, generate) = named_step(steps(isolated), "Generate this job's item");
+    assert_eq!(
+        text(nested_mapping(generate, "env"), "INDEX"),
+        "${{ matrix.index }}"
+    );
+    assert!(text(generate, "run").starts_with(
+        "python3 tools/fern-goldens/weekly.py shard --plan .local/fern-goldens-weekly/plan.json \\\n  --index \"$INDEX\""
+    ));
+    for step in steps(isolated) {
+        let step = step.as_object().expect("a step is a mapping");
+        assert!(
+            step.get("env")
+                .and_then(Value::as_object)
+                .is_none_or(|env| !env.contains_key("NODE_OPTIONS")),
+            "the probe keeps the heap fern-refusals.py gives it"
+        );
+    }
+    let (_, upload) = uses_steps(steps(isolated), "actions/upload-artifact@v4")[0];
+    assert_eq!(text(upload, "if"), "always()");
+    let upload = nested_mapping(upload, "with");
+    assert_eq!(
+        text(upload, "name"),
+        "fern-goldens-isolated-${{ matrix.index }}"
+    );
+    assert_eq!(
+        upload.get("include-hidden-files").and_then(Value::as_bool),
+        Some(true)
+    );
+
+    // One assembly over every shard and isolated job, even when one failed, so it names it.
     let assemble = nested_mapping(jobs, "assemble");
     assert_eq!(
         text(assemble, "if"),
         "always() && needs.plan.outputs.run == 'true'"
     );
-    let downloads = uses_steps(steps(assemble), "actions/download-artifact@v4");
-    let shards = downloads
-        .iter()
-        .find(|(_, step)| {
-            nested_mapping(step, "with")
-                .get("pattern")
-                .and_then(Value::as_str)
-                == Some("fern-goldens-shard-*")
-        })
-        .expect("the assembly downloads every shard");
     assert_eq!(
-        shards.1.get("continue-on-error").and_then(Value::as_bool),
-        Some(true)
+        assemble
+            .get("needs")
+            .and_then(Value::as_array)
+            .map(|needs| needs.iter().filter_map(Value::as_str).collect::<Vec<_>>()),
+        Some(vec!["plan", "shard", "isolated"])
     );
+    let downloads = uses_steps(steps(assemble), "actions/download-artifact@v4");
+    for pattern in ["fern-goldens-shard-*", "fern-goldens-isolated-*"] {
+        let download = downloads
+            .iter()
+            .find(|(_, step)| {
+                nested_mapping(step, "with")
+                    .get("pattern")
+                    .and_then(Value::as_str)
+                    == Some(pattern)
+            })
+            .unwrap_or_else(|| panic!("the assembly downloads {pattern}"));
+        assert_eq!(
+            download.1.get("continue-on-error").and_then(Value::as_bool),
+            Some(true)
+        );
+        assert_eq!(
+            text(nested_mapping(download.1, "with"), "path"),
+            ".local/fern-goldens-weekly/shards"
+        );
+    }
 
     // `just fixtures-diff` runs through Nx, so the decision bootstraps it first,
     // and compares only once the tree is the one the pull request would carry.
@@ -263,6 +349,7 @@ fn fern_goldens_workflow_runs_weekly_sharded_and_least_privilege() {
         ("plan", "resolve"),
         ("plan", "plan"),
         ("shard", "shard"),
+        ("isolated", "shard"),
         ("assemble", "assemble"),
         ("decide", "apply"),
         ("decide", "decide"),
@@ -283,7 +370,7 @@ fn fern_goldens_workflow_runs_weekly_sharded_and_least_privilege() {
 
 /// How GitHub decides whether a job runs, over the subset of its expression
 /// language these jobs use: `&&` of `always()` and `needs.<job>.result` or
-/// `needs.<job>.outputs.<name>` compared with a quoted string. Without
+/// `needs.<job>.outputs.<name>` compared (`==` or `!=`) with a quoted string. Without
 /// `always()` the job also needs every job before it, transitively, to have
 /// succeeded: a failed shard skips a job two `needs` away that does not opt in.
 fn runs(
@@ -325,8 +412,13 @@ fn runs(
             always = true;
             continue;
         }
-        let (left, right) = term
+        let (left, right, equal) = term
             .split_once(" == ")
+            .map(|(left, right)| (left, right, true))
+            .or_else(|| {
+                term.split_once(" != ")
+                    .map(|(left, right)| (left, right, false))
+            })
             .unwrap_or_else(|| panic!("{name}: unsupported condition term {term:?}"));
         let wanted = right.trim_matches('\'');
         let path: Vec<&str> = left.split('.').collect();
@@ -341,7 +433,7 @@ fn runs(
                 .unwrap_or(""),
             _ => panic!("{name}: unsupported condition operand {left:?}"),
         };
-        holds &= actual == wanted;
+        holds &= (actual == wanted) == equal;
     }
     holds && (always || succeeded)
 }
@@ -352,19 +444,36 @@ fn runs(
 fn fern_goldens_job_graph_decides_and_publishes_past_unchecked_items_and_concludes_red_for_them() {
     let workflow = workflow();
     let jobs = mapping(&workflow, "jobs");
-    // (case, complete, shard job, assembly, decision, conclusion's exit,
-    //  published, run conclusion)
-    for (case, complete, shard, assemble, decide, conclude, published, run) in [
+    // (case, complete, shards planned, shard job, isolated jobs planned, isolated
+    //  job, assembly, decision, conclusion's exit, published, run conclusion)
+    for (
+        case,
+        complete,
+        shards,
+        shard,
+        isolated_jobs,
+        isolated,
+        assemble,
+        decide,
+        conclude,
+        published,
+        run,
+    ) in [
         (
-            "match", "true", "success", "success", "success", "success", true, "success",
+            "match", "true", "3", "success", "1", "success", "success", "success", "success", true,
+            "success",
         ),
         (
-            "diff", "true", "success", "success", "success", "success", true, "success",
+            "diff", "true", "3", "success", "1", "success", "success", "success", "success", true,
+            "success",
         ),
         // `shard` exits 0 over a failed item; the bundle carries it by name.
         (
             "failed item",
             "true",
+            "3",
+            "success",
+            "1",
             "success",
             "success",
             "success",
@@ -376,6 +485,24 @@ fn fern_goldens_job_graph_decides_and_publishes_past_unchecked_items_and_conclud
         (
             "missing shard",
             "true",
+            "3",
+            "failure",
+            "1",
+            "success",
+            "success",
+            "success",
+            "failure",
+            true,
+            "failure",
+        ),
+        // An isolated job whose runner was lost: its one item is not generated,
+        // every shard's is decided and published.
+        (
+            "lost isolated job",
+            "true",
+            "3",
+            "success",
+            "1",
             "failure",
             "success",
             "success",
@@ -386,6 +513,9 @@ fn fern_goldens_job_graph_decides_and_publishes_past_unchecked_items_and_conclud
         (
             "bundle fault",
             "true",
+            "3",
+            "success",
+            "1",
             "success",
             "failure",
             "-",
@@ -396,6 +526,9 @@ fn fern_goldens_job_graph_decides_and_publishes_past_unchecked_items_and_conclud
         (
             "cannot run",
             "true",
+            "3",
+            "success",
+            "1",
             "success",
             "success",
             "failure",
@@ -403,10 +536,14 @@ fn fern_goldens_job_graph_decides_and_publishes_past_unchecked_items_and_conclud
             false,
             "failure",
         ),
+        // A subset without an isolated item starts no isolated job.
         (
             "subset, failed item",
             "false",
+            "3",
             "success",
+            "0",
+            "-",
             "success",
             "success",
             "failure",
@@ -416,6 +553,23 @@ fn fern_goldens_job_graph_decides_and_publishes_past_unchecked_items_and_conclud
         (
             "subset, all checked",
             "false",
+            "3",
+            "success",
+            "0",
+            "-",
+            "success",
+            "success",
+            "success",
+            false,
+            "success",
+        ),
+        // A subset of the isolated item alone starts no shard.
+        (
+            "subset, isolated item alone",
+            "false",
+            "0",
+            "-",
+            "1",
             "success",
             "success",
             "success",
@@ -424,10 +578,16 @@ fn fern_goldens_job_graph_decides_and_publishes_past_unchecked_items_and_conclud
             "success",
         ),
     ] {
-        let outputs = [("run", "true"), ("complete", complete)];
+        let outputs = [
+            ("run", "true"),
+            ("complete", complete),
+            ("shards", shards),
+            ("isolated", isolated_jobs),
+        ];
         let ends = std::collections::BTreeMap::from([
             ("plan", "success"),
             ("shard", shard),
+            ("isolated", isolated),
             ("assemble", assemble),
             ("decide", decide),
             ("publish", "success"),
