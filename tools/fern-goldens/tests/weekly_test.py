@@ -553,7 +553,7 @@ class AssemblyTests(unittest.TestCase):
         (self.root / "assets/scaffolding/metadata.json").write_text(stand_in, encoding="utf-8")
         self.pair = weekly.Pair("2.0.0", "3.0.0")
         shards = tuple(
-            weekly.PlannedShard(index, 1.0, 4.02, (weekly.PlannedItem("corpus", item, 1.0),))
+            weekly.PlannedJob(index, 1.0, 4.02, (weekly.PlannedItem("corpus", item, 1.0),))
             for index, item in enumerate(("a", "b"))
         )
         plan = weekly.Plan(
@@ -691,7 +691,7 @@ class AssemblyTests(unittest.TestCase):
         `heap-exhausted` in a job of its own, numbered after the shards."""
         plan = weekly.Plan.from_json(json.loads((self.scratch / "plan.json").read_text(encoding="utf-8")), "plan")
         first = weekly.replace(plan.shards[0], items=(weekly.PlannedItem("refusals", "a", 1.0),))
-        job = weekly.PlannedShard(2, 1.0, 4.02, (weekly.PlannedItem("refusals", "heap-exhausted", 1.0),))
+        job = weekly.PlannedJob(2, 1.0, 4.02, (weekly.PlannedItem("refusals", "heap-exhausted", 1.0),))
         families = {"corpus": weekly.FamilyTotal(1, 1.0), "refusals": weekly.FamilyTotal(2, 2.0)}
         isolated = weekly.replace(plan, shards=(first, *plan.shards[1:]), isolated=(job,), families=families, units=3)
         (self.scratch / "plan.json").write_text(json.dumps(isolated.to_json()), encoding="utf-8")
@@ -783,7 +783,7 @@ class AssemblyTests(unittest.TestCase):
         findings = "docs/fern-refusals/findings.tsv"
         plan = weekly.Plan.from_json(json.loads((self.scratch / "plan.json").read_text(encoding="utf-8")), "plan")
         first = weekly.replace(plan.shards[0], items=(weekly.PlannedItem("refusals", "findings/f1", 1.0),))
-        job = weekly.PlannedShard(2, 1.0, 4.02, (weekly.PlannedItem("refusals", "findings/f2", 1.0),))
+        job = weekly.PlannedJob(2, 1.0, 4.02, (weekly.PlannedItem("refusals", "findings/f2", 1.0),))
         families = {"corpus": weekly.FamilyTotal(1, 1.0), "refusals": weekly.FamilyTotal(2, 2.0)}
         changed = weekly.replace(plan, shards=(first, *plan.shards[1:]), isolated=(job,), families=families, units=3)
         (self.scratch / "plan.json").write_text(json.dumps(changed.to_json()), encoding="utf-8")
@@ -848,7 +848,7 @@ def small_plan(**changes: object) -> weekly.Plan:
         families={"corpus": weekly.FamilyTotal(2, 2.0)},
         units=2,
         shards=tuple(
-            weekly.PlannedShard(index, 1.0, 4.02, (weekly.PlannedItem("corpus", item, 1.0),))
+            weekly.PlannedJob(index, 1.0, 4.02, (weekly.PlannedItem("corpus", item, 1.0),))
             for index, item in enumerate(("a", "b"))
         ),
         estimate=weekly.wall_clock([1.0, 1.0]),
@@ -909,7 +909,7 @@ class ArtifactTests(unittest.TestCase):
     def test_an_isolated_job_round_trips_and_a_plan_isolating_nothing_omits_it(self) -> None:
         self.assertNotIn("isolated", small_plan().to_json())
         self.assertEqual((), weekly.Plan.from_json(small_plan().to_json(), "plan").isolated)
-        job = weekly.PlannedShard(1, 1.0, 4.02, (weekly.PlannedItem("corpus", "b", 1.0),))
+        job = weekly.PlannedJob(1, 1.0, 4.02, (weekly.PlannedItem("corpus", "b", 1.0),))
         plan = small_plan(shards=small_plan().shards[:1], isolated=(job,))
         record = plan.to_json()
         self.assertEqual([job.to_json()], record["isolated"])
