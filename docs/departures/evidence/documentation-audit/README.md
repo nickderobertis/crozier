@@ -39,6 +39,17 @@ directory.
 
 ## Fern's findings
 
+**Historical.** This section and [`fern-findings.tsv`](fern-findings.tsv) were
+measured at Fern CLI 5.200.0 / fern-python-sdk 5.41.25; "the new pair" in this
+note means that one. At the current certified pair, Fern CLI 5.216.0 /
+fern-python-sdk 5.42.0, the audit was re-run once over Fern's side of every
+tree the record names: each tree carries exactly its recorded findings, the
+README rows after its Retries section ten lines earlier (5.42.0 states the
+retried status codes in ten fewer lines), and none appeared or disappeared.
+The file was not rewritten, so its line numbers are 5.41.25's, and it does not
+cover goldens registered since. The gate above, over crozier's own output for
+every compared golden, is what holds the current trees.
+
 [`fern-findings.tsv`](fern-findings.tsv) is the audit of Fern's side of the
 same 1308 trees, each overlay rebuilt over its base as the comparison rebuilds
 it. Together they hold 87,701 example blocks.
