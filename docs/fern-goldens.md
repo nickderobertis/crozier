@@ -391,19 +391,37 @@ phases.
    [`generation-seconds.tsv`](../tools/fern-goldens/generation-seconds.tsv) (an
    item no run has timed yet is planned at the mean corpus rate). The shard
    count therefore grows with the inventory, never from a hand-edited constant.
-3. **Shard** (one `shard` job per planned shard, at most 20 at once, each with a
+   Each item `weekly.py`'s `ISOLATED_ITEMS` names (today the refusal class
+   `heap-exhausted`) is planned in no shard but in a job of its own, numbered
+   after the shards in `plan.json`'s optional `isolated` list; see
+   [An item in a job of its own](#an-item-in-a-job-of-its-own).
+3. **Shard** (one `shard` job per planned shard, and one `isolated` job per
+   isolated item beside them, at most 20 at once, each with a
    `timeout-minutes` inside GitHub's six-hour limit). The shard moves
    `metadata.json` to the candidate pair and regenerates each item through
    `fern-references.py generate <family> <item>`, timing it. Its artifact,
    `fern-goldens-shard-<n>`, carries every file each item wrote, each item's log
    and the shard's `result.json` (per item: its seconds, outcome and files). An
-   item whose generation fails is one such outcome, not the shard's failure.
+   item whose generation fails is one such outcome, not the shard's failure. An
+   isolated job runs the same steps and the same `weekly.py shard` phase over
+   its one item, uploading `fern-goldens-isolated-<n>`.
 4. **Assemble** (`assemble` job). One job combines every shard into one tree,
    the `fern-goldens-bundle` artifact, with the measured seconds written back
    into `generation-seconds.tsv` and the candidate pair into `metadata.json`. A
    planned shard that uploaded no result has each of its items carried as
-   `not-generated`, naming the shard.
-5. **Decide** (`decide` job). The bundle is laid over a checkout and every
+   `not-generated`, naming the shard; an isolated job that uploaded none
+   carries its one item so, naming the job. `classes.tsv` and `findings.tsv`,
+   which a shard's refusal items and an isolated refusal item each rewrite one
+   row per item, are merged row by row into what one job running all of them
+   would write.
+5. **Decide** (`decide` job). It installs every cargo tool
+   [`install-dev-tools.sh`](../scripts/install-dev-tools.sh) lists from
+   prebuilt binaries (`taiki-e/install-action`) and proves each, with `just`,
+   `node`, `bun`, `cargo` and `uv`, through `tools/ci/require-tools.mjs` before
+   `just bootstrap`, as `ci.yml`'s lanes do, so bootstrap builds none from
+   source: run 43809697471's decision stopped in `cargo install` when
+   cargo-machete 0.10.1, just released, did not compile on the runner's Rust.
+   The bundle is laid over a checkout and every
    statement of the pair restated (`certified_pair.py restate`), so the tree is
    the one the pull request would carry; crozier is built from it, so its own
    version stamps are the candidate pair's. `apply` then runs the departures
@@ -473,6 +491,51 @@ phases.
    the default `GITHUB_TOKEN` opens triggers none of crozier's required checks.
 7. **Conclude** (`conclude` job, after any decision). Red when an item failed
    or was not generated, naming each; green otherwise.
+
+### An item in a job of its own
+
+In run 43809697471 (Fern CLI 5.216.0 / fern-python-sdk 5.42.0) `shard (0)`
+ended 89.3 minutes into generation with *The hosted runner lost communication
+with the server*, keeping no log, and all 385 of its items reached the decision
+as never compared. Shard 0 alone carried the refusal probes, `heap-exhausted`
+among them, which `fern-refusals.py` runs with
+`NODE_OPTIONS=--max-old-space-size=16384` and a 900-second bound per stage on a
+16 GB runner.
+
+The `spike-shard-loss` spike (report
+`crozier-fern-byte-match-5-216-0-5-42-0-spike-shard-loss-report`, harness
+`tools/fern-refusals/measure-stage.sh` on branch
+`nick/crozier-fern-byte-match-5-216-0-5-42-0/spike-shard-loss`) measured that
+probe at that pair (Node v20.20.2, `ubuntu:26.04`): under a 16g ceiling both
+stages end `timeout` at about 903 s, peaking at 10,686 MiB (check) and 10,787
+MiB (generate) with no OOM kill, growing linearly at 8.9 to 12.5 MiB/s in the
+Fern CLI's own Node process and bounded only by the 16 GiB heap, not by the
+runner. It ruled out a disk filling, a process tree outliving its bound and a
+hang. What it established:
+
+- **The loss's cause is not established.** Attempt 2's shard 0 completed
+  (385 items, `heap-exhausted` `unsettled` in 1,803.8 s), so the loss did not
+  recur.
+- **Memory starvation by `heap-exhausted` is the one remaining candidate the
+  workflow controls.**
+- **No memory bound keeps its evidence.** A 12g ceiling did not bite on that
+  host (so it could not have stopped a starved runner either), a 6g ceiling
+  turned `timeout` into a silent `exit:137`, and a 4,096 MB heap turned it into
+  `exit:134` with Node's FATAL heap message. Each changes the outcome
+  `docs/fern-refusals/heap-exhausted/` records.
+
+So the run isolates the probe instead, its heap and bound unchanged: `plan`
+places it in no shard but in a job of its own (`ISOLATED_ITEMS`), which runs
+through the same `fern-references.py` → `fern-refusals.py probe` invocation as
+a shard would. Its outcome and evidence are therefore unchanged by
+construction. Its result reaches `assemble` and `decide` like any shard
+item's, and the refusal tables it shares with the other refusal items are
+merged into what one shard would have written. When its runner is lost, every
+shard's items are still generated and compared, and `decide` names
+`heap-exhausted` alone as not compared, with that reason. Shard 0 shed the
+probe's 1,806 planned seconds, and the plan's prediction fell from 136.8 to
+133.2 minutes inside the same budget. No job or shard timeout was raised, and
+no memory bound applies to the probe.
 
 ### The pull request it opens
 
@@ -552,8 +615,8 @@ is decided from the pull request.
 **One item never hides the rest.** An item whose generation fails — a broken
 crozier input (a missing document, an evidence note with no restatable pair,
 which `fern-references.py check` catches on the pull request that breaks it)
-or any other error of that item — and every item of a planned shard that
-uploaded no result are carried through the assembly and named, by family,
+or any other error of that item — and every item of a planned shard or
+isolated job that uploaded no result are carried through the assembly and named, by family,
 item, one-line reason and log path (inside `fern-goldens-bundle`), in the
 assembly, decision and conclusion summaries and in the decision artifact. The
 pull request's **Items not checked** section lists them whole when there are
@@ -570,7 +633,9 @@ Any other failure before publication ends the run red with its step summary
 naming each failure, and touches no branch, pull request or record: a bundle
 whose integrity fails (a shard whose items or files disagree with its plan or
 with each other, a shard at another pair or base, a symbolic link an item left,
-a malformed record, or two shards writing one file), a comparison that cannot
+a malformed record, or two shards writing one file, other than the refusal
+tables' rows above, which fail only when two jobs change one row differently
+or one rewrites rows beyond its own), a comparison that cannot
 run, or a missing `RELEASE_PLZ_TOKEN` (which the `plan` job checks before any
 Fern runs).
 
