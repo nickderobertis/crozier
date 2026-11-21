@@ -608,6 +608,29 @@ All three are compared at that pair like every other row. The weekly run still
 fetches with `--force`, so it reports them under **Not regenerated** until
 their source moves.
 
+**How the 5.216.0 / 5.42.0 certification was decided.** Its decide evidence
+came from a copy of run 44880783817's `fern-goldens-bundle`, never committed or
+published. That bundle was generated over `5847794b05`. `apply` refuses a
+checkout at any other commit, and the certifying branch had already committed
+the bundle and its fixes on top of that base. So the copy's `base` was
+repointed to the branch's head, `1c6f950a89`. In the copy, subsloth's two
+literals-overlay files were the tree's. With those two changes `apply` re-laid
+nothing, restated nothing and only ran `just departures-ledger`, which
+regenerated the ledger with no changed rows. `decide` then passed all 427 of
+its gates. A SHA-256 comparison of the published bundle against the finished
+tree (`7e8e4dc9fb`) compared 3,520 files. All but those two are identical:
+`tests/fixtures/subsloth/expected-literals/.crozier-overlay.json` and its
+`.fern/metadata.json`. The bundle's overlay names `fern_python_sdk_version` and
+`generatorVersion` 5.41.25: its shard reduced it against subsloth's committed
+5.41.25 base, which the run could not regenerate. In the tree that base was
+regenerated at the pair from the committed copy (`36c6ed02…`, the SHA-256
+`corpus-sources.tsv` records, verified by `just lint-corpus-sources`), and the
+overlay was re-reduced against it through `fern-references.py generate
+overlays`. The re-reduction changes only those two version fields to 5.42.0.
+The regenerated base records Fern CLI 5.216.0 / fern-python-sdk 5.42.0.
+`subsloth_matches_fern_output`, the overlay gate and `just fixtures-diff
+subsloth` (0 differing files) all compare crozier against it.
+
 A refusal class whose probe the candidate pair no longer refuses as recorded is
 likewise a diff, never a failure: the class keeps its record, and the pull
 request's **Refusal classes whose Fern outcome changed** section names it with
