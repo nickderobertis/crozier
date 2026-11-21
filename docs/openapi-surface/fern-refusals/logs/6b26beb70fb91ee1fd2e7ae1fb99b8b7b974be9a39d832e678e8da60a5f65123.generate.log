@@ -1,4 +1,4 @@
-fern-refusals: Fern CLI 5.200.0, fernapi/fern-python-sdk 5.41.25
+fern-refusals: Fern CLI 5.216.0, fernapi/fern-python-sdk 5.42.0
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
 [api]: Writing preview to <tmp>/preview
@@ -86,4 +86,157 @@ Warnings for generators.yml:
 [api]: python-sdk discussions.yml -> types -> PostApiBlogSlugCommentResponseNewMessageDataReactionsItemReaction
                   discussions.yml
                   [error] Enum value 🔥 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
-                  [error] Enum value 🚀 is not suitable fo
+                  [error] Enum value 🚀 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 👀 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value ❤️ is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 🤗 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 😎 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value ➕ is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 🧠 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 👍 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 🤝 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 😔 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 🤯 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  
+[api]: python-sdk discussions.yml -> types -> PostApiPapersPaperIdCommentCommentIdReplyResponseNewMessageDataReactionsItemReaction
+                  discussions.yml
+                  [error] Enum value 🔥 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 🚀 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 👀 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value ❤️ is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 🤗 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 😎 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value ➕ is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 🧠 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 👍 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 🤝 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 😔 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 🤯 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  
+[api]: python-sdk discussions.yml -> types -> PostApiPapersPaperIdCommentResponseNewMessageDataReactionsItemReaction
+                  discussions.yml
+                  [error] Enum value 🔥 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 🚀 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 👀 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value ❤️ is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 🤗 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 😎 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value ➕ is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 🧠 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 👍 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 🤝 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 😔 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 🤯 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  
+[api]: python-sdk discussions.yml -> types -> PostApiPostsUsernamePostSlugCommentCommentIdReplyResponseNewMessageDataReactionsItemReaction
+                  discussions.yml
+                  [error] Enum value 🔥 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 🚀 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 👀 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value ❤️ is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 🤗 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 😎 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value ➕ is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 🧠 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 👍 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 🤝 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 😔 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 🤯 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  
+[api]: python-sdk discussions.yml -> types -> PostApiPostsUsernamePostSlugCommentResponseNewMessageDataReactionsItemReaction
+                  discussions.yml
+                  [error] Enum value 🔥 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 🚀 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 👀 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value ❤️ is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 🤗 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 😎 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value ➕ is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 🧠 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 👍 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 🤝 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 😔 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 🤯 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  
+[api]: python-sdk __package__.yml -> types -> PostApiQuicksearchRequestIncludeInvitees
+                  __package__.yml
+                  [error] PostApiQuicksearchRequestIncludeInvitees is already declared in repoSearch.yml
+                  
+[api]: python-sdk __package__.yml -> types -> PostApiQuicksearchRequestLang
+                  __package__.yml
+                  [error] PostApiQuicksearchRequestLang is already declared in repoSearch.yml
+                  
+[api]: python-sdk __package__.yml -> types -> PostApiQuicksearchRequestLangZero
+                  __package__.yml
+                  [error] PostApiQuicksearchRequestLangZero is already declared in repoSearch.yml
+                  
+[api]: python-sdk __package__.yml -> types -> PostApiQuicksearchRequestLibrary
+                  __package__.yml
+                  [error] PostApiQuicksearchRequestLibrary is already declared in repoSearch.yml
+                  
+[api]: python-sdk __package__.yml -> types -> PostApiQuicksearchRequestLibraryZero
+                  __package__.yml
+                  [error] PostApiQuicksearchRequestLibraryZero is already declared in repoSearch.yml
+                  
+[api]: python-sdk __package__.yml -> types -> PostApiQuicksearchRequestOrgsFilter
+                  __package__.yml
+                  [error] PostApiQuicksearchRequestOrgsFilter is already declared in repoSearch.yml
+                  
+[api]: python-sdk __package__.yml -> types -> PostApiQuicksearchRequestOrgsFilterZeroItem
+                  __package__.yml
+                  [error] PostApiQuicksearchRequestOrgsFilterZeroItem is already declared in repoSearch.yml
+                  
+[api]: python-sdk __package__.yml -> types -> PostApiQuicksearchRequestPipelines
+                  __package__.yml
+                  [error] PostApiQuicksearchRequestPipelines is already declared in repoSearch.yml
+                  
+[api]: python-sdk __package__.yml -> types -> PostApiQuicksearchRequestPipelinesOne
+                  __package__.yml
+                  [error] PostApiQuicksearchRequestPipelinesOne is already declared in repoSearch.yml
+                  
+[api]: python-sdk __package__.yml -> types -> PostApiQuicksearchRequestPipelinesZeroItem
+                  __package__.yml
+                  [error] PostApiQuicksearchRequestPipelinesZeroItem is already declared in repoSearch.yml
+                  
+[api]: python-sdk __package__.yml -> types -> PostApiQuicksearchRequestRepoType
+                  __package__.yml
+                  [error] PostApiQuicksearchRequestRepoType is already declared in repoSearch.yml
+                  
+[api]: python-sdk __package__.yml -> types -> PostApiQuicksearchRequestRepoTypeZero
+                  __package__.yml
+                  [error] PostApiQuicksearchRequestRepoTypeZero is already declared in repoSearch.yml
+                  
+[api]: python-sdk __package__.yml -> types -> PostApiQuicksearchRequestReposFilter
+                  __package__.yml
+                  [error] PostApiQuicksearchRequestReposFilter is already declared in repoSearch.yml
+                  
+[api]: python-sdk __package__.yml -> types -> PostApiQuicksearchRequestReposFilterZeroItem
+                  __package__.yml
+                  [error] PostApiQuicksearchRequestReposFilterZeroItem is already declared in repoSearch.yml
+                  
+[api]: python-sdk __package__.yml -> types -> PostApiQuicksearchRequestType
+                  __package__.yml
+                  [error] PostApiQuicksearchRequestType is already declared in repoSearch.yml
+                  
+[api]: python-sdk __package__.yml -> types -> PostApiQuicksearchRequestTypeZeroItem
+                  __package__.yml
+                  [error] PostApiQuicksearchRequestTypeZeroItem is already declared in repoSearch.yml
+                  
+[api]: python-sdk discussions.yml -> types -> PostApiRepoTypeNamespaceRepoDiscussionsNumCommentResponseNewMessageDataReactionsItemReaction
+                  discussions.yml
+                  [error] Enum value 🔥 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 🚀 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 👀 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value ❤️ is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 🤗 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 😎 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value ➕ is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 🧠 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 👍 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 🤝 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 😔 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 🤯 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  
+[api]: python-sdk Found 149 errors and 19 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

@@ -1,32 +1,32 @@
 {
   "build": {
     "command": [
-      "/tmp/sdkeval3-0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470-2696671/build-environment/bin/python",
+      "/home/whoop/ai-orchestrator/runs/Make-crozier-byte-match-Fern-at-CLI-5-216-0---fern-python-sdk-5-42-0--and-keep-the-weekly-check-s-answer-when-a-runner-is-lost/scratch/319770-0/sdkeval2-0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470/build-environment/bin/python",
       "-m",
       "build",
       "--wheel",
       "--no-isolation",
-      "/tmp/sdkeval3-0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470-2696671/strict_generation",
+      "/home/whoop/ai-orchestrator/runs/Make-crozier-byte-match-Fern-at-CLI-5-216-0---fern-python-sdk-5-42-0--and-keep-the-weekly-check-s-answer-when-a-runner-is-lost/scratch/319770-0/sdkeval2-0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470/strict_generation",
       "--outdir",
-      "/tmp/sdkeval3-0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470-2696671/dist"
+      "/home/whoop/ai-orchestrator/runs/Make-crozier-byte-match-Fern-at-CLI-5-216-0---fern-python-sdk-5-42-0--and-keep-the-weekly-check-s-answer-when-a-runner-is-lost/scratch/319770-0/sdkeval2-0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470/dist"
     ],
     "exit": 0,
-    "input_sha256": "d1387088023af7bde0c364864a86ec252ce6ec199f4b4d76a05c3e2d317d7f1c",
+    "input_sha256": "95c4041a260d4f9c23e29ac14f441c003fc792dde68ec6a6d552c0a0cfa32d84",
     "output": "Successfully built limitation_sdk-0.0.0-py3-none-any.whl\n* Getting build dependencies for wheel...\n* Building wheel...\n",
-    "output_sha256": "24e67e2bc99a8758056b209a460cc7900feef7e4f5a6fcc741bed64eb8631bcc"
+    "output_sha256": "0acfbbde7b29c0f059597534221e206f414a003d889a28067ea86a794a35595e"
   },
-  "crozier_binary_sha256": "1c8b5618d784ce7539d6c2f667b235f3bf08c751f967a341052fa90a0db2bc45",
-  "crozier_commit": "e2422bfafca56f0899de4789c9f93ecd514aa2a6",
+  "crozier_binary_sha256": "fa4f2aa05207f18b493cbb2b0bb39eda232da69eee57e6162f558a5ebcf9a0f7",
+  "crozier_commit": "a2b83f1755d4aaeb8f9a667c04c23345322b46ae",
   "default_generation": {
     "command": [
-      "/home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/2/worktree/target/debug/crozier",
+      "/home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/worktree/target/release/crozier",
       "generate",
       "python",
       "--no-config",
       "--spec",
-      "/home/whoop/ai-orchestrator/runs/Make-crozier-byte-match-Fern-at-CLI-5-200-0---fern-python-sdk-5-41-25--and-make-the-weekly-check-publish-what-it-finds/scratch/107789-1/sdkdocs/0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470.yaml",
+      "/home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/worktree/.local/fern-refusals/documents/0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470.yaml",
       "--output",
-      "/tmp/sdkeval3-0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470-2696671/default_generation",
+      "/home/whoop/ai-orchestrator/runs/Make-crozier-byte-match-Fern-at-CLI-5-216-0---fern-python-sdk-5-42-0--and-keep-the-weekly-check-s-answer-when-a-runner-is-lost/scratch/319770-0/sdkeval2-0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470/default_generation",
       "--package-name",
       "limitation_sdk",
       "--project-name",
@@ -34,16 +34,16 @@
     ],
     "exit": 0,
     "input_sha256": "0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470",
-    "output": "generated 87 files into /tmp/sdkeval3-0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470-2696671/default_generation\n",
-    "output_sha256": "d1387088023af7bde0c364864a86ec252ce6ec199f4b4d76a05c3e2d317d7f1c"
+    "output": "generated 87 files into /home/whoop/ai-orchestrator/runs/Make-crozier-byte-match-Fern-at-CLI-5-216-0---fern-python-sdk-5-42-0--and-keep-the-weekly-check-s-answer-when-a-runner-is-lost/scratch/319770-0/sdkeval2-0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470/default_generation\n",
+    "output_sha256": "95c4041a260d4f9c23e29ac14f441c003fc792dde68ec6a6d552c0a0cfa32d84"
   },
   "document_sha256": "0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470",
-  "fern_cli": "5.200.0",
-  "fern_python_sdk": "5.41.25",
+  "fern_cli": "5.216.0",
+  "fern_python_sdk": "5.42.0",
   "imports": {
     "command": [
-      "/tmp/sdkeval3-0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470-2696671/runtime-environment/bin/python",
-      "/home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/2/worktree/tools/fern-refusals/sdk_evaluation_runtime.py",
+      "/home/whoop/ai-orchestrator/runs/Make-crozier-byte-match-Fern-at-CLI-5-216-0---fern-python-sdk-5-42-0--and-keep-the-weekly-check-s-answer-when-a-runner-is-lost/scratch/319770-0/sdkeval2-0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470/runtime-environment/bin/python",
+      "/home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/worktree/tools/fern-refusals/sdk_evaluation_runtime.py",
       "imports",
       "limitation-sdk",
       "limitation_sdk"
@@ -64,8 +64,8 @@
         },
         {
           "name": "certifi",
-          "sha256": "bd163133c032c0438e0081a6b6bfdd843c03987273ac9d5fca73777b524b2470",
-          "version": "2026.10.23"
+          "sha256": "bfdfdba80affd089b4c340733e9a0a9c894a7057b2e66e88bda0b31238e9402a",
+          "version": "2026.11.20"
         },
         {
           "name": "h11",
@@ -79,17 +79,17 @@
         },
         {
           "name": "httpx",
-          "sha256": "02358c0e10be23ad4b4b73133b84293ce57ac24700365d9ef4dd45a1d7285d84",
+          "sha256": "21a73da196570c4a7da0c364ab4dbfad57935d3860b169a9c6aed7b238960e89",
           "version": "0.28.1"
         },
         {
           "name": "idna",
-          "sha256": "10cddfad57f88f7bff6fd29587d2cf3545fe7822d9880f98849dde1d4bc52eaa",
+          "sha256": "a7723e56f9649a383bd57d57252c3a06497a8ac2346eb132e1903e79a4b512cb",
           "version": "3.20"
         },
         {
           "name": "limitation-sdk",
-          "sha256": "0bb2fe8fe9713f9b07ab92c7dc55336ddb4da6e7e34500eca630179ecd4affac",
+          "sha256": "24179976d8eebe2862c641e7a4c155b7a6c2cc2b38dd33dab7dc51cefd2e4766",
           "version": "0.0.0"
         },
         {
@@ -113,14 +113,14 @@
           "version": "0.4.5"
         }
       ],
-      "executable": "/tmp/sdkeval3-0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470-2696671/runtime-environment/bin/python",
+      "executable": "/home/whoop/ai-orchestrator/runs/Make-crozier-byte-match-Fern-at-CLI-5-216-0---fern-python-sdk-5-42-0--and-keep-the-weekly-check-s-answer-when-a-runner-is-lost/scratch/319770-0/sdkeval2-0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470/runtime-environment/bin/python",
       "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
-      "prefix": "/tmp/sdkeval3-0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470-2696671/runtime-environment",
+      "prefix": "/home/whoop/ai-orchestrator/runs/Make-crozier-byte-match-Fern-at-CLI-5-216-0---fern-python-sdk-5-42-0--and-keep-the-weekly-check-s-answer-when-a-runner-is-lost/scratch/319770-0/sdkeval2-0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470/runtime-environment",
       "python_version": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]"
     },
-    "environment_sha256": "0e3ecda4c70e8d9d0952f13774343cc6300e954eb7fd09f6643fe5b0b09d0be1",
+    "environment_sha256": "89a93b9166fb061de589a958eeaf7c7e5c5c757102dcd06921a24d4489d9a633",
     "exit": 0,
-    "input_sha256": "0bb2fe8fe9713f9b07ab92c7dc55336ddb4da6e7e34500eca630179ecd4affac",
+    "input_sha256": "24179976d8eebe2862c641e7a4c155b7a6c2cc2b38dd33dab7dc51cefd2e4766",
     "modules": [
       "limitation_sdk",
       "limitation_sdk._default_clients",
@@ -201,7 +201,7 @@
       "limitation_sdk.types.polygon_geo_json",
       "limitation_sdk.version"
     ],
-    "output": "{\"distribution_sha256\": \"0bb2fe8fe9713f9b07ab92c7dc55336ddb4da6e7e34500eca630179ecd4affac\", \"environment\": {\"base_prefix\": \"/usr\", \"configuration_sha256\": \"5d8b2ba8eca64776f89ddd3cab7021effa60dae2d782ada31612b8653de99671\", \"distributions\": [{\"name\": \"annotated-types\", \"sha256\": \"e40c55f16ccfa37666c47f02e98a98320d562c4533e1fe7e67eced3a93949bfc\", \"version\": \"0.8.0\"}, {\"name\": \"anyio\", \"sha256\": \"14e355a15cbc29f64a323e2946c24e3cf517f303fe654953cb7480d81fa0f54f\", \"version\": \"4.16.0\"}, {\"name\": \"certifi\", \"sha256\": \"bd163133c032c0438e0081a6b6bfdd843c03987273ac9d5fca73777b524b2470\", \"version\": \"2026.10.23\"}, {\"name\": \"h11\", \"sha256\": \"0755341036b33e335be060a3073af516964b4afc09bff086a0f9e198c51e376f\", \"version\": \"0.16.0\"}, {\"name\": \"httpcore\", \"sha256\": \"33945ca89cb9ce3b58231e26e1ee75172e7f135a55b99c7f84384d0eef3a3595\", \"version\": \"1.0.9\"}, {\"name\": \"httpx\", \"sha256\": \"02358c0e10be23ad4b4b73133b84293ce57ac24700365d9ef4dd45a1d7285d84\", \"version\": \"0.28.1\"}, {\"name\": \"idna\", \"sha256\": \"10cddfad57f88f7bff6fd29587d2cf3545fe7822d9880f98849dde1d4bc52eaa\", \"version\": \"3.20\"}, {\"name\": \"limitation-sdk\", \"sha256\": \"0bb2fe8fe9713f9b07ab92c7dc55336ddb4da6e7e34500eca630179ecd4affac\", \"version\": \"0.0.0\"}, {\"name\": \"pydantic\", \"sha256\": \"05b6ae96130d8bc0a06cdc53718a3e5a7df42aa65a2b43f2f67f1d6469c8c32c\", \"version\": \"2.14.1\"}, {\"name\": \"pydantic-core\", \"sha256\": \"4549df0b1ef6b5897e2ef20da411e9474053accdb0677b18d7f60da5ace8de5a\", \"version\": \"2.50.1\"}, {\"name\": \"typing-extensions\", \"sha256\": \"432ee7fcce14cac2de1fd80e2e2d521a4e3029c56af8f248b3efd850c4929877\", \"version\": \"4.16.0\"}, {\"name\": \"typing-inspection\", \"sha256\": \"58ed0f9a375580b4328db0d4a9a10da76f91778424c852217591f8529b5464da\", \"version\": \"0.4.5\"}], \"executable\": \"/tmp/sdkeval3-0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470-2696671/runtime-environment/bin/python\", \"executable_sha256\": \"e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f\", \"prefix\": \"/tmp/sdkeval3-0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470-2696671/runtime-environment\", \"python_version\": \"3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]\"}, \"environment_sha256\": \"0e3ecda4c70e8d9d0952f13774343cc6300e954eb7fd09f6643fe5b0b09d0be1\", \"modules\": [\"limitation_sdk\", \"limitation_sdk._default_clients\", \"limitation_sdk.capabilities\", \"limitation_sdk.capabilities.client\", \"limitation_sdk.capabilities.raw_client\", \"limitation_sdk.client\", \"limitation_sdk.collection_data_queries\", \"limitation_sdk.collection_data_queries.client\", \"limitation_sdk.collection_data_queries.raw_client\", \"limitation_sdk.collections\", \"limitation_sdk.collections.client\", \"limitation_sdk.collections.raw_client\", \"limitation_sdk.core\", \"limitation_sdk.core.api_error\", \"limitation_sdk.core.client_wrapper\", \"limitation_sdk.core.datetime_utils\", \"limitation_sdk.core.enum\", \"limitation_sdk.core.file\", \"limitation_sdk.core.force_multipart\", \"limitation_sdk.core.http_client\", \"limitation_sdk.core.http_response\", \"limitation_sdk.core.http_sse\", \"limitation_sdk.core.http_sse._api\", \"limitation_sdk.core.http_sse._decoders\", \"limitation_sdk.core.http_sse._exceptions\", \"limitation_sdk.core.http_sse._models\", \"limitation_sdk.core.jsonable_encoder\", \"limitation_sdk.core.logging\", \"limitation_sdk.core.parse_error\", \"limitation_sdk.core.pydantic_utilities\", \"limitation_sdk.core.query_encoder\", \"limitation_sdk.core.remove_none_from_dict\", \"limitation_sdk.core.request_options\", \"limitation_sdk.core.serialization\", \"limitation_sdk.environment\", \"limitation_sdk.item_search\", \"limitation_sdk.item_search.client\", \"limitation_sdk.item_search.raw_client\", \"limitation_sdk.types\", \"limitation_sdk.types.bbox\", \"limitation_sdk.types.bbox_filter\", \"limitation_sdk.types.collection\", \"limitation_sdk.types.collection_desc\", \"limitation_sdk.types.collections\", \"limitation_sdk.types.collections_array\", \"limitation_sdk.types.collections_filter\", \"limitation_sdk.types.conf_classes\", \"limitation_sdk.types.datetime_filter\", \"limitation_sdk.types.datetime_interval\", \"limitation_sdk.types.exception\", \"limitation_sdk.types.extent\", \"limitation_sdk.types.extent_spatial\", \"limitation_sdk.types.extent_spatial_crs\", \"limitation_sdk.types.extent_temporal\", \"limitation_sdk.types.extent_temporal_trs\", \"limitation_sdk.types.feature_collection_geo_json\", \"limitation_sdk.types.feature_collection_geo_json_type\", \"limitation_sdk.types.feature_geo_json\", \"limitation_sdk.types.feature_geo_json_id\", \"limitation_sdk.types.feature_geo_json_type\", \"limitation_sdk.types.geometry_geo_json\", \"limitation_sdk.types.geometrycollection_geo_json\", \"limitation_sdk.types.ids\", \"limitation_sdk.types.ids_filter\", \"limitation_sdk.types.intersects_filter\", \"limitation_sdk.types.landing_page\", \"limitation_sdk.types.limit\", \"limitation_sdk.types.limit_filter\", \"limitation_sdk.types.linestring_geo_json\", \"limitation_sdk.types.link\", \"limitation_sdk.types.multilinestring_geo_json\", \"limitation_sdk.types.multipoint_geo_json\", \"limitation_sdk.types.multipolygon_geo_json\", \"limitation_sdk.types.number_matched\", \"limitation_sdk.types.number_returned\", \"limitation_sdk.types.point_geo_json\", \"limitation_sdk.types.polygon_geo_json\", \"limitation_sdk.version\"], \"modules_sha256\": \"3ce14e990961b120a51d3fc4327df7867cb240f4eca04c3e0bc851c63fd27b63\"}\n",
+    "output": "{\"distribution_sha256\": \"24179976d8eebe2862c641e7a4c155b7a6c2cc2b38dd33dab7dc51cefd2e4766\", \"environment\": {\"base_prefix\": \"/usr\", \"configuration_sha256\": \"5d8b2ba8eca64776f89ddd3cab7021effa60dae2d782ada31612b8653de99671\", \"distributions\": [{\"name\": \"annotated-types\", \"sha256\": \"e40c55f16ccfa37666c47f02e98a98320d562c4533e1fe7e67eced3a93949bfc\", \"version\": \"0.8.0\"}, {\"name\": \"anyio\", \"sha256\": \"14e355a15cbc29f64a323e2946c24e3cf517f303fe654953cb7480d81fa0f54f\", \"version\": \"4.16.0\"}, {\"name\": \"certifi\", \"sha256\": \"bfdfdba80affd089b4c340733e9a0a9c894a7057b2e66e88bda0b31238e9402a\", \"version\": \"2026.11.20\"}, {\"name\": \"h11\", \"sha256\": \"0755341036b33e335be060a3073af516964b4afc09bff086a0f9e198c51e376f\", \"version\": \"0.16.0\"}, {\"name\": \"httpcore\", \"sha256\": \"33945ca89cb9ce3b58231e26e1ee75172e7f135a55b99c7f84384d0eef3a3595\", \"version\": \"1.0.9\"}, {\"name\": \"httpx\", \"sha256\": \"21a73da196570c4a7da0c364ab4dbfad57935d3860b169a9c6aed7b238960e89\", \"version\": \"0.28.1\"}, {\"name\": \"idna\", \"sha256\": \"a7723e56f9649a383bd57d57252c3a06497a8ac2346eb132e1903e79a4b512cb\", \"version\": \"3.20\"}, {\"name\": \"limitation-sdk\", \"sha256\": \"24179976d8eebe2862c641e7a4c155b7a6c2cc2b38dd33dab7dc51cefd2e4766\", \"version\": \"0.0.0\"}, {\"name\": \"pydantic\", \"sha256\": \"05b6ae96130d8bc0a06cdc53718a3e5a7df42aa65a2b43f2f67f1d6469c8c32c\", \"version\": \"2.14.1\"}, {\"name\": \"pydantic-core\", \"sha256\": \"4549df0b1ef6b5897e2ef20da411e9474053accdb0677b18d7f60da5ace8de5a\", \"version\": \"2.50.1\"}, {\"name\": \"typing-extensions\", \"sha256\": \"432ee7fcce14cac2de1fd80e2e2d521a4e3029c56af8f248b3efd850c4929877\", \"version\": \"4.16.0\"}, {\"name\": \"typing-inspection\", \"sha256\": \"58ed0f9a375580b4328db0d4a9a10da76f91778424c852217591f8529b5464da\", \"version\": \"0.4.5\"}], \"executable\": \"/home/whoop/ai-orchestrator/runs/Make-crozier-byte-match-Fern-at-CLI-5-216-0---fern-python-sdk-5-42-0--and-keep-the-weekly-check-s-answer-when-a-runner-is-lost/scratch/319770-0/sdkeval2-0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470/runtime-environment/bin/python\", \"executable_sha256\": \"e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f\", \"prefix\": \"/home/whoop/ai-orchestrator/runs/Make-crozier-byte-match-Fern-at-CLI-5-216-0---fern-python-sdk-5-42-0--and-keep-the-weekly-check-s-answer-when-a-runner-is-lost/scratch/319770-0/sdkeval2-0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470/runtime-environment\", \"python_version\": \"3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]\"}, \"environment_sha256\": \"89a93b9166fb061de589a958eeaf7c7e5c5c757102dcd06921a24d4489d9a633\", \"modules\": [\"limitation_sdk\", \"limitation_sdk._default_clients\", \"limitation_sdk.capabilities\", \"limitation_sdk.capabilities.client\", \"limitation_sdk.capabilities.raw_client\", \"limitation_sdk.client\", \"limitation_sdk.collection_data_queries\", \"limitation_sdk.collection_data_queries.client\", \"limitation_sdk.collection_data_queries.raw_client\", \"limitation_sdk.collections\", \"limitation_sdk.collections.client\", \"limitation_sdk.collections.raw_client\", \"limitation_sdk.core\", \"limitation_sdk.core.api_error\", \"limitation_sdk.core.client_wrapper\", \"limitation_sdk.core.datetime_utils\", \"limitation_sdk.core.enum\", \"limitation_sdk.core.file\", \"limitation_sdk.core.force_multipart\", \"limitation_sdk.core.http_client\", \"limitation_sdk.core.http_response\", \"limitation_sdk.core.http_sse\", \"limitation_sdk.core.http_sse._api\", \"limitation_sdk.core.http_sse._decoders\", \"limitation_sdk.core.http_sse._exceptions\", \"limitation_sdk.core.http_sse._models\", \"limitation_sdk.core.jsonable_encoder\", \"limitation_sdk.core.logging\", \"limitation_sdk.core.parse_error\", \"limitation_sdk.core.pydantic_utilities\", \"limitation_sdk.core.query_encoder\", \"limitation_sdk.core.remove_none_from_dict\", \"limitation_sdk.core.request_options\", \"limitation_sdk.core.serialization\", \"limitation_sdk.environment\", \"limitation_sdk.item_search\", \"limitation_sdk.item_search.client\", \"limitation_sdk.item_search.raw_client\", \"limitation_sdk.types\", \"limitation_sdk.types.bbox\", \"limitation_sdk.types.bbox_filter\", \"limitation_sdk.types.collection\", \"limitation_sdk.types.collection_desc\", \"limitation_sdk.types.collections\", \"limitation_sdk.types.collections_array\", \"limitation_sdk.types.collections_filter\", \"limitation_sdk.types.conf_classes\", \"limitation_sdk.types.datetime_filter\", \"limitation_sdk.types.datetime_interval\", \"limitation_sdk.types.exception\", \"limitation_sdk.types.extent\", \"limitation_sdk.types.extent_spatial\", \"limitation_sdk.types.extent_spatial_crs\", \"limitation_sdk.types.extent_temporal\", \"limitation_sdk.types.extent_temporal_trs\", \"limitation_sdk.types.feature_collection_geo_json\", \"limitation_sdk.types.feature_collection_geo_json_type\", \"limitation_sdk.types.feature_geo_json\", \"limitation_sdk.types.feature_geo_json_id\", \"limitation_sdk.types.feature_geo_json_type\", \"limitation_sdk.types.geometry_geo_json\", \"limitation_sdk.types.geometrycollection_geo_json\", \"limitation_sdk.types.ids\", \"limitation_sdk.types.ids_filter\", \"limitation_sdk.types.intersects_filter\", \"limitation_sdk.types.landing_page\", \"limitation_sdk.types.limit\", \"limitation_sdk.types.limit_filter\", \"limitation_sdk.types.linestring_geo_json\", \"limitation_sdk.types.link\", \"limitation_sdk.types.multilinestring_geo_json\", \"limitation_sdk.types.multipoint_geo_json\", \"limitation_sdk.types.multipolygon_geo_json\", \"limitation_sdk.types.number_matched\", \"limitation_sdk.types.number_returned\", \"limitation_sdk.types.point_geo_json\", \"limitation_sdk.types.polygon_geo_json\", \"limitation_sdk.version\"], \"modules_sha256\": \"3ce14e990961b120a51d3fc4327df7867cb240f4eca04c3e0bc851c63fd27b63\"}\n",
     "output_sha256": "3ce14e990961b120a51d3fc4327df7867cb240f4eca04c3e0bc851c63fd27b63"
   },
   "installation": {
@@ -210,9 +210,9 @@
       "pip",
       "install",
       "--python",
-      "/tmp/sdkeval3-0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470-2696671/runtime-environment/bin/python",
+      "/home/whoop/ai-orchestrator/runs/Make-crozier-byte-match-Fern-at-CLI-5-216-0---fern-python-sdk-5-42-0--and-keep-the-weekly-check-s-answer-when-a-runner-is-lost/scratch/319770-0/sdkeval2-0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470/runtime-environment/bin/python",
       "pydantic==2.14.1",
-      "/tmp/sdkeval3-0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470-2696671/dist/limitation_sdk-0.0.0-py3-none-any.whl"
+      "/home/whoop/ai-orchestrator/runs/Make-crozier-byte-match-Fern-at-CLI-5-216-0---fern-python-sdk-5-42-0--and-keep-the-weekly-check-s-answer-when-a-runner-is-lost/scratch/319770-0/sdkeval2-0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470/dist/limitation_sdk-0.0.0-py3-none-any.whl"
     ],
     "environment": {
       "base_prefix": "/usr",
@@ -230,8 +230,8 @@
         },
         {
           "name": "certifi",
-          "sha256": "bd163133c032c0438e0081a6b6bfdd843c03987273ac9d5fca73777b524b2470",
-          "version": "2026.10.23"
+          "sha256": "bfdfdba80affd089b4c340733e9a0a9c894a7057b2e66e88bda0b31238e9402a",
+          "version": "2026.11.20"
         },
         {
           "name": "h11",
@@ -245,17 +245,17 @@
         },
         {
           "name": "httpx",
-          "sha256": "02358c0e10be23ad4b4b73133b84293ce57ac24700365d9ef4dd45a1d7285d84",
+          "sha256": "21a73da196570c4a7da0c364ab4dbfad57935d3860b169a9c6aed7b238960e89",
           "version": "0.28.1"
         },
         {
           "name": "idna",
-          "sha256": "10cddfad57f88f7bff6fd29587d2cf3545fe7822d9880f98849dde1d4bc52eaa",
+          "sha256": "a7723e56f9649a383bd57d57252c3a06497a8ac2346eb132e1903e79a4b512cb",
           "version": "3.20"
         },
         {
           "name": "limitation-sdk",
-          "sha256": "0bb2fe8fe9713f9b07ab92c7dc55336ddb4da6e7e34500eca630179ecd4affac",
+          "sha256": "24179976d8eebe2862c641e7a4c155b7a6c2cc2b38dd33dab7dc51cefd2e4766",
           "version": "0.0.0"
         },
         {
@@ -279,30 +279,30 @@
           "version": "0.4.5"
         }
       ],
-      "executable": "/tmp/sdkeval3-0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470-2696671/runtime-environment/bin/python",
+      "executable": "/home/whoop/ai-orchestrator/runs/Make-crozier-byte-match-Fern-at-CLI-5-216-0---fern-python-sdk-5-42-0--and-keep-the-weekly-check-s-answer-when-a-runner-is-lost/scratch/319770-0/sdkeval2-0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470/runtime-environment/bin/python",
       "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
-      "prefix": "/tmp/sdkeval3-0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470-2696671/runtime-environment",
+      "prefix": "/home/whoop/ai-orchestrator/runs/Make-crozier-byte-match-Fern-at-CLI-5-216-0---fern-python-sdk-5-42-0--and-keep-the-weekly-check-s-answer-when-a-runner-is-lost/scratch/319770-0/sdkeval2-0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470/runtime-environment",
       "python_version": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]"
     },
-    "environment_sha256": "0e3ecda4c70e8d9d0952f13774343cc6300e954eb7fd09f6643fe5b0b09d0be1",
+    "environment_sha256": "89a93b9166fb061de589a958eeaf7c7e5c5c757102dcd06921a24d4489d9a633",
     "exit": 0,
-    "input_sha256": "24e67e2bc99a8758056b209a460cc7900feef7e4f5a6fcc741bed64eb8631bcc",
-    "output": "Using Python 3.12.3 environment at: runtime-environment\nResolved 12 packages in 221ms\nPrepared 1 package in 29ms\nInstalled 12 packages in 36ms\n + annotated-types==0.8.0\n + anyio==4.16.0\n + certifi==2026.10.23\n + h11==0.16.0\n + httpcore==1.0.9\n + httpx==0.28.1\n + idna==3.20\n + limitation-sdk==0.0.0 (from file:///tmp/sdkeval3-0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470-2696671/dist/limitation_sdk-0.0.0-py3-none-any.whl)\n + pydantic==2.14.1\n + pydantic-core==2.50.1\n + typing-extensions==4.16.0\n + typing-inspection==0.4.5\n",
-    "output_sha256": "0bb2fe8fe9713f9b07ab92c7dc55336ddb4da6e7e34500eca630179ecd4affac"
+    "input_sha256": "0acfbbde7b29c0f059597534221e206f414a003d889a28067ea86a794a35595e",
+    "output": "Using Python 3.12.3 environment at: runtime-environment\nResolved 12 packages in 2.36s\nPrepared 2 packages in 92ms\nInstalled 12 packages in 25ms\n + annotated-types==0.8.0\n + anyio==4.16.0\n + certifi==2026.11.20\n + h11==0.16.0\n + httpcore==1.0.9\n + httpx==0.28.1\n + idna==3.20\n + limitation-sdk==0.0.0 (from file:///home/whoop/ai-orchestrator/runs/Make-crozier-byte-match-Fern-at-CLI-5-216-0---fern-python-sdk-5-42-0--and-keep-the-weekly-check-s-answer-when-a-runner-is-lost/scratch/319770-0/sdkeval2-0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470/dist/limitation_sdk-0.0.0-py3-none-any.whl)\n + pydantic==2.14.1\n + pydantic-core==2.50.1\n + typing-extensions==4.16.0\n + typing-inspection==0.4.5\n",
+    "output_sha256": "24179976d8eebe2862c641e7a4c155b7a6c2cc2b38dd33dab7dc51cefd2e4766"
   },
   "package_name": "limitation_sdk",
   "schema_version": 2,
-  "sdk_sha256": "d1387088023af7bde0c364864a86ec252ce6ec199f4b4d76a05c3e2d317d7f1c",
+  "sdk_sha256": "95c4041a260d4f9c23e29ac14f441c003fc792dde68ec6a6d552c0a0cfa32d84",
   "strict_generation": {
     "command": [
-      "/home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/2/worktree/target/debug/crozier",
+      "/home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/worktree/target/release/crozier",
       "generate",
       "python",
       "--no-config",
       "--spec",
-      "/home/whoop/ai-orchestrator/runs/Make-crozier-byte-match-Fern-at-CLI-5-200-0---fern-python-sdk-5-41-25--and-make-the-weekly-check-publish-what-it-finds/scratch/107789-1/sdkdocs/0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470.yaml",
+      "/home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/worktree/.local/fern-refusals/documents/0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470.yaml",
       "--output",
-      "/tmp/sdkeval3-0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470-2696671/strict_generation",
+      "/home/whoop/ai-orchestrator/runs/Make-crozier-byte-match-Fern-at-CLI-5-216-0---fern-python-sdk-5-42-0--and-keep-the-weekly-check-s-answer-when-a-runner-is-lost/scratch/319770-0/sdkeval2-0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470/strict_generation",
       "--package-name",
       "limitation_sdk",
       "--project-name",
@@ -311,19 +311,19 @@
     ],
     "exit": 0,
     "input_sha256": "0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470",
-    "output": "generated 87 files into /tmp/sdkeval3-0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470-2696671/strict_generation\n",
-    "output_sha256": "d1387088023af7bde0c364864a86ec252ce6ec199f4b4d76a05c3e2d317d7f1c"
+    "output": "generated 87 files into /home/whoop/ai-orchestrator/runs/Make-crozier-byte-match-Fern-at-CLI-5-216-0---fern-python-sdk-5-42-0--and-keep-the-weekly-check-s-answer-when-a-runner-is-lost/scratch/319770-0/sdkeval2-0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470/strict_generation\n",
+    "output_sha256": "95c4041a260d4f9c23e29ac14f441c003fc792dde68ec6a6d552c0a0cfa32d84"
   },
   "validation": {
     "command": [
-      "/tmp/sdkeval3-0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470-2696671/build-environment/bin/python",
+      "/home/whoop/ai-orchestrator/runs/Make-crozier-byte-match-Fern-at-CLI-5-216-0---fern-python-sdk-5-42-0--and-keep-the-weekly-check-s-answer-when-a-runner-is-lost/scratch/319770-0/sdkeval2-0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470/build-environment/bin/python",
       "-m",
       "openapi_spec_validator",
-      "/home/whoop/ai-orchestrator/runs/Make-crozier-byte-match-Fern-at-CLI-5-200-0---fern-python-sdk-5-41-25--and-make-the-weekly-check-publish-what-it-finds/scratch/107789-1/sdkdocs/0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470.yaml"
+      "/home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/worktree/.local/fern-refusals/documents/0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470.yaml"
     ],
     "exit": 0,
     "input_sha256": "0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470",
-    "output": "/home/whoop/ai-orchestrator/runs/Make-crozier-byte-match-Fern-at-CLI-5-200-0---fern-python-sdk-5-41-25--and-make-the-weekly-check-publish-what-it-finds/scratch/107789-1/sdkdocs/0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470.yaml: OK\n",
+    "output": "/home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/worktree/.local/fern-refusals/documents/0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470.yaml: OK\n",
     "output_sha256": "0ceee3870e41b0bfb0d72172b352d6a12e5dfdfc8dd4e3f2ec28a380d3e33470"
   }
 }
