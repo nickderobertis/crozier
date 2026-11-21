@@ -1,4 +1,4 @@
-fern-refusals: Fern CLI 5.200.0, fernapi/fern-python-sdk 5.41.25
+fern-refusals: Fern CLI 5.216.0, fernapi/fern-python-sdk 5.42.0
 check exit: 1
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
@@ -8,3 +8,4 @@ Warnings for generators.yml:
         issue: Discriminant value @odata.type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
 
 Found 1 error and 0 warnings in <n> seconds.
+For guidance, run `fern instructions spec`.
