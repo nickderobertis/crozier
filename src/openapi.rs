@@ -3561,7 +3561,7 @@ fn normalize_empty_compositions(doc: &mut OpenApi) {
 
 /// Read a component pointer whose unescaped tail is the whole name of a
 /// component declaring `/` in its name as a reference to that component. The
-/// certified pair (Fern CLI 5.200.0, fern-python-sdk 5.41.25) resolves it so:
+/// certified pair (Fern CLI 5.216.0, fern-python-sdk 5.42.0) resolves it so:
 /// samepage's `page/postResponse` component is named by `$ref:
 /// '#/components/schemas/page/postResponse'`, and Fern's `page` method returns
 /// `PagePostResponse` where a pointer walk finds no `page` component and would
@@ -3631,7 +3631,7 @@ fn normalize_slash_named_schema_refs(doc: &mut OpenApi) {
 }
 
 /// Drop the sibling `type: "null"` of a `oneOf`/`anyOf`, which the certified
-/// pair (Fern CLI 5.200.0, fern-python-sdk 5.41.25) reads as no type at all:
+/// pair (Fern CLI 5.216.0, fern-python-sdk 5.42.0) reads as no type at all:
 /// Vercel's `EdgeConfigItemValue` is `{oneOf: [string, number, boolean,
 /// object, array of EdgeConfigItemValue], type: "null"}`, and Fern's alias is
 /// `Union[str, float, bool, Dict[str, Any], List["EdgeConfigItemValue"]]`, its

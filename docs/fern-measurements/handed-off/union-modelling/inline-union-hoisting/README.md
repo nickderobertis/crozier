@@ -15,8 +15,8 @@ The certified pair types `tools` `typing.List[ChiselTool]`, keeps `kind: ChiselT
 Held by `inline_unions_are_written_as_the_certified_pair_writes_them` in `crates/crozier-e2e/tests/e2e/union_modelling.rs`: crozier generates `openapi.yml` and the SDK must byte-match `fern-expected/` (and `literals/fern-expected/` in `literals` mode where committed) apart from the catalogued departures the ledger records for the tree, and the pre-repair spelling written back into crozier's output must fail that comparison. The unit test `a_lone_reference_element_and_an_annotated_nullable_map_hoist_nothing` in `src/ir.rs`'s `union_modelling_tests` drives the repaired lowering on the same document.
 
 **Regenerated at the certified pair.** The Fern goldens workflow (run
-43423270787) regenerated every `fern-expected/` tree this record holds at Fern
-CLI 5.200.0 / `fernapi/fern-python-sdk` 5.41.25, the certified pair, and
+44880783817) regenerated every `fern-expected/` tree this record holds at Fern
+CLI 5.216.0 / `fernapi/fern-python-sdk` 5.42.0, the certified pair, and
 crozier's comparison holds the record to those trees. Statements above that name Fern CLI
 5.163.1 / fern-python-sdk 5.41.3 describe the measurement as first taken, at
 the pair certified then; a digest, log or exit code they cite is that run's.

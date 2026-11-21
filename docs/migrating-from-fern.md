@@ -10,8 +10,8 @@ itself.
 
 ### Upgrade the Fern generator first
 
-crozier certifies one pair, **Fern CLI 5.200.0** with **`fernapi/fern-python-sdk`
-5.41.25** (the pair recorded in
+crozier certifies one pair, **Fern CLI 5.216.0** with **`fernapi/fern-python-sdk`
+5.42.0** (the pair recorded in
 [`assets/scaffolding/metadata.json`](../assets/scaffolding/metadata.json)), under
 either enum form: `pydantic_config.enum_type: python_enums`, which crozier's
 default `enum-type: python-enums` matches, or `enum_type` unset — Fern's
@@ -25,13 +25,13 @@ change:
 ```yaml
 # fern/generators.yml
       - name: fernapi/fern-python-sdk
-        version: 5.41.25
+        version: 5.42.0
         config:
           pydantic_config:
             enum_type: python_enums
 ```
 
-and set `"version": "5.200.0"` in `fern.config.json`. A generator that relies on
+and set `"version": "5.216.0"` in `fern.config.json`. A generator that relies on
 Fern's literal enums keeps `enum_type` unset instead, and its crozier generator
 sets `enum-type: literals`. Regenerate with Fern and
 review that diff on its own; only then compare against crozier, so the
@@ -50,7 +50,7 @@ expect differences, at least in `.fern/metadata.json`, which records the version
 The `fern` launcher runs the CLI version a workspace's `fern.config.json` names
 ([What you need](fern-reference.md#what-you-need)), and only the certified pair is
 known to match ([Certified versions](fern-reference.md#certified-versions)).
-The recipe writes the certified `5.200.0` into the workspace it builds. A team that adapts it to run in
+The recipe writes the certified `5.216.0` into the workspace it builds. A team that adapts it to run in
 its own Fern workspace pins that file's `version` to the same release, never
 `*` or a range, so the reference does not move under it.
 
@@ -61,7 +61,7 @@ Fern applies a spec's `overrides` and then its `overlays`, both set on an
 [Overlays](https://buildwithfern.com/learn/api-definitions/openapi/overlays) and
 [Overrides](https://buildwithfern.com/learn/api-definitions/overrides) pages; the
 keys are in
-[`generators-yml.schema.json` at CLI 5.200.0](https://github.com/fern-api/fern/blob/76ac5deed794955e5bc759e49c5592644b095fe9/generators-yml.schema.json),
+[`generators-yml.schema.json` at CLI 5.216.0](https://github.com/fern-api/fern/blob/d52bea94e14980a5c9b077e7bb0f1192c1ba04a1/generators-yml.schema.json),
 `generators.OpenAPISpecSchema`). crozier reads the document as given (overlay
 support is tracked in
 [#83](https://github.com/nickderobertis/crozier/issues/83)), so apply them first
@@ -129,7 +129,7 @@ The [measurement](fern-measurements/workspace-presteps/README.md#pruning) was
 taken at an earlier Fern CLI, which ignored range-status responses such as `4XX`
 altogether, so `only-include-referenced-schemas` removed a component reachable
 only through one; `openapi-format`'s `unusedComponents` follows those references
-and retains it. The certified CLI 5.200.0 imports `4XX` and `5XX` responses as
+and retains it. The certified CLI 5.216.0 imports `4XX` and `5XX` responses as
 their own errors (`ClientRequestError` and `ServerError`, each with an optional
 `status_code`), so that measurement no longer describes it and has not been
 re-run at the certified pair. This guide gives no equivalent pruning recipe;
@@ -168,7 +168,7 @@ counts the generator image download. Pull it before the comparison, as the
 Action's example workflow does:
 
 ```sh
-docker pull fernapi/fern-python-sdk:5.41.25
+docker pull fernapi/fern-python-sdk:5.42.0
 ```
 
 The report's per-generator reference and crozier times, speed-up and time saved
@@ -194,8 +194,8 @@ config, and the Action's `paths` input does the same.
   change. Among them is `x-fern-property-name` (alias `x-crozier-property-name`),
   which renames a property's model field and request keyword argument while its
   JSON key stays the same. A request body property that shares its name with a
-  path parameter needs no rename: as Fern CLI 5.200.0 with fern-python-sdk
-  5.41.25 does, crozier keeps the property's name and renames the path
+  path parameter needs no rename: as Fern CLI 5.216.0 with fern-python-sdk
+  5.42.0 does, crozier keeps the property's name and renames the path
   parameter's argument `{name}_path_param`. A path parameter that declares a
   name of its own beside such a property, like the other request property
   collisions, is still refused as `request-property-name-collision`; rename one
@@ -206,7 +206,7 @@ config, and the Action's `paths` input does the same.
 
 ## Fern generator options
 
-The options are those `fernapi/fern-python-sdk` 5.41.25 accepts in a generator's
+The options are those `fernapi/fern-python-sdk` 5.42.0 accepts in a generator's
 `config`, read from its `SDKCustomConfig` and `pydantic_config` models, both of
 which refuse unknown keys. The fern-api/fern repository no longer holds the
 generators' source, which it removed on 2026-11-04
@@ -214,7 +214,7 @@ generators' source, which it removed on 2026-11-04
 no source commit can be linked. The models were read from the released image
 instead: `/src/fern_python/generators/sdk/custom_config.py` and
 `/src/fern_python/generators/pydantic_model/custom_config.py` in
-`fernapi/fern-python-sdk:5.41.25`. Defaults are Fern's.
+`fernapi/fern-python-sdk:5.42.0`. Defaults are Fern's.
 
 **Default only** in the table means crozier has no setting for the option and
 its output is Fern's at the default shown, the configuration crozier's goldens

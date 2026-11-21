@@ -10323,7 +10323,7 @@ impl InlineHoister<'_> {
             // …keeping its own `nullable: true` in its slot, as a component
             // union's member does: Hookdeck's `log_level` is `anyOf: [nullable
             // enum, array of nullable enum]`, and the certified pair (Fern CLI
-            // 5.200.0, fern-python-sdk 5.41.25) types it
+            // 5.216.0, fern-python-sdk 5.42.0) types it
             // `Union[Optional[…LogLevelZero], List[Optional[…LogLevelOneItem]]]`.
             if let Some(values) = hoisted {
                 let variant_name = variant_class_name(&name, index, member, &siblings);
@@ -18969,7 +18969,7 @@ fn variant_class_name(parent: &str, index: usize, variant: &Schema, siblings: &[
     // The ordinal counts the alternatives a `null` one leaves behind: samepage's
     // `page/postResponse.data` offers an object, a described `type: null`, then
     // the `pending` and `rejected` enums, and the certified pair (Fern CLI
-    // 5.200.0, fern-python-sdk 5.41.25) names those two `PagePostResponseDataOne`
+    // 5.216.0, fern-python-sdk 5.42.0) names those two `PagePostResponseDataOne`
     // and `…Two`.
     let nulls_before = siblings
         .iter()
