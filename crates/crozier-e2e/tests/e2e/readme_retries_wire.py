@@ -89,15 +89,17 @@ def main() -> int:
     sys.path.insert(0, str(args.import_root.resolve()))
     sdk = importlib.import_module(args.package)
     api_error = importlib.import_module(f"{args.package}.core.api_error").ApiError
+    request_options = importlib.import_module(f"{args.package}.core.request_options").RequestOptions
     hits: list[int] = []
     status = [0]
     server = serve(hits, status)
     base_url = f"http://127.0.0.1:{server.server_port}"
     sync_client = getattr(sdk, args.client)(base_url=base_url)
     async_client = getattr(sdk, f"Async{args.client}")(base_url=base_url)
-    options = {"max_retries": 1}
+    options = request_options(max_retries=1)
 
     def sync_call() -> None:
+        # llmlint: ignore[async_typed_clients_at_boundaries] The synchronous client is half of the generated SDK's public surface under test, the one the README's Retries example calls; async_call below drives the async half, and the SDK, not this script, owns the HTTP boundary.
         sync_client.lamps.get_lamp("lamp-1", request_options=options)
 
     def async_call() -> None:

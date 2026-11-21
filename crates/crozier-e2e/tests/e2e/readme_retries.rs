@@ -96,6 +96,7 @@ fn generate(dir: &Path, name: &str, flags: &[&str]) -> (std::path::PathBuf, std:
     (out.join("README.md"), import_root)
 }
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each journey below generates one small SDK per layout through the binary, on the crozier-e2e edge every other golden comparison shares (and, for the wire journey, the sdk-env tier every SDK-environment journey shares); splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 /// The Retries section's status codes are Fern's text byte for byte, in every
 /// layout and enum mode crozier writes a README in.
 #[test]
@@ -174,3 +175,4 @@ fn sdk_env_client_retries_exactly_what_its_readme_lists() {
         .code(2)
         .stderr(predicate::str::contains("no `### Retries` section"));
 }
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]

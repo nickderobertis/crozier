@@ -14,8 +14,7 @@ at that pair, and everything under the 5.163.1 heading is history at that one.
   nothing, as attempt 2 of run 43809697471 did (1,803.8 s). The
   `spike-shard-loss` measurement at this pair (node v20.20.2, `ubuntu:26.04`, a
   16g ceiling) timed the stages at 902.0 s and 903.0 s, peaking at 10,687 and
-  10,787 MiB with no OOM kill; see
-  [`docs/fern-goldens.md`](../../fern-goldens.md#an-item-in-a-job-of-its-own).
+  10,787 MiB with no OOM kill.
   A run cut short says nothing about whether Fern refuses given more time or
   memory, so [`fern-refusal.txt`](fern-refusal.txt) stays the 5.163.1 / 5.41.3
   record and [`unsettled.txt`](unsettled.txt) records these timings and the
