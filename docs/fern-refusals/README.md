@@ -1,6 +1,6 @@
 # Fern refusal registry
 
-The classes of input Fern (CLI 5.200.0, `fernapi/fern-python-sdk` 5.41.25, the
+The classes of input Fern (CLI 5.216.0, `fernapi/fern-python-sdk` 5.42.0, the
 certified pair `assets/scaffolding/metadata.json` declares) refuses, crashes on,
 or falsely reports success over, and what crozier does with each. The whole
 population, every class's probe and committed shapes, and each class's

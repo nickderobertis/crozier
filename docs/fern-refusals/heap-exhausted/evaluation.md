@@ -20,8 +20,16 @@ at that pair, and everything under the 5.163.1 heading is history at that one.
   memory, so [`fern-refusal.txt`](fern-refusal.txt) stays the 5.163.1 / 5.41.3
   record and [`unsettled.txt`](unsettled.txt) records these timings and the
   reason. No probe was re-run for this record.
-- **Shapes and real documents: not retaken.** The shapes keep their 5.163.1
-  logs, and the two `confirmations.tsv` rows their 5.200.0 corroboration.
+- **Shapes: not retaken.** The 2 probe and 5 control shapes keep their 5.163.1
+  logs.
+- **Real documents: corroboration only.** `confirm` retook both
+  [`confirmations.tsv`](../../openapi-surface/fern-refusals/confirmations.tsv)
+  rows at this pair (jakemannix `0117d8bf…` and Wiremock `94e583d7…`): each
+  generation still prints `FATAL ERROR: Ineffective mark-compacts near heap
+  limit … JavaScript heap out of memory`, now exiting -6 (SIGABRT) where the
+  5.200.0 run exited 1. That exit belongs to the measuring environment (Node
+  v20.20.2 here, v26.8.2 then), not to Fern. Two real documents do not settle
+  the class.
 - **crozier's behaviour is unchanged**: it refuses the probe in both modes, as
   the e2e gate still checks.
 - **Follow-up:** the existing *Settle crozier's heap-exhausted refusal class at
