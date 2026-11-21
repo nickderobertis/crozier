@@ -2129,10 +2129,10 @@ def assemble(args: argparse.Namespace) -> int:
             continue
         for path in (*record.written, *record.deleted):
             if path in SHARED_TABLES and path in record.written:
-                # Each job rewrote its own items' rows; they are merged below.
-                owned = SHARED_TABLES[path].owned(record.items)
-                tables.setdefault(path, []).append(TableWriter(label, shard_dir / "files" / path, owned))
-            elif path in owners and owners[path] != index:
+                # Each job rewrote its own items' rows; they are merged below,
+                # once the job's artifact is shown to carry its copy.
+                continue
+            if path in owners and owners[path] != index:
                 failures.append(f"{path} was written by shards {owners[path]} and {index}; plan their items together")
             owners[path] = index
         carried = {
@@ -2151,6 +2151,9 @@ def assemble(args: argparse.Namespace) -> int:
             if path not in carried:
                 failures.append(f"shard {index} lists {path} but its artifact does not carry it")
                 continue
+            if path in SHARED_TABLES:
+                owned = SHARED_TABLES[path].owned(record.items)
+                tables.setdefault(path, []).append(TableWriter(label, shard_dir / "files" / path, owned))
             target = inside(output / "files", path, f"shard {index}")
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(shard_dir / "files" / path, target)

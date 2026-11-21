@@ -767,6 +767,22 @@ class AssemblyTests(unittest.TestCase):
                 self.assertEqual(1, result.returncode, result.stderr)
                 self.assertIn(expected, result.stderr)
 
+    def test_a_shared_table_a_job_lists_but_does_not_carry_is_a_failure_not_a_crash(self) -> None:
+        """The missing copy is named like any missing file, and never read for the merge."""
+        self.isolate()
+        self.write_table(0, "a", self.table({"a": "2", "heap-exhausted": "1", "z": "1"}))
+        self.shard(1, "b", [])
+        self.write_table(2, "heap-exhausted", self.table({"a": "1", "heap-exhausted": "0", "z": "1"}))
+        (self.scratch / "artifacts/fern-goldens-shard-2/files" / self.CLASSES).unlink()
+        result = self.assemble()
+        self.assertEqual(1, result.returncode, result.stderr)
+        self.assertIn(f"shard 2 lists {self.CLASSES} but its artifact does not carry it", result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+        self.assertEqual(
+            self.table({"a": "2", "heap-exhausted": "1", "z": "1"}),
+            (self.scratch / "bundle/files" / self.CLASSES).read_text(encoding="utf-8"),
+        )
+
     def test_one_job_alone_rewriting_a_row_its_items_do_not_own_is_a_failure(self) -> None:
         """With the isolated job lost, shard 0's table is still held to its own rows."""
         self.isolate()
