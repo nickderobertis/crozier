@@ -1,6 +1,6 @@
-fern_cli_version = "5.200.0"
-fern_python_sdk_version = "5.41.25"
-digest = "497f3d57dd7e44b659b99ddcf0ef92e5faf76f94eacec1157416d36109adf4d7"
+fern_cli_version = "5.216.0"
+fern_python_sdk_version = "5.42.0"
+digest = "d599bcd88b64fc5eca811618707d62b38e3e1f166f5d2e1d1f5f703c0c8315a0"
 
 [[covers]]
 key = "multipart-inline-object-part-json-encoded"

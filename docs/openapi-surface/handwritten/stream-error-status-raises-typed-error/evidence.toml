@@ -1,6 +1,6 @@
-fern_cli_version = "5.200.0"
-fern_python_sdk_version = "5.41.25"
-digest = "d6840bcf21c9c73506b9778c41e45ea9568fb3a678c3b4936097975a52d16357"
+fern_cli_version = "5.216.0"
+fern_python_sdk_version = "5.42.0"
+digest = "7dfc6319ab0b4e7382080fd32265661cd5f9766dd49ab660fa0ee7c3173a96a6"
 
 [[covers]]
 key = "stream-error-status-raises-typed-error"

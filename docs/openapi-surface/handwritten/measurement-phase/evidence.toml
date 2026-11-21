@@ -1,6 +1,6 @@
-fern_cli_version = "5.200.0"
-fern_python_sdk_version = "5.41.25"
-digest = "1861843a194d9aef10bd916c03603301e424a2126f02f669d766ab4daf39546c"
+fern_cli_version = "5.216.0"
+fern_python_sdk_version = "5.42.0"
+digest = "dfd26015e8177786804d9600e94695e447ecac278751dbb51d64ff6797efb072"
 
 [[covers]]
 key = "allof-enum-ref-narrowed-by-scalar-member"
