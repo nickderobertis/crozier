@@ -166,6 +166,7 @@ jobs:
           CLI: ${{ needs.plan.outputs.cli }}
         run: npm install -g "fern-api@$CLI"
 
+      # llmlint: ignore[diagnostics_error_or_absent] The shard job's same build of the same commit; the crate's warnings are already errors in the required gate (`cargo clippy -- -D warnings`, src/project.json), and a flag only here would let the isolated job fail where the shards pass.
       - name: Build the comment stripper
         run: cargo build --release --locked --bin crozier
 
@@ -256,9 +257,8 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version-file: package.json
-      # Prebuilt binaries, so `just bootstrap` finds them and builds nothing from
-      # source: a cargo tool's new release that does not compile on this Rust
-      # (cargo-machete 0.10.1, run 43809697471) never stops the decision.
+      # Prebuilt, so `just bootstrap` builds no cargo tool from source; why:
+      # docs/fern-goldens.md, "The weekly run", Decide.
       - name: Install cargo tools
         uses: taiki-e/install-action@v2
         with:

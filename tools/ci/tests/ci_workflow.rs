@@ -946,10 +946,7 @@ fn dev_tools() -> Vec<&'static str> {
     tools
 }
 
-/// Every job that runs `just bootstrap`, in any workflow that bootstraps, installs each
-/// tool `install-dev-tools.sh` lists from a prebuilt installer and proves it runs before
-/// bootstrap, so bootstrap builds none from source: run 43809697471's decision stopped
-/// in `cargo install` when cargo-machete 0.10.1 did not compile on the runner's Rust.
+/// Bootstrap builds no dev tool from source; why: docs/fern-goldens.md, "The weekly run", Decide.
 #[test]
 fn every_bootstrapping_job_installs_each_dev_tool_prebuilt_and_proves_it_before_bootstrap() {
     let wanted = dev_tools();
