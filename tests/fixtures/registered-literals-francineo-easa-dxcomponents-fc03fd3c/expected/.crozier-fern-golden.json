@@ -1,5 +1,5 @@
 {
-  "fern_python_sdk_version": "5.41.25",
+  "fern_python_sdk_version": "5.42.0",
   "corpus_spec_name": "registered-literals-francineo-easa-dxcomponents-fc03fd3c",
   "corpus_spec_ref": "5e76786020a8f1c8b11989f7e7be120edf20c76d",
   "corpus_spec_url": "https://raw.githubusercontent.com/FrancineO/easa-dxcomponents/5e76786020a8f1c8b11989f7e7be120edf20c76d/src/components/EASA_Extensions_SORA/ymls/HTTP_INTERFACES_EXAMPLE_OPENAPI.yml"

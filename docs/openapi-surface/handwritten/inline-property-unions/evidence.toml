@@ -1,6 +1,6 @@
-fern_cli_version = "5.200.0"
-fern_python_sdk_version = "5.41.25"
-digest = "00e8a5dcfd550fba61aeb01e70c0e479defaa93ed8bd5dfcb24133c8598c1d33"
+fern_cli_version = "5.216.0"
+fern_python_sdk_version = "5.42.0"
+digest = "298d7a2a5a5a998e7c8f518b0a6cc3809d82f1b2224ac9ff363f1add3a4c4d34"
 
 [[covers]]
 key = "annotated-ref-target-string-const"

@@ -1,13 +1,13 @@
 # json-request-shapes: literals measurement
 
 Source: [independently authored request fixture](../../../openapi-surface/handwritten/json-request-shapes/openapi.yml).
-Pin: Fern CLI 5.200.0, `fernapi/fern-python-sdk` 5.41.25.
+Pin: Fern CLI 5.216.0, `fernapi/fern-python-sdk` 5.42.0.
 Settings: packaged preview, organization/package `fern`, project
 `default_package_name`, no audience filter; `pydantic_config.enum_type` unset.
 The python-enums counterpart uses that same source with `enum_type: python_enums`.
 Every committed file is unedited comment-stripped certified output.
 
-Canonical tree SHA-256: `e45f3f93049eeec228ad0351bc0e15eabc98af68b49676d4f23eb7dccaada6a3`.
+Canonical tree SHA-256: `b3cb5b89c40a20080bd91094d524262458591c9d395f74d96e6830de2bbe8821`.
 
 The real-binary gate compares the complete tree bidirectionally through
 `src/parity.rs`. Its scenario departure corrects only the invalid default

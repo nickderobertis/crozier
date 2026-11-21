@@ -1,6 +1,6 @@
-fern_cli_version = "5.200.0"
-fern_python_sdk_version = "5.41.25"
-digest = "0b6f10bdd77cd8871a87cbd8127ca5d3c0d774055eb25b6926520ed330b9062d"
+fern_cli_version = "5.216.0"
+fern_python_sdk_version = "5.42.0"
+digest = "6cffadf7f1abf9da886c90ac38dc3f5128c2d7668ba9f0d0f912fdaf7bfb8dda"
 
 [[covers]]
 key = "required-param-and-body-defaults-ignored"

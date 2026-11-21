@@ -1,6 +1,6 @@
-fern_cli_version = "5.200.0"
-fern_python_sdk_version = "5.41.25"
-digest = "7d6d94b52532c2fcdbc410bb521066cd6761ff1f0b14882e545102bddfaa8b93"
+fern_cli_version = "5.216.0"
+fern_python_sdk_version = "5.42.0"
+digest = "ca68b7ab8596796a65bb5b9f3a6f9adc4346b2d2e29446e6466286207d509242"
 
 [[covers]]
 key = "component-same-primitive-union"
