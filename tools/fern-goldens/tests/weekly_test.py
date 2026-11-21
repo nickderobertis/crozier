@@ -687,63 +687,89 @@ class AssemblyTests(unittest.TestCase):
     CLASSES = "docs/fern-refusals/classes.tsv"
 
     def isolate(self) -> None:
-        """The plan with one refusal class in a job of its own, numbered after the shards."""
+        """The plan with shard 0 a refusal class `a`, and the class
+        `heap-exhausted` in a job of its own, numbered after the shards."""
         plan = weekly.Plan.from_json(json.loads((self.scratch / "plan.json").read_text(encoding="utf-8")), "plan")
+        first = weekly.replace(plan.shards[0], items=(weekly.PlannedItem("refusals", "a", 1.0),))
         job = weekly.PlannedShard(2, 1.0, 4.02, (weekly.PlannedItem("refusals", "heap-exhausted", 1.0),))
-        families = {**plan.families, "refusals": weekly.FamilyTotal(1, 1.0)}
-        isolated = weekly.replace(plan, isolated=(job,), families=families, units=3)
+        families = {"corpus": weekly.FamilyTotal(1, 1.0), "refusals": weekly.FamilyTotal(2, 2.0)}
+        isolated = weekly.replace(plan, shards=(first, *plan.shards[1:]), isolated=(job,), families=families, units=3)
         (self.scratch / "plan.json").write_text(json.dumps(isolated.to_json()), encoding="utf-8")
+        (self.root / "docs/fern-refusals").mkdir(parents=True)
+        self.committed({"a": "1", "heap-exhausted": "1", "z": "1"})
 
-    def table(self, rows: dict[str, str]) -> str:
-        return "class\tfern_exit\n" + "".join(f"{name}\t{cell}\n" for name, cell in rows.items())
+    def committed(self, rows: dict[str, str]) -> None:
+        (self.root / self.CLASSES).write_text(self.table(rows), encoding="utf-8")
 
-    def write_table(self, index: int, item: str, rows: dict[str, str]) -> None:
-        family = "refusals" if index == 2 else "corpus"
+    def table(self, rows: dict[str, str], header: str = "class\tfern_exit") -> str:
+        return f"{header}\n" + "".join(f"{name}\t{cell}\n" for name, cell in rows.items())
+
+    def write_table(self, index: int, item: str, text: str) -> None:
+        """Job `index`'s result: refusal class `item`, having written `text` as classes.tsv."""
         self.shard(index, item, [self.CLASSES])
         directory = self.scratch / "artifacts" / f"fern-goldens-shard-{index}"
-        (directory / "files" / self.CLASSES).write_text(self.table(rows), encoding="utf-8")
+        (directory / "files" / self.CLASSES).write_text(text, encoding="utf-8")
         record = json.loads((directory / "result.json").read_text(encoding="utf-8"))
-        record["items"][0]["family"] = family
+        record["items"][0]["family"] = "refusals"
         (directory / "result.json").write_text(json.dumps(record), encoding="utf-8")
+
+    def merged(self, ours: str, theirs: str) -> subprocess.CompletedProcess[str]:
+        """The assembly of shard 0's and the isolated job's classes.tsv."""
+        self.write_table(0, "a", ours)
+        self.shard(1, "b", [])
+        self.write_table(2, "heap-exhausted", theirs)
+        return self.assemble()
 
     def test_a_shared_table_two_jobs_each_rewrote_a_row_of_is_merged_row_by_row(self) -> None:
         self.isolate()
-        (self.root / "docs/fern-refusals").mkdir(parents=True)
-        (self.root / self.CLASSES).write_text(self.table({"a": "1", "heap-exhausted": "1", "z": "1"}), encoding="utf-8")
-        self.write_table(0, "a", {"a": "2", "heap-exhausted": "1", "z": "2"})
-        self.shard(1, "b", [])
-        self.write_table(2, "heap-exhausted", {"a": "1", "heap-exhausted": "0", "z": "1"})
-        result = self.assemble()
-        self.assertEqual(0, result.returncode, result.stderr)
-        merged = (self.scratch / "bundle/files" / self.CLASSES).read_text(encoding="utf-8")
-        self.assertEqual(self.table({"a": "2", "heap-exhausted": "0", "z": "2"}), merged)
+        cases = (
+            # Each job changed its own item's row.
+            ({"a": "2", "heap-exhausted": "1", "z": "1"}, {"a": "1", "heap-exhausted": "0", "z": "1"}),
+            # One job changed nothing; the other's row is carried.
+            ({"a": "1", "heap-exhausted": "1", "z": "1"}, {"a": "1", "heap-exhausted": "0", "z": "1"}),
+        )
+        expected = ({"a": "2", "heap-exhausted": "0", "z": "1"}, {"a": "1", "heap-exhausted": "0", "z": "1"})
+        for (ours, theirs), want in zip(cases, expected, strict=True):
+            with self.subTest(ours=ours):
+                result = self.merged(self.table(ours), self.table(theirs))
+                self.assertEqual(0, result.returncode, result.stderr)
+                merged = (self.scratch / "bundle/files" / self.CLASSES).read_text(encoding="utf-8")
+                self.assertEqual(self.table(want), merged)
         bundle = json.loads((self.scratch / "bundle/bundle.json").read_text(encoding="utf-8"))
         shards = {entry["item"]: entry.get("shard") for entry in bundle["items"]}
         self.assertEqual({"a": 0, "b": 1, "heap-exhausted": None}, shards, "an isolated job is no shard")
 
-    def test_two_jobs_rewriting_one_row_differently_or_beyond_their_rows_is_a_failure(self) -> None:
+    def test_a_shared_table_no_one_job_could_have_written_is_a_failure(self) -> None:
         self.isolate()
-        (self.root / "docs/fern-refusals").mkdir(parents=True)
-        (self.root / self.CLASSES).write_text(self.table({"a": "1", "heap-exhausted": "1"}), encoding="utf-8")
+        ours = self.table({"a": "2", "heap-exhausted": "1", "z": "1"})
+        job = "the isolated job for refusals `heap-exhausted` (job 2)"
+        beyond = f"{job} rewrote {self.CLASSES} beyond its own items' rows"
         for theirs, expected in (
             (
-                {"a": "0", "heap-exhausted": "1"},
-                "shard 0 and the isolated job for refusals `heap-exhausted` (job 2) "
-                f"each rewrote {self.CLASSES}'s `a` row",
+                self.table({"a": "0", "heap-exhausted": "1", "z": "1"}),
+                f"{job} rewrote {self.CLASSES}'s `a` row, which none",
             ),
-            ({"a": "1"}, f"the isolated job for refusals `heap-exhausted` (job 2) rewrote {self.CLASSES} beyond"),
+            (
+                self.table({"a": "1", "heap-exhausted": "1", "z": "0"}),
+                f"{job} rewrote {self.CLASSES}'s `z` row, which none",
+            ),
+            (self.table({"a": "1", "heap-exhausted": "1"}), beyond),
+            (self.table({"a": "1", "heap-exhausted": "1", "z": "1", "new": "1"}), beyond),
+            (self.table({"heap-exhausted": "1", "a": "1", "z": "1"}), beyond),
+            (self.table({"a": "1", "heap-exhausted": "1", "z": "1"}, "class\tfern_stage"), beyond),
+            (self.table({"a": "1", "heap-exhausted": "1", "z": "1"}, "name\tfern_exit"), "has no `class` column"),
+            ("class\tfern_exit\na\t1\theap\n", "line 2 has 3 cells for 2 columns"),
+            (self.table({"a": "1", "heap-exhausted": "1", "z": "1"}) + "a\t1\n", "names a `class` twice"),
+            ("", f"{job}'s {self.CLASSES} is empty"),
         ):
             with self.subTest(theirs=theirs):
-                self.write_table(0, "a", {"a": "2", "heap-exhausted": "1"})
-                self.shard(1, "b", [])
-                self.write_table(2, "heap-exhausted", theirs)
-                result = self.assemble()
-                self.assertEqual(1, result.returncode)
+                result = self.merged(ours, theirs)
+                self.assertEqual(1, result.returncode, result.stderr)
                 self.assertIn(expected, result.stderr)
 
     def test_an_isolated_job_that_uploaded_nothing_leaves_its_item_alone_not_generated(self) -> None:
         self.isolate()
-        self.shard(0, "a", ["tests/fixtures/a/x.py"])
+        self.write_table(0, "a", self.table({"a": "2", "heap-exhausted": "1", "z": "1"}))
         self.shard(1, "b", [])
         result = self.assemble()
         self.assertEqual(0, result.returncode, result.stderr)

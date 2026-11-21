@@ -206,7 +206,6 @@ fn fern_goldens_workflow_runs_weekly_sharded_and_least_privilege() {
         shard.get("timeout-minutes"),
         "an isolated job is held to the shard's timeout, never a longer one"
     );
-    // Everything up to and including the plan's download, step for step.
     let setup = |job: &Mapping| -> Vec<Value> {
         let steps = steps(job);
         let (download, _) = uses_steps(steps, "actions/download-artifact@v4")[0];

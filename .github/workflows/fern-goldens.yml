@@ -142,11 +142,8 @@ jobs:
           retention-days: 14
           overwrite: true
 
-  # Each item weekly.py's ISOLATED_ITEMS names, generated beside the shards in a
-  # job of its own: heap-exhausted gives Fern a 16 GiB Node heap on this 16 GB
-  # runner, so a runner it starves loses that one answer, never a shard's
-  # (docs/fern-goldens.md). The same steps and phase as a shard, at the same
-  # heap and bound.
+  # Each item weekly.py's ISOLATED_ITEMS names, beside the shards, so a runner
+  # it starves loses only its own answer (docs/fern-goldens.md#an-item-in-a-job-of-its-own).
   isolated:
     needs: plan
     if: needs.plan.outputs.run == 'true' && needs.plan.outputs.isolated != '0'

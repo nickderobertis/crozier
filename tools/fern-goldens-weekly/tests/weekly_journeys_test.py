@@ -2037,7 +2037,9 @@ class WeeklyRunTests(unittest.TestCase):
         bounds: list[float] = []
         waited = subprocess.Popen.communicate
 
-        def bounded(process: subprocess.Popen[str], input: str | None = None, timeout: float | None = None) -> Any:
+        def bounded(
+            process: subprocess.Popen[str], input: str | None = None, timeout: float | None = None
+        ) -> tuple[str, str]:
             if timeout is not None:
                 bounds.append(timeout)
                 timeout = min(timeout, 2)
