@@ -166,8 +166,8 @@ jobs:
           CLI: ${{ needs.plan.outputs.cli }}
         run: npm install -g "fern-api@$CLI"
 
-      # llmlint: ignore[diagnostics_error_or_absent] The shard job's same build of the same commit; the crate's warnings are already errors in the required gate (`cargo clippy -- -D warnings`, src/project.json), and a flag only here would let the isolated job fail where the shards pass.
       - name: Build the comment stripper
+        # llmlint: ignore[diagnostics_error_or_absent, work_goes_through_command_surface] The shard job's build, verbatim, so the isolated job generates with the same release binary: the crate's warnings are already errors in the required gate (`cargo clippy -- -D warnings`, src/project.json), the command surface's `crozier:build` is a debug build, and a flag or a new target here alone would let the isolated job differ from the shards.
         run: cargo build --release --locked --bin crozier
 
       - name: Install pinned ruff
