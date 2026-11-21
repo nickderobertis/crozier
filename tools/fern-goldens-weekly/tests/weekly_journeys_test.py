@@ -918,14 +918,35 @@ class WeeklyRunTests(unittest.TestCase):
             self.git(planner, "rev-parse", "HEAD"),
             "--output",
             str(plan),
+            "--github-output",
+            str(scheduled := artifacts / "plan-outputs"),
             **env,
         )
         state.plan = planned
         if planned.returncode != 0:
             return state
+        # The jobs start as the workflow starts them: from the plan step's
+        # outputs, each job's `if:` reading its count and its matrix the list.
+        given = dict(line.split("=", 1) for line in scheduled.read_text(encoding="utf-8").splitlines())
         planned = planned_jobs(plan)
-        jobs = [("shard", shard) for shard in planned["shards"]]
-        jobs += [("isolated", job) for job in planned["isolated"]]
+        by_index = {job["index"]: job for job in (*planned["shards"], *planned["isolated"])}
+        shard_indices = json.loads(given["matrix"])["shard"] if given["shards"] != "0" else []
+        isolated_include = json.loads(given["isolated_matrix"])["include"] if given["isolated"] != "0" else []
+        self.assertEqual(
+            ([job["index"] for job in planned["shards"]], len(planned["shards"])),
+            (shard_indices, int(given["shards"])),
+        )
+        self.assertEqual(
+            [
+                {"index": job["index"], "item": f"{e['family']}:{e['item']}"}
+                for job in planned["isolated"]
+                for e in job["items"]
+            ],
+            isolated_include,
+        )
+        self.assertEqual(len(isolated_include), int(given["isolated"]))
+        jobs = [("shard", by_index[index]) for index in shard_indices]
+        jobs += [("isolated", by_index[entry["index"]]) for entry in isolated_include]
         for kind, shard in jobs:
             job = self.clone()
             uploaded = artifacts / f"fern-goldens-{kind}-{shard['index']}"
