@@ -41,6 +41,15 @@ moved from is historical too, once it carries [`HISTORICAL_PAIR`] naming that
 pair; `historical` labels every such committed row, and its record is still
 held whole, at the pair it names.
 
+`screen --ledger LEDGER` re-screens a candidate already filed in any
+`screens.jsonl` under the evidence root — a nested one such as
+`witness-search-<search>/<candidate>-screen/screens.jsonl` included — by its
+stable identity, ``--repository``/``--commit``/``--path``. Its keys default to
+the candidate's own and are checked against the ledger's search scope: the
+`key` column of the search's `census.tsv` (`witness-search-<search>/census.tsv`)
+where it has one, else the general key set. The new row is appended to that
+same ledger, its logs filed beside it.
+
 `screen` exits 0 when it filed the row — a rejected candidate is filed too, so
 0 says the screens were taken and recorded, not that they passed; 1 when it
 refused to file (an unknown key, a path outside the repository, a record that
@@ -1179,6 +1188,49 @@ def disposition_arg(text: str) -> str:
     return text
 
 
+SEARCH_CATALOG = "census.tsv"
+
+
+def scope_keys(evidence_root: Path, ledger: Path) -> tuple[set[str], Path]:
+    """The keys a ledger's search scope admits, and the file they were read from.
+
+    A search directory carrying its own `census.tsv` (a `key` column) scopes its
+    ledgers to those keys; every other ledger is scoped to the general key set.
+    """
+    search = evidence_root / ledger.relative_to(evidence_root).parts[0]
+    catalog = search / SEARCH_CATALOG
+    if ledger.parent == search or not catalog.is_file():
+        return witness_keys(evidence_root), evidence_root / KEYS_FILE
+    lines = catalog.read_text(encoding="utf-8").splitlines()
+    header = lines[0].split("\t") if lines else []
+    if "key" not in header:
+        fail(f"{catalog} has no `key` column, so it scopes no key; restore it from git")
+    column = header.index("key")
+    return {cells[column] for cells in (line.split("\t") for line in lines[1:]) if len(cells) > column}, catalog
+
+
+def rescreen_scope(args: argparse.Namespace) -> tuple[Path, str, list[str], set[str], Path]:
+    """`--ledger`'s ledger, the filed candidate's source, the keys to screen, and the scope's keys."""
+    root = args.evidence_root.resolve()
+    ledger = (args.ledger if args.ledger.is_absolute() else root / args.ledger).resolve()
+    if ledger.name != "screens.jsonl" or not ledger.is_file() or not ledger.is_relative_to(root):
+        fail(f"--ledger {args.ledger} is no screens.jsonl under {root}; name the ledger the candidate was filed in")
+    filed = [
+        row
+        for row in (json.loads(line) for line in ledger.read_text(encoding="utf-8").splitlines() if line.strip())
+        if (row.get("repository"), row.get("commit"), row.get("path")) == (args.repository, args.commit, args.path)
+    ]
+    if not filed:
+        fail(
+            f"{ledger.relative_to(root).as_posix()} holds no candidate {args.repository}@{args.commit}:{args.path}; "
+            "--ledger re-screens a filed candidate by its repository, commit and path"
+        )
+    candidate = filed[-1]
+    known, catalog = scope_keys(root, ledger)
+    keys = list(args.key) if args.key else list(candidate.get("keys") or [])
+    return ledger, str(candidate.get("source", "")), keys, known, catalog
+
+
 def legacy_screen(args: argparse.Namespace) -> int:
     """Take one candidate's screens and append them to its legacy `screens.jsonl`."""
     if args.fern is not None:
@@ -1189,15 +1241,22 @@ def legacy_screen(args: argparse.Namespace) -> int:
     if screening_mode_or_fail(args.repository, args.commit, args.path, args.sha256) is ScreeningMode.SCREENED_HISTORY:
         print(f"witness-screen: {args.source}: opaque input screened by repository rule; history retained")
         return 0
-    directory = args.evidence_root / f"witness-search-{args.source}"
-    if not directory.is_dir():
-        fail(f"{directory} does not exist; acquire {args.source} through its witness-search script first")
-    known = witness_keys(args.evidence_root)
-    unknown = [key for key in args.key if key not in known]
+    if args.ledger is not None:
+        ledger, source, keys, known, catalog = rescreen_scope(args)
+        directory = ledger.parent
+    else:
+        if not args.key:
+            fail("--source needs at least one --key; or re-screen a filed candidate with --ledger")
+        directory = args.evidence_root / f"witness-search-{args.source}"
+        if not directory.is_dir():
+            fail(f"{directory} does not exist; acquire {args.source} through its witness-search script first")
+        ledger, source, keys = directory / "screens.jsonl", args.source, list(args.key)
+        known, catalog = witness_keys(args.evidence_root), args.evidence_root / KEYS_FILE
+    unknown = [key for key in keys if key not in known]
     if unknown:
         fail(
             f"--key {', '.join(map(repr, unknown))} is no witness-search key in "
-            f"{args.evidence_root / KEYS_FILE}; pass a key that file lists (regenerate it with "
+            f"{catalog}; pass a key that file lists (regenerate it with "
             "`tools/surface-census/witness-search-region-keys.py` if the regions moved)"
         )
     if args.measured:
@@ -1206,7 +1265,10 @@ def legacy_screen(args: argparse.Namespace) -> int:
         github = _load("witness_search_github_screen", REPO / "tools" / "witness-search" / "witness-search-github.py")
         acquirer = github.Acquirer(
             directory,
-            cache=REPO / ".local" / "witness-screen" / args.source,
+            cache=REPO
+            / ".local"
+            / "witness-screen"
+            / (args.source or directory.relative_to(args.evidence_root.resolve()).as_posix()),
             raw_github_url=github.checked_service_url(
                 os.environ.get("CROZIER_RAW_GITHUB_URL", github.RAW_GITHUB_URL),
                 "CROZIER_RAW_GITHUB_URL",
@@ -1217,7 +1279,7 @@ def legacy_screen(args: argparse.Namespace) -> int:
             repository=args.repository,
             commit=args.commit,
             path=args.path,
-            fetch=lambda url, subject: acquirer.raw_github_get(url, args.key[0], subject),
+            fetch=lambda url, subject: acquirer.raw_github_get(url, keys[0], subject),
             raw_base=acquirer.raw_github_url,
             logs=directory / LOG_DIR,
             base=directory,
@@ -1270,12 +1332,12 @@ def legacy_screen(args: argparse.Namespace) -> int:
         fail(refusal)
     document = record["document"]
     row = {
-        "source": args.source,
+        "source": source,
         "repository": args.repository,
         "path": args.path,
         "commit": args.commit,
         "sha256": document["sha256"],
-        "keys": args.key,
+        "keys": keys,
         "license": record["licence"]["outcome"],
         "ref": record["ref"]["outcome"],
         "fern": record["fern"]["outcome"],
@@ -1283,10 +1345,10 @@ def legacy_screen(args: argparse.Namespace) -> int:
         "screened_at": record["screened_at"],
         "measured": record,
     }
-    with (directory / "screens.jsonl").open("a", encoding="utf-8", newline="\n") as handle:
+    with ledger.open("a", encoding="utf-8", newline="\n") as handle:
         handle.write(json.dumps(row, sort_keys=True) + "\n")
     print(
-        f"witness-screen: {args.source}: {args.repository}:{args.path} — licence "
+        f"witness-screen: {source}: {args.repository}:{args.path} — licence "
         f"{row['license'].split(':', 1)[0]}, ref {row['ref'].split(':', 1)[0]}, "
         f"fern {row['fern'].split(':', 1)[0]}; {disposition}"
     )
@@ -1360,8 +1422,14 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
     sub = parser.add_subparsers(dest="command", required=True)
     s = sub.add_parser("screen", help="screen one legacy witness-search candidate")
-    s.add_argument("--source", required=True, choices=LEGACY_SOURCES)
-    s.add_argument("--key", action="append", required=True, type=nonempty)
+    scope = s.add_mutually_exclusive_group(required=True)
+    scope.add_argument("--source", choices=LEGACY_SOURCES, help="file into witness-search-<source>/screens.jsonl")
+    scope.add_argument(
+        "--ledger",
+        type=Path,
+        help="re-screen a candidate this screens.jsonl already holds, in that ledger's own key scope",
+    )
+    s.add_argument("--key", action="append", type=nonempty, help="a key (with --ledger, default: the candidate's)")
     s.add_argument("--repository", required=True, help="owner/name")
     s.add_argument("--commit", required=True)
     s.add_argument("--path", required=True)
