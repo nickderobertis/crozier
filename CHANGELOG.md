@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.170](https://github.com/nickderobertis/crozier/compare/v0.0.169...v0.0.170) - 2026-11-22
+
+### Fixed
+
+- *(parity)* certify generated Python against Fern 5.216.0 / 5.42.0 ([#958](https://github.com/nickderobertis/crozier/pull/958))
+
 ## [0.0.169](https://github.com/nickderobertis/crozier/compare/v0.0.168...v0.0.169) - 2026-11-20
 
 ### Fixed
