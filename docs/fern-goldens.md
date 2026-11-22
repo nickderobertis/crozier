@@ -631,6 +631,19 @@ The regenerated base records Fern CLI 5.216.0 / fern-python-sdk 5.42.0.
 `subsloth_matches_fern_output`, the overlay gate and `just fixtures-diff
 subsloth` (0 differing files) all compare crozier against it.
 
+The repair of every invalid worked-example value (`schema-rejected-declared-example`,
+the seeded empty lists, and the `unsatisfiable-schema` rows) changed emitted
+examples in 49 trees after that run, so the closeout was taken again the same
+way. A fresh copy of the same published bundle, whose `base` is `5847794b05`,
+was repointed to the branch's head `4f20c90041`, with subsloth's two
+literals-overlay files the tree's. `apply` re-laid all 1,441 items and
+regenerated the departures ledger and the example-values inventory with no
+changed row. `decide` then passed all 427 of its gates, 0 failing and 0 not
+checked, the whole-suite comparison running 1,093 tests with the documentation
+audit and the inventory gate over every compared golden. Its only notes are the
+ones above: calorieninjas.com's reproduced known failure, `heap-exhausted`
+still unsettled, and the three references it could not fetch.
+
 A refusal class whose probe the candidate pair no longer refuses as recorded is
 likewise a diff, never a failure: the class keeps its record, and the pull
 request's **Refusal classes whose Fern outcome changed** section names it with
