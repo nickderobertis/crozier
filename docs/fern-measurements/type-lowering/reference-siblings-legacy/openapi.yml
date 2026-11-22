@@ -1,0 +1,88 @@
+openapi: 3.0.3
+info:
+  title: Theme Studio
+  version: "1.0"
+paths:
+  /themes/{themeId}:
+    get:
+      operationId: getTheme
+      tags: [themes]
+      parameters:
+        - name: themeId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The theme.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Theme"
+  /exports:
+    get:
+      operationId: exportMetadata
+      tags: [themes]
+      responses:
+        "200":
+          description: The exported metadata.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExportResponse"
+components:
+  schemas:
+    Theme:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: string
+        fonts:
+          $ref: "#/components/schemas/FontAssignments"
+    FontAssignments:
+      type: object
+      $ref: "#/components/schemas/ThemeFonts"
+    ThemeFonts:
+      type: object
+      description: A collection of fonts for typography.
+      properties:
+        headings:
+          type: string
+        body:
+          type: string
+    ExportResponse:
+      type: object
+      properties:
+        tables:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              configuration:
+                allOf:
+                  - $ref: "#/components/schemas/TableConfig"
+                additionalProperties: true
+              columns:
+                type: array
+                items:
+                  allOf:
+                    - $ref: "#/components/schemas/ColumnConfig"
+    TableConfig:
+      type: object
+      properties:
+        custom_name:
+          type: string
+        comment:
+          type: string
+    ColumnConfig:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        nullable:
+          type: boolean

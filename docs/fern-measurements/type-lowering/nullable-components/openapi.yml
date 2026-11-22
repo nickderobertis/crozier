@@ -1,0 +1,68 @@
+openapi: 3.0.3
+info:
+  title: Address Feedback
+  version: "1.0"
+paths:
+  /feedback:
+    post:
+      operationId: sendFeedback
+      tags: [feedback]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FeedbackRequest"
+      responses:
+        "200":
+          description: Accepted.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeedbackSettings"
+components:
+  schemas:
+    FeedbackRequest:
+      type: object
+      required: [queries]
+      properties:
+        queries:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/FeedbackQuery"
+        primary:
+          $ref: "#/components/schemas/FeedbackQuery"
+    FeedbackQuery:
+      allOf:
+        - nullable: true
+          oneOf: []
+        - anyOf: []
+          nullable: true
+        - type: object
+          additionalProperties: false
+          properties:
+            id:
+              type: string
+            address:
+              type: string
+    FeedbackSettings:
+      type: object
+      properties:
+        modalities:
+          $ref: "#/components/schemas/ResponseModalities"
+        channels:
+          $ref: "#/components/schemas/Channels"
+    ResponseModalities:
+      title: ResponseModalities
+      description: Output types to generate.
+      type: array
+      nullable: true
+      items:
+        type: string
+        enum: [text, audio]
+    Channels:
+      type: array
+      nullable: true
+      items:
+        type: string

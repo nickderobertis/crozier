@@ -259,29 +259,55 @@ const MEASUREMENTS: &[(&str, &str, &str, &str, &str)] = &[
 ];
 
 fn spec(case: &str) -> PathBuf {
-    repo_root().join(DIR).join(case).join("openapi.yml")
+    spec_in(DIR, case)
 }
 
 fn golden(case: &str) -> String {
-    format!("{DIR}/{case}/fern-expected")
+    golden_in(DIR, case)
 }
 
 fn generate(case: &str, mode: &str, out: &Path) {
-    probe_command(&spec(case), out)
+    generate_in(DIR, case, mode, out);
+}
+
+/// crozier's python-enums SDK for `case` against its certified-pair tree.
+fn enum_failures(case: &str, out: &Path) -> Vec<String> {
+    enum_failures_in(DIR, case, out)
+}
+
+/// crozier's literals SDK for `case` against the certified pair's literals
+/// tree ([`literals_tree_in`]).
+fn literals_failures(case: &str, out: &Path) -> Vec<String> {
+    literals_failures_in(DIR, case, out)
+}
+
+/// A measurement's document: `<dir>/<case>/openapi.yml`.
+pub(crate) fn spec_in(dir: &str, case: &str) -> PathBuf {
+    repo_root().join(dir).join(case).join("openapi.yml")
+}
+
+/// A measurement's certified python-enums tree, repository-relative.
+pub(crate) fn golden_in(dir: &str, case: &str) -> String {
+    format!("{dir}/{case}/fern-expected")
+}
+
+/// Generate crozier's SDK for a measurement in `mode` into `out`.
+pub(crate) fn generate_in(dir: &str, case: &str, mode: &str, out: &Path) {
+    probe_command(&spec_in(dir, case), out)
         .args(["--enum-type", mode])
         .assert()
         .success();
 }
 
-/// crozier's python-enums SDK for `case` against its certified-pair tree.
-fn enum_failures(case: &str, out: &Path) -> Vec<String> {
-    let golden = golden(case);
+/// crozier's python-enums SDK for a measurement against its certified tree.
+pub(crate) fn enum_failures_in(dir: &str, case: &str, out: &Path) -> Vec<String> {
+    let golden = golden_in(dir, case);
     let ledger = departure_ledger()
         .golden(&golden, &[])
         .unwrap_or_else(|failures| panic!("{}", failures.join("\n")));
     golden_tree_failures(
         &format!("{case} (python-enums)"),
-        &spec(case).display().to_string(),
+        &spec_in(dir, case).display().to_string(),
         &ledger,
         &repo_root().join(&golden),
         out,
@@ -303,11 +329,14 @@ fn removed(overlay: &Path) -> Vec<String> {
         .collect()
 }
 
-/// The certified pair's literals tree for `case`: the base less the files the
-/// overlay removes, with the overlay's own files laid over it.
-fn literals_tree(case: &str) -> (tempfile::TempDir, BTreeSet<String>, Vec<String>) {
-    let base = repo_root().join(golden(case));
-    let overlay = repo_root().join(format!("{DIR}/{case}/{LITERALS}"));
+/// The certified pair's literals tree for a measurement: the base less the
+/// files the overlay removes, with the overlay's own files laid over it.
+pub(crate) fn literals_tree_in(
+    dir: &str,
+    case: &str,
+) -> (tempfile::TempDir, BTreeSet<String>, Vec<String>) {
+    let base = repo_root().join(golden_in(dir, case));
+    let overlay = repo_root().join(format!("{dir}/{case}/{LITERALS}"));
     let removed = removed(&overlay);
     let tree = tempfile::tempdir().expect("literals tree tempdir");
     let copy = |from: &Path, rel: &str| {
@@ -330,13 +359,13 @@ fn literals_tree(case: &str) -> (tempfile::TempDir, BTreeSet<String>, Vec<String
     (tree, own, removed)
 }
 
-/// crozier's literals SDK for `case` against the certified pair's literals
-/// tree ([`literals_tree`]).
-fn literals_failures(case: &str, out: &Path) -> Vec<String> {
-    let overlay_golden = format!("{DIR}/{case}/{LITERALS}");
-    let (tree, own, removed) = literals_tree(case);
+/// crozier's literals SDK for a measurement against the certified pair's
+/// literals tree ([`literals_tree_in`]).
+pub(crate) fn literals_failures_in(dir: &str, case: &str, out: &Path) -> Vec<String> {
+    let overlay_golden = format!("{dir}/{case}/{LITERALS}");
+    let (tree, own, removed) = literals_tree_in(dir, case);
     let inherited = departure_ledger()
-        .golden(&golden(case), &[])
+        .golden(&golden_in(dir, case), &[])
         .unwrap_or_else(|failures| panic!("{}", failures.join("\n")));
     let ledger = departure_ledger()
         .golden(&overlay_golden, &[])
@@ -344,7 +373,7 @@ fn literals_failures(case: &str, out: &Path) -> Vec<String> {
         .inherit(inherited, own, &removed);
     golden_tree_failures(
         &format!("{case} (literals)"),
-        &spec(case).display().to_string(),
+        &spec_in(dir, case).display().to_string(),
         &ledger,
         tree.path(),
         out,
@@ -593,7 +622,7 @@ fn sdk_env_required_null_union_field_examples_construct_where_fern_s_fail() {
         let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
         (output.status.success(), stdout)
     };
-    let (literals, _, _) = literals_tree(case);
+    let (literals, _, _) = literals_tree_in(DIR, case);
     for fern in [
         repo_root().join(golden(case)),
         literals.path().to_path_buf(),

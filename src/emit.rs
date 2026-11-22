@@ -4961,6 +4961,9 @@ fn render_type_decl(
                     }
                 })
                 .unwrap_or_default();
+            if forward.contains(&alias.name) {
+                return Ok(render_recursive_alias(alias, &target.flat(), &mut imports, &docstring));
+            }
             if !forward.is_empty() {
                 let mut contents = format!(
                     "{HEADER}\n\nfrom __future__ import annotations\n\n{}\n",
@@ -5104,6 +5107,54 @@ fn render_literal_enum(env: &Environment<'static>, e: &crate::ir::EnumType) -> R
         &e.name,
         context! { header => HEADER, body => body },
     )
+}
+
+/// A type alias that names itself (a recursive JSON value, Supabase's
+/// `JsonValue_Output`): an implicit recursive alias overflows pydantic's model
+/// construction, under v1 and v2 alike, so every model holding it fails to
+/// import. Fern writes the implicit alias; crozier names it through the
+/// backported `typing_extensions.TypeAliasType` under pydantic v2, and under v1,
+/// which cannot validate a recursive alias, stops the recursion at
+/// `typing.Any`. Type checkers read the plain recursive alias (the
+/// `recursive-alias-named-type` departure).
+fn render_recursive_alias(
+    alias: &crate::ir::AliasType,
+    target: &str,
+    imports: &mut Imports,
+    docstring: &str,
+) -> String {
+    fn unrolled(type_ref: &TypeRef, name: &str) -> TypeRef {
+        let boxed = |inner: &TypeRef| Box::new(unrolled(inner, name));
+        match type_ref {
+            TypeRef::Named(n) if n == name => TypeRef::Primitive(crate::ir::Prim::Any),
+            TypeRef::Optional(inner) => TypeRef::Optional(boxed(inner)),
+            TypeRef::List(inner) => TypeRef::List(boxed(inner)),
+            TypeRef::Set(inner) => TypeRef::Set(boxed(inner)),
+            TypeRef::Dict(key, value) => TypeRef::Dict(boxed(key), boxed(value)),
+            TypeRef::Union(members) => {
+                TypeRef::Union(members.iter().map(|m| unrolled(m, name)).collect())
+            }
+            other => other.clone(),
+        }
+    }
+    let bounded = render_type(&unrolled(&alias.target, &alias.name), imports).flat();
+    imports.add_plain("typing_extensions");
+    imports.add_core("pydantic_utilities", "IS_PYDANTIC_V2");
+    let name = &alias.name;
+    let mut contents = format!(
+        "{HEADER}\n\nfrom __future__ import annotations\n\n{}\n",
+        imports.render()
+    );
+    contents.push_str(&format!(
+        "if typing.TYPE_CHECKING:\n    {name} = {target}\nelif IS_PYDANTIC_V2:\n    {name} = typing_extensions.TypeAliasType(\"{name}\", {target})\nelse:\n    {name} = {bounded}\n{docstring}"
+    ));
+    if !imports.deferred.is_empty() {
+        contents.push('\n');
+        for line in &imports.deferred {
+            contents.push_str(&format!("{line}  # noqa: E402\n"));
+        }
+    }
+    contents
 }
 
 /// Render a discriminated union to its module: a `{Union}_{Variant}` pydantic

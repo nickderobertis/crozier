@@ -10435,8 +10435,11 @@ impl InlineHoister<'_> {
             // A scalar member's own `nullable: true` stays on it, as in an inline
             // union (`hoist_union_variant`): the
             // `query-anyof-date-time-or-array-named` measurement's `shipped_at`
-            // alias opens `Union[Optional[datetime], …]`.
-            if is_plain_scalar(member) && member.nullable == Some(true) {
+            // alias opens `Union[Optional[datetime], …]`. 3.1's `type: [T,
+            // "null"]` spells the same nullability: the
+            // `type-lowering/parameter-member-nullability` measurement's `range`
+            // is `Union[Optional[str], int]` (#438).
+            if is_plain_scalar(member) && member.explicitly_nullable() {
                 variants.push(optional_type_ref(base_type_ref(member)));
                 continue;
             }

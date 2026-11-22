@@ -1,0 +1,117 @@
+openapi: 3.0.3
+info:
+  title: Costume Store
+  version: "1.0"
+paths:
+  /items/{itemId}:
+    get:
+      operationId: getItem
+      tags: [items]
+      parameters:
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The item.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StoreItem"
+  /queries:
+    post:
+      operationId: runQuery
+      tags: [items]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [scope_id]
+              properties:
+                scope_id:
+                  type: string
+      responses:
+        "200":
+          description: The query result or status.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QueryResponse"
+components:
+  schemas:
+    StoreItem:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: string
+        wearable:
+          description: A shirt or a coat.
+          nullable: true
+          oneOf:
+            - $ref: "#/components/schemas/Shirt"
+            - $ref: "#/components/schemas/Coat"
+    Shirt:
+      title: Shirt
+      properties:
+        slot:
+          type: string
+          example: Torso
+          nullable: true
+        type:
+          description: Shirt type, derived from the item name.
+          type: string
+          example: T-Shirt
+          nullable: true
+        sleeves:
+          type: string
+    Coat:
+      title: Coat
+      properties:
+        slot:
+          type: string
+          example: Torso
+          nullable: true
+        type:
+          description: Coat type, derived from the item name.
+          type: string
+          example: Jacket
+          nullable: true
+        lining:
+          type: string
+    QueryResponse:
+      type: object
+      oneOf:
+        - $ref: "#/components/schemas/QueryResult"
+        - $ref: "#/components/schemas/QueryStatus"
+    QueryResult:
+      additionalProperties: false
+      required: [scope_id, rows]
+      properties:
+        schema:
+          default: store.query.v1
+          type: string
+          enum: [store.query.v1]
+        scope_id:
+          type: string
+        rows:
+          type: array
+          items:
+            type: string
+    QueryStatus:
+      additionalProperties: false
+      required: [scope_id, status]
+      properties:
+        schema:
+          default: store.status.v1
+          type: string
+          enum: [store.status.v1]
+        scope_id:
+          type: string
+        status:
+          type: string
+          enum: [ready, building]

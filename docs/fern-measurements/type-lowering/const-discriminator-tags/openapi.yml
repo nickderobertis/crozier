@@ -1,0 +1,199 @@
+openapi: 3.1.0
+info:
+  title: Harbour Radio
+  version: "1.0"
+paths:
+  /timeline:
+    get:
+      operationId: getTimeline
+      tags: [radio]
+      responses:
+        "200":
+          description: The timeline.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Timeline"
+  /events:
+    get:
+      operationId: listEvents
+      tags: [radio]
+      responses:
+        "200":
+          description: The events.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Event"
+  /signals:
+    get:
+      operationId: listSignals
+      tags: [radio]
+      responses:
+        "200":
+          description: The signals.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Signal"
+components:
+  schemas:
+    Timeline:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            oneOf:
+              - $ref: "#/components/schemas/MessageItem"
+              - $ref: "#/components/schemas/ToolItem"
+              - $ref: "#/components/schemas/NoteItem"
+            discriminator:
+              propertyName: kind
+              mapping:
+                message: "#/components/schemas/MessageItem"
+                tool: "#/components/schemas/ToolItem"
+                note: "#/components/schemas/NoteItem"
+        envelopes:
+          type: array
+          items:
+            oneOf:
+              - $ref: "#/components/schemas/ApprovalEnvelope"
+              - $ref: "#/components/schemas/ToolEnvelope"
+              - $ref: "#/components/schemas/TextEnvelope"
+              - $ref: "#/components/schemas/PingEnvelope"
+            discriminator:
+              propertyName: type
+              mapping:
+                approval: "#/components/schemas/ApprovalEnvelope"
+                tool: "#/components/schemas/ToolEnvelope"
+                text: "#/components/schemas/TextEnvelope"
+                ping: "#/components/schemas/PingEnvelope"
+    MessageItem:
+      type: object
+      required: [kind, text]
+      properties:
+        kind:
+          type: string
+          const: message
+          title: Kind
+        text:
+          type: string
+    ToolItem:
+      type: object
+      required: [kind, tool_name]
+      properties:
+        kind:
+          type: string
+          const: tool
+          title: Kind
+        tool_name:
+          type: string
+    NoteItem:
+      type: object
+      required: [kind, body]
+      properties:
+        kind:
+          type: string
+          const: note
+          title: Kind
+        body:
+          type: string
+    ApprovalEnvelope:
+      type: object
+      required: [approved]
+      properties:
+        type:
+          type: string
+          const: approval
+          description: The envelope type.
+          default: approval
+        approved:
+          type: boolean
+    ToolEnvelope:
+      type: object
+      required: [output]
+      properties:
+        type:
+          type: string
+          const: tool
+          description: The envelope type.
+          default: tool
+        output:
+          type: string
+    TextEnvelope:
+      type: object
+      required: [text]
+      properties:
+        type:
+          type: string
+          const: text
+          description: The envelope type.
+          default: text
+        text:
+          type: string
+    PingEnvelope:
+      type: object
+      required: [sent_at]
+      properties:
+        type:
+          type: string
+          const: ping
+          description: The envelope type.
+        sent_at:
+          type: integer
+    Event:
+      description: Every record, discriminated by `type` over typeless constants.
+      discriminator:
+        propertyName: type
+      oneOf:
+        - $ref: "#/components/schemas/EventVesselArrived"
+        - $ref: "#/components/schemas/EventVesselDeparted"
+    EventVesselArrived:
+      type: object
+      required: [type, vessel]
+      properties:
+        type:
+          const: vessel.arrived
+        vessel:
+          type: string
+    EventVesselDeparted:
+      type: object
+      required: [type, vessel, berth]
+      properties:
+        type:
+          const: vessel.departed
+        vessel:
+          type: string
+        berth:
+          type: string
+    Signal:
+      description: Every signal, discriminated by `type` over typed one-value enums.
+      discriminator:
+        propertyName: type
+      oneOf:
+        - $ref: "#/components/schemas/FlagSignal"
+        - $ref: "#/components/schemas/LampSignal"
+    FlagSignal:
+      type: object
+      required: [type, colour]
+      properties:
+        type:
+          type: string
+          enum: [flag]
+        colour:
+          type: string
+    LampSignal:
+      type: object
+      required: [type, flashes]
+      properties:
+        type:
+          type: string
+          enum: [lamp]
+        flashes:
+          type: integer

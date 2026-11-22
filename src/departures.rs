@@ -2247,6 +2247,10 @@ pub fn rule(id: &str) -> Option<Rule> {
             line: Some(escaped_field_alias_literal),
             ..none
         },
+        "recursive-alias-named-type" => Rule {
+            region: Some(recursive_alias_named_type),
+            ..none
+        },
         "fern-metadata-generator-config" => Rule {
             region: Some(metadata_generator_config),
             ..none
@@ -5321,6 +5325,73 @@ fn escaped_field_alias_literal(pair: &Pair<'_>, fern: &str, crozier: &str) -> bo
                     .any(|theirs| crozier.replace(&ours, &format!("alias={theirs}")) == fern)
         })
     })
+}
+
+/// `recursive-alias-named-type`: a type alias module whose alias names itself.
+/// Fern's whole module after its imports is the implicit alias `NAME = T`;
+/// crozier's imports are Fern's plus `typing_extensions` and the core's
+/// `IS_PYDANTIC_V2`, and its statement is `NAME = T` under
+/// `if typing.TYPE_CHECKING:`, `NAME = typing_extensions.TypeAliasType("NAME",
+/// T)` under `elif IS_PYDANTIC_V2:`, and under `else:` `T` with each
+/// self-reference `"NAME"` read as `typing.Any`. Both are compared with their
+/// layout dropped (whitespace and the trailing commas `ruff format` adds where
+/// it wraps), so the alias's own type and anything after it must be Fern's.
+fn recursive_alias_named_type(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    if !pair.rel.ends_with(".py") || !pair.crozier.contains(&"if typing.TYPE_CHECKING:") {
+        return Ok(None);
+    }
+    let is_import = |line: &str| line.starts_with("import ") || line.starts_with("from ");
+    let split = |lines: &[&str]| -> (BTreeSet<String>, String) {
+        let imports = lines
+            .iter()
+            .filter(|line| is_import(line) && **line != "from __future__ import annotations")
+            .map(|line| line.to_string())
+            .collect();
+        let body: String = lines.iter().filter(|line| !is_import(line)).copied().collect();
+        (imports, unlaid(&body))
+    };
+    let (fern_imports, fern_body) = split(pair.fern);
+    let (mut crozier_imports, crozier_body) = split(pair.crozier);
+    let Some((name, rest)) = fern_body.split_once('=') else {
+        return Ok(None);
+    };
+    let (target, trailer) = rest.find("\"\"\"").map_or((rest, ""), |at| rest.split_at(at));
+    if name.is_empty() || !name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') {
+        return Ok(None);
+    }
+    let reference = format!("\"{name}\"");
+    if !target.contains(&reference) {
+        return Ok(None);
+    }
+    let bounded = target.replace(&reference, "typing.Any");
+    let named = format!(
+        "iftyping.TYPE_CHECKING:{name}={target}elifIS_PYDANTIC_V2:{name}=typing_extensions.TypeAliasType({reference},{target})else:{name}={bounded}{trailer}"
+    );
+    let added = ["import typing_extensions".to_string()];
+    let flag = crozier_imports
+        .iter()
+        .find(|line| {
+            line.starts_with("from ") && line.ends_with("core.pydantic_utilities import IS_PYDANTIC_V2")
+        })
+        .cloned();
+    let Some(flag) = flag else {
+        return Ok(None);
+    };
+    crozier_imports.remove(&flag);
+    if !added.iter().all(|line| crozier_imports.remove(line))
+        || crozier_imports != fern_imports
+        || crozier_body != named
+    {
+        return Ok(None);
+    }
+    Ok(differing_window(pair.fern, pair.crozier))
+}
+
+/// Python source with its layout dropped: no whitespace, and no trailing comma
+/// before a closing bracket.
+fn unlaid(source: &str) -> String {
+    let compact: String = source.chars().filter(|c| !c.is_whitespace()).collect();
+    compact.replace(",]", "]").replace(",)", ")")
 }
 
 /// The two literals `ruff format` may write for `value`: double-quoted, and the
