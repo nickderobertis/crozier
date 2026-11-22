@@ -44,6 +44,7 @@ MANIFEST_NAME = "corpus-remote-ref-pins.tsv"
 COPIED_SCRIPTS = (
     "tools/corpus/corpus-lib.sh",
     "tools/corpus/corpus_remote_ref_pins.py",
+    "tools/corpus/corpus_sources.py",
     "tools/corpus/fetch-corpus.sh",
     "scripts/lib.sh",
     "tools/surface-census/openapi-surface-census.py",
@@ -705,6 +706,37 @@ class PinMechanismTests(unittest.TestCase):
         [temporary] = [path for path in cache.iterdir() if path.name.startswith(".openapi.")]
         self.assertIn(f"could not remove the partial download {temporary} for stuck-row", result.stderr)
         self.assertIn(f"delete it (rm -f {temporary}) before re-running", result.stderr)
+
+    def test_a_fetched_root_whose_bytes_differ_from_its_recorded_digest_is_refused(self) -> None:
+        """Issue #860: the pinned URL of a registered row serving changed bytes is
+        refused before publication, naming the row and both digests, and the
+        cached document it would have replaced is kept. An explicit refresh
+        (`corpus_sources.py vendor`/`audit`) compares the bytes itself."""
+        recorded = hashlib.sha256(self.roots["plain-row"]).hexdigest()
+        (self.root / "tests/fixtures/corpus-sources.tsv").write_text(
+            "# corpus_name\tpath\tsource_url\tsha256\n"
+            f"plain-row\ttests/fixtures/corpus-sources/plain-row/openapi.yaml\t{self.spec_url('plain-row')}\t{recorded}\n",
+            encoding="utf-8",
+        )
+        fetched = self.fetch("plain-row")
+        self.assertEqual(fetched.returncode, 0, fetched.stderr)
+        self.assertEqual(self.published("plain-row").read_bytes(), self.roots["plain-row"])
+
+        changed = self.roots["plain-row"] + b"x-changed-upstream: true\n"
+        self.server.documents["/specs/plain-row.yaml"] = changed
+        refused = self.fetch("plain-row")
+        self.assert_refused_without_a_path(
+            refused,
+            f"plain-row: {self.spec_url('plain-row')} served bytes whose sha256 is {hashlib.sha256(changed).hexdigest()}",
+            f"not the {recorded} tests/fixtures/corpus-sources.tsv records",
+            "corpus_sources.py prepare --fixture plain-row",
+        )
+        self.assertEqual(self.published("plain-row").read_bytes(), self.roots["plain-row"], "the cache was replaced")
+        self.assert_no_leftovers("plain-row", expected={"openapi.yaml"})
+
+        refreshed = self.fetch("plain-row", CROZIER_CORPUS_REFRESH="1")
+        self.assertEqual(refreshed.returncode, 0, refreshed.stderr)
+        self.assertEqual(self.published("plain-row").read_bytes(), changed)
 
     def test_a_directory_or_link_where_the_spec_is_published_is_refused(self) -> None:
         for label in ("directory", "link to a directory"):
