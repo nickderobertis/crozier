@@ -642,11 +642,39 @@ fn count_paths(reference_root: &Path, crozier_root: &Path) -> usize {
     all.len()
 }
 
+/// The longest file name a `--diff-dir` file takes: the component limit of the
+/// filesystems crozier runs on (255 bytes on ext4, APFS and NTFS).
+const DIFF_FILE_NAME_LIMIT: usize = 255;
+
 /// The `--diff-dir` file name for the `index`th result: unique within the run
-/// and readable as the config and generator it belongs to.
+/// (the index leads it) and readable as the config and generator it belongs to.
+/// A name that would pass [`DIFF_FILE_NAME_LIMIT`] keeps the config's file name
+/// and the generator, cut to fit, beside a stable digest of the whole config
+/// path and generator, so it still says whose diff it is.
 fn diff_file_name(index: usize, config: &str, generator: &str) -> String {
-    let slug: String = format!("{config}-{generator}")
-        .chars()
+    let full = format!(
+        "{index:03}-{}.diff",
+        file_name_safe(&format!("{config}-{generator}"))
+    );
+    if full.len() <= DIFF_FILE_NAME_LIMIT {
+        return full;
+    }
+    let base = config.rsplit(['/', '\\']).next().unwrap_or(config);
+    let digest = format!(
+        "{:016x}",
+        fnv1a64(format!("{config}\0{generator}").as_bytes())
+    );
+    let prefix = format!("{index:03}-");
+    let suffix = format!("-{digest}.diff");
+    let room = DIFF_FILE_NAME_LIMIT.saturating_sub(prefix.len() + suffix.len());
+    let slug = file_name_safe(&format!("{base}-{generator}"));
+    // `file_name_safe` leaves only ASCII, so any byte offset is a char boundary.
+    format!("{prefix}{}{suffix}", &slug[..slug.len().min(room)])
+}
+
+/// `text` with every character a file name cannot safely carry replaced by `_`.
+fn file_name_safe(text: &str) -> String {
+    text.chars()
         .map(|c| {
             if c.is_ascii_alphanumeric() || "._-".contains(c) {
                 c
@@ -654,8 +682,15 @@ fn diff_file_name(index: usize, config: &str, generator: &str) -> String {
                 '_'
             }
         })
-        .collect();
-    format!("{index:03}-{slug}.diff")
+        .collect()
+}
+
+/// FNV-1a over `bytes`: a digest that is the same on every platform and build,
+/// which `std`'s hashers do not promise.
+fn fnv1a64(bytes: &[u8]) -> u64 {
+    bytes.iter().fold(0xcbf2_9ce4_8422_2325, |hash, byte| {
+        (hash ^ u64::from(*byte)).wrapping_mul(0x0000_0100_0000_01b3)
+    })
 }
 
 /// One mismatched generator's normalized diff, `-` reference and `+` crozier.
@@ -1383,6 +1418,32 @@ mod tests {
         assert_eq!(
             diff_file_name(7, "a b/crozier.yml", "py:thon"),
             "007-a_b_crozier.yml-py_thon.diff"
+        );
+    }
+
+    #[test]
+    fn a_diff_file_name_past_the_component_limit_is_cut_to_fit_and_stays_distinct() {
+        let deep = format!("{}/crozier.yml", "d".repeat(400));
+        let name = diff_file_name(1, &deep, "python");
+        assert!(
+            name.len() <= DIFF_FILE_NAME_LIMIT,
+            "{} bytes: {name}",
+            name.len()
+        );
+        assert!(name.starts_with("001-crozier.yml-python-"), "{name}");
+        assert!(name.ends_with(".diff"), "{name}");
+        // The same config and generator always give the same name.
+        assert_eq!(name, diff_file_name(1, &deep, "python"));
+        let other = format!("{}/crozier.yml", "e".repeat(400));
+        assert_ne!(
+            name.trim_start_matches("001-"),
+            diff_file_name(1, &other, "python").trim_start_matches("001-")
+        );
+        let long_generator = diff_file_name(1234, "crozier.yml", &"g".repeat(600));
+        assert_eq!(
+            long_generator.len(),
+            DIFF_FILE_NAME_LIMIT,
+            "{long_generator}"
         );
     }
 
