@@ -1,0 +1,47 @@
+openapi: 3.1.0
+info:
+  title: Kiln Action Runner
+  version: 1.0.0
+  description: Runs actions on studio kilns.
+servers:
+  - url: https://actions.example.com
+paths:
+  /actions/run:
+    post:
+      operationId: runAction
+      tags: [actions]
+      summary: A body property and a header that normalise to one name.
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: false
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RunActionRequest'
+      responses:
+        '200':
+          description: Ran.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionResult'
+components:
+  schemas:
+    RunActionRequest:
+      type: object
+      required: [action]
+      properties:
+        action:
+          type: string
+        idempotency_key:
+          type: string
+    ActionResult:
+      type: object
+      properties:
+        status:
+          type: string

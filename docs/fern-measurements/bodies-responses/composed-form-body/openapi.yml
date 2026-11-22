@@ -1,0 +1,100 @@
+openapi: 3.0.3
+info:
+  title: Studio Sign-in Forms
+  version: 1.0.0
+  description: Accepts the studio's form posts.
+servers:
+  - url: https://forms.example.com
+paths:
+  /external-login:
+    post:
+      operationId: performExternalLogin
+      tags: [account]
+      summary: A form body offered as multipart and urlencoded, composed with allOf.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              required: [provider, returnUrl]
+              type: object
+              allOf:
+                - type: object
+                  properties:
+                    provider:
+                      type: string
+                - type: object
+                  properties:
+                    returnUrl:
+                      type: string
+          application/x-www-form-urlencoded:
+            schema:
+              required: [provider, returnUrl]
+              type: object
+              allOf:
+                - type: object
+                  properties:
+                    provider:
+                      type: string
+                - type: object
+                  properties:
+                    returnUrl:
+                      type: string
+      responses:
+        '204':
+          description: Signed in.
+  /logout:
+    post:
+      operationId: performLogout
+      tags: [account]
+      summary: A urlencoded-only body composed with allOf.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              required: [reason]
+              type: object
+              allOf:
+                - type: object
+                  properties:
+                    reason:
+                      type: string
+                - type: object
+                  properties:
+                    everywhere:
+                      type: boolean
+      responses:
+        '204':
+          description: Signed out.
+  /documents/{requestId}:
+    post:
+      operationId: uploadDocument
+      tags: [documents]
+      summary: A multipart body composed of a field and a file.
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              required: [file]
+              type: object
+              allOf:
+                - type: object
+                  properties:
+                    parentId:
+                      type: string
+                - type: object
+                  properties:
+                    file:
+                      type: string
+                      format: binary
+      responses:
+        '204':
+          description: Uploaded.

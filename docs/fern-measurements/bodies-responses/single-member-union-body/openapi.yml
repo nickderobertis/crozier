@@ -1,0 +1,88 @@
+openapi: 3.0.3
+info:
+  title: Kiln Clone Service
+  version: 1.0.0
+  description: Clones recorded kiln firings into other regions.
+servers:
+  - url: https://kiln.example.com
+paths:
+  /firings/{firingId}/clone:
+    post:
+      operationId: cloneFiring
+      tags: [firings]
+      summary: Clone a firing through a one-member oneOf body.
+      parameters:
+        - name: firingId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CloneFiringBody'
+      responses:
+        '200':
+          description: Cloned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CloneResult'
+  /firings/{firingId}/copy:
+    post:
+      operationId: copyFiring
+      tags: [firings]
+      summary: Copy a firing through a one-member anyOf body.
+      parameters:
+        - name: firingId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CopyFiringBody'
+      responses:
+        '200':
+          description: Copied.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CloneResult'
+components:
+  schemas:
+    CloneFiringBody:
+      oneOf:
+        - $ref: '#/components/schemas/RegionTarget'
+    CopyFiringBody:
+      anyOf:
+        - $ref: '#/components/schemas/ShelfTarget'
+    RegionTarget:
+      type: object
+      required: [region]
+      properties:
+        region:
+          type: string
+          description: The region the clone is placed in.
+        shareWith:
+          type: array
+          items:
+            type: string
+    ShelfTarget:
+      type: object
+      required: [shelf]
+      properties:
+        shelf:
+          type: string
+        position:
+          type: integer
+    CloneResult:
+      type: object
+      properties:
+        id:
+          type: string

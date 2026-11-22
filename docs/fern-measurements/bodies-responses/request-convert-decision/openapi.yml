@@ -1,0 +1,81 @@
+openapi: 3.1.0
+info:
+  title: Kiln Form Plugins
+  version: 1.0.0
+  description: Validates plugin form output and queries kiln data sources.
+servers:
+  - url: https://plugins.example.com
+paths:
+  /forms/validate/output:
+    put:
+      operationId: validateFormOutput
+      tags: [forms]
+      summary: A body referencing a nullable string alias.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidateOutput'
+      responses:
+        '204':
+          description: Validated.
+  /datasources/query:
+    post:
+      operationId: queryDatasource
+      tags: [datasources]
+      summary: A body referencing a map whose values are a recursive union alias.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DatasourceQuery'
+      responses:
+        '204':
+          description: Queried.
+  /datasources/tags:
+    post:
+      operationId: tagDatasource
+      tags: [datasources]
+      summary: A body referencing a map of strings.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DatasourceTags'
+      responses:
+        '204':
+          description: Tagged.
+components:
+  schemas:
+    ValidateOutput:
+      anyOf:
+        - type: string
+        - type: 'null'
+    DatasourceQuery:
+      title: DatasourceQuery
+      type: object
+      properties: {}
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
+    DatasourceTags:
+      title: DatasourceTags
+      type: object
+      properties: {}
+      additionalProperties:
+        type: string
+    JsonValue:
+      anyOf:
+        - type: string
+        - type: integer
+        - type: number
+        - type: boolean
+        - type: object
+          additionalProperties:
+            $ref: '#/components/schemas/JsonValue'
+        - type: array
+          items:
+            $ref: '#/components/schemas/JsonValue'
+        - type: 'null'
