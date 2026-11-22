@@ -28,7 +28,9 @@ use predicates::prelude::*;
 mod compare;
 
 /// The invalid-example repairs through `crozier compare`, against references
-/// holding Fern's defects and values that are none.
+/// holding Fern's defects and values that are none. Unix-only, module and
+/// helpers alike: its reference command is a `/bin/sh` script.
+#[cfg(unix)]
 #[path = "e2e/invalid_example_compare.rs"]
 mod invalid_example_compare;
 

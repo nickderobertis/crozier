@@ -93,7 +93,6 @@ fn write(root: &Path, rel: &str, text: &str) {
 }
 
 // llmlint: ignore[expensive_tests_stay_behind_their_own_edge] One `crozier compare` over a one-operation document with four reference generators, about 1.4 seconds, on the crozier-e2e edge every compare journey shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
-#[cfg(unix)]
 #[test]
 fn compare_matches_fern_s_invalid_examples_through_their_departures_and_nothing_else() {
     use std::os::unix::fs::PermissionsExt;
