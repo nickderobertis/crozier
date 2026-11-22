@@ -2633,42 +2633,40 @@ fn root_init_file(
     tc.push_str(&from_import_block(".types", &type_names, 4));
     tc.push_str(&from_import_block(".errors", &error_names, 4));
     tc.push_str(&from_import_block(".", &module_names, 4));
-    tc.push_str(&from_import_block(
-        "._default_clients",
-        &[
-            "DefaultAioHttpClient".to_string(),
-            "DefaultAsyncHttpxClient".to_string(),
-        ],
-        4,
-    ));
-    tc.push_str(&from_import_block(
-        ".client",
-        &[async_name.clone(), client_name.to_string()],
-        4,
-    ));
+    // Every other statement — the default clients, the root client, the
+    // environment, each tag package's re-exported hoisted types and
+    // `__version__` — follows sorted by its module, as the certified pair writes
+    // them: lemma's `.agent_runtime` sits between `._default_clients` and
+    // `.client`, and Seequent's `.version` precedes its `.versions` tag (issue
+    // #920).
+    let mut sourced: Vec<(String, Vec<String>)> = vec![
+        (
+            "._default_clients".to_string(),
+            vec![
+                "DefaultAioHttpClient".to_string(),
+                "DefaultAsyncHttpxClient".to_string(),
+            ],
+        ),
+        (
+            ".client".to_string(),
+            vec![async_name.clone(), client_name.to_string()],
+        ),
+    ];
     if let Some(e) = environment {
-        tc.push_str(&from_import_block(
-            ".environment",
-            std::slice::from_ref(&e.enum_name),
-            4,
-        ));
+        sourced.push((".environment".to_string(), vec![e.enum_name.clone()]));
     }
     for (tag, names) in &hoisted_by_tag {
-        tc.push_str(&from_import_block(
-            &format!(".{}", module_path(tag)),
-            names,
-            4,
-        ));
+        sourced.push((format!(".{}", module_path(tag)), names.clone()));
     }
     // `__version__` reads the installed distribution's metadata, so only the
     // packaged form exports it; Fern's flat tree has no `version.py`.
     let packaged = ir.layout == Layout::Packaged;
     if packaged {
-        tc.push_str(&from_import_block(
-            ".version",
-            &["__version__".to_string()],
-            4,
-        ));
+        sourced.push((".version".to_string(), vec!["__version__".to_string()]));
+    }
+    sourced.sort_by(|a, b| a.0.cmp(&b.0));
+    for (module, names) in &sourced {
+        tc.push_str(&from_import_block(module, names, 4));
     }
 
     // `_dynamic_imports` pairs: every symbol → its source module.
@@ -5540,7 +5538,13 @@ struct MethodParams {
 /// Compute an endpoint's resolved parameters and response type, registering the
 /// imports the annotations need. Independent of sync/async.
 fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
-    let inner = if ep.binary_response {
+    method_params_importing(ep, imports, true)
+}
+
+/// [`method_params`], importing the response type only when `response` asks:
+/// a high-level HEAD method returns its headers and names no response model.
+fn method_params_importing(ep: &Endpoint, imports: &mut Imports, response: bool) -> MethodParams {
+    let inner = if ep.binary_response || !response {
         "None".to_string()
     } else {
         ep.response
@@ -8302,7 +8306,11 @@ fn client_method(cx: &ClientCtx, ep: &Endpoint, is_async: bool, imports: &mut Im
     if ep.binary_response {
         return client_binary_stream_method(cx, ep, is_async, imports);
     }
-    let mp = method_params(ep, imports);
+    // A HEAD method returns the response headers, so the high-level client names
+    // no response model and imports none; the raw client still types its
+    // `HttpResponse` with it. The certified pair's Folio client imports no
+    // `GetSiteResponse` once `HEAD /v1/site` replaces its `GET` (issue #921).
+    let mp = method_params_importing(ep, imports, ep.http_method != "HEAD");
     let return_type = if ep.http_method == "HEAD" {
         "typing.Dict[str, str]".to_string()
     } else {

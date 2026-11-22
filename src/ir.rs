@@ -3470,13 +3470,22 @@ fn align_flattened_member_types(types: &mut [TypeDecl], tag_types: &mut [TagType
 /// They are declarations in their own right, so a union that moves into a tag's
 /// `types/` package takes them with it — braintrust's
 /// `PatchProjectAutomationConfigBtqlFilterActionSlack` sits beside its union in
-/// `project_automations/types/`.
+/// `project_automations/types/`. A member flattened from a payload model the
+/// union coined itself (a mapping target that is a union of objects, merged
+/// into `{Union}{Value}`) names that model as its `source`, and it moves the
+/// same way: Seequent's request-local `UpdateDataLiteInputInputOptions` keeps
+/// `UpdateDataLiteInputInputOptionsCsv` beside it in `column_operations/types/`
+/// (issue #919). A `source` naming a component stays where the component is,
+/// which the caller's component check decides.
 fn union_variant_models(union: &DiscriminatedUnion) -> Vec<String> {
     union
         .members
         .iter()
-        .filter(|member| member.source.is_none())
-        .map(|member| format!("{}{}", union.name, naming::class_name(&member.discriminant)))
+        .map(|member| {
+            member.source.clone().unwrap_or_else(|| {
+                format!("{}{}", union.name, naming::class_name(&member.discriminant))
+            })
+        })
         .collect()
 }
 
