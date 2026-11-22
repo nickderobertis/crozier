@@ -16,11 +16,15 @@ binds; this audit does. It measures:
 Whether a value satisfies its declared type and constraints is a separate
 check, and it is not this one. That is
 [`invalid-example-values/inventory.tsv`](../invalid-example-values/README.md),
-which every golden comparison holds. The new pair left it unchanged: it has
-9424 rows. Of those, 9235 are repaired. The other 189 keep Fern's bytes:
-
-- 95 are `declared-in-spec`, the document's own example;
-- 94 are `residual-unconstructible`.
+which every golden comparison holds. At Fern CLI 5.216.0 / fern-python-sdk
+5.42.0 it has 9451 rows. 9408 are repaired. The other 43 keep Fern's bytes
+because their schema accepts no value at all, so no valid value exists to
+write. Each is `unsatisfiable-schema`, an integer whose `enum` lists only
+strings or an enum every member of which the schema rejects, and every
+comparison proves it again from the source document. None is
+`declared-in-spec` or `residual-unconstructible`. The document's own invalid
+examples are repaired by `schema-rejected-declared-example`, and lists Fern
+writes empty by `schema-rejected-array-length-example`.
 
 The `list-path-parameter-example` evidence adds one case that inventory does not
 read: a list path parameter documented with a string, which
