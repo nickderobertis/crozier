@@ -50,39 +50,76 @@ sort by `golden`, `file`, `line` and `argument`:
 | `fern_value` | the value as Fern writes it |
 | `constraint` | the first rejecting keyword and its declared value, such as `pattern=^(0|[1-9][0-9]*)$` |
 | `mechanism` | the id of the departure covering the row's mechanism, or `-` where none applies |
-| `disposition` | one of the five below |
+| `disposition` | one of the six below |
 
 ## Dispositions
 
 - `repaired`: crozier writes a value the schema accepts instead: the
   specification's own declared example for that schema, else its `default`,
   each only when the schema accepts it, else a value constructed
-  deterministically to satisfy every keyword above.
-- `declared-in-spec`: the value is the specification's own declared example,
-  which stays.
+  deterministically to satisfy every keyword above. A declared value the
+  schema rejects gives way first to Fern's own construction for its slot,
+  where the schema accepts that. A list Fern writes empty takes the items the
+  schema's own shape builds.
+- `declared-in-spec`: the value is a list the specification spells out
+  itself, which stays. A declared scalar is never kept invalid: it is
+  `repaired`.
 - `out-of-scope-keyword`: only a keyword or format outside the set above
   rejects the value.
 - `residual-undecidable`: crozier cannot decide validity: a pattern it cannot
   compile, or a keyword behind a `$ref` that does not resolve.
-- `residual-unconstructible`: no value satisfies every keyword, or crozier
+- `residual-unconstructible`: a value may satisfy every keyword, but crozier
   cannot build one: a pattern holding a lookaround or backreference, a list
-  Fern writes empty with no item to copy, a `uniqueItems` list whose padding
-  would need distinct items crozier cannot build, or an enum none of whose
-  members the schema accepts. The enum's own example selection
-  (`pattern-narrowed-enum-example`) reads the whole schema, a `not` beside the
-  keywords in scope included, and keeps Fern's member only where no member
-  passes it.
+  Fern writes empty whose schema's shape builds no items, or a `uniqueItems`
+  list whose padding would need distinct items crozier cannot build.
+- `unsatisfiable-schema`: the schema provably accepts no value of the type it
+  is generated as, so the specification contradicts itself and no value
+  crozier could write is valid. crozier assigns it only with that proof: the
+  view is complete, an `enum` or `const` names the only values allowed, and
+  every one of them of the value's kind — none, for an integer whose `enum`
+  lists only strings — is rejected by a keyword in scope or excluded by a
+  `not` of nothing but an `enum` or `const`. The enum's own example selection
+  (`pattern-narrowed-enum-example`) reads the whole schema the same way and
+  keeps Fern's member only there. Every golden comparison proves each such
+  row again from the parsed source document
+  (`Context::admits_nothing`), and fails where the proof does not hold.
 
 Every row that is not `repaired` keeps Fern's bytes.
+
+### The contradictory schemas
+
+The `unsatisfiable-schema` rows are the specification's contradictions, not a
+value Fern or crozier chose:
+
+- APIs.guru's Visual Studio Online document
+  (`registered-literals-apis-guru-openapi-directory-a0bd29a9`) declares
+  `AzureLocation`, `ResourceSubtype`, `ResourceType` and `DiskType` as
+  `type: integer, format: int32` with an `enum` of strings such as
+  `"0 (Default)"`. No integer is one of them. Validated on 2026-11-21 with
+  `validate.py` and jsonschema 4.26.0 against `ResourceSubtype` at
+  `src/fern/vnet_pool_definitions/client.py:78`, it exited 1:
+
+  ```text
+  fern subtype=1: rejected: 1 is not one of ['0 (Default)', '2 (ShrunkBlob)', '3 (FullBlob)', '4 (UserParametersBlob)', '5 (PrebuildHash)', '6 (VnetInjected)']
+  crozier subtype=1: rejected: 1 is not one of ['0 (Default)', '2 (ShrunkBlob)', '3 (FullBlob)', '4 (UserParametersBlob)', '5 (PrebuildHash)', '6 (VnetInjected)']
+  ```
+
+- The `dossier-status` measurements intersect `DossierStatus` (`draft`,
+  `sealed`, `maxLength: 5`) with `pattern: ^(?!draft$).*$`: `draft` fails the
+  pattern and `sealed` the length.
+- The `harbour-window` probes give `Charter.window` `TideWindow` (`slack`,
+  `flood`, `ebb`, `neap`) beside `maxLength: 4`, `not: {enum: [ebb, neap]}`
+  and `pattern: ^(?!slack$).*$`: every member fails one of them.
 
 ## Mechanisms
 
 Fern's constructions are a string's own name, its fixed `"string"` and
 `"value"` placeholders, a string its fallback writer sizes by the declared
-lengths, the fixed numbers `1`, `1000000` and `1.1`, a list's fixed item count,
-an enum's first member, and a declared integer past 2^53 written as the double
-nearest it. Each but the last two is one `schema-rejected-*` `fern-defect`
-entry of
+lengths, the fixed numbers `1`, `1000000` and `1.1`, a list's fixed item count
+(none, where it has no item to write), an enum's first member, and a declared
+integer past 2^53 written as the double nearest it; beside them, Fern writes a
+value the specification declares as it stands. Each but the enum's member and
+the rounded integer is one `schema-rejected-*` `fern-defect` entry of
 [`assets/departures.yml`](../../../../assets/departures.yml), whose rule in
 [`src/departures/rejected_examples.rs`](../../../../src/departures/rejected_examples.rs)
 reads the parsed source document. It accounts for a line only where Fern's
@@ -90,8 +127,11 @@ value is that construction's, a source schema rejects it, and crozier's is the
 value that schema's repair chooses. An enum's first member is corrected, where
 it can be, by the earlier `pattern-narrowed-enum-example` entry, and a rounded
 integer by the earlier `int64-example-rounded-out-of-range` entry; their rows
-name them. A value Fern did not construct — the specification's own example — names
-no mechanism.
+name them. A declared value names `schema-rejected-declared-example`; where
+crozier keeps a declared value over Fern's placeholder
+(`declared-example-over-placeholder`) and the schema rejects both, the row is
+Fern's placeholder's, under its own construction's entry. A declared list
+crozier keeps names no mechanism.
 
 ## Regenerating it
 

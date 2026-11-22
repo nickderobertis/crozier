@@ -348,6 +348,10 @@ fn merged(sets: &[&ValueConstraints]) -> ValueConstraints {
         }
         out.incomplete |= set.incomplete;
         out.unique_items |= set.unique_items;
+        out.excluded.extend(set.excluded.iter().cloned());
+        if out.seed.is_none() {
+            out.seed.clone_from(&set.seed);
+        }
     }
     let nested = |part: fn(&ValueConstraints) -> Option<&ValueConstraints>| {
         let parts: Vec<&ValueConstraints> = sets.iter().filter_map(|set| part(set)).collect();
@@ -530,16 +534,22 @@ impl ExampleCtx<'_> {
                     Verdict::Rejected(keyword) => keyword,
                 };
                 let fern = literal.clone();
-                let mechanism = construction(&value, names, &lengths);
-                let origin = if combined.examples.contains(&value) || mechanism.is_none() {
-                    Origin::Declared
-                } else {
-                    Origin::Constructed
-                };
-                let (crozier, disposition) = if origin == Origin::Declared {
-                    (fern.clone(), Disposition::DeclaredInSpec)
-                } else {
-                    match combined.choose(&value) {
+                // A value that is no construction of Fern's is one the
+                // specification declares, which its own schema rejects: the
+                // `schema-rejected-declared-example` departure repairs it as
+                // it does a construction.
+                let mechanism =
+                    construction(&value, names, &lengths).unwrap_or(Mechanism::Declared);
+                // A declared value its schema rejects gives way to Fern's own
+                // construction for the slot where the schema accepts that, so
+                // crozier writes what Fern writes wherever Fern's is valid;
+                // else to the schema's repair.
+                let constructed = (mechanism == Mechanism::Declared)
+                    .then(|| self.accepted_construction(&resolved, names, &value, &combined))
+                    .flatten();
+                let (crozier, disposition) = match constructed {
+                    Some(text) => (text, Disposition::Repaired),
+                    None => match combined.choose(&value) {
                         Some(choice) => match self.rendered(&resolved, &choice) {
                             Some(rendered) => (rendered, Disposition::Repaired),
                             None => (fern.clone(), Disposition::ResidualUnconstructible),
@@ -547,8 +557,11 @@ impl ExampleCtx<'_> {
                         None if combined.incomplete => {
                             (fern.clone(), Disposition::ResidualUndecidable)
                         }
+                        None if combined.admits_nothing(&value) => {
+                            (fern.clone(), Disposition::UnsatisfiableSchema)
+                        }
                         None => (fern.clone(), Disposition::ResidualUnconstructible),
-                    }
+                    },
                 };
                 if disposition == Disposition::Repaired {
                     literal.clone_from(&crozier);
@@ -560,7 +573,7 @@ impl ExampleCtx<'_> {
                         fern,
                         crozier,
                         constraint,
-                        mechanism: mechanism.filter(|_| origin == Origin::Constructed),
+                        mechanism: Some(mechanism),
                         disposition,
                     },
                 });
@@ -708,8 +721,36 @@ impl ExampleCtx<'_> {
         let choice = (origin == Origin::Constructed && !items.is_empty())
             .then(|| merged(sets).list_view().choose(&shape))
             .flatten();
+        // Fern writes no item where it has none to show (a tuple's
+        // `prefixItems`, a nullable item an executable docstring leaves out);
+        // crozier writes the items the schema's own shape builds.
+        let seeded = (origin == Origin::Constructed && items.is_empty())
+            .then(|| merged(sets).seeded_items())
+            .flatten();
         let disposition = if origin == Origin::Declared {
             Disposition::DeclaredInSpec
+        } else if let Some(seeds) = seeded {
+            let nested = |items: Vec<Example>| match &*example {
+                Example::ReferenceList(_) => Example::ReferenceList(items),
+                Example::ExplicitList(_) => Example::ExplicitList(items),
+                _ => Example::List(items),
+            };
+            let built: Option<Vec<Example>> = seeds
+                .iter()
+                .map(|seed| self.seeded_item(lists.item, seed, &nested))
+                .collect();
+            match built {
+                Some(built) => {
+                    if let Example::List(items)
+                    | Example::ExplicitList(items)
+                    | Example::ReferenceList(items) = example
+                    {
+                        *items = built;
+                    }
+                    Disposition::Repaired
+                }
+                None => Disposition::ResidualUnconstructible,
+            }
         } else {
             match &choice {
                 Some(Choice::Constructed(Value::Array(target))) => {
@@ -760,6 +801,88 @@ impl ExampleCtx<'_> {
                 disposition,
             },
         });
+    }
+
+    /// One seeded item of an empty list ([`ValueConstraints::seeded_items`]) as
+    /// the writer spells a value of the item type `t`: through the type where
+    /// it is one (`None` for a nullable item, an enum's member), and as the
+    /// JSON value itself, lists spelled by `nested`, where the item is free
+    /// form. `None` where the type does not take the value.
+    fn seeded_item(
+        &mut self,
+        t: &TypeRef,
+        seed: &Value,
+        nested: &dyn Fn(Vec<Example>) -> Example,
+    ) -> Option<Example> {
+        fn literal(value: &Value, nested: &dyn Fn(Vec<Example>) -> Example) -> Option<Example> {
+            Some(match value {
+                Value::Null => Example::Atom("None".to_string()),
+                Value::Bool(flag) => {
+                    Example::Atom(if *flag { "True" } else { "False" }.to_string())
+                }
+                Value::Number(_) | Value::String(_) => {
+                    Example::Atom(crate::ir::example_literal(value)?)
+                }
+                Value::Array(items) => nested(
+                    items
+                        .iter()
+                        .map(|item| literal(item, nested))
+                        .collect::<Option<_>>()?,
+                ),
+                Value::Object(entries) => Example::Dict(
+                    entries
+                        .iter()
+                        .map(|(key, entry)| Some((key.clone(), literal(entry, nested)?)))
+                        .collect::<Option<_>>()?,
+                ),
+            })
+        }
+        let resolved = self.resolved(t).clone();
+        if matches!(resolved, TypeRef::Primitive(crate::ir::Prim::Any)) {
+            return literal(seed, nested);
+        }
+        if seed.is_null() {
+            return matches!(self.unaliased(t), TypeRef::Optional(_))
+                .then(|| Example::Atom("None".to_string()));
+        }
+        self.value_from_example(t, &seed.to_string())
+    }
+
+    /// Fern's own construction for a value of `t` passed by `names` (its
+    /// name, `"value"` in a map, a fixed number), as the writer spells it,
+    /// when it is a scalar of `value`'s kind that `constraints` accept.
+    fn accepted_construction(
+        &mut self,
+        t: &TypeRef,
+        names: &[String],
+        value: &Value,
+        constraints: &ValueConstraints,
+    ) -> Option<String> {
+        let slot = names
+            .first()
+            .map_or(super::Slot::Map, |name| super::Slot::Named(name));
+        let Example::Atom(text) = self.without_recording(|ctx| ctx.value(t, slot)) else {
+            return None;
+        };
+        let built = python_value(&text)?;
+        (std::mem::discriminant(&built) == std::mem::discriminant(value)
+            && constraints.verdict(&built) == Verdict::Accepted)
+            .then_some(text)
+    }
+
+    /// `t` with its scalar aliases resolved but its `Optional` kept.
+    fn unaliased<'t>(&'t self, t: &'t TypeRef) -> &'t TypeRef {
+        let mut current = t;
+        for _ in 0..16 {
+            match current {
+                TypeRef::Named(name) => match self.find(name) {
+                    Some(TypeDecl::Alias(alias)) => current = &alias.target,
+                    _ => break,
+                },
+                _ => break,
+            }
+        }
+        current
     }
 
     /// The items that pad a `uniqueItems` list of scalars to `target`, each
@@ -846,6 +969,8 @@ impl ExampleCtx<'_> {
             Disposition::Repaired
         } else if combined.incomplete {
             Disposition::ResidualUndecidable
+        } else if combined.admits_nothing(&wire(first)) {
+            Disposition::UnsatisfiableSchema
         } else {
             Disposition::ResidualUnconstructible
         };
@@ -1298,5 +1423,169 @@ mod tests {
         assert!(values.iter().all(|value| value.finding.disposition
             == Disposition::ResidualUnconstructible
             && value.finding.crozier == value.finding.fern));
+    }
+
+    /// A document whose one operation posts a `Plan` body of `properties`, all
+    /// required.
+    fn body_document(properties: serde_json::Value) -> serde_json::Value {
+        let required: Vec<String> = properties
+            .as_object()
+            .expect("properties")
+            .keys()
+            .cloned()
+            .collect();
+        serde_json::json!({
+            "openapi": "3.1.0",
+            "info": {"title": "Api", "version": "1"},
+            "paths": {"/plans": {"post": {
+                "operationId": "plan",
+                "requestBody": {"required": true, "content": {"application/json": {
+                    "schema": {"$ref": "#/components/schemas/Plan"}}}},
+                "responses": {"204": {"description": "Done"}}
+            }}},
+            "components": {"schemas": {"Plan": {
+                "type": "object", "required": required, "properties": properties
+            }}}
+        })
+    }
+
+    /// The keyword arguments `client.plan(...)` passes in the root client's
+    /// first docstring, one trimmed line each.
+    fn plan_arguments(files: &[(String, String)]) -> Vec<String> {
+        let client = &files
+            .iter()
+            .find(|(path, _)| path == "src/api/client.py")
+            .expect("a root client")
+            .1;
+        let start = client.find("client.plan(").expect("an example call");
+        client[start..]
+            .lines()
+            .skip(1)
+            .take_while(|line| line != &"        )")
+            .map(|line| line.trim().to_string())
+            .collect()
+    }
+
+    #[test]
+    fn a_declared_value_its_schema_rejects_gives_way_to_fern_s_valid_construction_else_its_repair()
+    {
+        let (files, values) = generated(body_document(serde_json::json!({
+            "share": {"type": "number", "maximum": 1, "example": 42},
+            "ratio": {"type": "number", "maximum": 2, "example": 42},
+            "code": {"type": "string", "pattern": "^[0-9a-f]{4}$", "example": "zz"},
+            "kept": {"type": "number", "maximum": 50, "example": 42}
+        })));
+        assert_eq!(
+            plan_arguments(&files),
+            ["share=1.0,", "ratio=1.1,", "code=\"aaaa\",", "kept=42.0,"]
+        );
+        let found = |argument: &str| {
+            values
+                .iter()
+                .find(|value| value.finding.argument == argument)
+                .map(|value| {
+                    (
+                        value.finding.fern.clone(),
+                        value.finding.mechanism,
+                        value.finding.disposition,
+                    )
+                })
+        };
+        for argument in ["share", "ratio", "code"] {
+            let (_, mechanism, disposition) = found(argument).expect("a recorded value");
+            assert_eq!(
+                (mechanism, disposition),
+                (Some(Mechanism::Declared), Disposition::Repaired),
+                "{argument}"
+            );
+        }
+        assert_eq!(found("code").map(|f| f.0), Some("\"zz\"".to_string()));
+        // A declared value its schema accepts is no finding at all.
+        assert!(found("kept").is_none());
+    }
+
+    #[test]
+    fn an_empty_list_takes_the_items_its_schema_s_shape_builds() {
+        let (files, values) = generated(body_document(serde_json::json!({
+            "bounds": {"type": "array", "items": false, "minItems": 2, "maxItems": 2,
+                "prefixItems": [{"type": "number"}, {"type": "string", "enum": ["x", "y"]}]},
+            "windows": {"type": "array", "items": {"type": "array", "minItems": 2,
+                "maxItems": 2, "items": {"anyOf": [
+                    {"type": "string", "format": "date-time"}, {"type": "null"}]}}},
+            "loose": {"type": "array", "items": {"type": "array", "minItems": 1,
+                "maxItems": 1, "prefixItems": [{}], "items": false}}
+        })));
+        assert_eq!(
+            plan_arguments(&files),
+            [
+                "bounds=[1.1, \"x\"],",
+                "windows=[[None, None]],",
+                "loose=[[{\"key\": \"value\"}]],"
+            ]
+        );
+        for argument in ["bounds", "windows[0]", "loose[0]"] {
+            assert!(
+                values.iter().any(|value| value.finding.argument == argument
+                    && value.finding.fern == "[]"
+                    && value.finding.mechanism == Some(Mechanism::Array)
+                    && value.finding.disposition == Disposition::Repaired),
+                "{argument}: {values:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn a_recursive_union_item_seeds_its_inline_member_not_itself() {
+        let (files, _) = generated(body_document(serde_json::json!({
+            "members": {"type": "array", "minItems": 1, "items": {"anyOf": [
+                {"$ref": "#/components/schemas/Plan"},
+                {"type": "object", "required": ["field"],
+                    "properties": {"field": {"type": "string", "minLength": 1}}}
+            ]}}
+        })));
+        let arguments = plan_arguments(&files).join("\n");
+        assert!(
+            arguments.contains("PlanMembersItemField(") && arguments.contains("field=\"string\","),
+            "{arguments}"
+        );
+        assert!(
+            !arguments.contains("members=[]"),
+            "an empty list stays: {arguments}"
+        );
+    }
+
+    #[test]
+    fn a_schema_that_admits_no_value_keeps_fern_s_and_says_so() {
+        // An integer whose `enum` lists only strings, and a string enum every
+        // member of which the pattern, the length or the `not` rejects.
+        let (files, values) = generated(body_document(serde_json::json!({
+            "region": {"type": "integer", "format": "int32", "enum": ["101 (EastAsia)"]},
+            "window": {"type": "string", "enum": ["slack", "flood", "ebb"],
+                "maxLength": 4, "pattern": "^(?!slack$).*$", "not": {"enum": ["ebb"]}}
+        })));
+        assert_eq!(plan_arguments(&files)[0], "region=1,");
+        for argument in ["region", "window"] {
+            assert!(
+                values.iter().any(|value| value.finding.argument == argument
+                    && value.finding.disposition == Disposition::UnsatisfiableSchema
+                    && value.finding.crozier == value.finding.fern),
+                "{argument}: {values:?}"
+            );
+        }
+        // One member the schema accepts is no contradiction: the enum's own
+        // selection writes it.
+        let mut document = body_document(serde_json::json!({
+            "window": {"maxLength": 4, "allOf": [
+                {"$ref": "#/components/schemas/Tide"},
+                {"type": "string", "pattern": "^(?!slack$).*$"}
+            ]}
+        }));
+        document["components"]["schemas"]["Tide"] =
+            serde_json::json!({"type": "string", "enum": ["slack", "flood", "ebb"]});
+        let (files, values) = generated(document);
+        assert_eq!(plan_arguments(&files), ["window=PlanWindow.EBB,"]);
+        assert!(values
+            .iter()
+            .all(|value| value.finding.disposition != Disposition::UnsatisfiableSchema));
     }
 }
