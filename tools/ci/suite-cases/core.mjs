@@ -2,7 +2,8 @@
 // with what that suite collects now. A speed-up may change how a suite runs its
 // cases, never which cases it has. See docs/ci-gate-timing.md.
 import { spawnSync } from "node:child_process";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 /** The pytest arguments naming a test target's files, read off its own command so a pin cannot watch other files. */
@@ -83,6 +84,45 @@ export function readPin(root, suite) {
 export function writePin(root, suite, cases) {
   mkdirSync(pinsDirectory(root), { recursive: true });
   writeFileSync(pinPath(root, suite), `${cases.join("\n")}\n`);
+}
+
+/** The lane inventory whose `e2eCases` counts the e2e suite's cases. */
+export const lanesPath = (root) => process.env.CROZIER_SUITE_CASES_LANES ?? join(root, "tools/ci/lanes.json");
+
+/** The pin holding the e2e binary's own cases; `lanes.json`'s `e2eCases.moved` names the suite its tooling journeys moved to. */
+export const E2E_SUITE = "crozier-e2e-test";
+
+/**
+ * The e2e cases `lanes.json`'s `e2eCases` describes, as the ci-journeys guard
+ * reads them: the e2e pin and the moved journeys' pin by test path, the moved
+ * suite's own `yaml::` cases left out, once each, sorted.
+ */
+export function e2eCaseList(e2ePin, movedPin) {
+  const cases = [
+    ...e2ePin.map((line) => line.replace(/^crozier-e2e::e2e /, "")),
+    ...movedPin.map((line) => line.replace(/^crozier-tool-journeys::tool_journeys /, "")).filter((line) => !line.startsWith("yaml::")),
+  ];
+  return [...new Set(cases)].map((line) => Buffer.from(line)).sort(Buffer.compare).map(String);
+}
+
+/** `e2eCases`' `count` and `sha256` for a case list. */
+export function e2eCasesRecord(cases) {
+  return { sha256: createHash("sha256").update(`${cases.join("\n")}\n`).digest("hex"), count: cases.length };
+}
+
+/**
+ * Write `files` (path -> text) together: every one is written beside its final
+ * name first and only then renamed into place, so a failed write leaves every
+ * committed file as it was.
+ */
+export function writeTogether(files) {
+  const staged = [...files].map(([path, text]) => {
+    mkdirSync(join(path, ".."), { recursive: true });
+    const temporary = `${path}.${process.pid}.tmp`;
+    writeFileSync(temporary, text);
+    return [temporary, path];
+  });
+  for (const [temporary, path] of staged) renameSync(temporary, path);
 }
 
 /** One line per case the live collection lost or gained against its pin; empty when they are the same set. */

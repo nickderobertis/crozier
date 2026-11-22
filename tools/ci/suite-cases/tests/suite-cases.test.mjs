@@ -44,6 +44,57 @@ test("a lost or gained case fails the check, names the case and leaves the pin a
   }
 });
 
+// Issue #887: a repin writes lanes.json's e2eCases from the same pins in the same
+// step, and a case the committed pins held that no new pin holds refuses the
+// whole write. Driven over the cheapest pin feeding e2eCases, the tooling journeys'.
+test("a repin refreshes lanes.json's e2e count with its pins, and a lost case writes nothing", LINUX, () => {
+  const scratch = mkdtempSync(join(tmpdir(), "crozier-suite-cases-"));
+  try {
+    const pins = join(scratch, "pins");
+    const lanes = join(scratch, "lanes.json");
+    cpSync(join(ROOT, "tools/ci/suite-cases/pins"), pins, { recursive: true });
+    const committed = readFileSync(join(ROOT, "tools/ci/lanes.json"), "utf8");
+    const { e2eCases } = JSON.parse(committed);
+    const env = { CROZIER_SUITE_CASES_PINS: pins, CROZIER_SUITE_CASES_LANES: lanes };
+    const journeys = join(pins, `${e2eCases.moved}.txt`);
+    const pinned = readFileSync(journeys, "utf8");
+
+    // A stale inventory: the pins gained a case lanes.json does not count yet.
+    const [dropped, ...rest] = pinned.trimEnd().split("\n");
+    writeFileSync(journeys, `${rest.join("\n")}\n`);
+    writeFileSync(lanes, committed.replace(`"count": ${e2eCases.count}`, `"count": ${e2eCases.count - 1}`).replace(e2eCases.sha256, "0".repeat(64)));
+    const repinned = command(env, "write", e2eCases.moved);
+    assert.equal(repinned.status, 0, repinned.stderr);
+    assert.match(repinned.stdout, new RegExp(`and tools/ci/lanes.json's e2eCases \\(${e2eCases.count} cases\\)`));
+    assert.ok(readFileSync(journeys, "utf8").includes(`${dropped}\n`), "the pin was not rewritten");
+    assert.equal(readFileSync(lanes, "utf8"), committed, "lanes.json is not the committed inventory");
+
+    // A case the committed pins hold that the collection lost: nothing is written.
+    const lost = `${pinned}crozier-tool-journeys::tool_journeys imaginary::never_collected\n`;
+    writeFileSync(journeys, lost);
+    const refused = command(env, "write", e2eCases.moved);
+    assert.equal(refused.status, 1, refused.stderr);
+    assert.match(refused.stderr, /e2e case lost: imaginary::never_collected/);
+    assert.match(refused.stderr, /nothing was written.*CROZIER_SUITE_CASES_RETIRE/);
+    assert.equal(readFileSync(journeys, "utf8"), lost, "the pin was rewritten after a lost case");
+    assert.equal(readFileSync(lanes, "utf8"), committed);
+
+    // A retirement naming a case the write does not lose is refused, so a typo cannot hide a loss.
+    const typo = command({ ...env, CROZIER_SUITE_CASES_RETIRE: "imaginary::never_colected" }, "write", e2eCases.moved);
+    assert.equal(typo.status, 1, typo.stderr);
+    assert.match(typo.stderr, /names imaginary::never_colected, which this write does not lose/);
+    assert.equal(readFileSync(journeys, "utf8"), lost);
+
+    // Named as retired, the same removal is repinned, lanes.json with it.
+    const retired = command({ ...env, CROZIER_SUITE_CASES_RETIRE: "imaginary::never_collected" }, "write", e2eCases.moved);
+    assert.equal(retired.status, 0, retired.stderr);
+    assert.equal(readFileSync(journeys, "utf8"), pinned);
+    assert.equal(readFileSync(lanes, "utf8"), committed);
+  } finally {
+    rmSync(scratch, { recursive: true, force: true });
+  }
+});
+
 test("an unknown suite is refused with the known names", () => {
   const run = command({}, "check", "no-such-suite");
   assert.equal(run.status, 2);
