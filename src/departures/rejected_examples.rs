@@ -38,7 +38,9 @@ pub(super) struct Index {
     /// Every scalar the document declares: each leaf of an `example`,
     /// `examples` or `default` at any level, a media type's or parameter's,
     /// and each `components.examples` value.
-    declared: BTreeSet<ValueKey>,
+    /// Each is keyed exactly, as JSON spells it: a double Fern rounds a
+    /// declared integer to is no declared value (`int64-example-rounded-out-of-range`'s).
+    declared: BTreeSet<String>,
     /// The constraints of every node, by each argument it is passed as, for
     /// a declared value ([`Mechanism::Declared`]), whose replacement is
     /// chosen when a line is read rather than in advance.
@@ -587,16 +589,28 @@ fn indexed(id: Mechanism, pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
         .all(|change| index.scalar(id, &change.arguments, change.fern, change.crozier))
 }
 
+/// A scalar as the document spells it, integers and floats apart: `42` and
+/// `42.0` are the same value, but a double is never the integer it rounds.
+fn exact(value: &Value) -> String {
+    match value {
+        Value::Number(number) if number.is_f64() => number
+            .as_f64()
+            .filter(|n| n.fract() == 0.0 && n.abs() < 2f64.powi(53))
+            .map_or_else(|| number.to_string(), |n| format!("{n:.0}")),
+        other => other.to_string(),
+    }
+}
+
 /// Every scalar `source` declares as a value: the leaves of each `example`,
 /// `examples` and `default` of its schemas, parameters and media types, and of
 /// its `components.examples`.
-fn declared_scalars(source: &OpenApi) -> BTreeSet<ValueKey> {
-    fn leaves(value: &Value, out: &mut BTreeSet<ValueKey>) {
+fn declared_scalars(source: &OpenApi) -> BTreeSet<String> {
+    fn leaves(value: &Value, out: &mut BTreeSet<String>) {
         match value {
             Value::Array(items) => items.iter().for_each(|item| leaves(item, out)),
             Value::Object(entries) => entries.values().for_each(|entry| leaves(entry, out)),
             scalar => {
-                out.insert(ValueKey::of(scalar));
+                out.insert(exact(scalar));
             }
         }
     }
@@ -612,7 +626,7 @@ fn declared_scalars(source: &OpenApi) -> BTreeSet<ValueKey> {
         }
     });
     let named = |examples: &indexmap::IndexMap<String, crate::openapi::ParameterExample>,
-                 out: &mut BTreeSet<ValueKey>| {
+                 out: &mut BTreeSet<String>| {
         for example in examples
             .values()
             .filter_map(|example| example.value.as_ref())
@@ -621,7 +635,7 @@ fn declared_scalars(source: &OpenApi) -> BTreeSet<ValueKey> {
         }
     };
     let media = |content: &indexmap::IndexMap<String, crate::openapi::MediaType>,
-                 out: &mut BTreeSet<ValueKey>| {
+                 out: &mut BTreeSet<String>| {
         for media in content.values() {
             if let Some(example) = &media.example {
                 leaves(example, out);
@@ -706,7 +720,7 @@ impl Index {
     /// [`ValueConstraints::choose`] picks for that schema, or Fern's own
     /// construction for the node where the schema accepts that.
     fn declared_holds(&self, arguments: &[Argument], fern: &Value, crozier: &Value) -> bool {
-        self.declared.contains(&ValueKey::of(fern))
+        self.declared.contains(&exact(fern))
             && arguments.iter().any(|argument| {
                 self.by_argument.get(argument).is_some_and(|nodes| {
                     nodes.iter().any(|node| {
