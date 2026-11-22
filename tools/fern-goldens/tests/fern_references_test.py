@@ -558,6 +558,54 @@ class FernReferencesTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "must be plain file names"):
             store.publish(self.root / document, tree, store.EnumMode.LITERALS, records={"tree": "x"})
 
+    def test_a_flat_tree_never_answers_for_the_packaged_key(self) -> None:
+        """Issue #886: a regeneration that installed its modules at the tree root is
+        refused before it can win first-wins publication, and a flat entry already
+        cached under the key is neither found nor kept: publication names the
+        directory to remove, after which the packaged tree publishes."""
+        document = "docs/fern-measurements/kept/psi/openapi.yml"
+        self.write(document, "openapi: 3.0.3\ninfo: {title: psi}\n")
+        metadata = json.dumps(
+            {
+                "cliVersion": CLI,
+                "generatorName": "fernapi/fern-python-sdk",
+                "generatorVersion": SDK,
+                "generatorConfig": {"pydantic_config": {"enum_type": "python_enums"}},
+            }
+        )
+        for name in ("client.py", "raw_client.py", "core/enum.py", "README.md", ".fern/metadata.json"):
+            self.write(f"flat/{name}", metadata if name.endswith(".json") else "X = 1\n")
+        refused = self.publish(document, self.root / "flat")
+        self.assertEqual(refused.returncode, 1, refused.stdout)
+        self.assertIn("is not the packaged SDK the store's key names", refused.stderr)
+        self.assertIn("Python modules at its root (client.py, raw_client.py), the flat layout", refused.stderr)
+        self.assertIn("regenerate with the certified pair", refused.stderr)
+        self.assertNotEqual(self.find_entry(document, "python-enums").returncode, 0)
+        # Neither is a tree with no source package under src/.
+        self.write("readme-only/README.md", "# psi\n")
+        self.write("readme-only/.fern/metadata.json", metadata)
+        refused = self.publish(document, self.root / "readme-only")
+        self.assertIn("no source package under src/", refused.stderr)
+
+        # A flat entry cached before this rule: never read, never kept.
+        entry = self.store_entry(document, "python_enums")
+        shutil.copytree(self.root / "flat", entry / "tree")
+        for name, text in (("document.sha256", entry.parent.name + "\n"), ("exit-code", "0\n"), ("fern.log", "")):
+            self.write(str((entry / name).relative_to(self.root)), text)
+        self.assertNotEqual(self.find_entry(document, "python-enums").returncode, 0)
+        self.write("packaged/src/fern/client.py", "CLIENT = 1\n")
+        self.write("packaged/.fern/metadata.json", metadata)
+        refused = self.publish(document, self.root / "packaged")
+        self.assertEqual(refused.returncode, 1, refused.stdout)
+        self.assertIn(f"the entry already at {entry} is incomplete", refused.stderr)
+        self.assertIn("its tree/ is not the packaged SDK the key names", refused.stderr)
+        self.assertIn("remove that directory", refused.stderr)
+        shutil.rmtree(entry)
+        published = self.publish(document, self.root / "packaged")
+        self.assertEqual(published.returncode, 0, published.stderr)
+        self.assertEqual(self.find_entry(document, "python-enums").stdout.strip(), str(entry))
+        self.assertTrue((entry / "tree/src/fern/client.py").is_file())
+
     def test_the_store_lives_under_the_home_cache_unless_an_absolute_xdg_cache_home_moves_it(self) -> None:
         """XDG_CACHE_HOME places the store only when absolute, as XDG asks; otherwise ~/.cache."""
         document = "docs/fern-measurements/kept/phi/openapi.yml"
