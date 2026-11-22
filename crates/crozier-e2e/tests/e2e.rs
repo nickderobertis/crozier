@@ -27,6 +27,11 @@ use predicates::prelude::*;
 #[path = "e2e/compare.rs"]
 mod compare;
 
+/// The invalid-example repairs through `crozier compare`, against references
+/// holding Fern's defects and values that are none.
+#[path = "e2e/invalid_example_compare.rs"]
+mod invalid_example_compare;
+
 /// `enum-type: literals` through the binary.
 #[path = "e2e/literals.rs"]
 mod literals;
