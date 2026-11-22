@@ -290,3 +290,7 @@ follow-ups because no proof here rests on them:
 `fernapi/fern-python-sdk` 5.41.3, the pair certified when it was taken; where it
 says "the certified pair" it means that pair. It has not been re-measured at
 the current certified pair, Fern CLI 5.216.0 / fern-python-sdk 5.42.0.
+The exception is the output-insensitive comparison records that
+`docs/openapi-surface/output-insensitive.tsv` cites from here (`glaze-batch-tracker-combo-discriminated-inline-members-crozier.json`, `glaze-batch-tracker-combo-discriminated-inline-members-fern.json`, `kiln-firing-schedule-combo-allof-deprecated-crozier.json`, `kiln-firing-schedule-combo-allof-deprecated-fern.json`, `kiln-firing-schedule-combo-allof-ref-scalar-default-crozier.json`, `kiln-firing-schedule-combo-allof-ref-scalar-default-fern.json`, `kiln-firing-schedule-combo-anyof-beside-discriminator-crozier.json`, `kiln-firing-schedule-combo-anyof-beside-discriminator-fern.json`, `kiln-firing-schedule-combo-array-item-anyof-titled-member-crozier.json`, `kiln-firing-schedule-combo-array-item-anyof-titled-member-fern.json`, `kiln-firing-schedule-combo-array-item-oneof-titled-member-crozier.json`, `kiln-firing-schedule-combo-array-item-oneof-titled-member-fern.json`):
+`tools/surface-census/output-insensitive-remeasure.py` re-measured them at the
+current certified pair, where each generator's before and after trees stay identical.

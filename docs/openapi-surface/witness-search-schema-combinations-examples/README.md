@@ -348,3 +348,7 @@ rather than to unrelated code the witness happens to execute.
 `fernapi/fern-python-sdk` 5.41.3, the pair certified when it was taken; where it
 says "the certified pair" it means that pair. It has not been re-measured at
 the current certified pair, Fern CLI 5.216.0 / fern-python-sdk 5.42.0.
+The exception is the output-insensitive comparison records that
+`docs/openapi-surface/output-insensitive.tsv` cites from here (`nimisampo-version-removal-crozier.json`, `nimisampo-version-removal-fern.json`):
+`tools/surface-census/output-insensitive-remeasure.py` re-measured them at the
+current certified pair, where each generator's before and after trees stay identical.
