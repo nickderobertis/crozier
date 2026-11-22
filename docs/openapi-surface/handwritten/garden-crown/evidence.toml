@@ -1,6 +1,6 @@
-fern_cli_version = "5.200.0"
-fern_python_sdk_version = "5.41.25"
-digest = "3efaf4d6d393151c26c9043352e232dfa5533023ff6c42dc164716c49a8f7a51"
+fern_cli_version = "5.216.0"
+fern_python_sdk_version = "5.42.0"
+digest = "64d9e90f299dfaa799663d0a33ac642f4600a2d8c7b04f3480fdfaa41ac443a3"
 
 [[covers]]
 key = "allof-child-of-cyclic-base-imports-base-deferred"

@@ -86,8 +86,8 @@ These keys, and nothing else:
 
 <!-- llmlint: ignore-block[agents_md_durable_and_terse] The example states the certified pair on purpose: the_handwritten_contract_states_the_corpus_pin requires these two lines to name it, and fails when they drift from assets/scaffolding/metadata.json. -->
 ```toml
-fern_cli_version = "5.200.0"
-fern_python_sdk_version = "5.41.25"
+fern_cli_version = "5.216.0"
+fern_python_sdk_version = "5.42.0"
 digest = "<64 lower-case hex digits>"
 
 [[covers]]

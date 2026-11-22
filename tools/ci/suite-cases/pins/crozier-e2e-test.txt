@@ -513,6 +513,7 @@ crozier-e2e::e2e inline_response_array_objects_hoist_through_the_cli
 crozier-e2e::e2e inline_type_names_read_crozier_spelling_over_fern
 crozier-e2e::e2e inline_unnameable_enums_report_their_operation_and_recover
 crozier-e2e::e2e integer_enums_matches_fern_output
+crozier-e2e::e2e invalid_example_compare::compare_matches_fern_s_invalid_examples_through_their_departures_and_nothing_else
 crozier-e2e::e2e jobster_api_matches_fern_output
 crozier-e2e::e2e json_request_shapes_match_certified_output_in_both_enum_modes
 crozier-e2e::e2e k8s_container_service_provider_matches_fern_output
@@ -738,6 +739,8 @@ crozier-e2e::e2e read_only_body_properties_and_oversized_json_integers_do_not_ch
 crozier-e2e::e2e readme_api_application_json_matches_fern_output
 crozier-e2e::e2e readme_marks_composed_object_bodies_as_complex
 crozier-e2e::e2e readme_marks_referenced_object_bodies_as_complex
+crozier-e2e::e2e readme_retries::readme_retries_section_is_fern_text_in_every_layout
+crozier-e2e::e2e readme_retries::sdk_env_client_retries_exactly_what_its_readme_lists
 crozier-e2e::e2e readme_skips_binary_endpoints_for_worked_examples
 crozier-e2e::e2e real_witnesses::a_witness_that_stops_declaring_its_shape_fails
 crozier-e2e::e2e real_witnesses::examples_docs_real_witnesses_declare_their_shapes

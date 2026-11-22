@@ -140,7 +140,10 @@ per mode, all in files every SDK shares: the hyphenated distribution name
 `core/http_client.py`, `core/jsonable_encoder.py`, `core/pydantic_utilities.py`
 and the four `core/http_sse/` files), `.fern/metadata.json`, `reference.md`'s
 link ranges and `README.md`'s async imports. The manifests were re-recorded
-from crozier's output after checking that no other path moved.
+from crozier's output after checking that no other path moved. Moving it to Fern CLI
+5.216.0 / fern-python-sdk 5.42.0 moved two digests per mode, `.fern/metadata.json`
+(the pair) and `README.md` (its Retries section, now Fern 5.42.0's sentence and
+list); they were re-recorded the same way.
 
 `crates/crozier-e2e/tests/e2e/emission_parity.rs` holds each tree whole
 through the parity engine and the departures ledger. Each test then induces a
@@ -452,8 +455,8 @@ the certified pair apart from the catalogued departures, including
 base-tree file in both modes, including README.md and reference.md.
 
 **Regenerated at the certified pair.** The Fern goldens workflow (run
-43423270787) regenerated every `fern-expected/` tree this record holds at Fern
-CLI 5.200.0 / `fernapi/fern-python-sdk` 5.41.25, the certified pair, and
+44880783817) regenerated every `fern-expected/` tree this record holds at Fern
+CLI 5.216.0 / `fernapi/fern-python-sdk` 5.42.0, the certified pair, and
 crozier's comparison holds the record to those trees. Statements above that name Fern CLI
 5.163.1 / fern-python-sdk 5.41.3 describe the measurement as first taken, at
 the pair certified then; a digest, log or exit code they cite is that run's.

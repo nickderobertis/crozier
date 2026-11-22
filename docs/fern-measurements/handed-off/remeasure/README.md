@@ -92,3 +92,8 @@ matches. The comparison records are
 and [`65e9c34e…`](../comparisons/65e9c34eefc5925ec44f6a375912deabcd7354f9e15d1af94533cf98b7bb2b48.txt).
 Their residual rows are removed, and [`documents.tsv`](../documents.tsv)
 records both as `byte-matches`, with registration not yet decided.
+
+**Historical.** This record was measured at Fern CLI 5.200.0 /
+`fernapi/fern-python-sdk` 5.41.25, the pair certified when it was taken; where it
+says "the certified pair" it means that pair. It has not been re-measured at
+the current certified pair, Fern CLI 5.216.0 / fern-python-sdk 5.42.0.

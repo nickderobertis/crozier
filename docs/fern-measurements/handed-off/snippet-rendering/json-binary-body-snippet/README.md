@@ -21,8 +21,8 @@ Both methods take `request: bytes` and send it with `json=request`. The certifie
 `crates/crozier-e2e/tests/e2e/handed_off_snippet_rendering.rs` runs the real `crozier` binary over `openapi.yml` and compares its whole tree with `fern-expected/`, every catalogued departure held to its `tests/fixtures/departures-ledger.tsv` lines (`handed_off_snippet_rendering_measurements_match_fern`). `catalogued_snippet_defects_are_what_crozier_writes` reads the line on both sides; `snippet_departures_and_repairs_hold_only_their_lines` fails a different certified spelling beside it; `sdk_env_snippet_defect_journeys_hold_for_crozier_and_fern` reruns the `runtime.txt` journey (`crates/crozier-e2e/tests/e2e/snippet_rendering_wire.py`) over both SDKs.
 
 **Regenerated at the certified pair.** The Fern goldens workflow (run
-43423270787) regenerated every `fern-expected/` tree this record holds at Fern
-CLI 5.200.0 / `fernapi/fern-python-sdk` 5.41.25, the certified pair, and
+44880783817) regenerated every `fern-expected/` tree this record holds at Fern
+CLI 5.216.0 / `fernapi/fern-python-sdk` 5.42.0, the certified pair, and
 crozier's comparison holds the record to those trees. Statements above that name Fern CLI
 5.163.1 / fern-python-sdk 5.41.3 describe the measurement as first taken, at
 the pair certified then; a digest, log or exit code they cite is that run's.

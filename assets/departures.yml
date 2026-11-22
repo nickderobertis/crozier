@@ -206,7 +206,9 @@
     depth_metres=0, title="Lizard Point", AlertKind.BEACON_LIT), or for the
     body (request=[StoreLine(item_id=…, crates=4)] where Fern writes
     [StoreLine(), StoreLine()]), including an optional argument Fern leaves out.
-    Every other argument and line is retained.
+    A declared scalar its own schema rejects is not kept: Fern's placeholder
+    stands where the schema accepts it, else `schema-rejected-declared-example`
+    repairs it. Every other argument and line is retained.
   reason: >-
     Design-review ruling 2 (falsy-property-example, 2026-11-01) keeps the value
     the API's author declared where the certified pair discards it for a
@@ -883,25 +885,53 @@
   trigger: >-
     A list in a worked example of `README.md`, `reference.md` or a generated
     client's docstring that Fern writes with its fixed number of items (one, or
-    two in its fallback example writer), whose schema's `minItems` or
-    `maxItems` rejects that count. The comparison has the parsed source
+    two in its fallback example writer, or none where it has no item to
+    show), whose schema's `minItems` or `maxItems` rejects that count. The comparison has the parsed source
     document.
   fern: >-
     The list with Fern's fixed number of items (discord's
-    `messages=["messages"]` beneath `minItems: 2`).
+    `messages=["messages"]` beneath `minItems: 2`), or none (marimo's
+    `x_bounds=[]` beneath `minItems: 2`).
   crozier: >-
     The specification's own declared example for that schema when the schema
     accepts it, else its declared `default` when the schema accepts it, else
     Fern's items cut to `maxItems` or padded to `minItems` with copies of the
     first item, or, beneath `uniqueItems: true`, with pairwise-distinct items
-    the item schema accepts. Where no such items can be built, or Fern writes
-    the list empty and has no item to copy, Fern's value stays. The argument,
+    the item schema accepts. Where Fern writes the list empty, with no item
+    to copy (a tuple's `prefixItems`, a nullable item an executable docstring
+    leaves out), the items the schema's own shape builds: each `prefixItems`
+    member's value, or `minItems` copies of its items' (`None` for a nullable
+    item). Where no such items can be built, Fern's value stays. The argument,
     its place and every other line are unchanged.
   reason: >-
     An example value invalid for its own schema is a defect under the defect
     rule: the API rejects the call the example shows. Validating Fern's value
     against its source schema rejects it; crozier's is accepted.
   evidence: docs/departures/evidence/schema-rejected-array-length-example.md
+
+- id: schema-rejected-declared-example
+  kind: fern-defect
+  trigger: >-
+    A scalar in a worked example of `README.md`, `reference.md` or a generated
+    client's docstring that the specification itself declares — an `example`,
+    `examples` or `default` at any level, an enclosing body's or parameter's
+    example included — whose own schema rejects it by an in-scope keyword or
+    format. The comparison has the parsed source document.
+  fern: >-
+    The declared value as written (dot-ai's `execute_choice=42` beneath
+    `maximum: 1`, RayBot's `ip="192.168.1.100/24"` beneath `format: ipv4`).
+  crozier: >-
+    Another declared example for that schema when the schema accepts it, else
+    its declared `default` when the schema accepts it, else a value
+    constructed deterministically to satisfy every in-scope keyword. Where no
+    such value exists or crozier cannot decide validity, Fern's value stays.
+    The argument, its place and every other line are unchanged.
+  reason: >-
+    An example value invalid for its own schema is a defect under the defect
+    rule, whoever chose it: the API rejects the call the example shows.
+    Validating Fern's value against its source schema rejects it; crozier's is
+    accepted.
+  evidence: docs/departures/evidence/schema-rejected-declared-example.md
 
 - id: schema-rejected-name-example
   kind: fern-defect

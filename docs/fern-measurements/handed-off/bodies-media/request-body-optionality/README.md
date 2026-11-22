@@ -11,8 +11,8 @@ The handed-off root cause `request-body-optionality` from the bodies-and-paths r
 **Verdict:** `parity-gap-repaired`. Recorded in [`../../bodies-media.tsv`](../../bodies-media.tsv).
 
 **Regenerated at the certified pair.** The Fern goldens workflow (run
-43423270787) regenerated every `fern-expected/` tree this record holds at Fern
-CLI 5.200.0 / `fernapi/fern-python-sdk` 5.41.25, the certified pair, and
+44880783817) regenerated every `fern-expected/` tree this record holds at Fern
+CLI 5.216.0 / `fernapi/fern-python-sdk` 5.42.0, the certified pair, and
 crozier's comparison holds the record to those trees. Statements above that name Fern CLI
 5.163.1 / fern-python-sdk 5.41.3 describe the measurement as first taken, at
 the pair certified then; a digest, log or exit code they cite is that run's.

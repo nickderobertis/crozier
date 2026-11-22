@@ -1,4 +1,4 @@
-fern-refusals: Fern CLI 5.200.0, fernapi/fern-python-sdk 5.41.25
+fern-refusals: Fern CLI 5.216.0, fernapi/fern-python-sdk 5.42.0
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
 [api]: Discriminated union "ActiveConsumerOffersByRestaurantOffersItem (ActiveConsumerOffersByRestaurant > offers > Item)" lists "#/components/schemas/ActiveConsumerOffer" in its oneOf/anyOf, but it is not present in the discriminator mapping. This variant will be omitted from the generated union, so payloads using it will fail to serialize or deserialize. Add it to the discriminator mapping to include it.
@@ -844,3 +844,4 @@ Warnings for generators.yml:
         issue: Unexpected property "Tags"
 
 Found 210 errors and 11 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+For guidance, run `fern instructions spec`.

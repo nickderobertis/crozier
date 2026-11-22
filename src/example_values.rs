@@ -383,6 +383,14 @@ pub struct ValueConstraints {
     /// reference that does not resolve, or past the depth followed. A value
     /// can still be rejected, but never accepted, by an incomplete view.
     pub incomplete: bool,
+    /// The values a `not` of nothing but an `enum` or `const` (beside a
+    /// `type` and annotations) excludes. Out of scope as a keyword that
+    /// rejects a value, it still counts toward proving that a schema accepts
+    /// nothing ([`Self::admits_nothing`]).
+    pub excluded: Vec<Value>,
+    /// The value the schema's own shape builds where Fern writes none, an
+    /// empty list's: see [`seed_of`].
+    pub seed: Option<Value>,
 }
 
 /// How deep a `$ref`/`allOf` chain is followed before the rest is treated as
@@ -471,7 +479,17 @@ impl ValueConstraints {
         // out of scope, which neither reject nor block a repair; an `allOf`
         // load normalization discarded is still read, below.
         self.incomplete |= schema.unresolved_reference();
-        self.keywords.extend(own_keywords(schema));
+        let own = own_keywords(schema);
+        // Only a list that must hold items needs one where Fern writes none.
+        if self.seed.is_none()
+            && own
+                .iter()
+                .any(|keyword| matches!(keyword, Keyword::MinItems(n) if *n > 0))
+        {
+            self.seed = seed_of(schema, schemas, depth);
+        }
+        self.keywords.extend(own);
+        self.excluded.extend(excluded_values(schema));
         self.unique_items |= schema.unique_items == Some(true);
         if let Some(items) = &schema.items {
             let mut inner = self.items.take().map_or_else(Self::default, |boxed| *boxed);
@@ -563,6 +581,50 @@ impl ValueConstraints {
         self.construct(fern)
             .filter(|value| accepted(value))
             .map(Choice::Constructed)
+    }
+
+    /// Whether these keywords provably accept no value of `kind`'s JSON kind:
+    /// the view is complete, an `enum` or `const` names the only values
+    /// allowed, and every one of them of that kind (there may be none) is
+    /// rejected by a keyword in scope or excluded by a `not`. An integer
+    /// schema whose `enum` lists only strings accepts no number.
+    #[must_use]
+    pub fn admits_nothing(&self, kind: &Value) -> bool {
+        if self.incomplete {
+            return false;
+        }
+        let Some(allowed) = self.keywords.iter().find_map(|keyword| match keyword {
+            Keyword::Enum(values) => Some(values.clone()),
+            Keyword::Const(value) => Some(vec![value.clone()]),
+            _ => None,
+        }) else {
+            return false;
+        };
+        !allowed.iter().any(|value| {
+            same_kind(value, kind)
+                && self.verdict(value) == Verdict::Accepted
+                && !self
+                    .excluded
+                    .iter()
+                    .any(|excluded| json_equal(excluded, value))
+        })
+    }
+
+    /// The items crozier writes into an empty list these keywords reject,
+    /// Fern's where it can write no item: the schema's [`Self::seed`], when it
+    /// is a list these keywords, its items' included, accept. `None` where the
+    /// schema builds no such list.
+    #[must_use]
+    pub fn seeded_items(&self) -> Option<Vec<Value>> {
+        match &self.seed {
+            Some(Value::Array(items))
+                if !items.is_empty()
+                    && self.verdict(&Value::Array(items.clone())) == Verdict::Accepted =>
+            {
+                Some(items.clone())
+            }
+            _ => None,
+        }
     }
 
     /// A value of `fern`'s kind built to satisfy every keyword.
@@ -868,6 +930,214 @@ impl Choice {
         match self {
             Choice::Example(value) | Choice::Default(value) | Choice::Constructed(value) => value,
         }
+    }
+}
+
+/// The values `schema`'s `not` excludes, where it is nothing but an `enum` or
+/// a `const`, a string `type` and annotations: Harbour's `not: {enum: [ebb,
+/// neap]}`. Empty for any other `not`, whose meaning is not read.
+fn excluded_values(schema: &Schema) -> Vec<Value> {
+    let Some(Value::Object(not)) = &schema.not_schema else {
+        return Vec::new();
+    };
+    const READ: [&str; 8] = [
+        "enum",
+        "const",
+        "type",
+        "description",
+        "title",
+        "example",
+        "examples",
+        "default",
+    ];
+    if not.keys().any(|key| !READ.contains(&key.as_str())) {
+        return Vec::new();
+    }
+    let mut out: Vec<Value> = not
+        .get("enum")
+        .and_then(Value::as_array)
+        .cloned()
+        .unwrap_or_default();
+    out.extend(not.get("const").cloned());
+    // A `not` beside a type other than the members' excludes nothing of theirs.
+    match not.get("type") {
+        None => out,
+        Some(Value::String(ty)) => out
+            .into_iter()
+            .filter(|value| json_type_admits(ty, value))
+            .collect(),
+        Some(_) => Vec::new(),
+    }
+}
+
+/// Whether the JSON Schema `type` name `ty` admits `value`.
+fn json_type_admits(ty: &str, value: &Value) -> bool {
+    match (ty, value) {
+        ("string", Value::String(_))
+        | ("number", Value::Number(_))
+        | ("boolean", Value::Bool(_))
+        | ("null", Value::Null)
+        | ("array", Value::Array(_))
+        | ("object", Value::Object(_)) => true,
+        ("integer", Value::Number(n)) => {
+            n.is_i64() || n.is_u64() || n.as_f64().is_some_and(|n| n.fract() == 0.0)
+        }
+        _ => false,
+    }
+}
+
+/// How deep [`seed_of`] builds nested lists before giving up.
+const SEED_DEPTH: usize = 8;
+
+/// The value `schema`'s own shape builds, for a list Fern writes with no
+/// item: a `const`, else the first `enum` member it accepts, else `null`
+/// where it admits null (`nullable`, a `null` type, or a `null` member of its
+/// `oneOf` or `anyOf`), else by its first other type — a string `"string"`, a
+/// number `1.1`, an integer `1`, a boolean `true` (each replaced by the
+/// schema's repair where its keywords reject it), a list each of its
+/// `prefixItems`' values or `minItems` (at least one) copies of its items',
+/// and an object its required properties' values. A `oneOf` or `anyOf`
+/// builds its first member that builds one, its inline members before its
+/// references; a free-form schema (`{}`) is Fern's own free-form value,
+/// `{"key": "value"}`. Every value is one the schema's in-scope keywords
+/// accept; `None` where it has no such shape — an object composed by
+/// `allOf`, a `$ref` that does not resolve or is already being built.
+#[must_use]
+pub fn seed_of(schema: &Schema, schemas: &IndexMap<String, Schema>, depth: usize) -> Option<Value> {
+    seed_in(schema, schemas, depth, &mut Vec::new())
+}
+
+fn seed_in(
+    schema: &Schema,
+    schemas: &IndexMap<String, Schema>,
+    depth: usize,
+    visiting: &mut Vec<String>,
+) -> Option<Value> {
+    if depth > SEED_DEPTH {
+        return None;
+    }
+    if let Some(reference) = &schema.reference {
+        let key = reference.strip_prefix("#/components/schemas/")?;
+        if visiting.iter().any(|seen| seen == key) {
+            return None;
+        }
+        let target = schemas.get(key)?;
+        visiting.push(key.to_owned());
+        let seed = seed_in(target, schemas, depth + 1, visiting);
+        visiting.pop();
+        return seed;
+    }
+    let mut constraints = ValueConstraints::default();
+    constraints.collect(schema, schemas, depth + 1);
+    let accepted = |value: &Value| {
+        constraints.verdict(value) == Verdict::Accepted
+            && !constraints
+                .excluded
+                .iter()
+                .any(|excluded| json_equal(excluded, value))
+    };
+    if let Some(value) = &schema.const_value {
+        return accepted(value).then(|| value.clone());
+    }
+    if let Some(values) = &schema.enum_values {
+        return values.iter().find(|value| accepted(value)).cloned();
+    }
+    let types: Vec<&str> = match &schema.ty {
+        Some(crate::openapi::TypeField::Single(ty)) => vec![ty.as_str()],
+        Some(crate::openapi::TypeField::Multiple(types)) => {
+            types.iter().map(String::as_str).collect()
+        }
+        None => Vec::new(),
+    };
+    let members: Vec<&Schema> = schema
+        .one_of
+        .iter()
+        .chain(&schema.any_of)
+        .flatten()
+        .collect();
+    let null_member = members.iter().any(
+        |member| matches!(&member.ty, Some(crate::openapi::TypeField::Single(ty)) if ty == "null"),
+    );
+    if schema.nullable == Some(true) || types.contains(&"null") || null_member {
+        return Some(Value::Null);
+    }
+    if !members.is_empty() {
+        let (inline, references): (Vec<&Schema>, Vec<&Schema>) = members
+            .into_iter()
+            .partition(|member| member.reference.is_none());
+        return inline
+            .into_iter()
+            .chain(references)
+            .find_map(|member| seed_in(member, schemas, depth + 1, visiting))
+            .filter(|value| accepted(value));
+    }
+    let prefix = schema
+        .unmodeled_keywords
+        .get("prefixItems")
+        .and_then(Value::as_array);
+    let composed = schema.all_of.is_some() || schema.discarded_all_of.is_some();
+    let ty = match types.iter().copied().find(|ty| *ty != "null") {
+        Some(ty) => ty,
+        None if prefix.is_some() => "array",
+        None if !schema.properties.is_empty() => "object",
+        None if !composed && schema.items.is_none() && schema.additional_properties.is_none() => {
+            return Some(serde_json::json!({"key": "value"})).filter(|value| accepted(value));
+        }
+        None => return None,
+    };
+    let repaired = |value: Value| {
+        if accepted(&value) {
+            Some(value)
+        } else {
+            constraints
+                .choose(&value)
+                .map(|choice| choice.value().clone())
+                .filter(|value| accepted(value))
+        }
+    };
+    match ty {
+        "string" => repaired(Value::from("string")),
+        "number" => repaired(Value::from(1.1)),
+        "integer" => repaired(Value::from(1)),
+        "boolean" => Some(Value::Bool(true)).filter(|value| accepted(value)),
+        "array" => {
+            let items: Vec<Value> = match prefix {
+                Some(members) if !members.is_empty() => members
+                    .iter()
+                    .map(|member| {
+                        let member: Schema = serde_json::from_value(member.clone()).ok()?;
+                        seed_in(&member, schemas, depth + 1, visiting)
+                    })
+                    .collect::<Option<_>>()?,
+                _ => {
+                    let item = seed_in(schema.items.as_deref()?, schemas, depth + 1, visiting)?;
+                    let count = constraints
+                        .keywords
+                        .iter()
+                        .filter_map(|keyword| match keyword {
+                            Keyword::MinItems(n) => usize::try_from(*n).ok(),
+                            _ => None,
+                        })
+                        .max()
+                        .unwrap_or(1)
+                        .max(1);
+                    vec![item; count]
+                }
+            };
+            Some(Value::Array(items)).filter(|value| accepted(value))
+        }
+        "object" if !composed => {
+            let mut object = serde_json::Map::new();
+            for name in &schema.required {
+                let property = schema.properties.get(name)?;
+                object.insert(
+                    name.clone(),
+                    seed_in(property, schemas, depth + 1, visiting)?,
+                );
+            }
+            Some(Value::Object(object)).filter(|value| accepted(value))
+        }
+        _ => None,
     }
 }
 
@@ -1270,11 +1540,15 @@ pub enum Mechanism {
     /// A declared integer past 2^53 written as the double nearest it, which
     /// the earlier `int64-example-rounded-out-of-range` departure corrects.
     Rounded,
+    /// A value the specification itself declares — an `example`, `examples`
+    /// or `default` at any level, an enclosing body's example included — that
+    /// the schema it documents rejects.
+    Declared,
 }
 
 impl Mechanism {
     /// Every mechanism an inventory row may name.
-    pub const ALL: [Mechanism; 7] = [
+    pub const ALL: [Mechanism; 8] = [
         Mechanism::Name,
         Mechanism::Placeholder,
         Mechanism::Sized,
@@ -1282,23 +1556,26 @@ impl Mechanism {
         Mechanism::Array,
         Mechanism::EnumMember,
         Mechanism::Rounded,
+        Mechanism::Declared,
     ];
 
     /// The mechanisms the `schema-rejected-*` departures repair.
-    pub const REPAIRED: [Mechanism; 5] = [
+    pub const REPAIRED: [Mechanism; 6] = [
         Mechanism::Name,
         Mechanism::Placeholder,
         Mechanism::Sized,
         Mechanism::Number,
         Mechanism::Array,
+        Mechanism::Declared,
     ];
 
     /// The repaired mechanisms that write one scalar.
-    pub const SCALAR: [Mechanism; 4] = [
+    pub const SCALAR: [Mechanism; 5] = [
         Mechanism::Name,
         Mechanism::Placeholder,
         Mechanism::Sized,
         Mechanism::Number,
+        Mechanism::Declared,
     ];
 
     /// The catalog id of the departure that corrects this construction.
@@ -1312,6 +1589,7 @@ impl Mechanism {
             Mechanism::Array => "schema-rejected-array-length-example",
             Mechanism::EnumMember => "pattern-narrowed-enum-example",
             Mechanism::Rounded => "int64-example-rounded-out-of-range",
+            Mechanism::Declared => "schema-rejected-declared-example",
         }
     }
 
@@ -1335,16 +1613,21 @@ pub enum Disposition {
     ResidualUndecidable,
     /// No value satisfies every keyword, or crozier cannot build one.
     ResidualUnconstructible,
+    /// The schema provably accepts no value of the type it is generated as
+    /// ([`ValueConstraints::admits_nothing`]): the specification contradicts
+    /// itself, so no value crozier could write is valid, and Fern's stays.
+    UnsatisfiableSchema,
 }
 
 impl Disposition {
     /// Every disposition, in the inventory's vocabulary order.
-    pub const ALL: [Disposition; 5] = [
+    pub const ALL: [Disposition; 6] = [
         Disposition::Repaired,
         Disposition::DeclaredInSpec,
         Disposition::OutOfScopeKeyword,
         Disposition::ResidualUndecidable,
         Disposition::ResidualUnconstructible,
+        Disposition::UnsatisfiableSchema,
     ];
 
     /// The disposition as the inventory spells it.
@@ -1356,6 +1639,7 @@ impl Disposition {
             Disposition::OutOfScopeKeyword => "out-of-scope-keyword",
             Disposition::ResidualUndecidable => "residual-undecidable",
             Disposition::ResidualUnconstructible => "residual-unconstructible",
+            Disposition::UnsatisfiableSchema => "unsatisfiable-schema",
         }
     }
 
@@ -1892,5 +2176,109 @@ mod tests {
         );
         assert_eq!(python_value("Kind.A"), None);
         assert_eq!(python_value("b\"string\""), None);
+    }
+
+    #[test]
+    fn a_schema_admits_nothing_only_when_every_allowed_value_is_ruled_out() {
+        // An integer whose enum lists only strings accepts no number.
+        let c = constraints(serde_json::json!({"type": "integer", "format": "int32",
+            "enum": ["0 (Default)", "2 (ShrunkBlob)"]}));
+        assert!(c.admits_nothing(&Value::from(1)));
+        // Each member rejected by an in-scope keyword or excluded by a `not`.
+        let c = constraints(serde_json::json!({"type": "string",
+            "enum": ["slack", "flood", "ebb"], "maxLength": 4,
+            "pattern": "^(?!slack$).*$", "not": {"enum": ["ebb"]}}));
+        assert!(c.admits_nothing(&Value::from("slack")));
+        // A member left over, an unread `not`, no enum, or an incomplete view
+        // proves nothing.
+        for schema in [
+            serde_json::json!({"type": "string", "enum": ["slack", "flood", "ebb"],
+                "maxLength": 4, "pattern": "^(?!slack$).*$"}),
+            serde_json::json!({"type": "string", "enum": ["slack", "flood", "ebb"],
+                "maxLength": 4, "pattern": "^(?!slack$).*$",
+                "not": {"enum": ["ebb"], "minLength": 9}}),
+            serde_json::json!({"type": "string", "maxLength": 0, "minLength": 1}),
+            serde_json::json!({"enum": ["x"], "pattern": "^y$",
+                "allOf": [{"$ref": "#/components/schemas/Missing"}]}),
+        ] {
+            assert!(
+                !constraints(schema.clone()).admits_nothing(&Value::from("x")),
+                "{schema}"
+            );
+        }
+    }
+
+    fn seed(schema: serde_json::Value, components: serde_json::Value) -> Option<Value> {
+        let doc: OpenApi = serde_json::from_value(serde_json::json!({
+            "openapi": "3.1.0",
+            "info": {"title": "t", "version": "1"},
+            "paths": {},
+            "components": {"schemas": components}
+        }))
+        .unwrap();
+        let schema: Schema = serde_json::from_value(schema).unwrap();
+        seed_of(&schema, &doc.components.schemas, 0)
+    }
+
+    #[test]
+    fn a_seed_is_built_from_the_schema_s_own_shape_and_satisfies_it() {
+        let none = serde_json::json!({});
+        let cases = [
+            (
+                serde_json::json!({"type": "array", "items": false, "minItems": 2,
+                    "prefixItems": [{"type": "number", "minimum": 5},
+                        {"type": ["string", "null"]}, {"enum": ["a", "b"], "not": {"const": "a"}}]}),
+                serde_json::json!([5.0, null, "b"]),
+            ),
+            (
+                serde_json::json!({"type": "array", "minItems": 3, "items": {"type": "integer",
+                    "multipleOf": 4}}),
+                serde_json::json!([4, 4, 4]),
+            ),
+            (
+                serde_json::json!({"type": "array", "items": {"anyOf": [
+                    {"type": "string", "format": "date-time"}, {"type": "null"}]}}),
+                serde_json::json!([null]),
+            ),
+            (
+                serde_json::json!({"type": "object", "required": ["field", "op"], "properties": {
+                    "field": {"type": "string", "minLength": 7},
+                    "op": {"type": "string", "enum": ["eq", "ne"]},
+                    "note": {"type": "string"}}}),
+                serde_json::json!({"field": "apricot", "op": "eq"}),
+            ),
+            (serde_json::json!({}), serde_json::json!({"key": "value"})),
+        ];
+        for (schema, expected) in cases {
+            assert_eq!(
+                seed(schema.clone(), none.clone()),
+                Some(expected),
+                "{schema}"
+            );
+        }
+        // A union seeds its inline member before a reference, and a reference
+        // already being built seeds nothing.
+        let components = serde_json::json!({"Node": {"type": "object", "required": ["children"],
+        "properties": {"children": {"type": "array", "minItems": 1, "items": {"anyOf": [
+            {"$ref": "#/components/schemas/Node"},
+            {"type": "object", "required": ["leaf"], "properties": {"leaf": {"type": "boolean"}}}
+        ]}}}}});
+        assert_eq!(
+            seed(
+                serde_json::json!({"$ref": "#/components/schemas/Node"}),
+                components
+            ),
+            Some(serde_json::json!({"children": [{"leaf": true}]}))
+        );
+        // No shape builds a value for an `allOf` object, an unresolved
+        // reference, or a schema whose keywords contradict.
+        for schema in [
+            serde_json::json!({"type": "object", "allOf": [{"type": "object"}]}),
+            serde_json::json!({"$ref": "#/components/schemas/Missing"}),
+            serde_json::json!({"type": "array", "items": {"type": "string",
+                "minLength": 3, "maxLength": 1}}),
+        ] {
+            assert_eq!(seed(schema.clone(), none.clone()), None, "{schema}");
+        }
     }
 }

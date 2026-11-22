@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
   "generator": "crozier",
-  "fern_cli_version": "5.200.0",
-  "fern_python_sdk_version": "5.41.25",
+  "fern_cli_version": "5.216.0",
+  "fern_python_sdk_version": "5.42.0",
   "before": {
-    ".fern/metadata.json": "d56a92bc5b37100a608885442e57f0463973ff4505724007685065c8ce995887",
+    ".fern/metadata.json": "abf4fdb0dd3317b76ca70a3a67f3abda81b98ce5db4b2ad962eaaf65bc3d0bce",
     "CONTRIBUTING.md": "b233e01899b2937860c93a67b02d8501e65704197d11fa8fc7e967362876dba8",
-    "README.md": "82860d895ad710bab747f37213558a4d9d5b919ba5cfda08f9a24c8d542e9c3d",
+    "README.md": "018fb28e42b1aa3ef80336b4e20fe1c05fdf0e12df6bb102e4f4b22deb2cd6ef",
     "pyproject.toml": "cfc82697470417c2b5fd2a9d4428fb7945ff5bcbb42cedb91ed2e9ce647815e2",
     "reference.md": "8e2b5335d7f430929258c33a1fe9bd113d903ccda57c98df5214be1bcc284893",
     "requirements.txt": "99e6136c865e71d3c62976338cfeaca0540cae43bb99b225820a71f31c987523",
@@ -49,9 +49,9 @@
     "tests/test_aiohttp_autodetect.py": "599474e3786f7a5b30c88dc60417669fedbc09dacefed599a8592756a5236483"
   },
   "after": {
-    ".fern/metadata.json": "d56a92bc5b37100a608885442e57f0463973ff4505724007685065c8ce995887",
+    ".fern/metadata.json": "abf4fdb0dd3317b76ca70a3a67f3abda81b98ce5db4b2ad962eaaf65bc3d0bce",
     "CONTRIBUTING.md": "b233e01899b2937860c93a67b02d8501e65704197d11fa8fc7e967362876dba8",
-    "README.md": "82860d895ad710bab747f37213558a4d9d5b919ba5cfda08f9a24c8d542e9c3d",
+    "README.md": "018fb28e42b1aa3ef80336b4e20fe1c05fdf0e12df6bb102e4f4b22deb2cd6ef",
     "pyproject.toml": "cfc82697470417c2b5fd2a9d4428fb7945ff5bcbb42cedb91ed2e9ce647815e2",
     "reference.md": "8e2b5335d7f430929258c33a1fe9bd113d903ccda57c98df5214be1bcc284893",
     "requirements.txt": "99e6136c865e71d3c62976338cfeaca0540cae43bb99b225820a71f31c987523",

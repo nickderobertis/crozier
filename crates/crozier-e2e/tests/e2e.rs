@@ -27,6 +27,13 @@ use predicates::prelude::*;
 #[path = "e2e/compare.rs"]
 mod compare;
 
+/// The invalid-example repairs through `crozier compare`, against references
+/// holding Fern's defects and values that are none. Unix-only, module and
+/// helpers alike: its reference command is a `/bin/sh` script.
+#[cfg(unix)]
+#[path = "e2e/invalid_example_compare.rs"]
+mod invalid_example_compare;
+
 /// `enum-type: literals` through the binary.
 #[path = "e2e/literals.rs"]
 mod literals;
@@ -34,6 +41,10 @@ mod literals;
 /// `default-max-retries` through the binary.
 #[path = "e2e/default_max_retries.rs"]
 mod default_max_retries;
+
+/// The README's Retries section: Fern's text, and what the client retries.
+#[path = "e2e/readme_retries.rs"]
+mod readme_retries;
 
 /// Non-default settings against Fern's overlay goldens (`expected-literals/`, …).
 #[path = "e2e/overlay_goldens.rs"]
@@ -3518,12 +3529,34 @@ fn declared_reference_example_restrictions_hold_through_compare() {
         serde_json::from_str(&std::fs::read_to_string(fixture.join("openapi.yml")).unwrap())
             .unwrap();
     let work = tempfile::tempdir().unwrap();
+    // A declared query example its schema rejects is not kept: where Fern's
+    // own `tracking` placeholder is invalid too, crozier writes the schema's
+    // repair of it, a departure of Fern's defect rather than the declared value.
+    {
+        let mut document = original.clone();
+        document["components"]["schemas"]["TrackingCode"]["minLength"] = serde_json::json!(100);
+        let spec = work.path().join("invalid-query-example.json");
+        std::fs::write(&spec, document.to_string()).unwrap();
+        let (code, result) =
+            compare_with_certified_reference(&spec, &fixture.join("fern-expected"), None);
+        assert_eq!(code, 0, "invalid-query-example: {result:#}");
+        let repaired = result["comparison"]["departures"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|found| {
+                found["id"] == "schema-rejected-name-example" && found["file"] == "README.md"
+            });
+        assert!(repaired, "invalid-query-example: {result:#}");
+        let out = tempfile::tempdir().unwrap();
+        probe_command(&spec, out.path()).assert().success();
+        let readme = std::fs::read_to_string(out.path().join("README.md")).unwrap();
+        assert!(
+            !readme.contains("harbor-842") && !readme.contains("tracking=\"tracking\""),
+            "invalid-query-example: neither invalid value is written:\n{readme}"
+        );
+    }
     for (name, pointer, replacement) in [
-        (
-            "invalid-query-example",
-            "/components/schemas/TrackingCode/minLength",
-            serde_json::json!(100),
-        ),
         // A pattern Fern's own `tracking` placeholder satisfies too, so the
         // `schema-rejected-name-example` repair has nothing to correct and
         // only the declared example's unsupported assertion is in play.

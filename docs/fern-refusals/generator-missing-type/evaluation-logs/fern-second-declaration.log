@@ -1,4 +1,4 @@
-fern-refusals: Fern CLI 5.200.0, fernapi/fern-python-sdk 5.41.25
+fern-refusals: Fern CLI 5.216.0, fernapi/fern-python-sdk 5.42.0
 check exit: 0
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
@@ -12,7 +12,7 @@ Warnings for generators.yml:
 [api]: python-sdk Started.
 [api]: python-sdk fernapi/fern-python-sdk Started.
 [api]: python-sdk ✓ All checks passed
-[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.41.25
+[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.42.0
 [api]: python-sdk fernapi/fern-python-sdk Generator logs here: <tmp>
 [api]: python-sdk fernapi/fern-python-sdk Container execution failed: Container exited with code 1.
                                           
@@ -96,7 +96,7 @@ Warnings for generators.yml:
                                                 ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
                                             File "/src/fern_python/generators/sdk/core_utilities/client_wrapper_generator.py", line 218, in generate
                                               constructor_info = self._get_constructor_info()
-                                            File "/src/fern_python/generators/sdk/core_utilities/client_wrapper_generator.py", line 1395, in _get_constructor_info
+                                            File "/src/fern_python/generators/sdk/core_utilities/client_wrapper_generator.py", line 1398, in _get_constructor_info
                                               type_hint = self._context.pydantic_generator_context.get_type_hint_for_type_reference(header.value_type)
                                             File "/src/fern_python/generators/context/pydantic_generator_context_impl.py", line 81, in get_type_hint_for_type_reference
                                               return self._type_reference_to_type_hint_converter.get_type_hint_for_type_reference(

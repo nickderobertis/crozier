@@ -1,6 +1,6 @@
-fern_cli_version = "5.200.0"
-fern_python_sdk_version = "5.41.25"
-digest = "c951bd67ae0e30914e1908e1a1e2283a2b92c55787684ac98299940d1607fcab"
+fern_cli_version = "5.216.0"
+fern_python_sdk_version = "5.42.0"
+digest = "f3447077c5e2876ffb6af3546d1402c57a99132140326d0256f3a9ad8f2eec48"
 
 [[covers]]
 key = "operation-group-types-beside-child-group"

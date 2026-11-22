@@ -1,4 +1,4 @@
-fern-refusals: Fern CLI 5.200.0, fernapi/fern-python-sdk 5.41.25
+fern-refusals: Fern CLI 5.216.0, fernapi/fern-python-sdk 5.42.0
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
 [sdk] 8 errors
@@ -35,3 +35,4 @@ Warnings for generators.yml:
         issue: Tag name "系统数据" contains non-ASCII characters: 系, 统, 数, 据. Non-ASCII characters in tag names will be included in URL paths and HTTP headers, which only support ASCII characters. This will cause runtime errors (ERR_INVALID_CHAR). Remove non-ASCII characters from the tag name.
 
 Found 8 errors and 0 warnings in <n> seconds.
+For guidance, run `fern instructions spec`.

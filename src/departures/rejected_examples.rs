@@ -32,6 +32,57 @@ pub(super) struct Index {
     /// For a `uniqueItems` list: each count crozier may pad Fern's to, with
     /// the item schema its distinct items satisfy.
     unique: BTreeMap<ListKey, Vec<(usize, Box<ValueConstraints>)>>,
+    /// For each list keyword, the items a schema's own shape builds where Fern
+    /// writes the list empty ([`ValueConstraints::seeded_items`]).
+    seeded: BTreeMap<String, Vec<Vec<Value>>>,
+    /// Every scalar the document declares: each leaf of an `example`,
+    /// `examples` or `default` at any level, a media type's or parameter's,
+    /// and each `components.examples` value.
+    /// Each is keyed exactly, as JSON spells it: a double Fern rounds a
+    /// declared integer to is no declared value (`int64-example-rounded-out-of-range`'s).
+    declared: BTreeSet<String>,
+    /// The constraints of every node, by each argument it is passed as, for
+    /// a declared value ([`Mechanism::Declared`]), whose replacement is
+    /// chosen when a line is read rather than in advance.
+    by_argument: BTreeMap<Argument, Vec<Documented>>,
+}
+
+/// One node's constraints and the names Fern's construction spells its value
+/// by, as [`Index::by_argument`] keeps them.
+#[derive(Debug, PartialEq)]
+struct Documented {
+    constraints: Box<ValueConstraints>,
+    names: Vec<String>,
+}
+
+impl Documented {
+    /// Whether `value` is one of Fern's own scalar constructions for this
+    /// node: a name it documents its value by, the `"string"` or `"value"`
+    /// placeholder, the sample Fern's fallback writer sizes by its declared
+    /// lengths, or the fixed `1`, `1000000` or `1.1`.
+    fn constructed(&self, value: &Value) -> bool {
+        match value {
+            Value::String(text) => {
+                let (min, max) =
+                    self.constraints
+                        .keywords
+                        .iter()
+                        .fold((None, None), |(min, max), keyword| match keyword {
+                            crate::example_values::Keyword::MinLength(n) => (Some(*n), max),
+                            crate::example_values::Keyword::MaxLength(n) => (min, Some(*n)),
+                            _ => (min, max),
+                        });
+                text == "string"
+                    || text == "value"
+                    || self.names.iter().any(|name| name == text)
+                    || crate::ir::fallback_string_sample(min, max).as_deref() == Some(text)
+            }
+            Value::Number(number) => number
+                .as_f64()
+                .is_some_and(|n| [1.0, 1_000_000.0, 1.1].contains(&n)),
+            _ => false,
+        }
+    }
 }
 
 /// A value as the index keys it: a number by its numeric value, so the `7`
@@ -254,8 +305,42 @@ pub(super) fn index(source: Option<&OpenApi>) -> Index {
         return index;
     };
     let mut seen = BTreeSet::new();
+    index.declared = declared_scalars(source);
     for node in nodes(source) {
         let constraints = &node.constraints;
+        for argument in &node.arguments {
+            let documented = Documented {
+                constraints: constraints.clone(),
+                names: node.names.clone(),
+            };
+            let kept = index.by_argument.entry(argument.clone()).or_default();
+            if !kept.contains(&documented) {
+                kept.push(documented);
+            }
+        }
+        // An empty list's construction: the items its schema's shape builds.
+        if matches!(
+            constraints.list_view().verdict(&Value::Array(Vec::new())),
+            Verdict::Rejected(_)
+        ) {
+            if let Some(items) = constraints.seeded_items() {
+                // A map's values are passed as Fern's fixed `"key"` entry.
+                let keywords: Vec<String> = if node.names.is_empty() {
+                    vec!["key".to_string()]
+                } else {
+                    node.names
+                        .iter()
+                        .flat_map(|name| [name.clone(), crate::naming::field_name(name)])
+                        .collect()
+                };
+                for keyword in keywords {
+                    let seeds = index.seeded.entry(keyword).or_default();
+                    if !seeds.contains(&items) {
+                        seeds.push(items.clone());
+                    }
+                }
+            }
+        }
         let mut constructions: Vec<(Mechanism, Value)> = node
             .names
             .iter()
@@ -403,6 +488,14 @@ fn literal_changes<'a>(fern: &'a str, crozier: &'a str) -> Option<Vec<Change<'a>
     (!changes.is_empty()).then_some(changes)
 }
 
+/// Fern's literal where the two lines differ in that one literal alone.
+pub(super) fn single_literal_change(fern: &str, crozier: &str) -> Option<String> {
+    match literal_changes(fern, crozier)?.as_slice() {
+        [change] => Some(change.fern.to_owned()),
+        _ => None,
+    }
+}
+
 /// One literal two lines differ in, with the arguments its line passes it as.
 #[derive(Debug, PartialEq, Eq)]
 struct Change<'a> {
@@ -496,6 +589,98 @@ fn indexed(id: Mechanism, pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
         .all(|change| index.scalar(id, &change.arguments, change.fern, change.crozier))
 }
 
+/// A scalar as the document spells it, integers and floats apart: `42` and
+/// `42.0` are the same value, but a double is never the integer it rounds.
+fn exact(value: &Value) -> String {
+    match value {
+        Value::Number(number) if number.is_f64() => number
+            .as_f64()
+            .filter(|n| n.fract() == 0.0 && n.abs() < 2f64.powi(53))
+            .map_or_else(|| number.to_string(), |n| format!("{n:.0}")),
+        other => other.to_string(),
+    }
+}
+
+/// Every scalar `source` declares as a value: the leaves of each `example`,
+/// `examples` and `default` of its schemas, parameters and media types, and of
+/// its `components.examples`.
+fn declared_scalars(source: &OpenApi) -> BTreeSet<String> {
+    fn leaves(value: &Value, out: &mut BTreeSet<String>) {
+        match value {
+            Value::Array(items) => items.iter().for_each(|item| leaves(item, out)),
+            Value::Object(entries) => entries.values().for_each(|entry| leaves(entry, out)),
+            scalar => {
+                out.insert(exact(scalar));
+            }
+        }
+    }
+    let mut out = BTreeSet::new();
+    super::visit_source_schemas(Some(source), &mut |schema| {
+        for value in schema
+            .example
+            .iter()
+            .chain(&schema.examples)
+            .chain(&schema.default)
+        {
+            leaves(value, &mut out);
+        }
+    });
+    let named = |examples: &indexmap::IndexMap<String, crate::openapi::ParameterExample>,
+                 out: &mut BTreeSet<String>| {
+        for example in examples
+            .values()
+            .filter_map(|example| example.value.as_ref())
+        {
+            leaves(example, out);
+        }
+    };
+    let media = |content: &indexmap::IndexMap<String, crate::openapi::MediaType>,
+                 out: &mut BTreeSet<String>| {
+        for media in content.values() {
+            if let Some(example) = &media.example {
+                leaves(example, out);
+            }
+            named(&media.examples, out);
+        }
+    };
+    named(&source.components.examples, &mut out);
+    let parameters = source
+        .components
+        .parameters
+        .values()
+        .chain(source.paths.values().flat_map(|item| {
+            item.parameters.iter().chain(
+                item.operations()
+                    .into_iter()
+                    .flat_map(|(_, op)| &op.parameters),
+            )
+        }));
+    for parameter in parameters {
+        if let Some(example) = &parameter.example {
+            leaves(example, &mut out);
+        }
+        named(&parameter.examples, &mut out);
+        media(&parameter.content, &mut out);
+    }
+    for body in source.components.request_bodies.values() {
+        media(&body.content, &mut out);
+    }
+    for response in source.components.responses.values() {
+        media(&response.content, &mut out);
+    }
+    for item in source.paths.values() {
+        for (_, operation) in item.operations() {
+            if let Some(body) = &operation.request_body {
+                media(&body.content, &mut out);
+            }
+            for response in operation.responses.values() {
+                media(&response.content, &mut out);
+            }
+        }
+    }
+    out
+}
+
 impl Index {
     /// Whether crozier's literal is a value `id`'s repair writes in place of
     /// Fern's for a schema one of `arguments` documents.
@@ -503,11 +688,142 @@ impl Index {
         let (Some(fern), Some(crozier)) = (python_value(fern), python_value(crozier)) else {
             return false;
         };
+        if id == Mechanism::Declared {
+            return self.declared_holds(arguments, &fern, &crozier);
+        }
         arguments.iter().any(|argument| {
             self.scalars
                 .get(&(id, argument.clone(), ValueKey::of(&fern)))
                 .is_some_and(|choices| choices.contains(&ValueKey::of(&crozier)))
         })
+    }
+}
+
+impl Index {
+    /// See [`super::Context::admits_nothing`].
+    pub(super) fn admits_nothing(&self, argument: &str, value: &str) -> bool {
+        let leaf = argument.rsplit('.').next().unwrap_or(argument);
+        let leaf = leaf.split('[').next().unwrap_or(leaf);
+        let kind = python_value(value).unwrap_or_else(|| Value::String(value.to_owned()));
+        self.by_argument
+            .get(&Argument::Named(leaf.to_owned()))
+            .is_some_and(|nodes| {
+                nodes
+                    .iter()
+                    .any(|node| node.constraints.admits_nothing(&kind))
+            })
+    }
+
+    /// [`Mechanism::Declared`]: Fern's value is one the document declares and
+    /// no construction of Fern's for the node, the node's schema (one of
+    /// `arguments` documents) rejects it, and crozier's is the value
+    /// [`ValueConstraints::choose`] picks for that schema, or Fern's own
+    /// construction for the node where the schema accepts that.
+    fn declared_holds(&self, arguments: &[Argument], fern: &Value, crozier: &Value) -> bool {
+        self.declared.contains(&exact(fern))
+            && arguments.iter().any(|argument| {
+                self.by_argument.get(argument).is_some_and(|nodes| {
+                    nodes.iter().any(|node| {
+                        let constraints = &node.constraints;
+                        // A value that is also a construction of Fern's for the
+                        // node is that construction's to account for.
+                        !node.constructed(fern)
+                            && matches!(constraints.verdict(fern), Verdict::Rejected(_))
+                            && (constraints.choose(fern).is_some_and(|choice| {
+                                ValueKey::of(choice.value()) == ValueKey::of(crozier)
+                            }) || node.constructed(crozier)
+                                && std::mem::discriminant(fern) == std::mem::discriminant(crozier)
+                                && constraints.verdict(crozier) == Verdict::Accepted)
+                    })
+                })
+            })
+    }
+
+    /// Whether crozier's items of the list passed as `keyword`, which Fern
+    /// writes empty, are those a schema of that keyword's shape builds.
+    fn seeded_holds(&self, keyword: &str, crozier: &[Vec<Tree<'_>>]) -> bool {
+        self.seeded.get(keyword).is_some_and(|choices| {
+            choices.iter().any(|seed| {
+                seed.len() == crozier.len()
+                    && seed
+                        .iter()
+                        .zip(crozier)
+                        .all(|(value, item)| tree_matches(item, value))
+            })
+        })
+    }
+}
+
+/// Whether an example item's trees spell `value`, as the writer spells a
+/// JSON value: a literal, `None`, `True` or `False`; a list item by item; a
+/// dict, or a model's constructor, entry by entry (its keywords the
+/// properties' Python names); an enum's member (`Kind.EQ`) for its string.
+fn tree_matches(trees: &[Tree<'_>], value: &Value) -> bool {
+    let words: Option<String> = trees
+        .iter()
+        .map(|tree| match tree {
+            Tree::Token(Token::Other(text)) => Some(*text),
+            _ => None,
+        })
+        .collect();
+    match (trees, value) {
+        ([Tree::Token(Token::Literal(literal))], _) => {
+            python_value(literal).is_some_and(|parsed| ValueKey::of(&parsed) == ValueKey::of(value))
+        }
+        ([Tree::Group(Bracket::Square, elements)], Value::Array(items)) => {
+            elements.len() == items.len()
+                && elements
+                    .iter()
+                    .zip(items)
+                    .all(|(element, item)| tree_matches(element, item))
+        }
+        ([Tree::Group(Bracket::Curly, elements)], Value::Object(entries)) => {
+            elements.len() == entries.len()
+                && elements.iter().all(|element| match element.as_slice() {
+                    [Tree::Token(Token::Literal(key)), Tree::Token(Token::Other(":")), rest @ ..] =>
+                    {
+                        matches!(python_value(key), Some(Value::String(key))
+                            if entries.get(&key).is_some_and(|entry| tree_matches(rest, entry)))
+                    }
+                    _ => false,
+                })
+        }
+        (_, Value::Object(entries)) => {
+            let Some((Tree::Group(Bracket::Round, elements), name)) = trees.split_last() else {
+                return false;
+            };
+            let constructor = name.iter().all(|tree| {
+                matches!(tree, Tree::Token(Token::Other(text))
+                    if text.chars().all(|c| c.is_alphanumeric() || c == '_' || c == '.'))
+            });
+            constructor
+                && !name.is_empty()
+                && elements.len() == entries.len()
+                && elements.iter().all(|element| {
+                    let Some(at) = element
+                        .iter()
+                        .position(|tree| matches!(tree, Tree::Token(Token::Other("="))))
+                    else {
+                        return false;
+                    };
+                    let Some(keyword) = keyword_before(element, at + 1) else {
+                        return false;
+                    };
+                    entries.iter().any(|(key, entry)| {
+                        (crate::naming::field_name(key) == keyword
+                            || crate::naming::model_field_name(key) == keyword)
+                            && tree_matches(&element[at + 1..], entry)
+                    })
+                })
+        }
+        (_, Value::String(text)) => words.is_some_and(|words| {
+            words.rsplit_once('.').is_some_and(|(owner, member)| {
+                !owner.is_empty() && member == crate::naming::enum_member_name(text)
+            })
+        }),
+        (_, Value::Null) => words.as_deref() == Some("None"),
+        (_, Value::Bool(flag)) => words.as_deref() == Some(if *flag { "True" } else { "False" }),
+        _ => false,
     }
 }
 
@@ -538,6 +854,8 @@ pub(super) struct Repairs {
     /// The list arguments `schema-rejected-array-length-example` repairs,
     /// each with crozier's lines as they were read.
     arrays: Vec<(Region, Vec<String>)>,
+    /// Each crozier line's Fern counterpart in the alignment.
+    counterpart: Vec<Option<usize>>,
     foreign: bool,
 }
 
@@ -587,6 +905,7 @@ fn read_repairs(pair: &Pair<'_>) -> Repairs {
         }
         runs.push((removed, added));
     }
+    repairs.counterpart.clone_from(&counterpart);
     repairs.arrays = array_regions(pair, &counterpart)
         .into_iter()
         .map(|region| {
@@ -787,7 +1106,10 @@ fn list_argument(lines: &[&str], start: usize) -> Option<ListArgument> {
             .all(|c| c.is_alphanumeric() || c == '_')
             .then(|| name.to_string())?
     } else {
-        serde_json::from_str::<String>(prefix.strip_suffix(':')?.trim()).ok()?
+        // A dict entry's key, the dict opening on this line or not:
+        // `cell_ids_to_output={"key": [...]}`.
+        let entry = prefix.rsplit(['{', ',']).next().unwrap_or(prefix);
+        serde_json::from_str::<String>(entry.trim().strip_suffix(':')?.trim()).ok()?
     };
     let mut items = Vec::new();
     let mut current: Option<ListItem> = None;
@@ -1018,6 +1340,27 @@ fn trees_hold(index: &Index, passed: &str, fern: &[Tree<'_>], crozier: &[Tree<'_
             })
 }
 
+/// Whether, at any depth, a list Fern writes empty stands where crozier's
+/// holds items.
+fn seeds_a_nested_list(fern: &[Tree<'_>], crozier: &[Tree<'_>]) -> bool {
+    fern.len() == crozier.len()
+        && fern.iter().zip(crozier).any(|pair| match pair {
+            (Tree::Group(Bracket::Square, left), Tree::Group(Bracket::Square, right)) => {
+                (left.is_empty() && !right.is_empty())
+                    || left.len() == right.len()
+                        && left
+                            .iter()
+                            .zip(right)
+                            .any(|(l, r)| seeds_a_nested_list(l, r))
+            }
+            (Tree::Group(_, left), Tree::Group(_, right)) if left.len() == right.len() => left
+                .iter()
+                .zip(right)
+                .any(|(l, r)| seeds_a_nested_list(l, r)),
+            _ => false,
+        })
+}
+
 /// Whether crozier's items of the list passed as `keyword` are Fern's, cut
 /// or padded to the count a source schema chooses for it: Fern's kept items
 /// hold ([`trees_hold`]), and every added one is a copy of the first or,
@@ -1029,8 +1372,11 @@ fn list_holds(
     crozier: &[Vec<Tree<'_>>],
 ) -> bool {
     let (count, target) = (fern.len(), crozier.len());
-    if count == 0 || count == target {
+    if count == target {
         return false;
+    }
+    if count == 0 {
+        return index.seeded_holds(keyword, crozier);
     }
     let kept = fern
         .iter()
@@ -1099,7 +1445,13 @@ fn array_regions(pair: &Pair<'_>, counterpart: &[Option<usize>]) -> Vec<Region> 
             continue;
         };
         let (count, target) = (theirs.items.len(), ours.items.len());
-        if theirs.keyword != ours.keyword || count == target || count == 0 {
+        if theirs.keyword != ours.keyword
+            || theirs
+                .items
+                .iter()
+                .map(|item| &item.text)
+                .eq(ours.items.iter().map(|item| &item.text))
+        {
             continue;
         }
         let fern_items: Option<Vec<Vec<Tree<'_>>>> =
@@ -1109,16 +1461,29 @@ fn array_regions(pair: &Pair<'_>, counterpart: &[Option<usize>]) -> Vec<Region> 
         let (Some(fern_items), Some(crozier_items)) = (fern_items, crozier_items) else {
             continue;
         };
-        if !(list_holds(index, &ours.keyword, &fern_items, &crozier_items)
-            && documented_example_line(pair.rel, crozier, line))
-        {
+        let holds = if count == target {
+            // Same count, but an item is itself a list padded from nothing:
+            // `windows=[[]]` beside `windows=[[None, None]]`.
+            fern_items != crozier_items
+                && fern_items
+                    .iter()
+                    .zip(&crozier_items)
+                    .any(|(f, c)| seeds_a_nested_list(f, c))
+                && fern_items
+                    .iter()
+                    .zip(&crozier_items)
+                    .all(|(f, c)| trees_hold(index, &ours.keyword, f, c))
+        } else {
+            list_holds(index, &ours.keyword, &fern_items, &crozier_items)
+        };
+        if !(holds && documented_example_line(pair.rel, crozier, line)) {
             continue;
         }
         let whole_list = Region {
             fern: i..theirs.close + 1,
             crozier: j..ours.close + 1,
         };
-        if target < count || (i == theirs.close && j == ours.close) {
+        if count == 0 || target <= count || (i == theirs.close && j == ours.close) {
             regions.push(whole_list);
             continue;
         }
@@ -1135,11 +1500,119 @@ fn array_regions(pair: &Pair<'_>, counterpart: &[Option<usize>]) -> Vec<Region> 
     regions
 }
 
+/// The names a `from <module> import <names>` line imports, with its module.
+fn imported_names(line: &str) -> Option<(&str, Vec<&str>)> {
+    let rest = line.trim().strip_prefix("from ")?;
+    let (module, names) = rest.split_once(" import ")?;
+    let names: Vec<&str> = names.split(',').map(str::trim).collect();
+    names
+        .iter()
+        .all(|name| !name.is_empty() && name.chars().all(|c| c.is_alphanumeric() || c == '_'))
+        .then_some((module, names))
+}
+
+/// Whether `name` occurs in `line` as a whole identifier.
+fn holds_identifier(line: &str, name: &str) -> bool {
+    let word = |c: char| c.is_alphanumeric() || c == '_';
+    line.match_indices(name).any(|(at, _)| {
+        !line[..at].chars().next_back().is_some_and(word)
+            && !line[at + name.len()..].chars().next().is_some_and(word)
+    })
+}
+
+/// `schema-rejected-array-length-example`'s example import line: a worked
+/// example's `from <package> import …` where crozier's line keeps every name
+/// Fern's imports, from the same module, and each name it adds is one a list
+/// this departure seeds from nothing writes (sim-tables'
+/// `TablePredicateAllAllItemField`, constructed in `all_=[…]` where Fern's
+/// list is empty).
+/// `opening` is crozier's line the import opens on, which is `crozier` itself
+/// unless the formatter wrapped it.
+fn seeded_import(pair: &Pair<'_>, fern: &str, crozier: &str, opening: &str) -> bool {
+    let (Some((module, theirs)), Some((other, ours))) =
+        (imported_names(fern), imported_names(crozier))
+    else {
+        return false;
+    };
+    if module != other
+        || !example_file(pair.rel)
+        || !theirs.iter().all(|name| ours.contains(name))
+        || ours.len() == theirs.len()
+    {
+        return false;
+    }
+    let Ok(repairs) = analysis(pair, false) else {
+        return false;
+    };
+    let seeded: Vec<&str> = repairs
+        .arrays
+        .iter()
+        .filter(|(region, _)| {
+            pair.fern
+                .get(region.fern.clone())
+                .is_some_and(|lines| lines.iter().any(|line| line.contains("[]")))
+        })
+        .flat_map(|(_, lines)| lines.iter().map(String::as_str))
+        .collect();
+    ours.iter()
+        .filter(|name| !theirs.contains(name))
+        .all(|name| seeded.iter().any(|line| holds_identifier(line, name)))
+        && documented_example_line(pair.rel, pair.fern, fern)
+        && documented_example_line(pair.rel, pair.crozier, opening)
+}
+
+/// The example import line [`seeded_import`] accounts for, as a region read
+/// before the lists it names are: Fern's one line beside crozier's, which its
+/// formatter may wrap in parentheses one name a line (`from <module> import
+/// (` to its `)`), paired as the comparison aligns them.
+fn seeded_import_region(pair: &Pair<'_>) -> Option<Region> {
+    let (fern, crozier) = (pair.fern, pair.crozier);
+    if !example_file(pair.rel) || fern == crozier {
+        return None;
+    }
+    let counterpart = analysis(pair, false).ok()?.counterpart;
+    (1..crozier.len()).find_map(|open| {
+        let text = crozier[open].trim();
+        let indent = &crozier[open][..crozier[open].len() - crozier[open].trim_start().len()];
+        let (close, joined) = match text.strip_suffix(" import (") {
+            Some(head) => {
+                let module = head.strip_prefix("from ")?;
+                let close = (open + 1..crozier.len()).find(|&at| crozier[at].trim() == ")")?;
+                let names: Vec<&str> = crozier[open + 1..close]
+                    .iter()
+                    .map(|line| line.trim().trim_end_matches(','))
+                    .collect();
+                (
+                    close,
+                    format!("{indent}from {module} import {}", names.join(", ")),
+                )
+            }
+            None => {
+                imported_names(text)?;
+                (open, crozier[open].to_string())
+            }
+        };
+        let line = counterpart.get(open).copied().flatten()?;
+        if !(fern[line] != joined && seeded_import(pair, fern[line], &joined, crozier[open])) {
+            return None;
+        }
+        Some(Region {
+            fern: line..line + 1,
+            crozier: open..close + 1,
+        })
+    })
+}
+
 /// `schema-rejected-array-length-example`'s region rule: the first list
 /// [`array_regions`] found that still differs.
 pub(super) fn array_region(pair: &Pair<'_>) -> Result<Option<Region>, String> {
     if !example_file(pair.rel) || pair.fern == pair.crozier {
         return Ok(None);
+    }
+    // The import of a model a seeded list constructs is read while the list
+    // still stands.
+    if let Some(region) = seeded_import_region(pair) {
+        return Ok(Some(region));
     }
     // A one-line region keeps both sides' lengths and every list's place, so
     // the analysis stands until a region changes a length; a list whose lines

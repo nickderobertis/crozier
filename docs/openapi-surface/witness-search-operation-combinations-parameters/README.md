@@ -320,4 +320,8 @@ The fourth repair is the multipart refusal above (`name_refusals.rs`).
 **Historical.** This record was measured at Fern CLI 5.163.1 /
 `fernapi/fern-python-sdk` 5.41.3, the pair certified when it was taken; where it
 says "the certified pair" it means that pair. It has not been re-measured at
-the current certified pair, Fern CLI 5.200.0 / fern-python-sdk 5.41.25.
+the current certified pair, Fern CLI 5.216.0 / fern-python-sdk 5.42.0.
+The exception is the output-insensitive comparison records that
+`docs/openapi-surface/output-insensitive.tsv` cites from here (`lighthouse-beacon-log-combo-query-param-array-default-crozier.json`, `lighthouse-beacon-log-combo-query-param-array-default-fern.json`):
+`tools/surface-census/output-insensitive-remeasure.py` re-measured them at the
+current certified pair, where each generator's before and after trees stay identical.

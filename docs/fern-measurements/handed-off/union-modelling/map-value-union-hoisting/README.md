@@ -15,8 +15,8 @@ The certified pair writes `DepthsByStation = typing.Dict[str, Depth]`, `BuoysByS
 Held by `map_values_take_the_certified_pairs_types_rather_than_hoisted_value_models` in `crates/crozier-e2e/tests/e2e/union_modelling.rs`: crozier generates `openapi.yml` and the SDK must byte-match `fern-expected/` (and `literals/fern-expected/` in `literals` mode where committed) apart from the catalogued departures the ledger records for the tree, and the pre-repair spelling written back into crozier's output must fail that comparison. The unit test `map_values_are_the_referenced_type_and_nested_map_leaves_name_their_value` in `src/ir.rs`'s `union_modelling_tests` drives the repaired lowering on the same document.
 
 **Regenerated at the certified pair.** The Fern goldens workflow (run
-43423270787) regenerated every `fern-expected/` tree this record holds at Fern
-CLI 5.200.0 / `fernapi/fern-python-sdk` 5.41.25, the certified pair, and
+44880783817) regenerated every `fern-expected/` tree this record holds at Fern
+CLI 5.216.0 / `fernapi/fern-python-sdk` 5.42.0, the certified pair, and
 crozier's comparison holds the record to those trees. Statements above that name Fern CLI
 5.163.1 / fern-python-sdk 5.41.3 describe the measurement as first taken, at
 the pair certified then; a digest, log or exit code they cite is that run's.

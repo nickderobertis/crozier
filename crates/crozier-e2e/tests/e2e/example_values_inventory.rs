@@ -218,10 +218,10 @@ pub fn observed_rows(
         let crozier_lines: Vec<&str> = generated.split('\n').collect();
         for value in values {
             let line = value.line.get();
-            // A declared value crozier keeps where Fern writes its placeholder
+            // A declared list crozier keeps where Fern writes its placeholder
             // (ruling 2) is no value of Fern's to inventory: the departure on its
-            // line already accounts for it. The apifox lab's empty `bucket` beside
-            // Fern's `bucket="bucket"`.
+            // line already accounts for it. (A declared scalar its schema
+            // rejects is repaired instead, below.)
             if value.finding.disposition == Disposition::DeclaredInSpec
                 && departures.iter().any(|(file, departure_line, id)| {
                     file == rel
@@ -247,6 +247,46 @@ pub fn observed_rows(
                 ));
                 continue;
             };
+            // A declared value its schema rejects, which crozier writes where
+            // Fern writes its own valid construction (the apifox lab's empty
+            // `bucket`), gives way to that construction: crozier's validated
+            // line is Fern's, so Fern wrote no invalid value there.
+            if value.finding.disposition == Disposition::Repaired
+                && value.finding.mechanism == Some(Mechanism::Declared)
+                && fern_lines[fern_line] == crozier_lines[line - 1]
+            {
+                continue;
+            }
+            // A declared value crozier keeps where Fern writes its own
+            // construction (ruling 2), which the schema rejects as well: Fern's
+            // value is that construction, which the departure on the line
+            // names, and crozier's repair replaces both (the apifox lab's
+            // `request_id="X-Request-Id"` beneath `format: uuid`, declared `""`).
+            let mut finding = value.finding.clone();
+            if finding.mechanism == Some(Mechanism::Declared)
+                && !fern_lines[fern_line].contains(&finding.fern)
+            {
+                let construction = departures.iter().find_map(|(file, departure_line, id)| {
+                    Mechanism::parse(id).filter(|mechanism| {
+                        file == rel
+                            && *departure_line == line
+                            && Mechanism::SCALAR.contains(mechanism)
+                            && *mechanism != Mechanism::Declared
+                    })
+                });
+                let literal = crozier::departures::differing_literal(
+                    fern_lines[fern_line],
+                    crozier_lines[line - 1],
+                );
+                if let (Some(mechanism), Some(literal)) = (construction, literal) {
+                    finding.mechanism = Some(mechanism);
+                    finding.fern = literal;
+                }
+            }
+            let value = &ExampleValue {
+                finding,
+                ..(*value).clone()
+            };
             if !fern_lines[fern_line].contains(&value.finding.fern)
                 && !compact(&fern_lines[fern_line..=list_end(&fern_lines, fern_line)].join("\n"))
                     .contains(&compact(&value.finding.fern))
@@ -269,10 +309,18 @@ pub fn observed_rows(
             } else {
                 line
             };
+            // A list that is itself an item opens on a bare `[` below the
+            // line opening the list that holds it, where a nested list's
+            // departure stands.
+            let opened = if value.finding.mechanism == Some(Mechanism::Array) {
+                opening_line(&crozier_lines, line)
+            } else {
+                line
+            };
             if value.finding.disposition == Disposition::Repaired
                 && !departures.iter().any(|(file, departure_line, id)| {
                     file == rel
-                        && ((line..=end).contains(departure_line)
+                        && ((opened..=end).contains(departure_line)
                             || wrapped && *departure_line == line - 1)
                         && Mechanism::parse(id).is_some()
                 })
@@ -284,6 +332,19 @@ pub fn observed_rows(
                     value.finding.crozier,
                     value.finding.argument,
                     value.finding.mechanism.map_or("-", Mechanism::id)
+                ));
+                continue;
+            }
+            // A schema crozier calls unsatisfiable is proved so again from the
+            // source document: a schema of the argument accepts no value of
+            // Fern's value's kind.
+            if value.finding.disposition == Disposition::UnsatisfiableSchema
+                && !context.admits_nothing(&value.finding.argument, &value.finding.fern)
+            {
+                failures.push(format!(
+                    "{rel}:{}: {} for {} is called unsatisfiable, but no schema the source \
+                     document declares for it is shown to accept nothing",
+                    value.line, value.finding.fern, value.finding.argument
                 ));
                 continue;
             }
@@ -323,7 +384,17 @@ pub fn observed_rows(
                             .and_then(|lines| lines.get(*line - 1))
                             .is_some_and(|opener| opener.trim_end().ends_with("=["))
                     || value.finding.mechanism == Some(Mechanism::Array)
-                        && value.line.get() <= *line
+                        && generated_lines.get(file.as_str()).is_some_and(|lines| {
+                            let lines: Vec<&str> = lines.iter().map(String::as_str).collect();
+                            opening_line(&lines, value.line.get()) <= *line
+                                // The example's import line, of a model the
+                                // seeded list constructs, stands above it.
+                                || lines.get(*line - 1).is_some_and(|text| {
+                                    text.trim_start().starts_with("from ")
+                                        && text.contains(" import ")
+                                }) && *line < value.line.get()
+                                    && value.line.get() <= *line + 60
+                        })
                         && *line <= value.line.get() + 400)
         });
         if !backed {
@@ -337,6 +408,17 @@ pub fn observed_rows(
     } else {
         Err(failures)
     }
+}
+
+/// The 1-based line at or above `line` where the lists `line` opens inside
+/// begin: each line above whose trimmed text ends with a `[`, a list opening
+/// on it whose first item is the list below.
+fn opening_line(lines: &[&str], line: usize) -> usize {
+    let mut at = line;
+    while at >= 2 && lines[at - 2].trim_end().ends_with('[') {
+        at -= 1;
+    }
+    at
 }
 
 /// `text` with whitespace outside string literals and a comma before a
@@ -559,7 +641,9 @@ fn the_inventory_holds_to_its_format_and_names_only_compared_goldens() {
         let named = match Disposition::parse(&row.disposition).expect("parsed") {
             Disposition::Repaired => row.mechanism != "-",
             Disposition::DeclaredInSpec | Disposition::OutOfScopeKeyword => row.mechanism == "-",
-            Disposition::ResidualUndecidable | Disposition::ResidualUnconstructible => true,
+            Disposition::ResidualUndecidable
+            | Disposition::ResidualUnconstructible
+            | Disposition::UnsatisfiableSchema => true,
         };
         assert!(
             named,

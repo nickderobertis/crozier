@@ -5068,7 +5068,7 @@ pub(super) fn literal_enum_value(value: &str) -> String {
 
 /// A literal enum value as a client docstring spells it: Python's `repr`, so a
 /// value holding `"` and no `'` is single-quoted, as a string example is. The
-/// certified pair (Fern CLI 5.200.0, fern-python-sdk 5.41.25) writes Vercel's
+/// certified pair (Fern CLI 5.216.0, fern-python-sdk 5.42.0) writes Vercel's
 /// `create_webhook` events item
 /// `'mport("/vercel/path0/utils/webhooks/webhooks/types").WebhookName.DomainCreate'`
 /// in `webhooks/client.py`, where `reference.md` keeps the escaped
@@ -10380,8 +10380,8 @@ impl<'a> ExampleCtx<'a> {
     /// empty list: an undiscriminated union whose first alternative is a model
     /// with a required field whose own union opens with an optional
     /// alternative (a nested union carrying a `null` member), which Fern
-    /// examples as null. The certified pair (Fern CLI 5.200.0, fern-python-sdk
-    /// 5.41.25) writes Vercel's `patcht_edge_config_items` `items=[]` in
+    /// examples as null. The certified pair (Fern CLI 5.216.0, fern-python-sdk
+    /// 5.42.0) writes Vercel's `patcht_edge_config_items` `items=[]` in
     /// `reference.md`, and the `union-inheritance/list-item-nested-union`
     /// measurement's `entries=[]` in its README and `reference.md`, where the
     /// docstrings construct the first alternative.

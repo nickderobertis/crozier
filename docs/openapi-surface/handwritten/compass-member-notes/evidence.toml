@@ -1,6 +1,6 @@
-fern_cli_version = "5.200.0"
-fern_python_sdk_version = "5.41.25"
-digest = "ebc37a0f7157a4afcdc5a0e7ab8da4293b2a6886fc1d309886e6dbd40499e484"
+fern_cli_version = "5.216.0"
+fern_python_sdk_version = "5.42.0"
+digest = "04552f7cef0afa770dcd6d2f242aeca2d7860587c6cc1b24465c912ba2e97e66"
 
 [[covers]]
 key = "enum-value-description-extension-dropped"

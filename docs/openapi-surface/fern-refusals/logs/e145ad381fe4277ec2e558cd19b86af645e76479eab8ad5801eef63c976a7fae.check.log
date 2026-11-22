@@ -1,8 +1,216 @@
-fern-refusals: Fern CLI 5.200.0, fernapi/fern-python-sdk 5.41.25
+fern-refusals: Fern CLI 5.216.0, fernapi/fern-python-sdk 5.42.0
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
 [api]: Failed to parse an OpenAPI schema at the following location: schema-2. Coercing to unknown.
-[sdk] 10 errors
+[sdk] 62 errors
+    [error]
+        path: __package__.yml -> types -> ProvActivity -> properties -> @id -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvAgent -> properties -> @id -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvAlternate -> properties -> @id -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvAlternate -> properties -> alternate1 -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvAlternate -> properties -> alternate2 -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvAssociation -> properties -> @id -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvAssociation -> properties -> activity -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvAssociation -> properties -> agent -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvAssociation -> properties -> plan -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvAttribution -> properties -> @id -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvAttribution -> properties -> agent -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvAttribution -> properties -> entity -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvBundle -> properties -> @id -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvCommunication -> properties -> @id -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvCommunication -> properties -> informant -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvCommunication -> properties -> informed -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvDelegation -> properties -> @id -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvDelegation -> properties -> activity -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvDelegation -> properties -> delegate -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvDelegation -> properties -> responsible -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvDerivation -> properties -> @id -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvDerivation -> properties -> activity -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvDerivation -> properties -> generatedEntity -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvDerivation -> properties -> generation -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvDerivation -> properties -> usage -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvDerivation -> properties -> usedEntity -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvEnd -> properties -> @id -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvEnd -> properties -> activity -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvEnd -> properties -> ender -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvEnd -> properties -> trigger -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvEntity -> properties -> @id -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvGeneration -> properties -> @id -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvGeneration -> properties -> activity -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvGeneration -> properties -> entity -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvInfluence -> properties -> @id -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvInfluence -> properties -> influencee -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvInfluence -> properties -> influencer -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvInvalidation -> properties -> @id -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvInvalidation -> properties -> activity -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvInvalidation -> properties -> entity -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvMembership -> properties -> @id -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvMembership -> properties -> collection -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvSpecialization -> properties -> @id -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvSpecialization -> properties -> generalEntity -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvSpecialization -> properties -> specificEntity -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvStart -> properties -> @id -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvStart -> properties -> activity -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvStart -> properties -> starter -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvStart -> properties -> trigger -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvUsage -> properties -> @id -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvUsage -> properties -> activity -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: __package__.yml -> types -> ProvUsage -> properties -> entity -> type
+        issue: Default values are not supported for the named type
+
     [error]
         path: api.yml -> service -> endpoints -> getAPI -> errors -> root.InternalServerError
         issue: Error is not defined.
@@ -43,4 +251,5 @@ Warnings for generators.yml:
         path: api.yml -> service -> endpoints -> getAPIProcesses -> examples[0] -> query-parameters
         issue: Example is missing required query parameter "f"
 
-Found 10 errors and 0 warnings in <n> seconds.
+Found 62 errors and 0 warnings in <n> seconds.
+For guidance, run `fern instructions spec`.

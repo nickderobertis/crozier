@@ -7,9 +7,9 @@ All checks passed
          │                                                            │
          │                     Upgrades available                     │
          │                                                            │
-         │                  Fern 5.200.0 → 5.211.0                    │
+         │                  Fern 5.216.0 → 5.227.0                    │
          │                (Run fern upgrade to update)                │
-         │      Python SDK (Group: python-sdk) 5.41.25 → 5.41.28      │
+         │       Python SDK (Group: python-sdk) 5.42.0 → 5.42.4       │
          │                                                            │
          │   Run fern generator upgrade to upgrade your generators.   │
          │                                                            │

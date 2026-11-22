@@ -1,4 +1,4 @@
-fern-refusals: Fern CLI 5.200.0, fernapi/fern-python-sdk 5.41.25
+fern-refusals: Fern CLI 5.216.0, fernapi/fern-python-sdk 5.42.0
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
 [api]: No error name found for status code 524
@@ -16,3 +16,6 @@ Warnings for generators.yml:
         issue: ListEndpointsResponse is already declared in endpoints.yml
 
 Found 1 error and 0 warnings in <n> seconds.
+For guidance, run `fern instructions spec`.
+[api]: Warnings for generators.yml:
+[api]: 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.

@@ -1,6 +1,6 @@
-fern_cli_version = "5.200.0"
-fern_python_sdk_version = "5.41.25"
-digest = "12d3654c4b40dbd31c7d41012ab1e845547c885d64ade2a87a98017600b4e2db"
+fern_cli_version = "5.216.0"
+fern_python_sdk_version = "5.42.0"
+digest = "0bf11dba0351aeb597ab9d8029d592a3a209480e82a2d988b56ff1a2959d94e8"
 
 [[covers]]
 key = "operation-empty-tag"

@@ -20,8 +20,8 @@
         "src/fern/collections/types/patch_collections_response_fields_item_validations_additional_properties_additional_properties.py"
       ],
       "unmatched": [],
-      "golden_digest": "e26a11848108f7f4dffd3474e868e7b1d0ebd820b1ed8d02d6ab510c3b5d3ca3",
-      "inputs_digest": "24baf527c0543b401d2b9acd2d1ec7262e1b00c8904c323bbf99b348c23bfed3"
+      "golden_digest": "0088f865186ce26abad7526d1bd56d760b42c387ac9ccf55c39ed2b7c91a781c",
+      "inputs_digest": "523f5153b5be612aa6585a71cd60c827ee58ebf03e9adfb4f618162077550fe2"
     }
   ]
 }

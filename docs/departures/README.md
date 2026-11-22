@@ -186,8 +186,8 @@ A fix node that makes crozier depart from Fern on purpose — correcting a Fern
 defect, say — adds it this way:
 
 1. **Show it.** Generate the smallest crozier-authored document that triggers
-   it with the certified pair (Fern CLI 5.200.0, `fernapi/fern-python-sdk`
-   5.41.25, as `assets/scaffolding/metadata.json` declares), and record the
+   it with the certified pair (Fern CLI 5.216.0, `fernapi/fern-python-sdk`
+   5.42.0, as `assets/scaffolding/metadata.json` declares), and record the
    command and its result in a note under
    `docs/departures/evidence/<id>.md`. For a `fern-defect`, show why Fern's
    output is wrong under the defect rule — an import that fails, a call that
@@ -213,7 +213,7 @@ when the two differ.
 
 | Kind | Entries | Meaning |
 | --- | --- | --- |
-| `fern-defect` | 42 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
+| `fern-defect` | 43 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
 | `branding` | 1 | crozier names itself where Fern names itself. |
 | `packaging` | 1 | crozier writes the packaged SDK's publishing details from its own settings. |
 | `provenance` | 1 | crozier writes a fixed record of how the SDK was generated. |
@@ -307,7 +307,7 @@ when the two differ.
 - **Kind:** `usefulness`
 - **Trigger:** A worked example (README.md, reference.md, each client.py docstring) passing a multipart form part, a multipart object part's property or a header parameter that declares an example, a parameter's falsy example (its own or its examples map's), a query parameter declaring one on an operation whose success body is not JSON, a path parameter declaring one beside a path parameter whose schema is empty, a oneOf or anyOf property's own example, a list item of an enum whose schema declares an example member, or the request body example of an operation whose success body is not JSON.
 - **Fern writes:** Its own placeholder: the argument's wire name (label="label", survey_ref="X-Survey-Ref"), 1 for an integer, or the enum's first member (AlertKind.ALL).
-- **crozier writes:** The value the specification declares for the argument (label="", depth_metres=0, title="Lizard Point", AlertKind.BEACON_LIT), or for the body (request=[StoreLine(item_id=…, crates=4)] where Fern writes [StoreLine(), StoreLine()]), including an optional argument Fern leaves out. Every other argument and line is retained.
+- **crozier writes:** The value the specification declares for the argument (label="", depth_metres=0, title="Lizard Point", AlertKind.BEACON_LIT), or for the body (request=[StoreLine(item_id=…, crates=4)] where Fern writes [StoreLine(), StoreLine()]), including an optional argument Fern leaves out. A declared scalar its own schema rejects is not kept: Fern's placeholder stands where the schema accepts it, else `schema-rejected-declared-example` repairs it. Every other argument and line is retained.
 - **Why:** Design-review ruling 2 (falsy-property-example, 2026-11-01) keeps the value the API's author declared where the certified pair discards it for a synthesized placeholder, and its principle extends to the enum example member (example-enum-member) and to the kept example-value-source sub-rules; synthesized placeholders never count as more useful.
 - **Evidence:** [`docs/departures/evidence/declared-example-over-placeholder.md`](../../docs/departures/evidence/declared-example-over-placeholder.md)
 
@@ -620,11 +620,20 @@ when the two differ.
 ### `schema-rejected-array-length-example`
 
 - **Kind:** `fern-defect`
-- **Trigger:** A list in a worked example of `README.md`, `reference.md` or a generated client's docstring that Fern writes with its fixed number of items (one, or two in its fallback example writer), whose schema's `minItems` or `maxItems` rejects that count. The comparison has the parsed source document.
-- **Fern writes:** The list with Fern's fixed number of items (discord's `messages=["messages"]` beneath `minItems: 2`).
-- **crozier writes:** The specification's own declared example for that schema when the schema accepts it, else its declared `default` when the schema accepts it, else Fern's items cut to `maxItems` or padded to `minItems` with copies of the first item, or, beneath `uniqueItems: true`, with pairwise-distinct items the item schema accepts. Where no such items can be built, or Fern writes the list empty and has no item to copy, Fern's value stays. The argument, its place and every other line are unchanged.
+- **Trigger:** A list in a worked example of `README.md`, `reference.md` or a generated client's docstring that Fern writes with its fixed number of items (one, or two in its fallback example writer, or none where it has no item to show), whose schema's `minItems` or `maxItems` rejects that count. The comparison has the parsed source document.
+- **Fern writes:** The list with Fern's fixed number of items (discord's `messages=["messages"]` beneath `minItems: 2`), or none (marimo's `x_bounds=[]` beneath `minItems: 2`).
+- **crozier writes:** The specification's own declared example for that schema when the schema accepts it, else its declared `default` when the schema accepts it, else Fern's items cut to `maxItems` or padded to `minItems` with copies of the first item, or, beneath `uniqueItems: true`, with pairwise-distinct items the item schema accepts. Where Fern writes the list empty, with no item to copy (a tuple's `prefixItems`, a nullable item an executable docstring leaves out), the items the schema's own shape builds: each `prefixItems` member's value, or `minItems` copies of its items' (`None` for a nullable item). Where no such items can be built, Fern's value stays. The argument, its place and every other line are unchanged.
 - **Why:** An example value invalid for its own schema is a defect under the defect rule: the API rejects the call the example shows. Validating Fern's value against its source schema rejects it; crozier's is accepted.
 - **Evidence:** [`docs/departures/evidence/schema-rejected-array-length-example.md`](../../docs/departures/evidence/schema-rejected-array-length-example.md)
+
+### `schema-rejected-declared-example`
+
+- **Kind:** `fern-defect`
+- **Trigger:** A scalar in a worked example of `README.md`, `reference.md` or a generated client's docstring that the specification itself declares — an `example`, `examples` or `default` at any level, an enclosing body's or parameter's example included — whose own schema rejects it by an in-scope keyword or format. The comparison has the parsed source document.
+- **Fern writes:** The declared value as written (dot-ai's `execute_choice=42` beneath `maximum: 1`, RayBot's `ip="192.168.1.100/24"` beneath `format: ipv4`).
+- **crozier writes:** Another declared example for that schema when the schema accepts it, else its declared `default` when the schema accepts it, else a value constructed deterministically to satisfy every in-scope keyword. Where no such value exists or crozier cannot decide validity, Fern's value stays. The argument, its place and every other line are unchanged.
+- **Why:** An example value invalid for its own schema is a defect under the defect rule, whoever chose it: the API rejects the call the example shows. Validating Fern's value against its source schema rejects it; crozier's is accepted.
+- **Evidence:** [`docs/departures/evidence/schema-rejected-declared-example.md`](../../docs/departures/evidence/schema-rejected-declared-example.md)
 
 ### `schema-rejected-name-example`
 

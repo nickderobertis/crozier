@@ -60,3 +60,8 @@ and tonik example, description and member-modelling residuals that block every
 header-array witness, the OpenAPI 3.1 boolean schema, relative-file `$ref` and null
 security scope list crozier refuses where Fern generates, and the documents Fern
 refuses while crozier generates (refusal-parity classes).
+
+**Historical.** This record was measured at Fern CLI 5.200.0 /
+`fernapi/fern-python-sdk` 5.41.25, the pair certified when it was taken; where it
+says "the certified pair" it means that pair. It has not been re-measured at
+the current certified pair, Fern CLI 5.216.0 / fern-python-sdk 5.42.0.

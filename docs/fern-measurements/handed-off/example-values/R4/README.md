@@ -23,7 +23,7 @@ The certified pair works `keeper_id` from the schema `example`; crozier from the
 
 **Regenerated at the certified pair.** The trees under this record's
 `fern-expected/` (and `expected-literals/` or `literals/`, where it has them)
-were regenerated at Fern CLI 5.200.0 / `fernapi/fern-python-sdk` 5.41.25, the
+were regenerated at Fern CLI 5.216.0 / `fernapi/fern-python-sdk` 5.42.0, the
 certified pair, one Fern run at a time through
 `tools/fern-goldens/fern-references.py`'s own `generated_tree` (and
 `reduce_overlay` for an overlay), and crozier's comparison holds the record to

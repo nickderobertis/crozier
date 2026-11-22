@@ -8,6 +8,15 @@ causes, `example-enum-member` and the kept sub-rules of `example-value-source`
 (`ruling-applied:falsy-property-example` in
 [`example-values.tsv`](../../fern-measurements/handed-off/example-values.tsv)).
 
+A declared scalar its own schema rejects is not kept: where Fern's placeholder
+satisfies the schema crozier writes it, matching Fern (the apifox lab's
+`bucket=""` beneath `minLength: 3`, corpus row
+`registered-literals-gk0wk-openapi-thrift-cc8bee73`, is Fern's
+`bucket="bucket"`), and otherwise
+[`schema-rejected-declared-example`](schema-rejected-declared-example.md)
+repairs it, as Fern's own invalid placeholder is repaired (the same lab's
+`request_id=""` and Fern's `"X-Request-Id"`, both beneath `format: uuid`).
+
 ## The input
 
 Three crozier-authored documents, each with the certified pair's fresh tree
@@ -99,4 +108,4 @@ principle (`non-json-body-property-example`, recorded `ruling-applied:falsy-prop
 **Historical.** This record was measured at Fern CLI 5.163.1 /
 `fernapi/fern-python-sdk` 5.41.3, the pair certified when it was taken; where it
 says "the certified pair" it means that pair. It has not been re-measured at
-the current certified pair, Fern CLI 5.200.0 / fern-python-sdk 5.41.25.
+the current certified pair, Fern CLI 5.216.0 / fern-python-sdk 5.42.0.

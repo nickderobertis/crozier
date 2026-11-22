@@ -1,20 +1,27 @@
-fern-refusals: Fern CLI 5.200.0, fernapi/fern-python-sdk 5.41.25
+fern-refusals: Fern CLI 5.216.0, fernapi/fern-python-sdk 5.42.0
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
 
 <--- Last few GCs --->
 
-[1862739:0xb1f2000]  1252114 ms: Scavenge 16368.7 (16380.9) -> 16361.1 (16380.9) MB, pooled: 0.0 MB, 27.07 / 0.00 ms (average mu = 0.294, current mu = 0.256) allocation failure; 
-[1862739:0xb1f2000]  1259439 ms: Incremental Mark-Compact (reduce) 16362.5 (16380.9) -> 16360.9 (16366.2) MB, pooled: 0.0 MB, 7098.02 / 0.00 ms (+ 108.3 ms in 22 steps since start of marking, biggest step 6.8 ms, walltime since start of marking 7325 ms) (
+[2391824:0x3f8440e0]  1735046 ms: Mark-Compact 16104.5 (16420.1) -> 16089.2 (16420.8) MB, 9116.41 / 0.00 ms  (average mu = 0.120, current mu = 0.003) allocation failure; scavenge might not succeed
+[2391824:0x3f8440e0]  1744334 ms: Mark-Compact 16105.3 (16420.8) -> 16089.9 (16421.3) MB, 9257.11 / 0.00 ms  (average mu = 0.064, current mu = 0.003) allocation failure; scavenge might not succeed
+
+
+<--- JS stacktrace --->
+
 FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory
 ----- Native stack trace -----
 
- 1: 0x8256d0  [node]
- 2: 0x82593d node::OOMErrorHandler(char const*, v8::OOMDetails const&) [node]
- 3: 0xc91bbb  [node]
- 4: 0xf02b05  [node]
- 5: 0xf00d0c  [node]
- 6: 0xe4160f  [node]
- 7: 0x138c7a5  [node]
- 8: 0x7c7737e7ea76 
-Aborted (core dumped)
+ 1: 0xb78db3 node::OOMErrorHandler(char const*, v8::OOMDetails const&) [node]
+ 2: 0xee8300 v8::Utils::ReportOOMFailure(v8::internal::Isolate*, char const*, v8::OOMDetails const&) [node]
+ 3: 0xee85e7 v8::internal::V8::FatalProcessOutOfMemory(v8::internal::Isolate*, char const*, v8::OOMDetails const&) [node]
+ 4: 0x10fb205  [node]
+ 5: 0x10fb794 v8::internal::Heap::RecomputeLimits(v8::internal::GarbageCollector) [node]
+ 6: 0x1112684 v8::internal::Heap::PerformGarbageCollection(v8::internal::GarbageCollector, v8::internal::GarbageCollectionReason, char const*) [node]
+ 7: 0x1112e9c v8::internal::Heap::CollectGarbage(v8::internal::AllocationSpace, v8::internal::GarbageCollectionReason, v8::GCCallbackFlags) [node]
+ 8: 0x10e91f1 v8::internal::HeapAllocator::AllocateRawWithLightRetrySlowPath(int, v8::internal::AllocationType, v8::internal::AllocationOrigin, v8::internal::AllocationAlignment) [node]
+ 9: 0x10ea385 v8::internal::HeapAllocator::AllocateRawWithRetryOrFailSlowPath(int, v8::internal::AllocationType, v8::internal::AllocationOrigin, v8::internal::AllocationAlignment) [node]
+10: 0x10c78d6 v8::internal::Factory::NewFillerObject(int, v8::internal::AllocationAlignment, v8::internal::AllocationType, v8::internal::AllocationOrigin) [node]
+11: 0x15247d6 v8::internal::Runtime_AllocateInYoungGeneration(int, unsigned long*, v8::internal::Isolate*) [node]
+12: 0x75b1df69a476 

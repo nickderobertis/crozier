@@ -70,6 +70,9 @@ At Fern CLI 5.200.0 / fern-python-sdk 5.41.25 it was re-recorded after checking
 that only the files every SDK shares had moved (the hyphenated distribution
 name, the vendored runtime, `.fern/metadata.json` and `reference.md`'s link
 ranges).
+At Fern CLI 5.216.0 / fern-python-sdk 5.42.0 it was re-recorded after checking
+that only `.fern/metadata.json` (the pair) and `README.md` (its Retries
+section) had moved.
 `crates/crozier-e2e/tests/e2e/empty_sdk_documents.rs` holds the tree to that manifest, the pair's empty SDK to its log and file
 count, and the control to its generation.
 
@@ -78,7 +81,7 @@ valid-OpenAPI exception, and tacd is refused.
 
 **Regenerated at the certified pair.** The trees under this record's
 `fern-expected/` (and `expected-literals/` or `literals/`, where it has them)
-were regenerated at Fern CLI 5.200.0 / `fernapi/fern-python-sdk` 5.41.25, the
+were regenerated at Fern CLI 5.216.0 / `fernapi/fern-python-sdk` 5.42.0, the
 certified pair, one Fern run at a time through
 `tools/fern-goldens/fern-references.py`'s own `generated_tree` (and
 `reduce_overlay` for an overlay), and crozier's comparison holds the record to

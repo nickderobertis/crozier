@@ -1,6 +1,6 @@
-fern_cli_version = "5.200.0"
-fern_python_sdk_version = "5.41.25"
-digest = "bdbdd88b2311230f05363ffee0365567304f3876d0d4befc9c521b3719e4c265"
+fern_cli_version = "5.216.0"
+fern_python_sdk_version = "5.42.0"
+digest = "c951baea929e2bb030eb2bb09019f4753d1cdf160cf02ac1da072bf34acc809d"
 
 [[covers]]
 key = "security-scheme-header-extension-named"

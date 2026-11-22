@@ -1,5 +1,16 @@
 # unresolved-reference: refuse
 
+## At Fern CLI 5.216.0 / fern-python-sdk 5.42.0
+
+Decision: **refuse**, unchanged. The Fern goldens run 44880783817
+re-took the [probe record](fern-refusal.txt) at this pair, and Fern still refuses
+the probe as recorded. Every shape, confirmation and reduction the registry
+carries for the class was retaken at this pair (`fern-refusals.py shapes`,
+`confirm` and `reduce`, one Fern run at a time), each keeping its role's
+verdict (`shapes.tsv` is unchanged), and `fern-refusals.py check` holds them
+there. crozier's behaviour is unchanged: the e2e gate still runs its probe in
+both modes. The sections below are history at the pairs they name.
+
 ## At Fern CLI 5.200.0 / fern-python-sdk 5.41.25
 
 Decision: **refuse**, unchanged. The Fern goldens run 43423270787
@@ -161,4 +172,4 @@ Taken at Fern CLI 5.67.1 / fern-python-sdk 5.20.0, over a document never committ
 **Historical.** This record was measured at Fern CLI 5.163.1 /
 `fernapi/fern-python-sdk` 5.41.3, the pair certified when it was taken; where it
 says "the certified pair" it means that pair. It has not been re-measured at
-the current certified pair, Fern CLI 5.200.0 / fern-python-sdk 5.41.25.
+the current certified pair, Fern CLI 5.216.0 / fern-python-sdk 5.42.0.

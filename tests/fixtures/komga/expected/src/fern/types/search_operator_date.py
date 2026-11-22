@@ -108,8 +108,8 @@ SearchOperatorDate = typing_extensions.Annotated[
     ],
     pydantic.Field(discriminator="operator"),
 ]
-from .search_operator_is_null import SearchOperatorIsNull
 from .search_operator_is_not_null import SearchOperatorIsNotNull
+from .search_operator_is_null import SearchOperatorIsNull
 
 update_forward_refs(
     SearchOperatorDate_IsNotNull,

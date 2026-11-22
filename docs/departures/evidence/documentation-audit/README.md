@@ -16,11 +16,15 @@ binds; this audit does. It measures:
 Whether a value satisfies its declared type and constraints is a separate
 check, and it is not this one. That is
 [`invalid-example-values/inventory.tsv`](../invalid-example-values/README.md),
-which every golden comparison holds. The new pair left it unchanged: it has
-9424 rows. Of those, 9235 are repaired. The other 189 keep Fern's bytes:
-
-- 95 are `declared-in-spec`, the document's own example;
-- 94 are `residual-unconstructible`.
+which every golden comparison holds. At Fern CLI 5.216.0 / fern-python-sdk
+5.42.0 it has 9451 rows. 9408 are repaired. The other 43 keep Fern's bytes
+because their schema accepts no value at all, so no valid value exists to
+write. Each is `unsatisfiable-schema`, an integer whose `enum` lists only
+strings or an enum every member of which the schema rejects, and every
+comparison proves it again from the source document. None is
+`declared-in-spec` or `residual-unconstructible`. The document's own invalid
+examples are repaired by `schema-rejected-declared-example`, and lists Fern
+writes empty by `schema-rejected-array-length-example`.
 
 The `list-path-parameter-example` evidence adds one case that inventory does not
 read: a list path parameter documented with a string, which
@@ -38,6 +42,20 @@ code beside it. The same file drives each check, and the refusal of a path that 
 directory.
 
 ## Fern's findings
+
+**Historical.** This section and [`fern-findings.tsv`](fern-findings.tsv) were
+measured at Fern CLI 5.200.0 / fern-python-sdk 5.41.25; "the new pair" in this
+note means that one. At the current certified pair, Fern CLI 5.216.0 /
+fern-python-sdk 5.42.0, the audit was re-run once over Fern's side of every
+golden `compared-goldens.json` names, each overlay rebuilt over the base its
+`cases.tsv` row or sibling tree gives. Of this record's rows, 2,335 recur
+unchanged and 24 recur ten lines earlier (README rows after the Retries
+section, which 5.42.0 states in ten fewer lines); the other 188 are the nine
+partial snapshots' rows described below, which a tree rebuilt over its base
+does not have. No other finding appeared in those trees. Six trees registered
+since carry 13 more, all `call`. The file was not rewritten, so its rows and
+line numbers are 5.41.25's. The gate above, over crozier's own output for
+every compared golden, is what holds the current trees.
 
 [`fern-findings.tsv`](fern-findings.tsv) is the audit of Fern's side of the
 same 1308 trees, each overlay rebuilt over its base as the comparison rebuilds

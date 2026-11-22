@@ -1,10 +1,45 @@
 # heap-exhausted: refuse
 
-## At Fern CLI 5.200.0 / fern-python-sdk 5.41.25: not compared
+## At Fern CLI 5.216.0 / fern-python-sdk 5.42.0: not compared
 
 **Not compared at the certified pair; no refusal is certified here.** The class
-does not count toward the certified pair, and everything under the 5.163.1
-heading below is history at that pair.
+does not count toward the certified pair; the 5.200.0 section below is history
+at that pair, and everything under the 5.163.1 heading is history at that one.
+
+- **Probe: unsettled.** The Fern goldens run 44880783817 ran the probe in a job
+  of its own (`isolated (refusals:heap-exhausted)`, through the same
+  `fern-references.py generate refusals heap-exhausted` a shard runs, with
+  `NODE_OPTIONS=--max-old-space-size=16384` on a 16 GB runner): `fern check` and
+  `fern generate` each ran to the 900-second bound, 1,805.2 s for both, printing
+  nothing, as attempt 2 of run 43809697471 did (1,803.8 s). The
+  `spike-shard-loss` measurement at this pair (node v20.20.2, `ubuntu:26.04`, a
+  16g ceiling) timed the stages at 902.0 s and 903.0 s, peaking at 10,687 and
+  10,787 MiB with no OOM kill.
+  A run cut short says nothing about whether Fern refuses given more time or
+  memory, so [`fern-refusal.txt`](fern-refusal.txt) stays the 5.163.1 / 5.41.3
+  record and [`unsettled.txt`](unsettled.txt) records these timings and the
+  reason. No probe was re-run for this record.
+- **Shapes: not retaken.** The 2 probe and 5 control shapes keep their 5.163.1
+  logs.
+- **Real documents: corroboration only.** `confirm` retook both
+  [`confirmations.tsv`](../../openapi-surface/fern-refusals/confirmations.tsv)
+  rows at this pair (jakemannix `0117d8bf…` and Wiremock `94e583d7…`): each
+  generation still prints `FATAL ERROR: Ineffective mark-compacts near heap
+  limit … JavaScript heap out of memory`, now exiting -6 (SIGABRT) where the
+  5.200.0 run exited 1. That exit belongs to the measuring environment (Node
+  v20.20.2 here, v26.8.2 then), not to Fern. Two real documents do not settle
+  the class.
+- **crozier's behaviour is unchanged**: it refuses the probe in both modes, as
+  the e2e gate still checks.
+- **Follow-up:** the existing *Settle crozier's heap-exhausted refusal class at
+  Fern CLI 5.200.0 / fern-python-sdk 5.41.25* (drafted by the
+  `upstream-evidence` node) still stands, now at this pair.
+
+## At Fern CLI 5.200.0 / fern-python-sdk 5.41.25: not compared (historical)
+
+**Historical.** This section was written when Fern CLI 5.200.0 /
+fern-python-sdk 5.41.25 was the certified pair; where it says "the certified
+pair" or "this pair" it means that one.
 
 - **Probe: unsettled.** The Fern goldens run 43423270787 and one serial bounded
   rerun (`fern-refusals.py probe heap-exhausted --jobs 1 --timeout 900`, with

@@ -480,6 +480,20 @@ impl Context {
         self
     }
 
+    /// Whether a schema the source document declares for `argument` — the
+    /// keyword, property or key a worked example passes a value as, its last
+    /// dotted segment with any `[index]` dropped — provably accepts no value
+    /// of `value`'s kind ([`crate::example_values::ValueConstraints::admits_nothing`]):
+    /// a value Python spells as an enum member (`Kind.DRAFT`) is a string.
+    /// `false` without a source document.
+    #[must_use]
+    pub fn admits_nothing(&self, argument: &str, value: &str) -> bool {
+        let index = self
+            .source_rejected_examples
+            .get_or_init(|| rejected_examples::index(self.source_document.as_ref()));
+        index.admits_nothing(argument, value)
+    }
+
     /// Classes the reference's modules define.
     pub fn reference_classes(&self) -> &BTreeSet<String> {
         self.reference_classes
@@ -2040,7 +2054,7 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 56] = [
+pub const RULE_IDS: [&str; 57] = [
     "anyof-path-param-schema-example",
     "binary-json-body-example",
     "body-query-parameter-value",
@@ -2086,6 +2100,7 @@ pub const RULE_IDS: [&str; 56] = [
     "request-alias-reference-parameters",
     "required-null-union-field-example",
     "schema-rejected-array-length-example",
+    "schema-rejected-declared-example",
     "schema-rejected-name-example",
     "schema-rejected-number-example",
     "schema-rejected-placeholder-string-example",
@@ -2319,6 +2334,11 @@ pub fn rule(id: &str) -> Option<Rule> {
         "schema-rejected-name-example" => Rule {
             region: Some(schema_rejected_name_example_region),
             line: Some(schema_rejected_name_example),
+            ..none
+        },
+        "schema-rejected-declared-example" => Rule {
+            region: Some(schema_rejected_declared_example_region),
+            line: Some(schema_rejected_declared_example),
             ..none
         },
         "schema-rejected-number-example" => Rule {
@@ -3366,6 +3386,29 @@ fn docstring_literal_dollar_escape(pair: &Pair<'_>, fern: &str, crozier: &str) -
 /// [`rejected_examples::array_region`].
 fn schema_rejected_array_length_example(pair: &Pair<'_>) -> Result<Option<Region>, String> {
     rejected_examples::array_region(pair)
+}
+
+/// Fern's literal where two worked-example lines differ in exactly one
+/// literal and nothing else (`"X-Request-Id"` beside crozier's uuid); `None`
+/// where they differ in anything else, or in more than one.
+#[must_use]
+pub fn differing_literal(fern: &str, crozier: &str) -> Option<String> {
+    rejected_examples::single_literal_change(fern, crozier)
+}
+
+/// `schema-rejected-declared-example`: see [`rejected_examples::holds`].
+fn schema_rejected_declared_example(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    rejected_examples::holds(
+        crate::example_values::Mechanism::Declared,
+        pair,
+        fern,
+        crozier,
+    )
+}
+
+/// `schema-rejected-declared-example` beside another difference: see [`rejected_examples::region`].
+fn schema_rejected_declared_example_region(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    rejected_examples::region(crate::example_values::Mechanism::Declared, pair)
 }
 
 /// `schema-rejected-name-example`: see [`rejected_examples::holds`].
@@ -10924,6 +10967,28 @@ mod tests {
                 ),
             ),
             (
+                "schema-rejected-declared-example",
+                rejected_example_source(
+                    "share",
+                    serde_json::json!({"type": "number", "maximum": 1, "example": 42}),
+                ),
+                ("share=42,", "share=1,"),
+                "share=5,",
+                ("share=0.5,", "share=7,"),
+            ),
+            (
+                "schema-rejected-array-length-example",
+                rejected_example_source(
+                    "bounds",
+                    serde_json::json!({"type": "array", "minItems": 2, "maxItems": 2,
+                        "items": false,
+                        "prefixItems": [{"type": "number"}, {"type": "string", "enum": ["x", "y"]}]}),
+                ),
+                ("bounds=[],", "bounds=[1.1, \"x\"],"),
+                "bounds=[1.1],",
+                ("bounds=[2.5, \"y\"],", "bounds=[1.1, 1.1, 1.1],"),
+            ),
+            (
                 "schema-rejected-sized-string-example",
                 rejected_example_source(
                     "code",
@@ -10984,6 +11049,72 @@ mod tests {
             );
             assert!(!compared.matches(), "{id}: excused without its schema");
         }
+    }
+
+    /// An empty list crozier seeds with a model it constructs brings that
+    /// model into the example's import, wrapped or not; an import adding a
+    /// name no seeded list writes is no repair.
+    #[test]
+    fn a_seeded_list_s_model_import_is_the_array_departure_s_and_nothing_else() {
+        let source = serde_json::json!({
+            "openapi": "3.1.0",
+            "info": {"title": "Api", "version": "1"},
+            "paths": {},
+            "components": {"schemas": {"Filter": {"type": "object", "properties": {
+                "all": {"type": "array", "minItems": 1, "items": {"anyOf": [
+                    {"$ref": "#/components/schemas/Filter"},
+                    {"type": "object", "required": ["field"],
+                        "properties": {"field": {"type": "string"}}}
+                ]}}
+            }}}}
+        });
+        let module = |import: &str, call: &str| {
+            format!(
+                "class Client:\n    def read(self) -> None:\n        \"\"\"\n        Examples\n        \
+                 --------\n{import}\n\n        client = Api()\n        client.read(\n{call}        )\n        \
+                 \"\"\"\n        pass\n"
+            )
+        };
+        let fern_call = "            filter=Filter(\n                all_=[],\n            ),\n";
+        let crozier_call = "            filter=Filter(\n                all_=[\n                    \
+                            FilterAllItem(\n                        field=\"string\",\n                    \
+                            )\n                ],\n            ),\n";
+        let fern_import = "        from api import Api, Filter";
+        let compare = |import: &str, call: &str| {
+            let context = Context::default()
+                .with_source_document(serde_json::from_value(source.clone()).expect("a source"));
+            crate::parity::compare_file(
+                &context,
+                "src/api/client.py",
+                &module(import, call),
+                &module(fern_import, fern_call),
+            )
+            .expect("the comparison runs")
+        };
+        for import in [
+            "        from api import Api, Filter, FilterAllItem",
+            "        from api import (\n            Api,\n            Filter,\n            FilterAllItem,\n        )",
+        ] {
+            let compared = compare(import, crozier_call);
+            assert!(compared.matches(), "{import}: {:?}", compared.diff());
+            assert!(compared
+                .departures
+                .iter()
+                .all(|found| found.id == "schema-rejected-array-length-example"));
+        }
+        // A name the seeded list does not construct, or one Fern's import loses.
+        for import in [
+            "        from api import Api, Filter, FilterAllItem, Other",
+            "        from api import Api, FilterAllItem",
+        ] {
+            assert!(!compare(import, crozier_call).matches(), "{import}");
+        }
+        // Nor without a seeded list to construct the name.
+        assert!(!compare(
+            "        from api import Api, Filter, FilterAllItem",
+            fern_call
+        )
+        .matches());
     }
 
     /// A list `reference.md` spreads over lines: only its added items are the
