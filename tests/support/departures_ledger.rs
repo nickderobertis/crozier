@@ -21,6 +21,18 @@ pub const HEADER: &str = "golden\tfile\tline\tdeparture";
 /// The inventory of compared goldens, relative to the repository root.
 pub const INVENTORY: &str = "tests/fixtures/compared-goldens.json";
 
+/// The test holding [`INVENTORY`] to the registered comparisons, as nextest
+/// names it within the e2e binary of the `crozier-e2e` package.
+pub const INVENTORY_TEST: &str = "departures_ledger_gate::compared_goldens_inventory_is_current";
+
+/// The command, run from the repository root, that rewrites [`INVENTORY`] from
+/// the registered comparisons: it selects the package that owns
+/// [`INVENTORY_TEST`], since a bare `cargo nextest run` selects the root
+/// package and finds no such test.
+pub const INVENTORY_REGENERATE: &str =
+    "CROZIER_UPDATE_COMPARED_GOLDENS=1 cargo nextest run --locked -p crozier-e2e \
+     -E 'binary(e2e) & test(=departures_ledger_gate::compared_goldens_inventory_is_current)'";
+
 /// The command that regenerates the ledger.
 pub const REGENERATE: &str = "just departures-ledger";
 
