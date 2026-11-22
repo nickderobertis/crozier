@@ -20686,6 +20686,25 @@ class ScenarioProofIndexTests(unittest.TestCase):
         run = self.run_script("check")
         self.assertEqual((0, "", ""), (run.returncode, run.stdout, run.stderr))
 
+    def test_a_rustfmt_wrapped_corpus_registration_still_reaches_its_goldens(self) -> None:
+        """Issue #884: rustfmt may break a `const NAME: Corpus =` binding before its
+        initializer and a driver call after its `(`; the index still reads every
+        registration, so every corpus golden it cites stays reached."""
+        root = self.mirror()
+        e2e = root / "crates/crozier-e2e/tests/e2e.rs"
+        text = e2e.read_text(encoding="utf-8")
+        wrapped, bindings = re.subn(r"(?m)^(const \w+: Corpus =) (Corpus \{)", r"\1\n    \2", text)
+        wrapped, calls = re.subn(
+            r"\b(assert_corpus_matches|assert_committed_corpus_matches|known_fern_failure)\(&(\w+)\)",
+            r"\1(\n        &\2,\n    )",
+            wrapped,
+        )
+        self.assertGreater(bindings, 100, "the suite's corpus bindings changed shape")
+        self.assertGreater(calls, 100, "the suite's corpus drivers changed shape")
+        e2e.write_text(wrapped, encoding="utf-8")
+        run = self.run_script("check", root=root)
+        self.assertEqual((0, "", ""), (run.returncode, run.stdout, run.stderr))
+
     def test_every_owner_has_shapes_and_every_kind_is_read(self) -> None:
         module = self.index_script
         rows, failures = module.read_tsv(REPO / module.INDEX, module.INDEX_HEADER)
