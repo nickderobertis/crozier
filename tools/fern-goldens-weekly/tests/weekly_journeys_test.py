@@ -157,6 +157,7 @@ MIRRORED = (
     "docs/fern-refusals/unsettled-contract.json",
     "tools/corpus/corpus-lib.sh",
     "tools/corpus/corpus_remote_ref_pins.py",
+    "tools/corpus/corpus_sources.py",
     "tools/corpus/fetch-corpus.sh",
     "tools/surface-census/openapi-surface-census.py",
     "scripts/lib.sh",

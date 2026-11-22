@@ -739,6 +739,56 @@ def fetch_spec(root: Path, row: CorpusRow, *, force: bool) -> Path:
     return destination
 
 
+SOURCE_MANIFEST = Path("tests") / "fixtures" / "corpus-sources.tsv"
+
+
+def records_source(root: Path, row: CorpusRow) -> bool:
+    """Whether `tests/fixtures/corpus-sources.tsv` records a committed copy of `row`'s source."""
+    try:
+        lines = (root / SOURCE_MANIFEST).read_text(encoding="utf-8").splitlines()
+    except FileNotFoundError:
+        return False
+    return any(not line.startswith("#") and line.split("\t", 1)[0] == row.name for line in lines)
+
+
+def golden_source(root: Path, row: CorpusRow, staging: Path, *, force: bool) -> Path:
+    """The document `row`'s golden is generated from and compared over (issue #862).
+
+    A row whose source `tests/fixtures/corpus-sources.tsv` records is read from
+    its committed copy, staged by `corpus_sources.py prepare` once every file
+    matches its recorded digest and the row's remote-ref pins: upstream is never
+    asked, so a row whose upstream is gone stays regenerable, and a missing or
+    altered copy is refused rather than replaced by a fetch. Refreshing a copy
+    from upstream is `just corpus-sources vendor`'s, apart from regeneration. A
+    row the manifest does not record yet — one being added, before it is
+    vendored — has no committed copy, so its pinned source is fetched.
+    """
+    if not records_source(root, row):
+        return fetch_spec(root, row, force=force)
+    result = run_command(
+        [
+            sys.executable,
+            str(root / "tools" / "corpus" / "corpus_sources.py"),
+            "--root",
+            str(root),
+            "prepare",
+            "--fixture",
+            row.name,
+            "--output",
+            str(staging),
+        ],
+        cwd=root,
+    )
+    if result.returncode != 0:
+        detail = ((result.stderr or "") + (result.stdout or "")).strip()
+        raise GoldensError(f"committed source refused: {detail or f'corpus_sources.py exited {result.returncode}'}")
+    printed = (result.stdout or "").strip()
+    source = Path(printed) if printed else staging
+    if not source.is_file():
+        raise GoldensError(f"corpus_sources.py prepare staged no document for {row.name} under {staging}")
+    return source
+
+
 def replace_directory_with_rollback(staged: Path, destination: Path) -> None:
     """Move `staged` over `destination` in two renames, restoring the prior tree
     from its backup if the second fails. Not atomic: between the renames
@@ -868,7 +918,7 @@ def generate(root: Path, version_arg: str | None, selectors: list[str]) -> int:
         log_path = report / "generation-logs" / f"{row.fixture}.log"
         try:
             try:
-                spec = fetch_spec(root, row, force=True)
+                spec = golden_source(root, row, report / "sources" / row.fixture, force=True)
             except GoldensError as error:
                 # Recorded apart from every other failure: the pinned source can
                 # no longer be had, which no regeneration of the golden repairs.
@@ -1072,7 +1122,8 @@ def compare(root: Path) -> int:
             print(f"fern-goldens: failed {progress}: invalid known failure", flush=True)
             continue
         try:
-            fetch_spec(root, row, force=False)
+            with tempfile.TemporaryDirectory(prefix="fern-goldens-source.") as staging:
+                golden_source(root, row, Path(staging) / "source", force=False)
         except (GoldensError, OSError) as error:
             failure = f"{row.fixture}: {error}"
             fetch_failures.append(failure)
