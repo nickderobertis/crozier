@@ -644,6 +644,17 @@ audit and the inventory gate over every compared golden. Its only notes are the
 ones above: calorieninjas.com's reproduced known failure, `heap-exhausted`
 still unsettled, and the three references it could not fetch.
 
+The branch then re-took the output-insensitive comparisons, a witness screen
+and its census records at the pair, so the closeout was taken a third time the
+same way. A fresh copy of the published bundle (`base` `5847794b05`) was
+repointed to the branch's head `4b42d4c265`, with the same two subsloth
+literals-overlay files the tree's. `apply` re-laid all 1,441 items and
+regenerated the departures ledger and the example-values inventory, leaving
+the tree unchanged. `decide` passed all 427 gates, 0 failing and 0 not checked.
+Its whole-suite comparison ran 1,093 tests, all passing, with the documentation
+audit and the inventory gate over every compared golden, and it reported the
+same notes.
+
 A refusal class whose probe the candidate pair no longer refuses as recorded is
 likewise a diff, never a failure: the class keeps its record, and the pull
 request's **Refusal classes whose Fern outcome changed** section names it with
