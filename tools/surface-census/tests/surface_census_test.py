@@ -20511,6 +20511,61 @@ class LegacyLocaleEncodingTests(unittest.TestCase):
         self.assertIn("witness hunks by owner: \u2014", run.stdout.decode("utf-8").splitlines())
 
 
+class CensusProseCountsTests(unittest.TestCase):
+    """Issue #477: a region page's census count agrees with the witnesses listed beside it."""
+
+    script = REPO / "tools/surface-census/census-prose-counts.py"
+
+    def run_script(self, root: Path, command: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            [sys.executable, str(self.script), "--repo-root", str(root), command],
+            capture_output=True,
+            encoding="utf-8",
+            check=False,
+        )
+
+    def test_the_committed_pages_state_the_counts_their_lists_give(self) -> None:
+        run = self.run_script(REPO, "check")
+        self.assertEqual((0, "", ""), (run.returncode, run.stdout, run.stderr))
+
+    def test_a_count_drifting_from_its_list_fails_and_write_renders_it_back(self) -> None:
+        root = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, root)
+        (root / "docs/openapi-surface").mkdir(parents=True)
+        for region in (REPO / "docs/openapi-surface").glob("*.md"):
+            shutil.copyfile(region, root / "docs/openapi-surface" / region.name)
+        page = root / "docs/openapi-surface/security.md"
+        committed = page.read_text(encoding="utf-8")
+        implicit = "**6** golden-bearing sources, 6 sites — `daniweb-connect` (1)"
+        password = "**3** declaration sites in 3 registered sources, `maximo-wxo-integration` (1)"
+        self.assertIn(implicit, committed)
+        self.assertIn(password, committed)
+        page.write_text(
+            committed.replace(implicit, implicit.replace("**6**", "**5**").replace("6 sites", "5 sites")).replace(
+                password, "**1** declaration site in one registered source, `maximo-wxo-integration` (1)"
+            ),
+            encoding="utf-8",
+        )
+        drifted = self.run_script(root, "check")
+        self.assertEqual(1, drifted.returncode, drifted.stderr)
+        self.assertRegex(
+            drifted.stderr,
+            r"docs/openapi-surface/security\.md:\d+: oauth2-implicit: says 5 source\(s\) and 5 site\(s\) "
+            r"\(golden-bearing-sources\), lists 6 source\(s\) and 6 site\(s\)",
+        )
+        self.assertIn("oauth2-password: says 1 source(s) and 1 site(s) (sites-in-sources), lists 3", drifted.stderr)
+        self.assertIn("2 count(s) disagree with the witnesses listed beside them", drifted.stderr)
+        written = self.run_script(root, "write")
+        self.assertEqual((0, ""), (written.returncode, written.stderr))
+        self.assertEqual(committed, page.read_text(encoding="utf-8"))
+        self.assertEqual(0, self.run_script(root, "check").returncode)
+
+    def test_a_partial_list_is_no_claim_to_hold(self) -> None:
+        module = load_script("tools/surface-census/census-prose-counts.py")
+        partial = "census `schema.example`: 25609 declarations across 151 registered golden sources, the five largest being `a` (9), `b` (8)"
+        self.assertEqual((partial, []), module.restate(partial))
+
+
 class ScenarioProofIndexTests(unittest.TestCase):
     """Each scenario shape's proof, and each handed-off witness, reconciles with what it cites."""
 
