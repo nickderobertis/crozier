@@ -547,6 +547,7 @@ fn a_run_the_inventory_does_not_describe_stops_before_the_merge() {
 /// longer derive is refused before anything records, and the failure names the
 /// command that regenerates it from the repository root — selecting the
 /// `crozier-e2e` package, which owns the test (issue #883).
+// llmlint: ignore[e2e_not_mocked] A real `cargo nextest` here would rebuild and rerun this whole suite inside itself, as the stand-in's own note where this file writes `bin/cargo` says; only that boundary is stood in. The real inventory check it stands in for is departures_ledger_gate::compared_goldens_inventory_is_current, which runs in every e2e run and fails on a stale inventory, and departures_ledger_gate::the_inventory_regeneration_command_selects_the_inventory_test pins that the script preflights exactly that test; this case proves the script's own half: it stops before recording and prints the package-selecting command.
 #[test]
 fn a_stale_compared_goldens_inventory_is_refused_before_anything_records() {
     let run = departures_ledger("INVENTORY_STALE=petstore-added\n");

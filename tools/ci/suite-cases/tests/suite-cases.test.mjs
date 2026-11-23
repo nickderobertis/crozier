@@ -145,6 +145,21 @@ test("a write that fails part-way restores every file it already moved into plac
   }
 });
 
+test("a write that cannot stage a later file moves nothing and leaves no staged file", () => {
+  const scratch = mkdtempSync(join(tmpdir(), "crozier-suite-cases-"));
+  try {
+    const pin = join(scratch, "pin.txt");
+    writeFileSync(pin, "committed\n");
+    // A regular file where a later target's directory belongs: staging that target fails.
+    writeFileSync(join(scratch, "blocked"), "");
+    assert.throws(() => writeTogether(new Map([[pin, "repinned\n"], [join(scratch, "blocked", "lanes.json"), "{}\n"]])));
+    assert.equal(readFileSync(pin, "utf8"), "committed\n", "a file was moved before staging finished");
+    assert.deepEqual(readdirSync(scratch).sort(), ["blocked", "pin.txt"], "a staged file was left");
+  } finally {
+    rmSync(scratch, { recursive: true, force: true });
+  }
+});
+
 test("an unknown suite is refused with the known names", () => {
   const run = command({}, "check", "no-such-suite");
   assert.equal(run.status, 2);
