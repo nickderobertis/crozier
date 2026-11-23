@@ -1,6 +1,6 @@
-fern_cli_version = "5.216.0"
-fern_python_sdk_version = "5.42.0"
-digest = "e8af6c9e3c069d6761330ba612467cbb0aa97ee9139e080b035885a53b5c4a24"
+fern_cli_version = "5.227.0"
+fern_python_sdk_version = "5.42.5"
+digest = "b9447397aab30ef300f5ab4bf613fea8a55be650977eef56bcf7b76ce056a84b"
 
 [[covers]]
 key = "oneof"

@@ -1,6 +1,6 @@
-fern_cli_version = "5.216.0"
-fern_python_sdk_version = "5.42.0"
-digest = "c1eb1bc46289b9884f1f05d692aa55e5d931c467568233595015a8b80e52619d"
+fern_cli_version = "5.227.0"
+fern_python_sdk_version = "5.42.5"
+digest = "3aefce511974fbb6376531941a34d933ea29b5fcf97538971ac392ac045bfc3f"
 
 [[covers]]
 key = "fern-streaming-format-over-json"

@@ -1,6 +1,6 @@
-fern_cli_version = "5.216.0"
-fern_python_sdk_version = "5.42.0"
-digest = "e6b6dce47826420d466084a77d56705a1c0692583fe8b33ccda76ea361e824e8"
+fern_cli_version = "5.227.0"
+fern_python_sdk_version = "5.42.5"
+digest = "af5dad962961a1dbc181a2e137414e605e568534943c3ec2ff7d0672418d3bc8"
 
 [[covers]]
 key = "array-item-pointer-walk-oneof"

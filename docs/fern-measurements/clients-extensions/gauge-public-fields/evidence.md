@@ -1,8 +1,8 @@
 # A property written `x-fern-ignore: true`
 
 Source: `docs/fern-measurements/clients-extensions/gauge-public-fields/openapi.yml`, an
-independently authored document. Fern CLI 5.216.0;
-fernapi/fern-python-sdk 5.42.0; enum_type: python_enums; package_name: fern;
+independently authored document. Fern CLI 5.227.0;
+fernapi/fern-python-sdk 5.42.5; enum_type: python_enums; package_name: fern;
 project_name: default_package_name. Complete unedited comment-stripped certified output.
 
 It was the hand-written cover of `ignore-extension-on-property-kept` until
@@ -12,4 +12,4 @@ It stays as a measurement because the dual-header vendor-extension tests mutate
 it, spelling the extension both ways and adding schema- and operation-level
 ignores beside it.
 
-Canonical tree SHA-256: `e337b24d7a0efd465968a63803a0decc813e458a89fc728be006d25b3088b0a5`
+Canonical tree SHA-256: `9a3593d929c1fd6aab4da1560b3bdee371fe004674836f07ee6790f9f39a4240`

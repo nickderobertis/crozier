@@ -1,6 +1,6 @@
-fern_cli_version = "5.216.0"
-fern_python_sdk_version = "5.42.0"
-digest = "3066199fe5e694b217a5210e98ff9632959811a86390a8a1bd858680a7c495d8"
+fern_cli_version = "5.227.0"
+fern_python_sdk_version = "5.42.5"
+digest = "0dc42b5499a5045b6f1cab96c05d872af87092afe1715635c61b9401c3a34194"
 
 [[covers]]
 key = "client-header-date-format"

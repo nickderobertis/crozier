@@ -1,6 +1,6 @@
-fern_cli_version = "5.216.0"
-fern_python_sdk_version = "5.42.0"
-digest = "a88d3569418f185d1a6166a2e81d4c5bf78aa87172f38a81199f8b92b1dc9c1a"
+fern_cli_version = "5.227.0"
+fern_python_sdk_version = "5.42.5"
+digest = "1d7a714481ad987e87498f347125d64ebd25fe8276fbfb6ea07650de5dca84d1"
 
 [[covers]]
 key = "schema-name-builtin-complex"

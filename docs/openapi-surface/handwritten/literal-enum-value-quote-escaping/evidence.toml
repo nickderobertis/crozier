@@ -1,6 +1,6 @@
-fern_cli_version = "5.216.0"
-fern_python_sdk_version = "5.42.0"
-digest = "54d47715275984efb0e306daf0cc7703df521be0fe1ad26a65c136839ab35ca4"
+fern_cli_version = "5.227.0"
+fern_python_sdk_version = "5.42.5"
+digest = "88eb80f9253abe89db3febd9b7728c4e8b8b6bc4e50c5adaec731ea9607c1f19"
 
 [[covers]]
 key = "literal-enum-value-quote-escaping"

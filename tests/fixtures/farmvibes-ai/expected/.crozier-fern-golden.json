@@ -1,5 +1,5 @@
 {
-  "fern_python_sdk_version": "5.42.0",
+  "fern_python_sdk_version": "5.42.5",
   "corpus_spec_name": "farmvibes-ai",
   "corpus_spec_ref": "d10670e18742d05aec50f73e4695d47978908994",
   "corpus_spec_url": "https://raw.githubusercontent.com/microsoft/farmvibes-ai/d10670e18742d05aec50f73e4695d47978908994/docs/source/docfiles/openapi.json"

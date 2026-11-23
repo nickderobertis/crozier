@@ -944,7 +944,7 @@ class FernReferencesTests(unittest.TestCase):
 
     def test_a_malformed_certified_pair_is_refused_naming_the_file(self) -> None:
         self.handwritten("alpha")
-        for record in ('{"cliVersion": null, "generatorVersion": "5.42.0"}', '["5.163.1"]', '{"cliVersion": 5}'):
+        for record in ('{"cliVersion": null, "generatorVersion": "5.42.5"}', '["5.163.1"]', '{"cliVersion": 5}'):
             with self.subTest(record=record):
                 self.write("assets/scaffolding/metadata.json", record)
                 result = self.run_tool("generate", "handwritten")

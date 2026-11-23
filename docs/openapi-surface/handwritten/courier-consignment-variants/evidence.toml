@@ -1,6 +1,6 @@
-fern_cli_version = "5.216.0"
-fern_python_sdk_version = "5.42.0"
-digest = "9263df47a28cf4c9dd81bdf6582331feabc04309b7fc104acfcf2c50603b9ff9"
+fern_cli_version = "5.227.0"
+fern_python_sdk_version = "5.42.5"
+digest = "978cf3d65d0c2c17f09f20244ea22453b49faf73967a7aa30fc4a01f550ad9a6"
 
 [[covers]]
 key = "undiscriminated-ref-oneof-sibling-properties-dropped"

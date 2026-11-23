@@ -1,6 +1,6 @@
-fern_cli_version = "5.216.0"
-fern_python_sdk_version = "5.42.0"
-digest = "5c6ab156cba8c94c39f974217eefb251798a6d58f808ff1d066ea079c51cd7b9"
+fern_cli_version = "5.227.0"
+fern_python_sdk_version = "5.42.5"
+digest = "e47c1d1910dfe90b6bd004b6b9756c64ef2df34e798d2de646a5ea99fcd2bef8"
 
 [[covers]]
 key = "ref-pointer-undeclared-component-head"

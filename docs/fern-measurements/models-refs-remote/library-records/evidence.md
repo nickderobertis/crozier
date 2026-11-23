@@ -6,7 +6,7 @@ Independently authored inputs:
 server URL, both for certification and the real-binary proof. The source is
 handwritten, not a publisher witness.
 
-Fern CLI 5.216.0 and `fernapi/fern-python-sdk` 5.42.0 generated the complete
+Fern CLI 5.227.0 and `fernapi/fern-python-sdk` 5.42.5 generated the complete
 packages without edits other than the repository's string-safe comment stripper.
 Default tree settings: `pydantic_config.enum_type: python_enums`. Literals tree:
 no generator configuration, under

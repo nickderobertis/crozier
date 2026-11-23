@@ -1,6 +1,6 @@
-fern_cli_version = "5.216.0"
-fern_python_sdk_version = "5.42.0"
-digest = "565ec0571d35079b79027094c35ede422c158d5b3e8c8d263551b5d939baf439"
+fern_cli_version = "5.227.0"
+fern_python_sdk_version = "5.42.5"
+digest = "be58522d51e956bf70fd4094a30c46dc4aa448a5efb40c85df2a5fb0857d4006"
 
 [[covers]]
 key = "base-path-extension"

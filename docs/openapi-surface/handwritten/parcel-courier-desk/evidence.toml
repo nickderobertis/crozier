@@ -1,6 +1,6 @@
-fern_cli_version = "5.216.0"
-fern_python_sdk_version = "5.42.0"
-digest = "576df4454bb0300fe98638707ee876bf91a486ea02b8b52076b7760aa4506ed6"
+fern_cli_version = "5.227.0"
+fern_python_sdk_version = "5.42.5"
+digest = "90f000bc240a7f89b76d3326c01bbd046591040d833b33cb984509c087b55ef0"
 
 [[covers]]
 key = "operation-idempotent-with-root-headers"

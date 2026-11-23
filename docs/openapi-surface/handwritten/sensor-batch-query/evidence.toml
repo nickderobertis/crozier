@@ -1,6 +1,6 @@
-fern_cli_version = "5.216.0"
-fern_python_sdk_version = "5.42.0"
-digest = "56d60b20d58930f482ffc0d97232e25db76260f70ad0855dfc416af6c093b30a"
+fern_cli_version = "5.227.0"
+fern_python_sdk_version = "5.42.5"
+digest = "7aa080811bec7f5ec87f6fdeb92679534293ade6a31f5c9c3983b6dfb8b01673"
 
 [[covers]]
 key = "required-query-array-nullable-union-items"

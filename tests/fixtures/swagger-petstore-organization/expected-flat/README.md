@@ -1,7 +1,7 @@
 # PetStore Python Library
 
 [![fern shield](https://img.shields.io/badge/%F0%9F%8C%BF-Built%20with%20Fern-brightgreen)](https://buildwithfern.com?utm_source=github&utm_medium=github&utm_campaign=readme&utm_source=PetStore%2FPython)
-[![pypi](https://img.shields.io/pypi/v/PetStore)](https://pypi.python.org/pypi/PetStore)
+[![pypi](https://img.shields.io/pypi/v/petstore)](https://pypi.python.org/pypi/petstore)
 
 The PetStore Python library provides convenient access to the PetStore APIs from Python.
 
@@ -23,7 +23,7 @@ The PetStore Python library provides convenient access to the PetStore APIs from
 ## Installation
 
 ```sh
-pip install PetStore
+pip install petstore
 ```
 
 ## Reference

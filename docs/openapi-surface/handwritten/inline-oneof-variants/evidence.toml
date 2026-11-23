@@ -4,9 +4,9 @@
 # request-body `oneOf` (plain, with `title`, with `description`, and with
 # 3.1 `examples`), a `oneOf` under an inline property, and a component union
 # (the measured probe `oneof-bare-object-example-variant`).
-fern_cli_version = "5.216.0"
-fern_python_sdk_version = "5.42.0"
-digest = "3f7b4cb2884a9f32b94b948e2b156336d93d1bdd997c073bba05277b8ac119c5"
+fern_cli_version = "5.227.0"
+fern_python_sdk_version = "5.42.5"
+digest = "cd0a7d2dfae04c5be738a29901d83db5b2940e2ffe1430b8d9cf09977648d024"
 
 [[covers]]
 key = "oneof-array-variant-annotated-ref-item"

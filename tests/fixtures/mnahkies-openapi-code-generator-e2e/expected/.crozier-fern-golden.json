@@ -1,5 +1,5 @@
 {
-  "fern_python_sdk_version": "5.42.0",
+  "fern_python_sdk_version": "5.42.5",
   "corpus_spec_name": "mnahkies-openapi-code-generator-e2e",
   "corpus_spec_ref": "54b1dff9c79b3e57bd81232ba60f5ba21907e6ef",
   "corpus_spec_url": "https://raw.githubusercontent.com/mnahkies/openapi-code-generator/54b1dff9c79b3e57bd81232ba60f5ba21907e6ef/e2e/openapi.yaml"
