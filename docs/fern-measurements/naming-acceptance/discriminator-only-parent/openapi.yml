@@ -1,0 +1,53 @@
+openapi: 3.0.3
+info:
+  title: Scan Forms
+  version: 1.0.0
+servers:
+  - url: https://scans.example.com
+paths:
+  /providers/{provider_id}:
+    get:
+      operationId: getInstanceProvider
+      parameters:
+        - name: provider_id
+          in: path
+          required: true
+          schema: {type: string}
+      responses:
+        '200':
+          description: The provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstanceProvider'
+components:
+  schemas:
+    InstanceProvider:
+      type: object
+      discriminator:
+        propertyName: type
+        mapping:
+          BARCODE_SCAN: '#/components/schemas/BarcodeScanFormInstanceProvider'
+          MANUAL: '#/components/schemas/ManualFormInstanceProvider'
+    BarcodeScanFormInstanceProvider:
+      allOf:
+        - $ref: '#/components/schemas/InstanceProvider'
+        - type: object
+          required: [type, barcode]
+          properties:
+            type:
+              type: string
+              enum: [BARCODE_SCAN]
+            barcode:
+              type: string
+    ManualFormInstanceProvider:
+      allOf:
+        - $ref: '#/components/schemas/InstanceProvider'
+        - type: object
+          required: [type]
+          properties:
+            type:
+              type: string
+              enum: [MANUAL]
+            note:
+              type: string

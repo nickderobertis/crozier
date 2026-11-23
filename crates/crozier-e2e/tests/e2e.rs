@@ -168,6 +168,13 @@ mod handed_off_type_declarations;
 mod union_inheritance;
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
+/// The naming, import and document-acceptance tickets (#536, #919–#924,
+/// #941–#944, #946, #948, #955, #956), each settled against a from-scratch
+/// document under `docs/fern-measurements/naming-acceptance/` and held whole
+/// against the certified pair's tree in both enum modes.
+#[path = "e2e/naming_acceptance.rs"]
+mod naming_acceptance;
+
 // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These nine local generator journeys and their canonical-header controls generate small SDKs without network access or SDK installation; they exercise the existing real-binary boundary and introduce no promoted-tier setup.
 #[path = "e2e/remeasure.rs"]
 mod remeasure;
@@ -1074,6 +1081,7 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         (emission_parity::EMISSION_PARITY_DIR, "fern-expected"),
         (handed_off_type_declarations::DIR, "fern-expected"),
         (union_inheritance::DIR, "fern-expected"),
+        (naming_acceptance::DIR, "fern-expected"),
         (handed_off_example_values::AREA_DIR, "fern-expected"),
         (handed_off_snippet_rendering::AREA_DIR, "fern-expected"),
         (bodies_media::BODIES_MEDIA_DIR, "fern-expected"),
@@ -1121,6 +1129,7 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         handed_off_type_declarations::DIR,
         remeasure::DIR,
         union_inheritance::DIR,
+        naming_acceptance::DIR,
     ] {
         if let Ok(entries) = std::fs::read_dir(root.join(dir)) {
             for entry in entries.filter_map(Result::ok) {
@@ -4235,10 +4244,13 @@ fn object_union_extension_generates_every_union_base_and_keeps_a_scalar_base_ref
     let class = repo_root()
         .join(FERN_REFUSALS_DIR)
         .join("object-extends-non-object");
+    // And at Fern CLI 5.216.0 / fern-python-sdk 5.42.0, an object holding only
+    // a discriminator mapping is such a union base too (#955).
     for control in [
         "untyped-ref-union-base-control.yml",
         "anyof-ref-union-base-control.yml",
         "scalar-member-union-base-control.yml",
+        "discriminator-only-base-control.yml",
     ] {
         generates_identically_in_both_modes(&class.join(control));
     }

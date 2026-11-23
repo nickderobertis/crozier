@@ -1,0 +1,77 @@
+openapi: 3.0.3
+info:
+  title: Lemma Hosts
+  version: 1.0.0
+servers:
+  - url: https://lemma.example.com
+paths:
+  /me/runtime/agent-host-pairings:
+    post:
+      operationId: agent.host.pairing.create
+      tags: [agent_host]
+      responses:
+        '204': {description: Paired.}
+  /me/runtime/agent-hosts:
+    get:
+      operationId: agent.host.list
+      tags: [agent_host]
+      responses:
+        '200':
+          description: The hosts.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {type: string}
+  /me/runtime/agent-hosts/{host_id}/harnesses:
+    get:
+      operationId: agent.host.harnesses.list
+      tags: [agent_host]
+      parameters:
+        - name: host_id
+          in: path
+          required: true
+          schema: {type: string}
+      responses:
+        '200':
+          description: The harnesses.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {type: string}
+  /surfaces/me:
+    get:
+      operationId: agent.surface.list_mine
+      tags: [Agent Surfaces (Me)]
+      responses:
+        '200':
+          description: My surfaces.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {type: string}
+  /surfaces/me/default:
+    put:
+      operationId: agent.surface.set_my_default
+      tags: [Agent Surfaces (Me)]
+      responses:
+        '204': {description: Set.}
+  /surfaces/webhooks/{platform}:
+    get:
+      operationId: surface.webhook.verify
+      tags: [Agent Surfaces (Ingress)]
+      parameters:
+        - name: platform
+          in: path
+          required: true
+          schema: {type: string}
+      responses:
+        '204': {description: Verified.}
+  /invitations:
+    get:
+      operationId: org.invitation.list_mine
+      tags: [Organizations]
+      responses:
+        '204': {description: Listed.}

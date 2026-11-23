@@ -1921,6 +1921,12 @@ pub struct Schema {
     /// See [`normalize_boolean_property_objects`].
     #[serde(skip)]
     pub(crate) boolean_stand_in: bool,
+    /// For a component renamed because its class collided with another's, the
+    /// class name Fern gives both, which the certified pair keeps for the last
+    /// declaration alone. Not a wire field: the `colliding-component-own-class`
+    /// departure reads it (see [`normalize_colliding_component_classes`]).
+    #[serde(skip)]
+    pub(crate) colliding_class: Option<String>,
     /// Set when this node's `$ref` named nothing the document declares, which
     /// `normalize_unresolvable_schema_refs` or `normalize_unresolved_schema_pointers`
     /// degraded to the unknown type, with what it named. Not a wire field. Fern
@@ -2627,23 +2633,41 @@ fn de_component_schemas<'de, D>(deserializer: D) -> std::result::Result<IndexMap
 where
     D: serde::Deserializer<'de>,
 {
-    #[derive(Deserialize)]
-    #[serde(untagged)]
-    enum Entry {
-        Boolean(bool),
-        Schema(Box<Schema>),
+    /// One `components.schemas` value: a Schema Object, read directly so every
+    /// field deserializer sees the document's own values, or a boolean schema.
+    struct ComponentSchema(Schema);
+
+    impl<'de> Deserialize<'de> for ComponentSchema {
+        fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+        where
+            D: serde::Deserializer<'de>,
+        {
+            struct Visit;
+            impl<'de> serde::de::Visitor<'de> for Visit {
+                type Value = ComponentSchema;
+
+                fn expecting(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                    f.write_str("a schema object or a boolean schema")
+                }
+
+                fn visit_bool<E>(self, accepts: bool) -> std::result::Result<Self::Value, E> {
+                    Ok(ComponentSchema(boolean_component_schema(accepts)))
+                }
+
+                fn visit_map<A>(self, map: A) -> std::result::Result<Self::Value, A::Error>
+                where
+                    A: serde::de::MapAccess<'de>,
+                {
+                    Schema::deserialize(serde::de::value::MapAccessDeserializer::new(map))
+                        .map(ComponentSchema)
+                }
+            }
+            deserializer.deserialize_any(Visit)
+        }
     }
-    let raw = IndexMap::<String, Entry>::deserialize(deserializer)?;
-    Ok(raw
-        .into_iter()
-        .map(|(name, entry)| {
-            let schema = match entry {
-                Entry::Boolean(accepts) => boolean_component_schema(accepts),
-                Entry::Schema(schema) => *schema,
-            };
-            (name, schema)
-        })
-        .collect())
+
+    let raw = IndexMap::<String, ComponentSchema>::deserialize(deserializer)?;
+    Ok(raw.into_iter().map(|(name, schema)| (name, schema.0)).collect())
 }
 
 /// The node a boolean component schema reads as: the unknown type, whether it
@@ -4629,18 +4653,21 @@ fn normalize_declared_type_names(doc: &mut OpenApi) {
     rename_component_schemas(doc, &renames);
 }
 
-/// Give every component schema whose class name another, different component
-/// also spells a class of its own, so no model silently replaces another (issue
-/// #944). Fern keeps one class for the name, the *last* declaration's: at the
-/// certified pair (Fern CLI 5.216.0 / fern-python-sdk 5.42.0) components `a/b-c`
-/// and `a-b/c` are the one class `Abc` holding `a-b/c`'s fields, so
-/// `a/b-c`'s operations are typed with the wrong model
+/// Give every referenced component schema whose class name another, different
+/// component also spells a class of its own, so no model silently replaces
+/// another (issue #944). Fern keeps one class for the name, the *last*
+/// declaration's: at the certified pair (Fern CLI 5.216.0 / fern-python-sdk
+/// 5.42.0) components `kiln/glaze-coat` and `kiln-glaze/coat` are the one class
+/// `KilnGlazeCoat` holding `kiln-glaze/coat`'s fields, so the request field
+/// `kiln/glaze-coat` types is typed with the wrong model
 /// (`docs/fern-measurements/naming-acceptance/normalized-component-identity/`).
 /// That last declaration keeps Fern's name byte for byte; each earlier one, in
 /// document order, takes the name followed by the first ordinal from 2 that no
-/// other component's class spells (`Abc2`, `Abc3`, …), which depends only on
-/// the document. Components whose schemas are identical stay one class, as a
-/// merge of equal types loses nothing. The catalogued departure is
+/// other component's class spells (`KilnGlazeCoat2`, `…3`), which depends only
+/// on the document. An earlier component stays merged, as Fern merges it, where
+/// the merge loses nothing a caller sees: its schema is identical, nothing
+/// references it, or both are an alias of one primitive type
+/// ([`same_primitive_alias`]). The catalogued departure is
 /// `colliding-component-own-class`.
 fn normalize_colliding_component_classes(doc: &mut OpenApi) {
     let mut groups: IndexMap<String, Vec<String>> = IndexMap::new();
@@ -4649,6 +4676,34 @@ fn normalize_colliding_component_classes(doc: &mut OpenApi) {
             .entry(crate::naming::class_name(name))
             .or_default()
             .push(name.clone());
+    }
+    if groups.values().all(|members| members.len() < 2) {
+        return;
+    }
+    // Only a component something names can type an operation wrongly: an
+    // unreferenced earlier twin merges as Fern merges it (the measured
+    // `Shelf`/`shelf` of `handed-off/document-acceptance/
+    // crozier-refuses-type-name-collision`).
+    let mut referenced: std::collections::HashSet<String> = std::collections::HashSet::new();
+    let mut note = |schema: &mut Schema| {
+        for_each_schema_in(schema, &mut |node| {
+            for reference in node.reference.iter().chain(
+                node.discriminator
+                    .iter()
+                    .flat_map(|discriminator| discriminator.mapping.values()),
+            ) {
+                if let Some(tail) = reference.strip_prefix("#/components/schemas/") {
+                    referenced.insert(tail.replace("~1", "/").replace("~0", "~"));
+                    if let Some(name) = referenced_component_schema(reference) {
+                        referenced.insert(name.to_string());
+                    }
+                }
+            }
+        });
+    };
+    for_each_root_schema(doc, &mut note);
+    for item in doc.webhooks.values_mut() {
+        for_each_path_item_schema(item, &mut note);
     }
     let mut taken: std::collections::HashSet<String> = groups.keys().cloned().collect();
     let mut renames: IndexMap<String, String> = IndexMap::new();
@@ -4659,7 +4714,11 @@ fn normalize_colliding_component_classes(doc: &mut OpenApi) {
         let winner_schema = &doc.components.schemas[winner];
         let mut ordinal = 2;
         for loser in losers {
-            if doc.components.schemas[loser] == *winner_schema {
+            let loser_schema = &doc.components.schemas[loser];
+            if loser_schema == winner_schema
+                || !referenced.contains(loser.as_str())
+                || same_primitive_alias(loser_schema, winner_schema)
+            {
                 continue;
             }
             let renamed = loop {
@@ -4677,6 +4736,12 @@ fn normalize_colliding_component_classes(doc: &mut OpenApi) {
     }
     if renames.is_empty() {
         return;
+    }
+    for (loser, _) in &renames {
+        let shared = crate::naming::class_name(loser);
+        if let Some(schema) = doc.components.schemas.get_mut(loser) {
+            schema.colliding_class = Some(shared);
+        }
     }
     // A pointer names a component by its whole tail, a `/` in the name written
     // escaped (`a~1b-c`) or as is (`a/b-c`), so each is matched whole here
@@ -4707,6 +4772,30 @@ fn normalize_colliding_component_classes(doc: &mut OpenApi) {
         for_each_path_item_schema(item, &mut visit);
     }
     rename_component_schemas(doc, &renames);
+}
+
+/// Whether two schemas are both a plain alias of one primitive type (no
+/// properties, members, enum or constant): Python types them the same, so the
+/// merge Fern makes loses nothing a caller sees. CloudFormation's `RoleArn` and
+/// `RoleARN` differ only in their length and pattern constraints, and both are
+/// `str`.
+fn same_primitive_alias(left: &Schema, right: &Schema) -> bool {
+    let primitive = |schema: &Schema| {
+        let plain = schema.reference.is_none()
+            && schema.properties.is_empty()
+            && schema.items.is_none()
+            && schema.one_of.is_none()
+            && schema.any_of.is_none()
+            && schema.all_of.is_none()
+            && schema.enum_values.is_none()
+            && schema.const_value.is_none();
+        plain
+            .then(|| schema.ty.as_ref().and_then(TypeField::primary))
+            .flatten()
+            .filter(|ty| matches!(*ty, "string" | "number" | "integer" | "boolean"))
+            .map(|ty| (ty.to_string(), schema.format.clone()))
+    };
+    primitive(left).is_some_and(|kind| primitive(right) == Some(kind))
 }
 
 /// Resolve each operation's `x-fern-pagination: true` (or crozier's spelling)

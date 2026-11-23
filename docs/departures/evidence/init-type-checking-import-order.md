@@ -1,70 +1,68 @@
 # `init-type-checking-import-order`
 
-**Kind:** `ordering`. crozier sorts a lazy `__init__.py`'s `TYPE_CHECKING`
-imports.
+**Kind:** `ordering`. crozier sorts a subpackage's lazy `__init__.py`
+`TYPE_CHECKING` imports by module; the root package's block is written in the
+certified pair's own order and is no part of this departure.
 
 ## The command and its result
 
-Over the committed `alma-france` corpus document, with the corpus's settings:
+Over the committed `amazonaws.com-cloudformation` corpus document, with the
+corpus's settings:
+
+```text
+$ spec=$(python3 tools/corpus/corpus_sources.py prepare --fixture amazonaws.com-cloudformation --output /tmp/cf-src)
+$ crozier generate --spec "$spec" --output /tmp/cf --package-name fern --project-name default_package_name
+$ diff <(sed -n '/^if typing.TYPE_CHECKING:/,/^_dynamic_imports/p' tests/fixtures/amazonaws.com-cloudformation/expected/src/fern/types/__init__.py) \
+       <(sed -n '/^if typing.TYPE_CHECKING:/,/^_dynamic_imports/p' /tmp/cf/src/fern/types/__init__.py)
+2,3d1
+<     from .resources_to_import import ResourcesToImport
+<     from .resources_to_skip import ResourcesToSkip
+882a881,882
+>     from .resources_to_import import ResourcesToImport
+>     from .resources_to_skip import ResourcesToSkip
+```
+
+Re-run against the golden Fern CLI 5.216.0 with `fernapi/fern-python-sdk`
+5.42.0 wrote, the diff is exactly this. The two blocks import the same names,
+two statements in another place; sorted by `ruff check --select I --fix`, they
+are the same text. The block runs only under a type checker, so the order
+changes nothing the SDK does. crozier emits its imports sorted (`src/emit.rs`,
+the lazy-loader assembly), and the rule takes the block's differing lines as one
+departure, at crozier's first one, only when the two blocks sort to the same
+text.
+
+## The root package's block
+
+The root `src/<package>/__init__.py` is excluded (`root_package_init` in
+`src/departures.rs`). Since issue #920 crozier writes its `TYPE_CHECKING` block
+as the certified pair does — `.types`, `.errors`, the `from . import` of the tag
+subpackages, then the default clients, the root client, the environment, each
+tag subpackage's re-exported types and `__version__` sorted by module — so a
+reordering there is a plain difference. The same `alma-france` golden this
+record once cited for the root block now compares equal with no departure:
 
 ```text
 $ spec=$(python3 tools/corpus/corpus_sources.py prepare --fixture alma-france --output /tmp/alma-src)
 $ crozier generate --spec "$spec" --output /tmp/alma --package-name fern --project-name default_package_name
 $ diff <(sed -n '/^if typing.TYPE_CHECKING:/,/^_dynamic_imports/p' tests/fixtures/alma-france/expected/src/fern/__init__.py) \
-       <(sed -n '/^if typing.TYPE_CHECKING:/,/^_dynamic_imports/p' /tmp/alma/src/fern/__init__.py)
-27d26
-<     from .balance_transactions import ListbalancetransactionsResponse
-29a29
->     from .balance_transactions import ListbalancetransactionsResponse
+       <(sed -n '/^if typing.TYPE_CHECKING:/,/^_dynamic_imports/p' /tmp/alma/src/fern/__init__.py); echo $?
+0
 ```
 
-Re-run at the certified pair (Fern CLI 5.163.1 with `fernapi/fern-python-sdk`
-5.41.3) on 2026-10-18, the diff is exactly this, and the rule records it at
-`src/fern/__init__.py` line 33. The two blocks import the same names, one statement in another place; sorted by
-`ruff check --select I --fix`, they are the same text. The block runs only under
-a type checker, so the order changes nothing the SDK does. crozier emits its
-imports sorted (`src/emit.rs`, the lazy-loader assembly), and the rule takes the
-block's differing lines as one departure, at crozier's first one, only when the
-two blocks sort to the same text.
+`docs/fern-measurements/naming-acceptance/root-import-order/` measures the
+order on a from-scratch document (`.agent_runtime` between `._default_clients`
+and `.client`, `.version` ahead of `.versions`), and
+`crates/crozier-e2e/tests/e2e/naming_acceptance.rs` fails once crozier's old
+order is written back into it.
 
-## Reordered client imports beside another difference
+## Reordered statements beside another difference
 
-A root package whose tag subpackages re-export their hoisted types orders the
-root client's and environment's statements differently. Fern sorts them by
-module among the tag subpackages'; crozier writes them ahead of every one. The
-handed-off `kompaz` witness showed it (measured before this pair; it is not a
-committed golden, so it was not re-run):
-
-```text
-$ diff <(sed -n '/^if typing.TYPE_CHECKING:/,/^_dynamic_imports/p' preview/fern-python-sdk/src/fern/__init__.py) \
-       <(sed -n '/^if typing.TYPE_CHECKING:/,/^_dynamic_imports/p' crozier/src/fern/__init__.py)
-6,7d5
-<         BadRequestErrorBody,
-<         NotFoundErrorBody,
-9d6
-<         UnauthorizedErrorBody,
-17d13
-<     from .auth import AuthMeResponse
-19a16
->     from .auth import AuthMeResponse
-```
-
-The `.auth`, `.client` and `.environment` statements are the same text on both
-sides, one permutation of each other. The three `*ErrorBody` names are a
-separate generator residual (Fern hoists the document's `application/problem+json`
-component responses as models), so the blocks do not sort to the same text.
-The rule then takes the window of statements that moves, here
-`from .auth` through `from .environment`, as one departure at crozier's first
-line of it. It does so only when the statements moving are the root client's
-and environment's alone and every statement in the window is identical on both
-sides. The `*ErrorBody` lines stay a difference, so the file still fails:
-`crozier compare` reports `init-type-checking-import-order` at
-`src/fern/__init__.py` line 20 and still lists the file as differing.
+Where the two blocks do not sort to the same text, the rule takes the window of
+statements that moves as one departure at crozier's first line of it, only when
+every statement in the window is identical on both sides; every other line
+stays a difference, so the file still fails.
 `init_import_order_admits_reordered_statements_beside_another_difference` in
-`src/parity.rs` holds both halves, and that a tag subpackage's statement moving,
-or a moved statement importing another name, is no departure.
-
-**Historical.** This record was measured at Fern CLI 5.163.1 /
-`fernapi/fern-python-sdk` 5.41.3, the pair certified when it was taken; where it
-says "the certified pair" it means that pair. It has not been re-measured at
-the current certified pair, Fern CLI 5.216.0 / fern-python-sdk 5.42.0.
+`src/parity.rs` holds both halves over a subpackage's block, and that a moved
+statement importing another name is no departure.
+`init_import_order_is_one_departure_at_crozier_s_first_moved_line` holds that
+the same reordering in the root package's block is a difference.

@@ -1,0 +1,36 @@
+openapi: 3.0.3
+info: {title: Point Desk, version: 1.0.0}
+servers: [{url: https://points.example.com}]
+paths:
+  /points:
+    get:
+      operationId: getPoint
+      responses:
+        '200':
+          description: The point.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Point'
+              example:
+                kind: 'wx:Point'
+                name: Grid point OKX-33-35
+        '404':
+          description: Missing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example: {title: 12345}
+components:
+  schemas:
+    Point:
+      type: object
+      required: [kind]
+      properties:
+        kind: {type: string, enum: [land, marine]}
+        name: {type: string}
+    Problem:
+      type: object
+      properties:
+        title: {type: string}

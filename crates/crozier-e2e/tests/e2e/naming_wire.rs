@@ -366,15 +366,15 @@ fn naming_wire_shapes_fail_on_an_unexplained_byte() {
     }
 }
 
-/// `init-type-checking-import-order` over a registered golden whose tag
-/// subpackages re-export types: crozier writes `from .client` and
-/// `from .environment` ahead of `from .balance_transactions`, which Fern sorts
-/// first. A name only Fern's `.types` statement imports leaves the moved window
-/// a departure and the name a difference; a tag subpackage's statement moving,
-/// or a moved statement importing another name, is no departure at all.
-// llmlint: ignore[expensive_tests_stay_behind_their_own_edge] This registered-corpus comparison belongs to the existing crozier-e2e golden gate, where the positive departure and its negative name-set cases run against the same binary and catalog.
+/// The root `__init__.py` of a registered golden whose tag subpackages
+/// re-export types: since #920 crozier writes its `TYPE_CHECKING` block in the
+/// certified pair's order, so it compares equal with no departure, and the
+/// narrowed `init-type-checking-import-order` covers no root block: a name only
+/// Fern's `.types` statement imports, or a tag subpackage's statement moving, is
+/// a difference no departure explains.
+// llmlint: ignore[expensive_tests_stay_behind_their_own_edge] This registered-corpus comparison belongs to the existing crozier-e2e golden gate, where the positive case and its negative reorderings run against the same binary and catalog.
 #[test]
-fn reordered_root_imports_are_a_departure_only_beside_identical_statements() {
+fn the_root_imports_are_written_in_the_certified_pair_s_order() {
     let rel = "src/fern/__init__.py";
     let golden = repo_root().join("tests/fixtures/alma-france/expected");
     let out = tempfile::tempdir().expect("crozier output tempdir");
@@ -386,43 +386,23 @@ fn reordered_root_imports_are_a_departure_only_beside_identical_statements() {
     let compare = |reference: &str| {
         parity::compare_file(&context, rel, &crozier, reference).expect("the rules run")
     };
-    let departures = |compared: &parity::FileComparison| -> Vec<String> {
-        compared
-            .departures
-            .iter()
-            .map(|departure| departure.id.to_string())
-            .collect()
-    };
 
     let committed = compare(&fern);
     assert!(committed.matches(), "{:?}", committed.diff());
-    assert_eq!(departures(&committed), ["init-type-checking-import-order"]);
+    assert!(committed.departures.is_empty(), "{:?}", committed.departures);
 
     let types = "    from .types import (\n";
     assert!(fern.contains(types), "{rel} has no `.types` statement");
     let named = fern.replacen(types, &format!("{types}        AlmaExtraName,\n"), 1);
     let compared = compare(&named);
-    assert_eq!(departures(&compared), ["init-type-checking-import-order"]);
-    let diff = compared.diff().expect("the extra name stays a difference");
-    assert!(
-        diff.contains("AlmaExtraName") && !diff.contains("from .client"),
-        "{diff}"
-    );
+    assert!(!compared.matches() && compared.departures.is_empty());
 
     let moved = "    from .balance_transactions import ListbalancetransactionsResponse\n";
     let payments = "    from .payments import CreatePaymentRequestPayment, ListpaymentsResponse\n";
     assert!(fern.contains(moved) && fern.contains(payments));
-    let swapped = named
+    let swapped = fern
         .replacen(moved, "", 1)
         .replacen(payments, &format!("{payments}{moved}"), 1);
     let compared = compare(&swapped);
-    assert!(!compared.matches() && compared.departures.is_empty());
-
-    let renamed = named.replacen(
-        "ListbalancetransactionsResponse\n",
-        "ListbalancetransactionsResponse, AlmaOtherName\n",
-        1,
-    );
-    let compared = compare(&renamed);
     assert!(!compared.matches() && compared.departures.is_empty());
 }

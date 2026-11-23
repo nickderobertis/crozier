@@ -1,0 +1,79 @@
+openapi: 3.0.3
+info:
+  title: Alert Feed
+  version: 1.0.0
+servers:
+  - url: https://alerts.example.com
+paths:
+  /alerts:
+    get:
+      operationId: listAlerts
+      tags: [alerts]
+      responses:
+        '200':
+          description: A collection of alerts.
+          content:
+            application/geo+json:
+              schema:
+                $ref: '#/components/schemas/AlertCollection'
+            application/atom+xml:
+              schema:
+                $ref: '#/components/schemas/AlertAtomFeed'
+components:
+  schemas:
+    AlertCollection:
+      type: object
+      properties:
+        title:
+          type: string
+    AlertXMLParameter:
+      type: object
+      properties:
+        valueName:
+          type: string
+        value:
+          type: string
+    AlertAtomEntry:
+      description: An alert entry in an Atom feed
+      type: object
+      properties:
+        id:
+          type: string
+          xml:
+            namespace: http://www.w3.org/2005/Atom
+        event:
+          type: string
+          xml:
+            namespace: urn:oasis:names:tc:emergency:cap:1.2
+        geocode:
+          type: array
+          items:
+            $ref: '#/components/schemas/AlertXMLParameter'
+          xml:
+            namespace: urn:oasis:names:tc:emergency:cap:1.2
+        parameter:
+          type: array
+          items:
+            $ref: '#/components/schemas/AlertXMLParameter'
+          xml:
+            namespace: urn:oasis:names:tc:emergency:cap:1.2
+      xml:
+        name: entry
+        namespace: http://www.w3.org/2005/Atom
+    AlertAtomFeed:
+      description: An alert feed in Atom format
+      type: object
+      properties:
+        id:
+          type: string
+          xml:
+            namespace: http://www.w3.org/2005/Atom
+        entry:
+          type: array
+          items:
+            $ref: '#/components/schemas/AlertAtomEntry'
+          xml:
+            namespace: http://www.w3.org/2005/Atom
+      xml:
+        name: feed
+        namespace: http://www.w3.org/2005/Atom

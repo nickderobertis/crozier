@@ -1,0 +1,46 @@
+openapi: 3.1.0
+info:
+  title: Protocol Desk
+  version: 1.0.0
+servers:
+  - url: https://protocol.example.com
+paths:
+  /messages:
+    post:
+      operationId: sendMessage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Message'
+      responses:
+        '200':
+          description: The receipt.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Receipt'
+components:
+  schemas:
+    Never: false
+    Anything: true
+    Message:
+      type: object
+      required: [text]
+      properties:
+        text:
+          type: string
+        metadata:
+          $ref: '#/components/schemas/Anything'
+        forbidden:
+          $ref: '#/components/schemas/Never'
+        extra: true
+    Receipt:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: string
+        payload:
+          $ref: '#/components/schemas/Anything'
