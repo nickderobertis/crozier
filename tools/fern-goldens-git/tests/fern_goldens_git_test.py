@@ -67,6 +67,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             "tools/fern-goldens/fern-goldens",
             "tools/corpus/corpus-lib.sh",
             "tools/corpus/corpus_remote_ref_pins.py",
+            "tools/corpus/corpus_sources.py",
             "tools/corpus/fetch-corpus.sh",
             "scripts/lib.sh",
             "tools/surface-census/openapi-surface-census.py",
@@ -907,6 +908,101 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         self.assertEqual(self.state("beta")["fern_python_sdk_version"], "4.9.0")
         self.assertEqual((report / "generated.txt").read_text(encoding="utf-8"), "beta\n")
 
+    def test_a_row_whose_upstream_is_gone_regenerates_from_its_committed_source(self) -> None:
+        """Issue #862: a row `tests/fixtures/corpus-sources.tsv` records is generated
+        from its committed copy, digest-verified, without asking upstream — so a
+        removed upstream does not stop it — and an altered copy is refused, never
+        replaced by a fetch."""
+        committed = b'{"openapi":"3.0.3","info":{"title":"alpha, as committed"}}\n'
+        source = self.root / "tests" / "fixtures" / "corpus-sources" / "alpha" / "openapi.json"
+        source.parent.mkdir(parents=True)
+        source.write_bytes(committed)
+        (self.root / "tests" / "fixtures" / "corpus-sources.tsv").write_text(
+            "# corpus_name\tpath\tsource_url\tsha256\n"
+            "alpha\ttests/fixtures/corpus-sources/alpha/openapi.json\thttps://example.test/alpha/openapi.json\t"
+            f"{hashlib.sha256(committed).hexdigest()}\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        generated = self.run_tool(
+            "generate", "--version", "4.9.0", "--fixture", "alpha", check=True, FAIL_FETCH="alpha"
+        )
+        self.assertIn("1 generated, 0 current, 0 failed", generated.stdout)
+        self.assertEqual([], self.fetch_calls(), "upstream was asked for a committed row")
+        [call] = self.calls()
+        staged = Path(call.split(" ")[2])
+        self.assertEqual(staged.name, "openapi.json")
+        self.assertTrue(
+            staged.is_relative_to(self.root.resolve() / ".local" / "fern-goldens" / "sources" / "alpha"), call
+        )
+        self.assertEqual(staged.read_bytes(), committed)
+
+        source.write_bytes(committed.replace(b"as committed", b"edited by hand"))
+        refused = self.run_tool("generate", "--version", "4.9.0", "--fixture", "alpha", FAIL_FETCH="alpha")
+        self.assertEqual(refused.returncode, 1, refused.stdout)
+        failures = (self.root / ".local" / "fern-goldens" / "fetch-failures.txt").read_text(encoding="utf-8")
+        self.assertIn("alpha\tcommitted source refused", failures)
+        self.assertIn("SHA-256 mismatch; restore the committed source", refused.stdout + refused.stderr + failures)
+        self.assertEqual(1, len(self.calls()), "an altered committed source was generated from")
+        self.assertEqual([], self.fetch_calls(), "an altered committed source fell back to upstream")
+
+    def test_a_malformed_source_manifest_fails_rather_than_falling_back_to_upstream(self) -> None:
+        """A `corpus-sources.tsv` record the corpus tooling's reader refuses is not
+        read as an unrecorded row: generation fails naming the manifest line and
+        asks upstream for nothing, then recovers once the record is restored."""
+        committed = b'{"openapi":"3.0.3","info":{"title":"alpha, as committed"}}\n'
+        source = self.root / "tests" / "fixtures" / "corpus-sources" / "alpha" / "openapi.json"
+        source.parent.mkdir(parents=True)
+        source.write_bytes(committed)
+        manifest = self.root / "tests" / "fixtures" / "corpus-sources.tsv"
+        record = (
+            "alpha\ttests/fixtures/corpus-sources/alpha/openapi.json\thttps://example.test/alpha/openapi.json\t"
+            f"{hashlib.sha256(committed).hexdigest()}\n"
+        )
+        header = "# corpus_name\tpath\tsource_url\tsha256\n"
+        manifest.write_text(header + record.replace("\t", " ", 1), encoding="utf-8", newline="\n")
+        refused = self.run_tool("generate", "--version", "4.9.0", "--fixture", "alpha")
+        self.assertEqual(refused.returncode, 1, refused.stdout)
+        output = refused.stdout + refused.stderr
+        self.assertIn("corpus-sources.tsv:2: expected 4 tab-separated cells", output)
+        self.assertIn("a malformed source manifest is not read as an unrecorded row", output)
+        self.assertEqual([], self.fetch_calls(), "a malformed manifest fell back to upstream")
+        self.assertEqual([], self.calls(), "a malformed manifest was generated from")
+
+        manifest.write_text(header + record, encoding="utf-8", newline="\n")
+        self.run_tool("generate", "--version", "4.9.0", "--fixture", "alpha", check=True, FAIL_FETCH="alpha")
+        self.assertEqual([], self.fetch_calls(), "upstream was asked for a committed row")
+        self.assertEqual(1, len(self.calls()))
+
+    def test_compare_reads_a_recorded_row_from_its_committed_source_and_refuses_an_altered_copy(self) -> None:
+        """Issue #862's comparison half: `compare` stages a recorded row's committed,
+        digest-verified source without asking upstream, so a removed upstream still
+        compares; an altered copy is skipped as a source failure, never fetched."""
+        committed = b'{"openapi":"3.0.3","info":{"title":"alpha, as committed"}}\n'
+        source = self.root / "tests" / "fixtures" / "corpus-sources" / "alpha" / "openapi.json"
+        source.parent.mkdir(parents=True)
+        source.write_bytes(committed)
+        (self.root / "tests" / "fixtures" / "corpus-sources.tsv").write_text(
+            "# corpus_name\tpath\tsource_url\tsha256\n"
+            "alpha\ttests/fixtures/corpus-sources/alpha/openapi.json\thttps://example.test/alpha/openapi.json\t"
+            f"{hashlib.sha256(committed).hexdigest()}\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        compared = self.run_tool("compare", FAIL_FETCH="alpha")
+        self.assertEqual(0, compared.returncode, compared.stdout + compared.stderr)
+        self.assertIn("comparing 1/2 alpha", compared.stderr)
+        self.assertNotIn("spec fetch failed", compared.stdout)
+        self.assertNotIn("example.test/alpha", "\n".join(self.fetch_calls()), "upstream was asked for a committed row")
+
+        source.write_bytes(committed.replace(b"as committed", b"edited by hand"))
+        refused = self.run_tool("compare", FAIL_FETCH="alpha")
+        self.assertNotEqual(0, refused.returncode, refused.stdout)
+        self.assertIn("skipped 1/2 alpha: spec fetch failed", refused.stdout)
+        log = (self.root / ".local" / "fern-goldens" / "comparison.log").read_text(encoding="utf-8")
+        self.assertIn("Spec fetch failed: committed source refused", log)
+        self.assertNotIn("example.test/alpha", "\n".join(self.fetch_calls()), "an altered copy fell back to upstream")
+
     def test_generation_uses_the_path_reported_by_fetch_corpus(self) -> None:
         self.run_tool(
             "generate",
@@ -946,10 +1042,14 @@ class FernGoldensBoundaryTests(unittest.TestCase):
                     fixture,
                     str(destination),
                 )
+                # The stubbed download serves placeholder bytes, not the ones
+                # corpus-sources.tsv records for these real rows, so the fetch
+                # runs as an explicit refresh; the digest refusal (issue #860)
+                # is proven in tools/corpus-fetch.
                 first = subprocess.run(
                     command,
                     cwd=REPO,
-                    env=self.environment(),
+                    env=self.environment(CROZIER_CORPUS_REFRESH="1"),
                     text=True,
                     capture_output=True,
                     check=False,
@@ -2547,6 +2647,7 @@ class GenerateCorpusFixturesTests(unittest.TestCase):
             "tools/fern-goldens/generate-corpus-fixtures.sh",
             "tools/corpus/corpus-lib.sh",
             "tools/corpus/corpus_remote_ref_pins.py",
+            "tools/corpus/corpus_sources.py",
             "tools/surface-census/openapi-surface-census.py",
         )
         fixtures = self.root / "tests" / "fixtures"

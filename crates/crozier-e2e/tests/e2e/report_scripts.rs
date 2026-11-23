@@ -222,6 +222,8 @@ fn a_report_given_extra_arguments_is_refused_with_the_usage() {
 /// as `$RENAME_FAILS` and `$VERIFY_FAILS` say.
 // llmlint: ignore[e2e_not_mocked] A real `cargo nextest` here would rebuild and rerun this whole suite inside itself, as line 39 states; only that boundary is stood in. The recording, rename, contributor check and merge it stands in for run for real in every golden comparison, in `departure_contributors`' tests (the rename over a scratch repository, the check as this suite's own ignored step) and in `example_values_inventory::the_merge_replaces_recorded_goldens_and_keeps_every_other`, which drives the real `merge_records`.
 const NEXTEST: &str = r#"case "$*" in
+  *compared_goldens_inventory_is_current*)
+    [ -z "${INVENTORY_STALE:-}" ] || { echo "inventory is stale: $INVENTORY_STALE"; exit 100; } ;;
   *rename_departure_goldens*)
     echo "renames=$CROZIER_RENAME_GOLDENS" >> "$CALLS.env"
     [ -z "${RENAME_FAILS:-}" ] || { echo "rename refused: $RENAME_FAILS"; exit 100; } ;;
@@ -342,7 +344,14 @@ fn the_ledger_is_recorded_then_merged_and_its_rows_reported() {
          docs/departures/evidence/invalid-example-values/inventory.tsv (1 rows)\n"
     );
     let calls: Vec<_> = run.calls.lines().collect();
-    assert_eq!(calls.len(), 3, "{}", run.calls);
+    assert_eq!(calls.len(), 4, "{}", run.calls);
+    // Issue #605: the compared-goldens inventory is checked before anything records.
+    assert_eq!(
+        calls[0],
+        "nextest run --locked -p crozier-e2e -E binary(e2e) & \
+         test(=departures_ledger_gate::compared_goldens_inventory_is_current)"
+    );
+    let calls = &calls[1..];
     assert!(
         calls[0].starts_with(
             "nextest run --locked -p crozier-e2e -p crozier-nested-discriminator-tests --no-fail-fast",
@@ -522,7 +531,7 @@ fn a_run_the_inventory_does_not_describe_stops_before_the_merge() {
     let run = departures_ledger("VERIFY_FAILS=unattributed\n");
     assert_eq!(run.status, 1);
     assert_eq!(run.stdout, "");
-    assert_eq!(run.calls.lines().count(), 2, "the merge ran: {}", run.calls);
+    assert_eq!(run.calls.lines().count(), 3, "the merge ran: {}", run.calls);
     assert!(
         run.stderr.contains("contributors refused: unattributed")
             && run.stderr.contains(
@@ -534,6 +543,45 @@ fn a_run_the_inventory_does_not_describe_stops_before_the_merge() {
     );
 }
 
+/// Issue #605: a compared-goldens inventory the registered comparisons no
+/// longer derive is refused before anything records, and the failure names the
+/// command that regenerates it from the repository root — selecting the
+/// `crozier-e2e` package, which owns the test (issue #883).
+// llmlint: ignore[e2e_not_mocked] A real `cargo nextest` here would rebuild and rerun this whole suite inside itself, as the stand-in's own note where this file writes `bin/cargo` says; only that boundary is stood in. The real inventory check it stands in for is departures_ledger_gate::compared_goldens_inventory_is_current, which runs in every e2e run and fails on a stale inventory, and departures_ledger_gate::the_inventory_regeneration_command_selects_the_inventory_test pins that the script preflights exactly that test; this case proves the script's own half: it stops before recording and prints the package-selecting command.
+#[test]
+fn a_stale_compared_goldens_inventory_is_refused_before_anything_records() {
+    let run = departures_ledger("INVENTORY_STALE=petstore-added\n");
+    assert_eq!(run.status, 1);
+    assert_eq!(run.stdout, "");
+    assert_eq!(
+        run.calls.lines().count(),
+        1,
+        "recorded after a stale inventory: {}",
+        run.calls
+    );
+    assert!(
+        run.stderr.contains("inventory is stale: petstore-added")
+            && run.stderr.contains(
+                "departures-ledger: tests/fixtures/compared-goldens.json is not the inventory the \
+                 registered comparisons derive (above), so nothing was recorded"
+            )
+            && run.stderr.contains(
+                "regenerate it from the repository root with CROZIER_UPDATE_COMPARED_GOLDENS=1 \
+                 cargo nextest run --locked -p crozier-e2e -E 'binary(e2e) & \
+                 test(=departures_ledger_gate::compared_goldens_inventory_is_current)', then rerun \
+                 just departures-ledger"
+            ),
+        "{}",
+        run.stderr
+    );
+    assert_eq!(
+        std::fs::read_to_string(run.root.path().join("tests/fixtures/departures-ledger.tsv"))
+            .unwrap(),
+        "golden\tfile\tline\tdeparture\n",
+        "the committed ledger changed"
+    );
+}
+
 #[test]
 fn a_comparison_that_fails_while_recording_stops_before_the_merge() {
     let run = departures_ledger("RECORD_FAILS=petstore\n");
@@ -541,7 +589,7 @@ fn a_comparison_that_fails_while_recording_stops_before_the_merge() {
     assert_eq!(run.stdout, "");
     assert_eq!(
         run.calls.lines().count(),
-        1,
+        2,
         "the merge ran after a failed recording"
     );
     assert!(
@@ -633,7 +681,7 @@ fn a_moved_golden_is_renamed_before_anything_records() {
     });
     assert_eq!(run.status, 0, "{}", run.stderr);
     let calls: Vec<_> = run.calls.lines().collect();
-    assert_eq!(calls.len(), 4, "{}", run.calls);
+    assert_eq!(calls.len(), 5, "{}", run.calls);
     assert!(
         calls[0].contains("--run-ignored only")
             && calls[0].contains("test(=departure_contributors::rename_departure_goldens)"),

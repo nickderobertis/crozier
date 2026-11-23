@@ -332,30 +332,36 @@ def resolve_latest_version(root: Path) -> str:
 PINS_MODULE = "corpus_remote_ref_pins"
 
 
+def load_corpus_module(root: Path, name: str):
+    """`tools/corpus/<name>.py`, imported rather than re-parsed, so each corpus
+    manifest keeps exactly one reader and this tool is a caller of it."""
+    path = root / "tools" / "corpus" / f"{name}.py"
+    cached = sys.modules.get(name)
+    if cached is not None and getattr(cached, "__file__", None) == str(path):
+        return cached
+    spec = importlib.util.spec_from_file_location(name, path)
+    if spec is None or spec.loader is None:
+        raise GoldensError(f"could not load the corpus manifest reader {path}")
+    module = importlib.util.module_from_spec(spec)
+    # Registered before execution because the reader defines dataclasses, and
+    # `@dataclass` resolves annotations through `sys.modules[cls.__module__]`.
+    sys.modules[name] = module
+    try:
+        spec.loader.exec_module(module)
+    except OSError as error:
+        del sys.modules[name]
+        raise GoldensError(f"could not load the corpus manifest reader {path}: {error}") from error
+    return module
+
+
 def load_pins_module(root: Path):
-    """`tools/corpus/corpus_remote_ref_pins.py`, imported rather than re-parsed.
+    """`tools/corpus/corpus_remote_ref_pins.py`.
 
     The substitution `tools/corpus/fetch-corpus.sh` applies and the provenance this
     tool records have to be the same records, so the manifest has exactly one
     reader and this is a caller of it.
     """
-    path = root / "tools" / "corpus" / f"{PINS_MODULE}.py"
-    cached = sys.modules.get(PINS_MODULE)
-    if cached is not None and getattr(cached, "__file__", None) == str(path):
-        return cached
-    spec = importlib.util.spec_from_file_location(PINS_MODULE, path)
-    if spec is None or spec.loader is None:
-        raise GoldensError(f"could not load the pin manifest reader {path}")
-    module = importlib.util.module_from_spec(spec)
-    # Registered before execution because the reader defines dataclasses, and
-    # `@dataclass` resolves annotations through `sys.modules[cls.__module__]`.
-    sys.modules[PINS_MODULE] = module
-    try:
-        spec.loader.exec_module(module)
-    except OSError as error:
-        del sys.modules[PINS_MODULE]
-        raise GoldensError(f"could not load the pin manifest reader {path}: {error}") from error
-    return module
+    return load_corpus_module(root, PINS_MODULE)
 
 
 def corpus_remote_ref_pins(root: Path, row: CorpusRow) -> list[dict[str, str]]:
@@ -739,6 +745,61 @@ def fetch_spec(root: Path, row: CorpusRow, *, force: bool) -> Path:
     return destination
 
 
+SOURCE_MANIFEST = Path("tests") / "fixtures" / "corpus-sources.tsv"
+
+
+def records_source(root: Path, row: CorpusRow) -> bool:
+    """Whether `tests/fixtures/corpus-sources.tsv` records a committed copy of `row`'s source."""
+    if not (root / SOURCE_MANIFEST).is_file():
+        return False
+    # `corpus_sources.py` imports the pins reader by name; load it from this root first.
+    load_pins_module(root)
+    sources = load_corpus_module(root, "corpus_sources")
+    try:
+        records = sources.load_manifest(root)
+    except sources.SourcesError as error:
+        raise GoldensError(f"{error}; a malformed source manifest is not read as an unrecorded row") from error
+    return any(record.corpus_name == row.name for record in records)
+
+
+def golden_source(root: Path, row: CorpusRow, staging: Path, *, force: bool) -> Path:
+    """The document `row`'s golden is generated from and compared over (issue #862).
+
+    A row whose source `tests/fixtures/corpus-sources.tsv` records is read from
+    its committed copy, staged by `corpus_sources.py prepare` once every file
+    matches its recorded digest and the row's remote-ref pins: upstream is never
+    asked, so a row whose upstream is gone stays regenerable, and a missing or
+    altered copy is refused rather than replaced by a fetch. Refreshing a copy
+    from upstream is `just corpus-sources vendor`'s, apart from regeneration. A
+    row the manifest does not record yet — one being added, before it is
+    vendored — has no committed copy, so its pinned source is fetched.
+    """
+    if not records_source(root, row):
+        return fetch_spec(root, row, force=force)
+    result = run_command(
+        [
+            sys.executable,
+            str(root / "tools" / "corpus" / "corpus_sources.py"),
+            "--root",
+            str(root),
+            "prepare",
+            "--fixture",
+            row.name,
+            "--output",
+            str(staging),
+        ],
+        cwd=root,
+    )
+    if result.returncode != 0:
+        detail = ((result.stderr or "") + (result.stdout or "")).strip()
+        raise GoldensError(f"committed source refused: {detail or f'corpus_sources.py exited {result.returncode}'}")
+    printed = (result.stdout or "").strip()
+    source = Path(printed) if printed else staging
+    if not source.is_file():
+        raise GoldensError(f"corpus_sources.py prepare staged no document for {row.name} under {staging}")
+    return source
+
+
 def replace_directory_with_rollback(staged: Path, destination: Path) -> None:
     """Move `staged` over `destination` in two renames, restoring the prior tree
     from its backup if the second fails. Not atomic: between the renames
@@ -868,7 +929,7 @@ def generate(root: Path, version_arg: str | None, selectors: list[str]) -> int:
         log_path = report / "generation-logs" / f"{row.fixture}.log"
         try:
             try:
-                spec = fetch_spec(root, row, force=True)
+                spec = golden_source(root, row, report / "sources" / row.fixture, force=True)
             except GoldensError as error:
                 # Recorded apart from every other failure: the pinned source can
                 # no longer be had, which no regeneration of the golden repairs.
@@ -1072,7 +1133,8 @@ def compare(root: Path) -> int:
             print(f"fern-goldens: failed {progress}: invalid known failure", flush=True)
             continue
         try:
-            fetch_spec(root, row, force=False)
+            with tempfile.TemporaryDirectory(prefix="fern-goldens-source.") as staging:
+                golden_source(root, row, Path(staging) / "source", force=False)
         except (GoldensError, OSError) as error:
             failure = f"{row.fixture}: {error}"
             fetch_failures.append(failure)

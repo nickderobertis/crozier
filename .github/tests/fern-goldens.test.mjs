@@ -18,7 +18,7 @@ test('the weekly shard planner records its plan of the whole reference inventory
   assert.equal(run.status, 0, run.stderr);
   const plan = JSON.parse(readFileSync(telemetry, 'utf8'));
   assert.equal(plan.complete, true);
-  assert.deepEqual(Object.keys(plan.families), ['corpus', 'overlays', 'handwritten', 'measurements', 'probes', 'authored-probes', 'refusals', 'departure-evidence']);
+  assert.deepEqual(Object.keys(plan.families), ['corpus', 'overlays', 'handwritten', 'measurements', 'probes', 'authored-probes', 'refusals', 'departure-evidence', 'output-insensitive', 'witness-screens']);
   const planned = plan.shards.flatMap(shard => shard.items);
   assert.equal(planned.length, Object.values(plan.families).reduce((sum, family) => sum + family.items, 0));
   console.log(`fern-goldens plan: ${planned.length} items, ${plan.shards.length} shards, ${plan.estimate.minutes} minutes predicted`);

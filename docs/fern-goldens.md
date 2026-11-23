@@ -220,10 +220,11 @@ So the procedure is the ordinary one, and the manifest is its only input:
    serves (`curl -fsSL <pinned_url> | sha256sum`).
 2. Run `just lint-corpus-remote-ref-pins`. That row's state file no longer matches
    `expected_state`, so the row is stale.
-3. Regenerate the row at the certified pair with `just fern-references corpus
-   <name>` ([Route A](#route-a--the-local-docker-loop-any-agent)). It refetches
-   (applying the new pin, verifying the new digest) and regenerates the tree and
-   its provenance; commit both.
+3. Re-vendor the row's committed source (`just corpus-sources vendor --fixture
+   <name>`), which refetches it, applying the new pin and verifying its digest;
+   then regenerate the row at the certified pair with `just fern-references corpus
+   <name>` ([Route A](#route-a--the-local-docker-loop-any-agent)), which reads that
+   committed copy, and commit the source, the tree and its provenance.
 
 No other row is touched. A record whose
 `mutable_url` the fetched document does not reference fails the fetch rather than
@@ -322,11 +323,13 @@ breaks a weekly input fails its own pull request.
 | `corpus` | `tests/fixtures/<fixture>/expected/` and `expected-flat/` | `fern-goldens generate` for a `CORPUS.md` row, `generate-fern-fixture.sh` for a vendored fixture |
 | `overlays` | `tests/fixtures/<fixture>/expected-literals/` and `expected-default-max-retries/` | `fern-overlay-goldens.sh --jobs 1` |
 | `handwritten` | `docs/openapi-surface/handwritten/<fixture>/fern-expected/`, with `evidence.toml`'s versions and `digest` | the probe workspace below |
-| `measurements` | `docs/fern-measurements/<group>/<case>/fern-expected/`, or the case's Contract A `fern-refusal.txt` where its committed reference is Fern's refusal (a case Fern now generates from gets its tree and is reported), each `<stem>.fern.log` beside its `<stem>.openapi.*` refused document, and a case's pinned run its `measurement.json` records (its log and Fern's raw `raw_client.py`), as [`cases.tsv`](fern-measurements/cases.tsv) declares each case's document, enum mode, layout and overlay base, restating each case's `evidence.toml`/`evidence.md`; and `parameter-literals/<fixture>`, which re-measures that a parameter fixture's literals tree (its document under `docs/openapi-surface/handwritten/`, or under `parameter-lowering/` for a proof retired there) is its python-enums tree less `core/enum.py` and records the metadata and digest | the probe workspace below |
+| `measurements` | `docs/fern-measurements/<group>/<case>/fern-expected/` (or the case directory itself where it is the tree, as a `<case>/expected-literals/` variant kept beside its case is), or the case's Contract A `fern-refusal.txt` where its committed reference is Fern's refusal (a case Fern now generates from gets its tree and is reported), each `<stem>.fern.log` beside its `<stem>.openapi.*` refused document, and a case's pinned run its `measurement.json` records (its log and Fern's raw `raw_client.py`), as [`cases.tsv`](fern-measurements/cases.tsv) declares each case's document, enum mode, layout and overlay base (every committed Fern tree there must be a row's, or `check measurements` names it), restating each case's `evidence.toml`/`evidence.md`; and `parameter-literals/<fixture>`, which re-measures that a parameter fixture's literals tree (its document under `docs/openapi-surface/handwritten/`, or under `parameter-lowering/` for a proof retired there) is its python-enums tree less `core/enum.py` and records the metadata and digest | the probe workspace below |
 | `probes` | `docs/openapi-surface/probe-expected/<name>/`, or its Contract A refusal record, with `MANIFEST.tsv`'s digest | the probe workspace below |
 | `authored-probes` | `docs/openapi-surface/authored-probes/<case>/fern.log` and `fern-expected/` | the probe workspace below |
 | `departure-evidence` | `docs/departures/evidence/<id>/fern-reference/`, a departure note's own Fern tree, under the settings its `fern-reference.json` records | the probe workspace below |
 | `refusals` | `docs/fern-refusals/<class>/fern-refusal.txt`, `findings.tsv`, and each `<class>/evidence/<stem>.pinned-fern.log` whose probe document sits beside it | `fern-refusals.py probe` / `finding` with `--jobs 1` |
+| `output-insensitive` | each comparison record [`output-insensitive.tsv`](openapi-surface/output-insensitive.tsv) cites, with its crozier twin, at the pair `metadata.json` certifies; a record whose trees now differ leaves the table and fails its item | `output-insensitive-remeasure.py --only <record>` |
+| `witness-screens` | every filed witness candidate whose latest screen ran Fern at a pair (`<ledger dir>/<owner>/<repo>/<commit>/<path>`): earlier-pair screens labelled `historical`, then a live screen at the pair appended to its own ledger, keeping its disposition; one that no longer passes what that disposition claims fails its item | `witness_screen.py historical`, then `screen --ledger`, with `CROZIER_WITNESS_SCREEN_PAIR` naming the pair |
 
 The probe workspace is the one `generate-fern-fixture.sh` scaffolds, built by
 `tools/fern-goldens/fern-references.py` itself so it can write outside
@@ -587,26 +590,24 @@ departures ledger rows and the changed known failures' content then spend only
 the room left, and anything still past the limit is trimmed at a line, never
 refused.
 
-A reference whose pinned upstream specification can no longer be fetched (a
-404, as subsloth's source now returns) is never skipped silently and never stops
-the rest: it keeps its committed tree, and is named in the run's summary and in
-the pull request's **Not regenerated** section, which makes the run a diff.
+A row whose source `tests/fixtures/corpus-sources.tsv` records is generated,
+and compared, from its committed copy under `tests/fixtures/corpus-sources/`,
+staged by `corpus_sources.py prepare` once every file matches its recorded
+SHA-256 and the row's remote-ref pins: `fern-goldens generate` never asks
+upstream for it, so a row whose pinned URL now answers 404 stays regenerable,
+and a missing or altered copy is refused (under **Not regenerated**) rather than
+replaced by a fetch. Refreshing a copy from upstream is `just corpus-sources
+vendor`'s, kept apart from regeneration. Only a row the manifest does not record
+yet — one being added, before it is vendored — is fetched, and a fetched root a
+recorded row's URL serves with other bytes than its record is refused before it
+reaches the cache.
 
-`subsloth`, `viskit-studio` and `docu-goapiserver` are the three such rows
-today: their pinned raw URLs answer 404 (run 44880783817 reported all three).
-At Fern CLI 5.216.0 / fern-python-sdk 5.42.0 their goldens were regenerated
-from the committed copies under `tests/fixtures/corpus-sources/`, after `just
-lint-corpus-sources` verified each against the SHA-256 its `corpus-sources.tsv`
-row records (`36c6ed02…`, `a28619a0…` and `bd1f3d25…`), so the input is
-byte-identical to the pinned source. The copy was placed where `fetch-corpus
---if-missing` reuses a cached spec. `fern-goldens generate` itself now always
-fetches with `--force`, so the copy alone no longer reaches it: the rows were
-generated by that command's own code (`fern-goldens generate --version 5.42.0
---fixture <row>`) with only its fetch made `--if-missing`, and subsloth's
-`expected-literals` overlay through `fern-references.py generate overlays`.
-All three are compared at that pair like every other row. The weekly run still
-fetches with `--force`, so it reports them under **Not regenerated** until
-their source moves.
+`subsloth`, `viskit-studio` and `docu-goapiserver` are three such rows: their
+pinned raw URLs answer 404 (run 44880783817 reported all three), and their
+committed copies match the SHA-256 their rows record (`36c6ed02…`, `a28619a0…`
+and `bd1f3d25…`). At Fern CLI 5.216.0 / fern-python-sdk 5.42.0 they were
+regenerated from those copies by hand; the weekly run now regenerates them the
+same way as every other row.
 
 **How the 5.216.0 / 5.42.0 certification was decided.** Its decide evidence
 came from a copy of run 44880783817's `fern-goldens-bundle`, never committed or

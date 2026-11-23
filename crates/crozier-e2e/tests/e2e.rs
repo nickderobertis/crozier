@@ -16916,51 +16916,137 @@ fn corpus_match_recipe(script: &str) -> Vec<String> {
     tests
 }
 
-/// The `const NAME: Corpus` whose `api` field is `api`.
-fn corpus_constant_for(source: &str, api: &str) -> Option<String> {
-    let mut pending: Option<&str> = None;
-    for line in source.lines() {
-        if let Some(rest) = line.strip_prefix("const ") {
-            if rest.contains(": Corpus = Corpus {") {
-                pending = rest.split(':').next().map(str::trim);
-            }
-            continue;
+/// One token of Rust source as the corpus registration readers see it: an
+/// identifier or keyword, a string literal's contents, or one punctuation
+/// character; and whether it is the first thing on its line.
+#[derive(Debug, PartialEq)]
+enum RegistrationToken<'a> {
+    Word(&'a str, bool),
+    Text(&'a str),
+    Mark(char),
+}
+
+/// `source` as [`RegistrationToken`]s, whitespace and `//` comments dropped, so
+/// a reader matches a registration however rustfmt wrapped it — the grammar
+/// `tools/surface-census/openapi-surface-census.py` (`corpus_constants`,
+/// `corpus_drives`) reads the same registrations with.
+fn registration_tokens(source: &str) -> Vec<RegistrationToken<'_>> {
+    let bytes = source.as_bytes();
+    let mut tokens = Vec::new();
+    let (mut at, mut line_start) = (0, true);
+    while at < bytes.len() {
+        let byte = bytes[at];
+        if byte == b'\n' {
+            line_start = true;
+            at += 1;
+        } else if byte.is_ascii_whitespace() {
+            at += 1;
+        } else if source[at..].starts_with("//") {
+            at = source[at..].find('\n').map_or(bytes.len(), |end| at + end);
+        } else if byte == b'"' {
+            let end = source[at + 1..]
+                .find('"')
+                .map_or(bytes.len(), |end| at + 1 + end);
+            tokens.push(RegistrationToken::Text(&source[at + 1..end]));
+            (at, line_start) = (end + 1, false);
+        } else if byte.is_ascii_alphanumeric() || byte == b'_' {
+            let end = source[at..]
+                .find(|c: char| !(c.is_ascii_alphanumeric() || c == '_'))
+                .map_or(bytes.len(), |end| at + end);
+            tokens.push(RegistrationToken::Word(&source[at..end], line_start));
+            (at, line_start) = (end, false);
+        } else {
+            let mark = source[at..].chars().next().unwrap();
+            tokens.push(RegistrationToken::Mark(mark));
+            (at, line_start) = (at + mark.len_utf8(), false);
         }
-        if let Some(rest) = line.trim().strip_prefix("api: \"") {
-            let declared = rest.trim_end_matches(',').trim_matches('"');
-            if let Some(name) = pending.take() {
-                if declared == api {
-                    return Some(name.to_string());
+    }
+    tokens
+}
+
+/// The `const NAME: Corpus` whose `api` field is `api`, however rustfmt wrapped
+/// the binding (`const NAME: Corpus =` alone on its line, say).
+fn corpus_constant_for(source: &str, api: &str) -> Option<String> {
+    use RegistrationToken::{Mark, Text, Word};
+    let tokens = registration_tokens(source);
+    tokens.windows(10).find_map(|window| match window {
+        [Word("const", true), Word(name, _), Mark(':'), Word("Corpus", _), Mark('='), Word("Corpus", _), Mark('{'), Word("api", _), Mark(':'), Text(declared)]
+            if *declared == api =>
+        {
+            Some((*name).to_string())
+        }
+        _ => None,
+    })
+}
+
+/// The `#[test] fn` that drives `constant` through a byte comparison or, for the
+/// accepted exception, through its known-failure boundary: a call passing
+/// `&constant`, however rustfmt broke it across lines.
+fn corpus_test_for(source: &str, constant: &str) -> Option<String> {
+    use RegistrationToken::{Mark, Word};
+    const DRIVERS: [&str; 3] = [
+        "assert_corpus_matches",
+        "assert_committed_corpus_matches",
+        "known_fern_failure",
+    ];
+    let tokens = registration_tokens(source);
+    let mut current = None;
+    for (at, token) in tokens.iter().enumerate() {
+        match token {
+            Word("fn", true) => {
+                if let Some(Word(name, _)) = tokens.get(at + 1) {
+                    current = Some(*name);
                 }
             }
+            Word(driver, _) if DRIVERS.contains(driver) => {
+                if let [Mark('('), Mark('&'), Word(argument, _), Mark(',' | ')'), ..] =
+                    &tokens[at + 1..]
+                {
+                    if *argument == constant {
+                        return current.map(str::to_string);
+                    }
+                }
+            }
+            _ => {}
         }
     }
     None
 }
 
-/// The `#[test] fn` that drives `constant` through a byte comparison or, for the
-/// accepted exception, through its known-failure boundary.
-fn corpus_test_for(source: &str, constant: &str) -> Option<String> {
-    const DRIVERS: [&str; 3] = [
-        "assert_corpus_matches(&",
-        "assert_committed_corpus_matches(&",
-        "known_fern_failure(&",
-    ];
-    let mut current = None;
-    for line in source.lines() {
-        if let Some(rest) = line.strip_prefix("fn ") {
-            current = rest.split('(').next();
-        }
-        for driver in DRIVERS {
-            let Some((_, rest)) = line.split_once(driver) else {
-                continue;
-            };
-            if rest.split([')', ',']).next() == Some(constant) {
-                return current.map(str::to_string);
-            }
-        }
-    }
-    None
+/// Issue #884: the registration readers accept a registration however rustfmt
+/// wraps it — a binding broken before its initializer, a driver call broken
+/// after its `(` with a trailing comma — as well as the compact form.
+#[test]
+fn corpus_registration_readers_accept_rustfmt_wrapping() {
+    let compact = "const PETS: Corpus = Corpus {\n    api: \"pets\",\n};\n\n\
+                   #[test]\nfn pets_matches_fern_output() {\n    assert_corpus_matches(&PETS);\n}\n";
+    let wrapped = "const A_VERY_LONG_REGISTERED_CORPUS_NAME: Corpus =\n    Corpus {\n        api: \"pets\",\n    };\n\n\
+                   #[test]\nfn pets_matches_fern_output() {\n    assert_committed_corpus_matches(\n        \
+                   &A_VERY_LONG_REGISTERED_CORPUS_NAME,\n    );\n}\n\n\
+                   // fn not_a_test() { assert_corpus_matches(&A_VERY_LONG_REGISTERED_CORPUS_NAME); }\n\
+                   #[test]\nfn refused() {\n    known_fern_failure(\n        &OTHER,\n    )\n}\n";
+    assert_eq!(
+        corpus_constant_for(compact, "pets").as_deref(),
+        Some("PETS")
+    );
+    assert_eq!(
+        corpus_test_for(compact, "PETS").as_deref(),
+        Some("pets_matches_fern_output")
+    );
+    assert_eq!(
+        corpus_constant_for(wrapped, "pets").as_deref(),
+        Some("A_VERY_LONG_REGISTERED_CORPUS_NAME")
+    );
+    assert_eq!(
+        corpus_test_for(wrapped, "A_VERY_LONG_REGISTERED_CORPUS_NAME").as_deref(),
+        Some("pets_matches_fern_output")
+    );
+    assert_eq!(
+        corpus_test_for(wrapped, "OTHER").as_deref(),
+        Some("refused")
+    );
+    assert_eq!(corpus_constant_for(wrapped, "cats"), None);
+    assert_eq!(corpus_test_for(wrapped, "A_VERY_LONG"), None);
 }
 
 fn safe_fixture_name(value: &str) -> bool {

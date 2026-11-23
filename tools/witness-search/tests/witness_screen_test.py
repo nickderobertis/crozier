@@ -65,12 +65,17 @@ FERN = """\
             sys.exit(0)
         package = pathlib.Path(sys.argv[sys.argv.index("--output") + 1]) / "fern-python-sdk"
         package.mkdir(parents=True)
-        (package / "client.py").write_text("class Client: ...\\n", encoding="utf-8", newline="\\n")
         if mode == "certified":
-            # Real Fern records the pair and its generator config in the tree.
+            # Real Fern records the pair and its generator config in the tree,
+            # and writes the packaged SDK: its source package under src/.
             (package / ".fern").mkdir()
             (package / ".fern" / "metadata.json").write_text(os.environ["FERN_STUB_METADATA"], encoding="utf-8")
-            (package / "core.py").write_text("# a comment Fern writes\\nCORE = 1\\n", encoding="utf-8")
+            source = package / "src" / "sdk"
+            source.mkdir(parents=True)
+            (source / "client.py").write_text("class Client: ...\\n", encoding="utf-8", newline="\\n")
+            (source / "core.py").write_text("# a comment Fern writes\\nCORE = 1\\n", encoding="utf-8")
+        else:
+            (package / "client.py").write_text("class Client: ...\\n", encoding="utf-8", newline="\\n")
     """
 
 
@@ -292,7 +297,8 @@ class LegacyScreenCliTests(unittest.TestCase):
         digest = self.rows()[-1]["measured"]["document"]["sha256"]
         entry = store / digest / "python_enums"
         self.assertEqual(
-            (entry / "tree" / "core.py").read_text(encoding="utf-8"), "# a comment Fern writes\nCORE = 1\n"
+            (entry / "tree" / "src" / "sdk" / "core.py").read_text(encoding="utf-8"),
+            "# a comment Fern writes\nCORE = 1\n",
         )
         self.assertEqual(json.loads((entry / "tree" / ".fern" / "metadata.json").read_text(encoding="utf-8")), metadata)
         self.assertEqual((entry / "document.sha256").read_text(encoding="utf-8"), digest + "\n")
@@ -336,6 +342,287 @@ class LegacyScreenCliTests(unittest.TestCase):
         self.assertEqual(0, recovered.returncode, recovered.stderr)
         digest = self.rows()[-1]["measured"]["document"]["sha256"]
         self.assertTrue((store / f"fern-{cli}_python-{version}" / digest / "python_enums" / "tree").is_dir())
+
+    def rescreen(self, *args: str) -> subprocess.CompletedProcess[str]:
+        """`screen --ledger`, as a re-screen of a filed candidate runs it."""
+        return subprocess.run(
+            [sys.executable, str(SCRIPT), "screen", *args, "--evidence-root", str(self.root), "--timeout", "60"],
+            env=self.env,
+            capture_output=True,
+            text=True,
+            cwd=REPO,
+            timeout=300,
+            encoding="utf-8",
+        )
+
+    def test_a_filed_candidate_is_rescreened_in_its_own_ledger_and_key_scope(self) -> None:
+        """Issue #866: a candidate filed in a search's nested ledger under that search's
+        own key is re-screened by its identity there: the key is checked against the
+        search's `census.tsv`, not the general set, and the row lands in that ledger."""
+        search = self.root / "witness-search-fixture-only"
+        (search / "acme-shop-screen").mkdir(parents=True)
+        (search / "census.tsv").write_text(
+            "key\tsource\tdocument\tsites\toutcome\nscoped-shape\tsourcegraph\tacme/shop:openapi.yaml\t1\tscreened\n",
+            encoding="utf-8",
+        )
+        ledger = search / "acme-shop-screen" / "screens.jsonl"
+        filed = {
+            "source": "sourcegraph",
+            "repository": "acme/shop",
+            "commit": COMMIT,
+            "path": "openapi.yaml",
+            "keys": ["scoped-shape"],
+            "disposition": "not-owed",
+            "screened_at": "2026-10-30T16:26:45+00:00",
+        }
+        ledger.write_text(json.dumps(filed, sort_keys=True) + "\n", encoding="utf-8")
+        identity = ("--repository", "acme/shop", "--commit", COMMIT, "--path", "openapi.yaml")
+
+        # The general screen knows no scoped key, which is the refusal a re-screen met.
+        general = self.screen("--disposition", "witness-found")
+        self.assertEqual(0, general.returncode, general.stderr)
+        scoped = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPT),
+                "screen",
+                "--source",
+                "sourcegraph",
+                "--key",
+                "scoped-shape",
+                *identity,
+                "--evidence-root",
+                str(self.root),
+                "--timeout",
+                "60",
+            ],
+            env=self.env,
+            capture_output=True,
+            text=True,
+            cwd=REPO,
+            timeout=300,
+            encoding="utf-8",
+        )
+        self.assertEqual(1, scoped.returncode)
+        self.assertIn("'scoped-shape' is no witness-search key", scoped.stderr)
+
+        done = self.rescreen(
+            "--ledger",
+            "witness-search-fixture-only/acme-shop-screen/screens.jsonl",
+            *identity,
+            "--disposition",
+            "witness-found",
+        )
+        self.assertEqual(0, done.returncode, done.stderr)
+        self.assertIn("witness-screen: sourcegraph: acme/shop:openapi.yaml — licence passed", done.stdout)
+        first, again = (json.loads(line) for line in ledger.read_text(encoding="utf-8").splitlines())
+        self.assertEqual(filed, first, "the filed row was rewritten")
+        self.assertEqual(
+            ("sourcegraph", ["scoped-shape"], "passed", "witness-found"),
+            (again["source"], again["keys"], again["fern"], again["disposition"]),
+        )
+        self.assertEqual([], SCREEN.measured_failures(again["measured"], ledger.parent))
+        self.assertTrue((ledger.parent / again["measured"]["fern"]["log"]).is_file())
+        self.assertEqual(1, len(self.rows()), "the general ledger took the re-screen")
+
+        # Only a candidate the ledger holds is re-screened, and only under its scope's keys.
+        stranger = self.rescreen(
+            "--ledger", str(ledger), "--repository", "acme/other", "--commit", COMMIT, "--path", "openapi.yaml"
+        )
+        self.assertEqual(1, stranger.returncode)
+        self.assertIn("holds no candidate acme/other@", stranger.stderr)
+        outside = self.rescreen("--ledger", str(ledger), *identity, "--key", "sample-shape")
+        self.assertEqual(1, outside.returncode)
+        self.assertIn(f"'sample-shape' is no witness-search key in {(search / 'census.tsv').resolve()}", outside.stderr)
+        self.assertEqual(2, len(ledger.read_text(encoding="utf-8").splitlines()))
+
+    def test_a_rescreen_refuses_a_ledger_or_scope_it_cannot_read_and_takes_an_explicit_key(self) -> None:
+        """Issue #866's boundaries: `--ledger` names a readable `screens.jsonl` under the
+        evidence root whose rows are objects, the scope's catalog has a key on every
+        row, a filed candidate's keys may be replaced with `--key`, and `--source`
+        still needs a key. Each refusal writes nothing."""
+        search = self.root / "witness-search-fixture-only"
+        (search / "acme-shop-screen").mkdir(parents=True)
+        catalog = search / "census.tsv"
+        good = "key\tsource\nscoped-shape\tsourcegraph\nother-shape\tsourcegraph\n"
+        catalog.write_text(good, encoding="utf-8")
+        ledger = search / "acme-shop-screen" / "screens.jsonl"
+        filed = {
+            "source": "sourcegraph",
+            "repository": "acme/shop",
+            "commit": COMMIT,
+            "path": "openapi.yaml",
+            "keys": ["scoped-shape"],
+            "disposition": "not-owed",
+            "screened_at": "2026-10-30T16:26:45+00:00",
+        }
+        ledger.write_text(json.dumps(filed) + "\n", encoding="utf-8")
+        identity = ("--repository", "acme/shop", "--commit", COMMIT, "--path", "openapi.yaml")
+        outside = self.scratch / "screens.jsonl"
+        outside.write_text(json.dumps(filed) + "\n", encoding="utf-8")
+        for label, target, message in (
+            ("absent", "witness-search-fixture-only/absent/screens.jsonl", "is no screens.jsonl under"),
+            ("misnamed", "witness-search-fixture-only/census.tsv", "is no screens.jsonl under"),
+            ("outside the root", str(outside), "is no screens.jsonl under"),
+        ):
+            with self.subTest(label):
+                refused = self.rescreen("--ledger", target, *identity)
+                self.assertEqual(1, refused.returncode, refused.stderr)
+                self.assertIn(message, refused.stderr)
+        ledger.write_text(json.dumps(filed) + "\n[1]\n", encoding="utf-8")
+        refused = self.rescreen("--ledger", str(ledger), *identity)
+        self.assertEqual(1, refused.returncode)
+        self.assertIn("acme-shop-screen/screens.jsonl:2 is no JSON object", refused.stderr)
+        ledger.write_text(json.dumps({**filed, "keys": []}) + "\n", encoding="utf-8")
+        refused = self.rescreen("--ledger", str(ledger), *identity)
+        self.assertEqual(1, refused.returncode)
+        self.assertIn("carries no list of keys; name the keys to screen with --key", refused.stderr)
+        ledger.write_text(json.dumps(filed) + "\n", encoding="utf-8")
+        catalog.write_text("source\nsourcegraph\n", encoding="utf-8")
+        refused = self.rescreen("--ledger", str(ledger), *identity)
+        self.assertEqual(1, refused.returncode)
+        self.assertIn("has no `key` column, so it scopes no key", refused.stderr)
+        catalog.write_text(good + "\tsourcegraph\n", encoding="utf-8")
+        refused = self.rescreen("--ledger", str(ledger), *identity)
+        self.assertEqual(1, refused.returncode)
+        self.assertIn("census.tsv:4 is no 2-cell row with a key", refused.stderr)
+        self.assertEqual(json.dumps(filed) + "\n", ledger.read_text(encoding="utf-8"), "a refusal wrote the ledger")
+
+        catalog.write_text(good, encoding="utf-8")
+        done = self.rescreen(
+            "--ledger", str(ledger), *identity, "--key", "other-shape", "--disposition", "witness-found"
+        )
+        self.assertEqual(0, done.returncode, done.stderr)
+        self.assertEqual(["other-shape"], json.loads(ledger.read_text(encoding="utf-8").splitlines()[-1])["keys"])
+
+        keyless = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPT),
+                "screen",
+                "--source",
+                "sourcegraph",
+                *identity,
+                "--evidence-root",
+                str(self.root),
+            ],
+            env=self.env,
+            capture_output=True,
+            text=True,
+            cwd=REPO,
+            timeout=300,
+            encoding="utf-8",
+        )
+        self.assertEqual(1, keyless.returncode)
+        self.assertIn("--source needs at least one --key", keyless.stderr)
+
+    def filed_scope(self, catalog: str | None) -> tuple[Path, dict[str, object], tuple[str, ...]]:
+        """A nested ledger holding one filed candidate, its search's catalog `catalog` (None for none)."""
+        search = self.root / "witness-search-fixture-only"
+        (search / "acme-shop-screen").mkdir(parents=True)
+        if catalog is not None:
+            (search / "census.tsv").write_text(catalog, encoding="utf-8")
+        filed: dict[str, object] = {
+            "source": "sourcegraph",
+            "repository": "acme/shop",
+            "commit": COMMIT,
+            "path": "openapi.yaml",
+            "keys": ["scoped-shape"],
+            "disposition": "not-owed",
+            "screened_at": "2026-10-30T16:26:45+00:00",
+        }
+        identity = ("--repository", "acme/shop", "--commit", COMMIT, "--path", "openapi.yaml")
+        return search / "acme-shop-screen" / "screens.jsonl", filed, identity
+
+    def test_a_rescreen_skips_blank_lines_and_refuses_a_line_that_is_no_json(self) -> None:
+        ledger, filed, identity = self.filed_scope("key\tsource\nscoped-shape\tsourcegraph\n")
+        broken = json.dumps(filed) + "\n\n{not json\n"
+        ledger.write_text(broken, encoding="utf-8")
+        refused = self.rescreen("--ledger", str(ledger), *identity, "--disposition", "witness-found")
+        self.assertEqual(1, refused.returncode)
+        self.assertIn("acme-shop-screen/screens.jsonl:3 is no JSON object; restore it from git", refused.stderr)
+        self.assertEqual(broken, ledger.read_text(encoding="utf-8"), "a refusal wrote the ledger")
+        spaced = json.dumps(filed) + "\n\n"
+        ledger.write_text(spaced, encoding="utf-8")
+        done = self.rescreen("--ledger", str(ledger), *identity, "--disposition", "witness-found")
+        self.assertEqual(0, done.returncode, done.stderr)
+        self.assertEqual(2, len([line for line in ledger.read_text(encoding="utf-8").splitlines() if line]))
+
+    def test_a_rescreen_refuses_a_filed_candidate_without_a_source_and_appends_nothing(self) -> None:
+        ledger, filed, identity = self.filed_scope("key\tsource\nscoped-shape\tsourcegraph\n")
+        for label, row in (
+            ("missing", {key: value for key, value in filed.items() if key != "source"}),
+            ("empty", {**filed, "source": ""}),
+            ("not a string", {**filed, "source": 7}),
+        ):
+            with self.subTest(label):
+                text = json.dumps(row) + "\n"
+                ledger.write_text(text, encoding="utf-8")
+                refused = self.rescreen("--ledger", str(ledger), *identity, "--disposition", "witness-found")
+                self.assertEqual(1, refused.returncode)
+                self.assertIn(f"the filed acme/shop@{COMMIT}:openapi.yaml names no source", refused.stderr)
+                self.assertEqual(text, ledger.read_text(encoding="utf-8"), "a refusal appended a row")
+
+    def test_a_rescreen_refuses_malformed_filed_keys_or_catalog_rows_and_recovers_with_an_explicit_key(self) -> None:
+        good = "key\tsource\nscoped-shape\tsourcegraph\n"
+        ledger, filed, identity = self.filed_scope(good)
+        catalog = ledger.parent.parent / "census.tsv"
+        for label, row in (
+            ("missing", {key: value for key, value in filed.items() if key != "keys"}),
+            ("not a list", {**filed, "keys": "scoped-shape"}),
+            ("an empty key among valid ones", {**filed, "keys": ["scoped-shape", ""]}),
+            ("a key that is no string", {**filed, "keys": ["scoped-shape", 7]}),
+        ):
+            with self.subTest(label):
+                text = json.dumps(row) + "\n"
+                ledger.write_text(text, encoding="utf-8")
+                refused = self.rescreen("--ledger", str(ledger), *identity, "--disposition", "witness-found")
+                self.assertEqual(1, refused.returncode)
+                self.assertIn("carries no list of keys; name the keys to screen with --key", refused.stderr)
+                self.assertEqual(text, ledger.read_text(encoding="utf-8"), "a refusal appended a row")
+        text = ledger.read_text(encoding="utf-8")
+        for label, extra in (("too few cells", "lonely-shape\n"), ("too many cells", "wide-shape\tsourcegraph\tx\n")):
+            with self.subTest(label):
+                catalog.write_text(good + extra, encoding="utf-8")
+                refused = self.rescreen("--ledger", str(ledger), *identity, "--key", "scoped-shape")
+                self.assertEqual(1, refused.returncode)
+                self.assertIn("census.tsv:3 is no 2-cell row with a key", refused.stderr)
+                self.assertEqual(text, ledger.read_text(encoding="utf-8"), "a refusal appended a row")
+        catalog.write_text(good, encoding="utf-8")
+        done = self.rescreen(
+            "--ledger", str(ledger), *identity, "--key", "scoped-shape", "--disposition", "witness-found"
+        )
+        self.assertEqual(0, done.returncode, done.stderr)
+        lines = ledger.read_text(encoding="utf-8").splitlines()
+        self.assertEqual(2, len(lines))
+        self.assertEqual(["scoped-shape"], json.loads(lines[-1])["keys"])
+
+    def test_a_rescreen_follows_the_latest_filed_row(self) -> None:
+        ledger, filed, identity = self.filed_scope("key\tsource\nscoped-shape\tsourcegraph\nother-shape\tsourcegraph\n")
+        later = {**filed, "source": "sourcegraph-later", "keys": ["other-shape"]}
+        ledger.write_text(json.dumps(filed) + "\n" + json.dumps(later) + "\n", encoding="utf-8")
+        done = self.rescreen("--ledger", str(ledger), *identity, "--disposition", "witness-found")
+        self.assertEqual(0, done.returncode, done.stderr)
+        self.assertIn("witness-screen: sourcegraph-later: acme/shop:openapi.yaml", done.stdout)
+        latest = json.loads(ledger.read_text(encoding="utf-8").splitlines()[-1])
+        self.assertEqual(("sourcegraph-later", ["other-shape"]), (latest["source"], latest["keys"]))
+
+    def test_a_nested_ledger_without_its_own_catalog_is_scoped_to_the_general_keys(self) -> None:
+        ledger, filed, identity = self.filed_scope(None)
+        text = json.dumps(filed) + "\n"
+        ledger.write_text(text, encoding="utf-8")
+        refused = self.rescreen("--ledger", str(ledger), *identity, "--disposition", "witness-found")
+        self.assertEqual(1, refused.returncode)
+        self.assertIn(
+            f"'scoped-shape' is no witness-search key in {(self.root / 'witness-search-keys.tsv').resolve()}",
+            refused.stderr,
+        )
+        self.assertEqual(text, ledger.read_text(encoding="utf-8"))
+        done = self.rescreen(
+            "--ledger", str(ledger), *identity, "--key", "sample-shape", "--disposition", "witness-found"
+        )
+        self.assertEqual(0, done.returncode, done.stderr)
+        self.assertEqual(["sample-shape"], json.loads(ledger.read_text(encoding="utf-8").splitlines()[-1])["keys"])
 
     def test_a_candidate_passing_every_screen_is_filed_with_its_measured_record(self) -> None:
         # Passing every screen owes a disposition; nothing is filed without one.
@@ -1257,6 +1544,72 @@ class HistoricalPairTests(unittest.TestCase):
             env_stub=stub,
         )
         self.assertEqual(0, filed.returncode, filed.stderr)
+
+    def test_a_pair_adoption_checks_labels_and_rescreens_at_the_pair_it_names(self) -> None:
+        """Issue #865: a pair adoption names the pair it adopts before the corpus
+        goldens move (`CROZIER_WITNESS_SCREEN_PAIR`, which `fern-references.py
+        generate witness-screens` sets). `historical --check` then refuses the
+        current screen without writing, `historical` labels it, and the candidate
+        is re-screened in its ledger at that pair."""
+        identity = ("--repository", "acme/shop", "--commit", COMMIT, "--path", "openapi.yaml")
+        filed = self.run_stage(
+            REPO,
+            "screen",
+            "--source",
+            "sourcegraph",
+            "--key",
+            "sample-shape",
+            *identity,
+            "--evidence-root",
+            str(self.surface),
+            "--timeout",
+            "60",
+            "--disposition",
+            "witness-found",
+        )
+        self.assertEqual(0, filed.returncode, filed.stderr)
+        before = self.screens().read_bytes()
+        current = self.run_stage(REPO, "historical", "--check", "--evidence-root", str(self.surface))
+        self.assertEqual(0, current.returncode, current.stderr)
+        self.assertNotIn("holds a screen measured at an earlier pair", current.stderr)
+
+        cli, generator, version = self.LATER
+        self.env[SCREEN.PAIR_ENV] = f"{cli}/{version}"
+        stale = self.run_stage(REPO, "historical", "--check", "--evidence-root", str(self.surface))
+        self.assertEqual(1, stale.returncode, stale.stderr)
+        self.assertIn(f"{self.screens()} holds a screen measured at an earlier pair", stale.stderr)
+        self.assertEqual(before, self.screens().read_bytes(), "--check wrote the ledger")
+
+        labelled = self.run_stage(REPO, "historical", "--evidence-root", str(self.surface))
+        self.assertEqual(0, labelled.returncode, labelled.stderr)
+        self.assertIn("labelled 1 screen(s)", labelled.stdout)
+        rescreened = self.run_stage(
+            REPO,
+            "screen",
+            "--ledger",
+            str(self.screens()),
+            *identity,
+            "--evidence-root",
+            str(self.surface),
+            "--timeout",
+            "60",
+            "--disposition",
+            "witness-found",
+        )
+        self.assertEqual(0, rescreened.returncode, rescreened.stderr)
+        old, new = (json.loads(line) for line in self.screens().read_text(encoding="utf-8").splitlines())
+        self.assertIn(SCREEN.HISTORICAL_PAIR, old)
+        self.assertNotIn(SCREEN.HISTORICAL_PAIR, new)
+        self.assertEqual(
+            {"fern_cli": cli, "generator": generator, "generator_version": version}, new["measured"]["fern"]["pins"]
+        )
+        done = self.run_stage(REPO, "historical", "--check", "--evidence-root", str(self.surface))
+        self.assertEqual(0, done.returncode, done.stderr)
+
+        self.env[SCREEN.PAIR_ENV] = "9.0.0"
+        malformed = self.run_stage(REPO, "historical", "--check", "--evidence-root", str(self.surface))
+        self.assertEqual(1, malformed.returncode)
+        self.assertIn(f"{SCREEN.PAIR_ENV}='9.0.0' is no `<fern cli>/<fern-python-sdk>` pair", malformed.stderr)
 
     def test_a_mixed_ledger_labels_exactly_its_earlier_pair_runs_and_keeps_every_other_line(self) -> None:
         # A row filed before the stage, with no record and no date: history already.

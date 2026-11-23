@@ -1497,8 +1497,11 @@ class Units:
 
 
 # Families every item of which rewrites one table: `probes` the probe
-# MANIFEST.tsv, `refusals` classes.tsv and findings.tsv.
-SHARED_TABLE_FAMILIES = ("probes", "refusals")
+# MANIFEST.tsv, `refusals` classes.tsv and findings.tsv, `output-insensitive`
+# output-insensitive.tsv (a record whose trees now differ leaves it), and
+# `witness-screens` every screen ledger (each item first labels the screens an
+# earlier pair measured `historical`).
+SHARED_TABLE_FAMILIES = ("probes", "refusals", "output-insensitive", "witness-screens")
 
 
 def units(base: Path, chosen: dict[str, list[str]]) -> list[list[ItemKey]]:

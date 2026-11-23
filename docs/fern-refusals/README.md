@@ -5,8 +5,9 @@ certified pair `assets/scaffolding/metadata.json` declares) refuses, crashes on,
 or falsely reports success over, and what crozier does with each. The whole
 population, every class's probe and committed shapes, and each class's
 confirmations are measured at that pair, except `heap-exhausted`: its probe ran
-past its 900-second bound in both stages at this pair, so it is **not compared**
-here and its probe record and shapes are the Fern CLI 5.163.1 / fern-python-sdk
+past its 900-second bound in both stages at this pair, again in one serialized
+re-measure on 2026-11-23 (issue #861), so it is **unsettled at this pair and not
+compared** here, and its probe record and shapes are the Fern CLI 5.163.1 / fern-python-sdk
 5.41.3 history ([its evaluation](heap-exhausted/evaluation.md)). A class in that
 state carries `<class>/unsettled.txt` (the pair, each stage's `timeout` and
 elapsed seconds, the bound, the reason and the follow-up that settles it), the

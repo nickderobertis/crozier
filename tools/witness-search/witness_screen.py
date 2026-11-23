@@ -41,12 +41,22 @@ moved from is historical too, once it carries [`HISTORICAL_PAIR`] naming that
 pair; `historical` labels every such committed row, and its record is still
 held whole, at the pair it names.
 
+`screen --ledger LEDGER` re-screens a candidate already filed in any
+`screens.jsonl` under the evidence root — a nested one such as
+`witness-search-<search>/<candidate>-screen/screens.jsonl` included — by its
+stable identity, ``--repository``/``--commit``/``--path``. Its keys default to
+the candidate's own and are checked against the ledger's search scope: the
+`key` column of the search's `census.tsv` (`witness-search-<search>/census.tsv`)
+where it has one, else the general key set. The new row is appended to that
+same ledger, its logs filed beside it.
+
 `screen` exits 0 when it filed the row — a rejected candidate is filed too, so
 0 says the screens were taken and recorded, not that they passed; 1 when it
 refused to file (an unknown key, a path outside the repository, a record that
 is not whole, a success claim the outcomes do not support, a Fern timeout); 2
 on a usage error. `historical` exits 0 when every committed screen it read is
-labelled where it owes one (printing how many it labelled, or nothing), 1 when
+labelled where it owes one (printing how many it labelled, or nothing; with
+`--check` it writes nothing and exits 1 naming each ledger still owing one), 1 when
 the evidence root is no directory, a ledger line is no JSON object, or a label
 already there does not hold, writing nothing, and 2 on a usage error.
 """
@@ -160,7 +170,20 @@ def corpus_fern_pins() -> tuple[str, str, str, dict[str, Any]]:
             "restore the corpus goldens from git"
         )
     cli, name, version, config = json.loads(counts.most_common(1)[0][0])
+    override = os.environ.get(PAIR_ENV, "")
+    if override:
+        # A pair adoption screens at the pair it adopts, before the goldens it
+        # reads the pins from have moved (`fern-references.py generate witness-screens`).
+        found = re.fullmatch(r"(\d+\.\d+\.\d+)/(\d+\.\d+\.\d+)", override)
+        if found is None:
+            fail(f"{PAIR_ENV}={override!r} is no `<fern cli>/<fern-python-sdk>` pair of release versions; unset it")
+        cli, version = found.group(1), found.group(2)
     return cli, name, version, config
+
+
+# The pair a live screen is held to, where a caller names it rather than the
+# corpus goldens: `<fern cli>/<fern-python-sdk>`, both exact release versions.
+PAIR_ENV = "CROZIER_WITNESS_SCREEN_PAIR"
 
 
 def _yaml_block(value: Any, indent: int) -> list[str]:
@@ -1179,6 +1202,98 @@ def disposition_arg(text: str) -> str:
     return text
 
 
+SEARCH_CATALOG = "census.tsv"
+
+
+def scope_keys(evidence_root: Path, ledger: Path) -> tuple[set[str], Path]:
+    """The keys a ledger's search scope admits, and the file they were read from.
+
+    A search directory carrying its own `census.tsv` (a `key` column) scopes its
+    ledgers to those keys; every other ledger is scoped to the general key set.
+    A catalog row of another width, or with an empty key, is refused.
+    """
+    search = evidence_root / ledger.relative_to(evidence_root).parts[0]
+    catalog = search / SEARCH_CATALOG
+    if ledger.parent == search or not catalog.is_file():
+        return witness_keys(evidence_root), evidence_root / KEYS_FILE
+    lines = catalog.read_text(encoding="utf-8").splitlines()
+    header = lines[0].split("\t") if lines else []
+    if "key" not in header:
+        fail(f"{catalog} has no `key` column, so it scopes no key; restore it from git")
+    column = header.index("key")
+    keys: set[str] = set()
+    for number, line in enumerate(lines[1:], 2):
+        cells = line.split("\t")
+        if len(cells) != len(header) or not cells[column]:
+            fail(f"{catalog}:{number} is no {len(header)}-cell row with a key; restore it from git")
+        keys.add(cells[column])
+    return keys, catalog
+
+
+class RescreenScope(NamedTuple):
+    """What `--ledger` re-screens in: the ledger, the filed candidate's source, the
+    keys to screen, the keys its scope admits, and the file that admits them."""
+
+    ledger: Path
+    source: str
+    keys: list[str]
+    known: set[str]
+    catalog: Path
+
+
+def filed_rows(ledger: Path, root: Path) -> list[dict[str, Any]]:
+    """Every row of a ledger, each a JSON object, refusing the first line that is not."""
+    rows = []
+    for number, line in enumerate(ledger.read_text(encoding="utf-8").splitlines(), 1):
+        if not line.strip():
+            continue
+        try:
+            row = json.loads(line)
+        except ValueError:
+            row = None
+        if not isinstance(row, dict):
+            fail(f"{ledger.relative_to(root).as_posix()}:{number} is no JSON object; restore it from git")
+        rows.append(row)
+    return rows
+
+
+def rescreen_scope(args: argparse.Namespace) -> RescreenScope:
+    """`--ledger`'s ledger, the filed candidate's source, the keys to screen, and the scope's keys."""
+    root = args.evidence_root.resolve()
+    ledger = (args.ledger if args.ledger.is_absolute() else root / args.ledger).resolve()
+    if ledger.name != "screens.jsonl" or not ledger.is_file() or not ledger.is_relative_to(root):
+        fail(f"--ledger {args.ledger} is no screens.jsonl under {root}; name the ledger the candidate was filed in")
+    identity = (args.repository, args.commit, args.path)
+    filed = [
+        row
+        for row in filed_rows(ledger, root)
+        if (row.get("repository"), row.get("commit"), row.get("path")) == identity
+    ]
+    where = f"{ledger.relative_to(root).as_posix()}"
+    if not filed:
+        fail(
+            f"{where} holds no candidate {args.repository}@{args.commit}:{args.path}; "
+            "--ledger re-screens a filed candidate by its repository, commit and path"
+        )
+    candidate = filed[-1]
+    source, filed_keys = candidate.get("source"), candidate.get("keys")
+    if not isinstance(source, str) or not source:
+        fail(f"{where}: the filed {args.repository}@{args.commit}:{args.path} names no source; restore it from git")
+    filed_list: list[str] = []
+    if isinstance(filed_keys, list):
+        filed_list = [key for key in filed_keys if isinstance(key, str) and key]
+        if len(filed_list) != len(filed_keys):
+            filed_list = []
+    if not args.key and not filed_list:
+        fail(
+            f"{where}: the filed {args.repository}@{args.commit}:{args.path} carries no list of keys; "
+            "name the keys to screen with --key"
+        )
+    known, catalog = scope_keys(root, ledger)
+    keys = list(args.key) if args.key else filed_list
+    return RescreenScope(ledger, source, keys, known, catalog)
+
+
 def legacy_screen(args: argparse.Namespace) -> int:
     """Take one candidate's screens and append them to its legacy `screens.jsonl`."""
     if args.fern is not None:
@@ -1189,15 +1304,22 @@ def legacy_screen(args: argparse.Namespace) -> int:
     if screening_mode_or_fail(args.repository, args.commit, args.path, args.sha256) is ScreeningMode.SCREENED_HISTORY:
         print(f"witness-screen: {args.source}: opaque input screened by repository rule; history retained")
         return 0
-    directory = args.evidence_root / f"witness-search-{args.source}"
-    if not directory.is_dir():
-        fail(f"{directory} does not exist; acquire {args.source} through its witness-search script first")
-    known = witness_keys(args.evidence_root)
-    unknown = [key for key in args.key if key not in known]
+    if args.ledger is not None:
+        ledger, source, keys, known, catalog = rescreen_scope(args)
+        directory = ledger.parent
+    else:
+        if not args.key:
+            fail("--source needs at least one --key; or re-screen a filed candidate with --ledger")
+        directory = args.evidence_root / f"witness-search-{args.source}"
+        if not directory.is_dir():
+            fail(f"{directory} does not exist; acquire {args.source} through its witness-search script first")
+        ledger, source, keys = directory / "screens.jsonl", args.source, list(args.key)
+        known, catalog = witness_keys(args.evidence_root), args.evidence_root / KEYS_FILE
+    unknown = [key for key in keys if key not in known]
     if unknown:
         fail(
             f"--key {', '.join(map(repr, unknown))} is no witness-search key in "
-            f"{args.evidence_root / KEYS_FILE}; pass a key that file lists (regenerate it with "
+            f"{catalog}; pass a key that file lists (regenerate it with "
             "`tools/surface-census/witness-search-region-keys.py` if the regions moved)"
         )
     if args.measured:
@@ -1206,7 +1328,10 @@ def legacy_screen(args: argparse.Namespace) -> int:
         github = _load("witness_search_github_screen", REPO / "tools" / "witness-search" / "witness-search-github.py")
         acquirer = github.Acquirer(
             directory,
-            cache=REPO / ".local" / "witness-screen" / args.source,
+            cache=REPO
+            / ".local"
+            / "witness-screen"
+            / (args.source or directory.relative_to(args.evidence_root.resolve()).as_posix()),
             raw_github_url=github.checked_service_url(
                 os.environ.get("CROZIER_RAW_GITHUB_URL", github.RAW_GITHUB_URL),
                 "CROZIER_RAW_GITHUB_URL",
@@ -1217,7 +1342,8 @@ def legacy_screen(args: argparse.Namespace) -> int:
             repository=args.repository,
             commit=args.commit,
             path=args.path,
-            fetch=lambda url, subject: acquirer.raw_github_get(url, args.key[0], subject),
+            # llmlint: ignore[async_typed_clients_at_boundaries] AGENTS.md keeps the witness tooling stdlib-only and synchronous so it runs installless; one candidate's document is read once, through the guarded acquirer's own paced client, so there is nothing to run concurrently.
+            fetch=lambda url, subject: acquirer.raw_github_get(url, keys[0], subject),
             raw_base=acquirer.raw_github_url,
             logs=directory / LOG_DIR,
             base=directory,
@@ -1270,12 +1396,12 @@ def legacy_screen(args: argparse.Namespace) -> int:
         fail(refusal)
     document = record["document"]
     row = {
-        "source": args.source,
+        "source": source,
         "repository": args.repository,
         "path": args.path,
         "commit": args.commit,
         "sha256": document["sha256"],
-        "keys": args.key,
+        "keys": keys,
         "license": record["licence"]["outcome"],
         "ref": record["ref"]["outcome"],
         "fern": record["fern"]["outcome"],
@@ -1283,10 +1409,10 @@ def legacy_screen(args: argparse.Namespace) -> int:
         "screened_at": record["screened_at"],
         "measured": record,
     }
-    with (directory / "screens.jsonl").open("a", encoding="utf-8", newline="\n") as handle:
+    with ledger.open("a", encoding="utf-8", newline="\n") as handle:
         handle.write(json.dumps(row, sort_keys=True) + "\n")
     print(
-        f"witness-screen: {args.source}: {args.repository}:{args.path} — licence "
+        f"witness-screen: {source}: {args.repository}:{args.path} — licence "
         f"{row['license'].split(':', 1)[0]}, ref {row['ref'].split(':', 1)[0]}, "
         f"fern {row['fern'].split(':', 1)[0]}; {disposition}"
     )
@@ -1301,7 +1427,7 @@ def screen_fields(root: Path, screens: Path) -> dict[str, str]:
     return {name: name for name in SCREENS}
 
 
-def label_historical(root: Path) -> int:
+def label_historical(root: Path, check: bool = False) -> int:
     """Label every committed screen measured at a pair other than the corpus's as history of that pair,
     in each ledger and in every numbered part of one.
 
@@ -1349,6 +1475,15 @@ def label_historical(root: Path) -> int:
             labelled += 1
         if changed:
             rewrites[screens] = lines
+    if check:
+        # Read only: a pair move left screens a gate would read as current.
+        for screens in rewrites:
+            print(
+                f"witness-screen: {screens} holds a screen measured at an earlier pair with no "
+                f"`{HISTORICAL_PAIR}` label; run `witness_screen.py historical`, then re-screen the candidate",
+                file=sys.stderr,
+            )
+        return 1 if rewrites else 0
     for screens, lines in rewrites.items():
         screens.write_bytes("".join(lines).encode("utf-8"))
     if labelled:
@@ -1360,8 +1495,14 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
     sub = parser.add_subparsers(dest="command", required=True)
     s = sub.add_parser("screen", help="screen one legacy witness-search candidate")
-    s.add_argument("--source", required=True, choices=LEGACY_SOURCES)
-    s.add_argument("--key", action="append", required=True, type=nonempty)
+    scope = s.add_mutually_exclusive_group(required=True)
+    scope.add_argument("--source", choices=LEGACY_SOURCES, help="file into witness-search-<source>/screens.jsonl")
+    scope.add_argument(
+        "--ledger",
+        type=Path,
+        help="re-screen a candidate this screens.jsonl already holds, in that ledger's own key scope",
+    )
+    s.add_argument("--key", action="append", type=nonempty, help="a key (with --ledger, default: the candidate's)")
     s.add_argument("--repository", required=True, help="owner/name")
     s.add_argument("--commit", required=True)
     s.add_argument("--path", required=True)
@@ -1376,9 +1517,10 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--fern", help=argparse.SUPPRESS)
     h = sub.add_parser("historical", help="label every screen measured at an earlier certified pair as its history")
     h.add_argument("--evidence-root", type=Path, default=REPO / "docs" / "openapi-surface")
+    h.add_argument("--check", action="store_true", help="write nothing; exit 1 naming each ledger a label is owed in")
     args = parser.parse_args(argv)
     if args.command == "historical":
-        return label_historical(args.evidence_root)
+        return label_historical(args.evidence_root, args.check)
     return legacy_screen(args)
 
 
