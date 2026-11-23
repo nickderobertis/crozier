@@ -1062,6 +1062,7 @@ crozier-e2e::e2e type_lowering::json_binary_and_base64_strings_take_the_certifie
 crozier-e2e::e2e type_lowering::nullable_components_keep_and_lose_optional_as_declared
 crozier-e2e::e2e type_lowering::nullable_map_wrappers_keep_value_discrimination_and_optionality
 crozier-e2e::e2e type_lowering::parameter_union_members_keep_their_type_array_nullability
+crozier-e2e::e2e type_lowering::recursive_alias_cycles_are_named
 crozier-e2e::e2e type_lowering::recursive_json_aliases_are_named
 crozier-e2e::e2e type_lowering::reference_compositions_match_the_certified_pair
 crozier-e2e::e2e type_lowering::sdk_env_escaped_discriminators_and_recursive_aliases_import
