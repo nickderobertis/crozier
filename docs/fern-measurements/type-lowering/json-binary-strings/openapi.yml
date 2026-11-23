@@ -68,3 +68,30 @@ components:
           contentEncoding: base16
         caption:
           type: string
+        sheet:
+          $ref: "#/components/schemas/ContactSheet"
+    ContactSheet:
+      type: object
+      required: [master]
+      properties:
+        master:
+          type: string
+          format: binary
+        frames:
+          type: array
+          items:
+            type: string
+            format: binary
+        layers:
+          type: object
+          additionalProperties:
+            type: string
+            format: binary
+        overlay:
+          type: [string, "null"]
+          format: binary
+        backing:
+          anyOf:
+            - type: string
+              format: binary
+            - type: "null"

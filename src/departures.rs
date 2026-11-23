@@ -2247,6 +2247,10 @@ pub fn rule(id: &str) -> Option<Rule> {
             line: Some(escaped_field_alias_literal),
             ..none
         },
+        "escaped-discriminator-field-name" => Rule {
+            line: Some(escaped_discriminator_field_name),
+            ..none
+        },
         "recursive-alias-named-type" => Rule {
             region: Some(recursive_alias_named_type),
             ..none
@@ -5295,6 +5299,34 @@ fn is_root_client_file(rel: &str) -> bool {
     is_client_wrapper(rel) || root_client
 }
 
+/// `escaped-discriminator-field-name`: a discriminated union's
+/// `pydantic.Field(discriminator=…)`, in a generated `.py` file, whose tag
+/// property is a name pydantic's `BaseModel` already holds (`schema`, `json`,
+/// …), so its variant field is escaped (`schema_`) under a wire alias. Fern
+/// writes the wire name, which names no field of the variants; crozier writes
+/// the escaped field name. The literal crozier's line holds is put back as the
+/// declared property name, and the result must be Fern's line.
+fn escaped_discriminator_field_name(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    if !pair.rel.ends_with(".py") || fern == crozier || !crozier.contains("discriminator=") {
+        return false;
+    }
+    let mut names = BTreeSet::new();
+    visit_source_schemas(pair.context.source_document.as_ref(), &mut |schema| {
+        names.extend(
+            schema
+                .properties
+                .keys()
+                .filter(|wire| crate::naming::model_field_name(wire) == format!("{wire}_"))
+                .cloned(),
+        );
+    });
+    names.iter().any(|wire| {
+        let ours = format!("discriminator=\"{wire}_\"");
+        crozier.contains(&ours)
+            && crozier.replace(&ours, &format!("discriminator=\"{wire}\"")) == fern
+    })
+}
+
 /// `escaped-field-alias-literal`: a model field's wire alias, in a generated
 /// `.py` file. Fern writes the declared property name between double quotes
 /// unescaped (`alias="<name>"`, which its `ruff format` may requote), so a
@@ -5347,7 +5379,11 @@ fn recursive_alias_named_type(pair: &Pair<'_>) -> Result<Option<Region>, String>
             .filter(|line| is_import(line) && **line != "from __future__ import annotations")
             .map(|line| line.to_string())
             .collect();
-        let body: String = lines.iter().filter(|line| !is_import(line)).copied().collect();
+        let body: String = lines
+            .iter()
+            .filter(|line| !is_import(line))
+            .copied()
+            .collect();
         (imports, unlaid(&body))
     };
     let (fern_imports, fern_body) = split(pair.fern);
@@ -5355,7 +5391,9 @@ fn recursive_alias_named_type(pair: &Pair<'_>) -> Result<Option<Region>, String>
     let Some((name, rest)) = fern_body.split_once('=') else {
         return Ok(None);
     };
-    let (target, trailer) = rest.find("\"\"\"").map_or((rest, ""), |at| rest.split_at(at));
+    let (target, trailer) = rest
+        .find("\"\"\"")
+        .map_or((rest, ""), |at| rest.split_at(at));
     if name.is_empty() || !name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') {
         return Ok(None);
     }
@@ -5371,7 +5409,8 @@ fn recursive_alias_named_type(pair: &Pair<'_>) -> Result<Option<Region>, String>
     let flag = crozier_imports
         .iter()
         .find(|line| {
-            line.starts_with("from ") && line.ends_with("core.pydantic_utilities import IS_PYDANTIC_V2")
+            line.starts_with("from ")
+                && line.ends_with("core.pydantic_utilities import IS_PYDANTIC_V2")
         })
         .cloned();
     let Some(flag) = flag else {

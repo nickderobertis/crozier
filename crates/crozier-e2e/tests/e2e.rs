@@ -168,6 +168,14 @@ mod handed_off_type_declarations;
 mod union_inheritance;
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates one small SDK per case and compares it whole, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+/// The type-lowering tickets of #965, each settled against a from-scratch
+/// document under `docs/fern-measurements/type-lowering/` and held whole
+/// against the certified pair's tree in both enum modes.
+#[path = "e2e/type_lowering.rs"]
+mod type_lowering;
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
 // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These nine local generator journeys and their canonical-header controls generate small SDKs without network access or SDK installation; they exercise the existing real-binary boundary and introduce no promoted-tier setup.
 #[path = "e2e/remeasure.rs"]
 mod remeasure;
@@ -1074,6 +1082,7 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         (emission_parity::EMISSION_PARITY_DIR, "fern-expected"),
         (handed_off_type_declarations::DIR, "fern-expected"),
         (union_inheritance::DIR, "fern-expected"),
+        (type_lowering::DIR, "fern-expected"),
         (handed_off_example_values::AREA_DIR, "fern-expected"),
         (handed_off_snippet_rendering::AREA_DIR, "fern-expected"),
         (bodies_media::BODIES_MEDIA_DIR, "fern-expected"),
@@ -1121,6 +1130,7 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         handed_off_type_declarations::DIR,
         remeasure::DIR,
         union_inheritance::DIR,
+        type_lowering::DIR,
     ] {
         if let Ok(entries) = std::fs::read_dir(root.join(dir)) {
             for entry in entries.filter_map(Result::ok) {
@@ -17560,14 +17570,28 @@ fn python_env_root() -> PathBuf {
 /// part-way, so it is cleared rather than built over.
 fn runtime_python_env() -> Result<PathBuf, String> {
     // The SDK's own runtime deps plus the wire suite's test runner.
-    const DEPS: [&str; 3] = ["httpx", "pydantic", "pytest"];
+    python_env_with("crozier-runtime-venv-v2", &["httpx", "pydantic", "pytest"])
+}
+
+/// [`runtime_python_env`] under the oldest Pydantic major the generated SDK
+/// declares (`pydantic >= 1.9.2`): pydantic 1.10.
+fn pydantic_v1_python_env() -> Result<PathBuf, String> {
+    python_env_with(
+        "crozier-runtime-venv-pydantic1",
+        &["httpx", "pydantic>=1.10,<2", "pytest"],
+    )
+}
+
+/// A venv named `name` under [`python_env_root`] holding `deps`, built once
+/// and reused while it still imports the SDK's dependencies.
+fn python_env_with(name: &str, deps: &[&str]) -> Result<PathBuf, String> {
     let base = python_interpreter().ok_or("no python3/python on PATH")?;
     let root = python_env_root();
-    let venv = root.join("crozier-runtime-venv-v2");
+    let venv = root.join(name);
     let venv_py = venv_python(&venv);
     let ready = venv.join(".crozier-ready");
 
-    let lock = hold_lock(&root.join("crozier-runtime-venv-v2.lock"))?;
+    let lock = hold_lock(&root.join(format!("{name}.lock")))?;
     if venv_py.exists() && ready.is_file() && can_import_sdk_deps(&venv_py) {
         return Ok(venv_py);
     }
@@ -17597,21 +17621,21 @@ fn runtime_python_env() -> Result<PathBuf, String> {
         install
             .args(["pip", "install", "--python"])
             .arg(&venv_py)
-            .args(DEPS);
+            .args(deps);
         run(install, "uv pip install")?;
     } else {
         let mut venv_cmd = std::process::Command::new(base);
         venv_cmd.args(["-m", "venv"]).arg(&venv);
         run(venv_cmd, "python -m venv")?;
         let mut install = std::process::Command::new(&venv_py);
-        install.args(["-m", "pip", "install"]).args(DEPS);
+        install.args(["-m", "pip", "install"]).args(deps);
         run(install, "pip install")?;
     }
 
     if !can_import_sdk_deps(&venv_py) {
         return Err("venv prepared but httpx/pydantic/pytest still not importable".into());
     }
-    std::fs::write(&ready, DEPS.join("\n"))
+    std::fs::write(&ready, deps.join("\n"))
         .map_err(|error| format!("cannot mark {} ready: {error}", venv.display()))?;
     drop(lock);
     Ok(venv_py)

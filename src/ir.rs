@@ -13439,11 +13439,17 @@ pub(crate) fn inferred_discriminant_property(
                             // PostToolConfirmation]`, `PostUserMessage` leaving its
                             // `type: {const: user.message}` unrequired, and the
                             // certified pair keeps the plain `Union`.
+                            // A plain string the member exemplifies is one
+                            // required or not: the
+                            // `type-lowering/inferred-discriminator-tags`
+                            // measurement's `StoreItem.wearable` members leave a
+                            // nullable `type` with examples `T-Shirt` and
+                            // `Jacket` unrequired, and the certified pair writes
+                            // `StoreItemWearable_TShirt` | `…_Jacket` (#912).
                             "type" => {
-                                variant.required.contains(property)
-                                    && schema_example(field)
-                                        .and_then(serde_json::Value::as_str)
-                                        .is_some()
+                                schema_example(field)
+                                    .and_then(serde_json::Value::as_str)
+                                    .is_some()
                                     || field
                                         .const_value
                                         .as_ref()
@@ -13476,8 +13482,7 @@ pub(crate) fn inferred_discriminant_property(
                 } else {
                     discriminant_value(field)?
                 };
-                (property != "message_type" || !preserve_const_discriminant(&value))
-                    .then_some(value)
+                Some(value)
             })
             .collect();
         let values = values?;
@@ -13506,6 +13511,24 @@ fn untyped_enum_tag(tag: &Schema) -> bool {
 /// their own rules.
 fn untyped_const_tag(tag: &Schema) -> bool {
     tag.const_value.is_some() && tag.enum_values.is_none() && !is_string_type(tag)
+}
+
+/// Whether every member of a union is a `$ref` whose target tags itself on
+/// `property` with an [`untyped_const_tag`] (see [`Builder::discriminated_union`]).
+fn untyped_const_tagged_references(
+    variants: &[Schema],
+    property: &str,
+    schemas: &IndexMap<String, Schema>,
+) -> bool {
+    !variants.is_empty()
+        && variants.iter().all(|variant| {
+            variant
+                .reference
+                .as_deref()
+                .and_then(|reference| resolve_ref_from_schemas(schemas, reference))
+                .and_then(|target| last_composed_variant(target).properties.get(property))
+                .is_some_and(untyped_const_tag)
+        })
 }
 
 /// The discriminant an unrequired one-member string `tag` of a `$ref`-only
@@ -13789,7 +13812,8 @@ fn strips_members(schema: &Schema, schemas: &IndexMap<String, Schema>) -> bool {
     schema.discriminator.as_ref().is_some_and(|discriminator| {
         !discriminator.property_name.is_empty()
             && (schema.one_of.is_some() || schema.any_of.is_none())
-    }) || inferred_strip_discriminant_property(schema, schemas).is_some()
+    }) || typed_any_of_mapping(schema, schemas)
+        || inferred_strip_discriminant_property(schema, schemas).is_some()
 }
 
 /// Scan every schema for a discriminated `oneOf`/`anyOf` and record, per member
@@ -13899,6 +13923,29 @@ fn propagate_strips_to_bases(
     }
 }
 
+/// Whether an `anyOf`'s explicit discriminator mapping is one Fern honours: a
+/// non-empty mapping over `$ref` members, each declaring the tag property with
+/// `type: string` (see [`Builder::discriminated_union`]).
+fn typed_any_of_mapping(schema: &Schema, schemas: &IndexMap<String, Schema>) -> bool {
+    let (Some(members), Some(discriminator)) = (&schema.any_of, &schema.discriminator) else {
+        return false;
+    };
+    !discriminator.mapping.is_empty()
+        && !discriminator.property_name.is_empty()
+        && members.iter().all(|member| {
+            member
+                .reference
+                .as_deref()
+                .and_then(|reference| resolve_ref_from_schemas(schemas, reference))
+                .and_then(|target| {
+                    last_composed_variant(target)
+                        .properties
+                        .get(&discriminator.property_name)
+                })
+                .is_some_and(is_string_type)
+        })
+}
+
 fn collect_discriminant_strips(
     schema: &Schema,
     schemas: &IndexMap<String, Schema>,
@@ -13908,11 +13955,13 @@ fn collect_discriminant_strips(
     // A `discriminator` beside an `anyOf` with no `oneOf` is read as though none
     // were written, as `discriminated_union` reads it: the members' own tags
     // decide. Fern's member models drop typed tags there exactly as they do
-    // under an `anyOf` that writes no discriminator.
+    // under an `anyOf` that writes no discriminator. A mapping Fern honours
+    // ([`typed_any_of_mapping`]) is read as under a `oneOf`.
+    let honoured = typed_any_of_mapping(schema, schemas);
     let discriminator = schema
         .discriminator
         .as_ref()
-        .filter(|_| schema.one_of.is_some() || schema.any_of.is_none());
+        .filter(|_| schema.one_of.is_some() || schema.any_of.is_none() || honoured);
     // A lone member under a `discriminator` mapping nothing is no union to
     // strip a tag for (see `Builder::discriminated_union`).
     let lone = schema
@@ -13935,9 +13984,18 @@ fn collect_discriminant_strips(
         // every variant's own tag names it: Tally's `Block` declares only
         // `propertyName: type` over 45 `$ref` blocks, each with a one-value
         // `type` enum, and Fern's block models have no `type` field.
+        // Not over bare `const` tags, though, which leave the union plain
+        // (#911): its members keep their tag enums.
         let unmapped_inferred = discriminator.is_some_and(|discriminator| {
             discriminator.mapping.is_empty()
                 && inferred_strip_discriminant_property(schema, schemas).as_ref() == Some(&property)
+                && !schema
+                    .one_of
+                    .as_deref()
+                    .or(schema.any_of.as_deref())
+                    .is_some_and(|variants| {
+                        untyped_const_tagged_references(variants, &property, schemas)
+                    })
         });
         if discriminator.is_none() || unmapped_inferred {
             if let Some(variants) = schema.one_of.as_ref().or(schema.any_of.as_ref()) {
@@ -13983,7 +14041,8 @@ fn collect_discriminant_strips(
                     .values()
                     .all(|target| target.contains('/'))
         });
-        if resolvable && (schema.one_of.is_some() || is_inheritance_union_base(schema)) {
+        if resolvable && (schema.one_of.is_some() || honoured || is_inheritance_union_base(schema))
+        {
             // Only a `oneOf` union or an inheritance base reaches here, so the
             // written discriminator is the one `discriminator` above kept.
             if let Some(discriminator) = &schema.discriminator {
@@ -14005,16 +14064,16 @@ fn collect_discriminant_strips(
                     // the member model it consumed — unless that member is also
                     // referenced somewhere on its own, where the standalone model
                     // still has to carry it (see
-                    // [`standalone_referenced_classes`]), or its `const` tag is one
-                    // of the values Fern is measured to preserve regardless.
+                    // [`standalone_referenced_classes`]). A `const` tag is no
+                    // exception: Letta's `ApprovalRequestMessage` keeps its
+                    // `message_type` because `AgentState.pending_approval` uses it
+                    // on its own, where its `AssistantMessage`, used only as a
+                    // variant, drops the same-shaped tag; and the
+                    // `type-lowering/const-discriminator-tags` measurement's
+                    // variant-only `MessageItem` and `ApprovalEnvelope` drop their
+                    // `const` `kind` and `type` (#910).
                     let class = ref_to_class(reference);
-                    let const_value = resolve_ref_from_schemas(schemas, reference)
-                        .and_then(|target| target.properties.get(&property))
-                        .and_then(|field| field.const_value.as_ref())
-                        .and_then(serde_json::Value::as_str);
-                    let preserve = standalone.contains(&class)
-                        || const_value.is_some_and(preserve_const_discriminant);
-                    if !preserve {
+                    if !standalone.contains(&class) {
                         strips.insert(class, property.clone());
                     }
                 }
@@ -14040,25 +14099,26 @@ fn collect_discriminant_strips(
                 .all_of
                 .iter()
                 .flatten()
-                .filter(|member| !untagged_by_unrequired_tag(member, schemas)),
+                .filter(|member| !untagged_by_unrequired_tag(member, schemas))
+                .filter(|member| member.one_of.is_none() && member.any_of.is_none()),
         )
         .chain(map_value)
     {
         collect_discriminant_strips(child, schemas, standalone, strips);
     }
-}
-
-fn preserve_const_discriminant(value: &str) -> bool {
-    matches!(
-        value,
-        "approval"
-            | "approval_request_message"
-            | "message"
-            | "tool"
-            | "tool_return_message"
-            | "stop_reason"
-            | "usage_statistics"
-    )
+    // A union composed as an `allOf` member is flattened into the composing
+    // model, not declared as a union, so it consumes no member's tag: the
+    // `type-lowering/inherited-discriminator-tags` measurement's `Pet` is
+    // `allOf: [object, oneOf [$ref Cat, $ref Dog] discriminated on species]`,
+    // and the certified `Cat` and `Dog` keep `species` (#949). Its members'
+    // own nested content is still walked.
+    for member in schema.all_of.iter().flatten() {
+        for variant in member.one_of.iter().chain(member.any_of.iter()).flatten() {
+            if variant.reference.is_none() {
+                collect_discriminant_strips(variant, schemas, standalone, strips);
+            }
+        }
+    }
 }
 
 /// Whether a schema is the base of an inheritance-style discriminated union: a
@@ -15360,12 +15420,17 @@ impl Builder<'_> {
                             values,
                             clean_doc(items.description.as_deref()),
                         )));
-                        self.push_alias(
-                            name,
-                            module,
-                            sequence_of(schema, TypeRef::Named(item_name)),
-                            docstring,
-                        );
+                        // A nullable array keeps its `Optional`, as one of
+                        // scalars does: the `type-lowering/nullable-components`
+                        // measurement's `ResponseModalities` is
+                        // `Optional[List[ResponseModalitiesItem]]` (#901).
+                        let sequence = sequence_of(schema, TypeRef::Named(item_name));
+                        let target = if schema_accepts_none(schema, self.schemas) {
+                            TypeRef::Optional(Box::new(sequence))
+                        } else {
+                            sequence
+                        };
+                        self.push_alias(name, module, target, docstring);
                         return;
                     }
                 }
@@ -16008,7 +16073,15 @@ impl Builder<'_> {
                         // Fern's unknown type carries no docs, so an empty
                         // restatement takes none from the base: Zulip's
                         // `CodedError` restates `CodedErrorBase.code` as `{}`.
+                        // A field an earlier inlined parent lent keeps that
+                        // parent's declaration, docs and all: the
+                        // `type-lowering/inherited-discriminator-tags`
+                        // measurement's `GroomingTask` inlines `Task` and then
+                        // `GroomingTask_allOf`, which restates `Task.action`
+                        // with a description, and the certified field is
+                        // `Task`'s undocumented `action: str` (#909).
                         if existing.docstring.is_none()
+                            && !existing.inherited_from_flattened_parent
                             && !is_unknown_type_ref(&existing.type_ref)
                             && !branch_fields.contains(&existing.wire_name)
                         {
@@ -16455,7 +16528,17 @@ impl Builder<'_> {
         // whose FastAPI-emitted discriminator sits over untyped `enum` tags, stay
         // ordinary unions, and the hand-written `nested-array-discriminated-unions`
         // fixture's `Pet`, over `type: string` tags, is `Pet_Cat` | `Pet_Dog`.
-        if schema.discriminator.is_some() && schema.one_of.is_none() {
+        // A mapping over `$ref` members whose tags all declare `type: string` is
+        // honoured, though: the `type-lowering/anyof-discriminators`
+        // measurement's `Lock.sensor` maps three values onto two members whose
+        // typed tag one leaves unrequired, and the certified pair writes
+        // `LockSensor_LevelUpstream`, `…_LevelDownstream` and `…_Flow` (#899),
+        // where its `Lock.paddle`, mapped over untyped `enum` tags, stays the
+        // plain `Union`.
+        if schema.discriminator.is_some()
+            && schema.one_of.is_none()
+            && !typed_any_of_mapping(schema, self.schemas)
+        {
             let undiscriminated = Schema {
                 discriminator: None,
                 ..schema.clone()
@@ -16501,6 +16584,18 @@ impl Builder<'_> {
             .as_ref()
             .map(|disc| &disc.mapping)
             .filter(|mapping| !mapping.is_empty());
+        // A written discriminator mapping nothing over `$ref` members tagged by a
+        // bare `const` (no `type: string`) is no discriminated union: the
+        // `type-lowering/const-discriminator-tags` measurement's `Event` is the
+        // certified pair's plain `Union[EventVesselArrived, …]`, each model
+        // keeping its `…Type` enum (#911), where its `Signal`, over typed
+        // one-value enums as Tally's `Block` is, is `Signal_Flag` | `Signal_Lamp`.
+        if mapping.is_none()
+            && schema.discriminator.is_some()
+            && untyped_const_tagged_references(variants, &property_name, self.schemas)
+        {
+            return None;
+        }
         if mapping.is_none() {
             let mut members = Vec::new();
             let mut variant_targets = Vec::new();
@@ -17808,9 +17903,16 @@ impl Builder<'_> {
                 // A lone inline member under a written `discriminator` is read as
                 // though none were written: Fern declares the same plain model
                 // for it either way.
+                // So is a lone `$ref` under a discriminator mapping nothing: the
+                // `type-lowering/anyof-discriminators` measurement's
+                // `Lock.warden` is `oneOf: [$ref Lockkeeper]` beside
+                // `propertyName: role`, and the certified field is
+                // `Optional[Lockkeeper]` (#900); a mapped lone member stays a
+                // variant (`Lock.relief`).
                 if prop_schema.discriminator.is_some()
                     && members.len() == 1
-                    && is_inline_object(&members[0])
+                    && (is_inline_object(&members[0])
+                        || lone_unmapped_reference(prop_schema).is_some())
                 {
                     let undiscriminated = Schema {
                         discriminator: None,

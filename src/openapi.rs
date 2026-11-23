@@ -3531,11 +3531,35 @@ pub(crate) fn referenced_component_schema(reference: &str) -> Option<&str> {
 /// `allOf` at all: the node left is the bare schema every reader already lowers
 /// as an unconstrained value, so the unit test's structural assertion is the
 /// whole of that case's behaviour.
+/// Whether `member` is only `nullable` beside a composition keyword holding no
+/// member (see [`normalize_empty_compositions`]).
+fn nullable_empty_composition(member: &Schema) -> bool {
+    let empty = [&member.one_of, &member.any_of, &member.all_of]
+        .into_iter()
+        .any(|members| members.as_ref().is_some_and(Vec::is_empty));
+    let bare = Schema {
+        nullable: None,
+        one_of: member.one_of.clone().filter(|members| !members.is_empty()),
+        any_of: member.any_of.clone().filter(|members| !members.is_empty()),
+        all_of: member.all_of.clone().filter(|members| !members.is_empty()),
+        ..member.clone()
+    };
+    empty && bare == Schema::default()
+}
+
 fn normalize_empty_compositions(doc: &mut OpenApi) {
     for_each_root_schema(doc, &mut |schema| {
         for_each_schema_in(schema, &mut |node| {
             if let Some(members) = node.all_of.as_mut() {
-                members.retain(|member| *member != Schema::default());
+                // A member left with only `nullable` once its empty `oneOf: []` or
+                // `anyOf: []` is dropped is empty too: Naurt's `feedback-query` is
+                // `allOf: [{nullable: true, oneOf: []}, {anyOf: [], nullable:
+                // true}, object]`, and the certified pair's references to it are
+                // the required model (#904, the `type-lowering/nullable-components`
+                // measurement's `FeedbackQuery`).
+                members.retain(|member| {
+                    *member != Schema::default() && !nullable_empty_composition(member)
+                });
             }
             for members in [&mut node.one_of, &mut node.any_of, &mut node.all_of] {
                 if members.as_ref().is_some_and(Vec::is_empty) {

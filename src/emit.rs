@@ -4962,7 +4962,12 @@ fn render_type_decl(
                 })
                 .unwrap_or_default();
             if forward.contains(&alias.name) {
-                return Ok(render_recursive_alias(alias, &target.flat(), &mut imports, &docstring));
+                return Ok(render_recursive_alias(
+                    alias,
+                    &target.flat(),
+                    &mut imports,
+                    &docstring,
+                ));
             }
             if !forward.is_empty() {
                 let mut contents = format!(
