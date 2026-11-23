@@ -6589,6 +6589,12 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         && ep.body_schema_documented
         && matches!(&ep.request_body, Some(RequestBody::Inline(fields))
             if fields.iter().filter(|field| field.spec_required).count() == 1);
+    // A titled component passed whole as one `request` escapes the shared-body
+    // drop below, as a titled flattened body escapes the surviving-schema one:
+    // measured in `docs/fern-measurements/bodies-responses/titled-shared-single-body/`.
+    let titled_whole_body = matches!(&ep.request_body, Some(RequestBody::Single(_)))
+        && ep.body_schema_shape == BodySchemaShape::Ref
+        && ep.body_schema_titled;
     let content_type: Option<String> = match &ep.request_body {
         Some(_) if ep.body_content_type_override.is_some() => ep.body_content_type_override.clone(),
         Some(RequestBody::Bytes { content_type }) => Some(content_type.clone()),
@@ -6715,7 +6721,10 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                         // shared keeps it:
                         // bodies declaring `required: true` or sent whole retain
                         // the header. Adyen's `GrantInfo` is posted by one operation.
+                        // A titled component passed whole escapes it
+                        // (`titled_whole_body`).
                         && !(ep.body_schema_shared
+                            && !titled_whole_body
                             && !ep.body_declared_required
                             && !body.all_fields_required()
                             && !ep.body_schema_dropped
@@ -6725,14 +6734,15 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                                     && matches!(body, RequestBody::Inline(fields)
                                         if fields.iter().any(|field| field.spec_required))))
                         && !ep.body_codegen_named
-                        // An inline union body that neither names itself nor
-                        // declares a discriminator drops the header, however it is
-                        // documented and whatever its auth: the Vonage Messages
-                        // API's described, required `sendMessage` `oneOf`,
-                        // Flowdapt's `create_config` and Otoroshi's
+                        // An inline union body that neither names nor describes
+                        // itself drops the header, however its `requestBody` is
+                        // documented, whatever its auth and whether or not it is
+                        // discriminated: the Vonage Messages API's described,
+                        // required `sendMessage` `oneOf`, Flowdapt's
+                        // `create_config` and Otoroshi's
                         // `create_global_auth_module` all leave the content type to
                         // httpx, where Letta's titled `anyOf` (`add_mcp_server`)
-                        // and its discriminated `createTemplateNoProject` keep it.
+                        // and its described `createTemplateNoProject` keep it.
                         && ep.body_schema_shape != BodySchemaShape::InlinePlainUnion
                         // …and so does one whose schema the `requestBodies` entry
                         // writes inline, which names no type at all: the Vonage

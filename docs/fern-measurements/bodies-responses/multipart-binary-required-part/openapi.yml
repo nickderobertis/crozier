@@ -1,0 +1,62 @@
+openapi: 3.1.0
+info:
+  title: Studio Archive
+  version: 1.0.0
+  description: Archives kiln logs and recordings.
+servers:
+  - url: https://archive.example.com
+paths:
+  /uploads:
+    post:
+      operationId: uploadLog
+      tags: [uploads]
+      summary: A required part that references a binary string component.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  $ref: '#/components/schemas/FormFile'
+                note:
+                  type: string
+      responses:
+        '204':
+          description: Uploaded.
+  /recordings:
+    post:
+      operationId: transcribeRecording
+      tags: [uploads]
+      summary: An optional part that is anyOf the binary component and null.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TranscriptionRequest'
+      responses:
+        '204':
+          description: Transcribed.
+components:
+  schemas:
+    FormFile:
+      type: string
+      format: binary
+    TranscriptionRequest:
+      type: object
+      required: [model]
+      properties:
+        model:
+          type: string
+        file:
+          anyOf:
+            - $ref: '#/components/schemas/FormFile'
+            - type: 'null'
+          default: null
+        fileUrl:
+          anyOf:
+            - type: string
+            - type: 'null'

@@ -1,18 +1,38 @@
 {
   "goldens": {
     "docs/departures/evidence/readme-client-class-casing/fern-reference": {},
+    "docs/fern-measurements/bodies-responses/body-requiredness-shapes/fern-expected": {},
     "docs/fern-measurements/bodies-responses/byte-text-response-literals/fern-expected": {},
+    "docs/fern-measurements/bodies-responses/composed-form-body/fern-expected": {},
     "docs/fern-measurements/bodies-responses/error-body-shapes-literals/fern-expected": {},
+    "docs/fern-measurements/bodies-responses/header-body-collision/fern-expected": {},
     "docs/fern-measurements/bodies-responses/inline-body-readonly-own-overlap-literals/fern-expected": {},
+    "docs/fern-measurements/bodies-responses/inline-error-component-name/fern-expected": {},
+    "docs/fern-measurements/bodies-responses/inline-union-body-content-type/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/bodies-responses/inline-union-body-content-type/fern-expected": {},
     "docs/fern-measurements/bodies-responses/json-binary-path-literals/fern-expected": {},
     "docs/fern-measurements/bodies-responses/json-request-shapes-literals/fern-expected": {},
     "docs/fern-measurements/bodies-responses/multipart-alias-object-literals/fern-expected": {},
+    "docs/fern-measurements/bodies-responses/multipart-binary-reference/fern-expected": {},
+    "docs/fern-measurements/bodies-responses/multipart-binary-required-part/fern-expected": {},
     "docs/fern-measurements/bodies-responses/multipart-json-module-literals/fern-expected": {},
     "docs/fern-measurements/bodies-responses/multipart-nullable-array-literals/fern-expected": {},
+    "docs/fern-measurements/bodies-responses/multipart-only-body-collision/fern-expected": {},
     "docs/fern-measurements/bodies-responses/multipart-request-name-literals/fern-expected": {},
+    "docs/fern-measurements/bodies-responses/non-component-ref-body/fern-expected": {},
     "docs/fern-measurements/bodies-responses/request-alias-literals/fern-expected": {},
+    "docs/fern-measurements/bodies-responses/request-convert-decision/fern-expected": {},
     "docs/fern-measurements/bodies-responses/request-media-methods-literals/fern-expected": {},
+    "docs/fern-measurements/bodies-responses/schemaless-error-media/fern-expected": {},
+    "docs/fern-measurements/bodies-responses/single-member-union-body/fern-expected": {},
     "docs/fern-measurements/bodies-responses/slashless-json-response-literals/fern-expected": {},
+    "docs/fern-measurements/bodies-responses/superseded-error-types/fern-expected": {},
+    "docs/fern-measurements/bodies-responses/titled-shared-single-body/fern-expected": {},
+    "docs/fern-measurements/bodies-responses/unknown-response-guard/fern-expected": {},
     "docs/fern-measurements/clients-extensions/auction-house-bids-literals/fern-expected": {},
     "docs/fern-measurements/clients-extensions/beacon-registry-pages-flat/fern-expected": {},
     "docs/fern-measurements/clients-extensions/beacon-registry-pages-literals/fern-expected": {},

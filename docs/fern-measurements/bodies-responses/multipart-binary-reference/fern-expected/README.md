@@ -39,9 +39,7 @@ from fern import FernApi
 
 client = FernApi()
 
-client.uploads.upload_log(
-    file="file",
-)
+client.uploads.upload_log()
 ```
 
 ## Environments
@@ -70,9 +68,7 @@ client = AsyncFernApi()
 
 
 async def main() -> None:
-    await client.uploads.upload_log(
-        file="file",
-    )
+    await client.uploads.upload_log()
 
 
 asyncio.run(main())

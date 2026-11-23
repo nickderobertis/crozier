@@ -22,14 +22,14 @@ class RawUploadsClient:
     def upload_log(
         self,
         *,
-        file: FormFile,
+        file: typing.Optional[FormFile] = OMIT,
         note: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[None]:
         """
         Parameters
         ----------
-        file : FormFile
+        file : typing.Optional[FormFile]
 
         note : typing.Optional[str]
 
@@ -121,14 +121,14 @@ class AsyncRawUploadsClient:
     async def upload_log(
         self,
         *,
-        file: FormFile,
+        file: typing.Optional[FormFile] = OMIT,
         note: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[None]:
         """
         Parameters
         ----------
-        file : FormFile
+        file : typing.Optional[FormFile]
 
         note : typing.Optional[str]
 

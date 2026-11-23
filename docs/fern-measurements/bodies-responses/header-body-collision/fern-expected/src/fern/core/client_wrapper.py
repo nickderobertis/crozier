@@ -11,7 +11,6 @@ class BaseClientWrapper:
     def __init__(
         self,
         *,
-        idempotency_key: typing.Optional[str] = None,
         headers: typing.Optional[typing.Dict[str, str]] = None,
         base_url: str,
         timeout: typing.Optional[float] = None,
@@ -20,7 +19,6 @@ class BaseClientWrapper:
         max_stream_reconnection_attempts: typing.Optional[int] = None,
         logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,
     ):
-        self._idempotency_key = idempotency_key
         self._headers = headers
         self._base_url = base_url
         self._timeout = timeout
@@ -40,8 +38,6 @@ class BaseClientWrapper:
             "X-Fern-SDK-Version": "0.0.0",
             **(self.get_custom_headers() or {}),
         }
-        if self._idempotency_key is not None:
-            headers["Idempotency-Key"] = self._idempotency_key
         return headers
 
     def get_custom_headers(self) -> typing.Optional[typing.Dict[str, str]]:
@@ -67,7 +63,6 @@ class SyncClientWrapper(BaseClientWrapper):
     def __init__(
         self,
         *,
-        idempotency_key: typing.Optional[str] = None,
         headers: typing.Optional[typing.Dict[str, str]] = None,
         base_url: str,
         timeout: typing.Optional[float] = None,
@@ -78,7 +73,6 @@ class SyncClientWrapper(BaseClientWrapper):
         httpx_client: httpx.Client,
     ):
         super().__init__(
-            idempotency_key=idempotency_key,
             headers=headers,
             base_url=base_url,
             timeout=timeout,
@@ -101,7 +95,6 @@ class AsyncClientWrapper(BaseClientWrapper):
     def __init__(
         self,
         *,
-        idempotency_key: typing.Optional[str] = None,
         headers: typing.Optional[typing.Dict[str, str]] = None,
         base_url: str,
         timeout: typing.Optional[float] = None,
@@ -113,7 +106,6 @@ class AsyncClientWrapper(BaseClientWrapper):
         httpx_client: httpx.AsyncClient,
     ):
         super().__init__(
-            idempotency_key=idempotency_key,
             headers=headers,
             base_url=base_url,
             timeout=timeout,

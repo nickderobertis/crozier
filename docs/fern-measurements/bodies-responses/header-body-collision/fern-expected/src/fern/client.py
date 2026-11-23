@@ -31,7 +31,6 @@ class FernApi:
 
 
 
-    idempotency_key : typing.Optional[str]
     headers : typing.Optional[typing.Dict[str, str]]
         Additional headers to send with every request.
 
@@ -60,9 +59,7 @@ class FernApi:
     --------
     from fern import FernApi
 
-    client = FernApi(
-        idempotency_key="YOUR_IDEMPOTENCY_KEY",
-    )
+    client = FernApi()
     """
 
     def __init__(
@@ -70,7 +67,6 @@ class FernApi:
         *,
         base_url: typing.Optional[str] = None,
         environment: FernApiEnvironment = FernApiEnvironment.DEFAULT,
-        idempotency_key: typing.Optional[str] = None,
         headers: typing.Optional[typing.Dict[str, str]] = None,
         timeout: typing.Optional[float] = None,
         max_retries: typing.Optional[int] = None,
@@ -84,7 +80,6 @@ class FernApi:
         _defaulted_max_retries = max_retries if max_retries is not None else 2
         self._client_wrapper = SyncClientWrapper(
             base_url=_get_base_url(base_url=base_url, environment=environment),
-            idempotency_key=idempotency_key,
             headers=headers,
             httpx_client=httpx_client
             if httpx_client is not None
@@ -144,7 +139,6 @@ class AsyncFernApi:
 
 
 
-    idempotency_key : typing.Optional[str]
     headers : typing.Optional[typing.Dict[str, str]]
         Additional headers to send with every request.
 
@@ -173,9 +167,7 @@ class AsyncFernApi:
     --------
     from fern import AsyncFernApi
 
-    client = AsyncFernApi(
-        idempotency_key="YOUR_IDEMPOTENCY_KEY",
-    )
+    client = AsyncFernApi()
     """
 
     def __init__(
@@ -183,7 +175,6 @@ class AsyncFernApi:
         *,
         base_url: typing.Optional[str] = None,
         environment: FernApiEnvironment = FernApiEnvironment.DEFAULT,
-        idempotency_key: typing.Optional[str] = None,
         headers: typing.Optional[typing.Dict[str, str]] = None,
         timeout: typing.Optional[float] = None,
         max_retries: typing.Optional[int] = None,
@@ -197,7 +188,6 @@ class AsyncFernApi:
         _defaulted_max_retries = max_retries if max_retries is not None else 2
         self._client_wrapper = AsyncClientWrapper(
             base_url=_get_base_url(base_url=base_url, environment=environment),
-            idempotency_key=idempotency_key,
             headers=headers,
             httpx_client=httpx_client
             if httpx_client is not None

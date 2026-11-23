@@ -30,7 +30,8 @@ class ActionsClient:
         self,
         *,
         action: str,
-        idempotency_key: typing.Optional[str] = OMIT,
+        kiln_token: typing.Optional[str] = None,
+        run_action_request_kiln_token: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ActionResult:
         """
@@ -38,7 +39,9 @@ class ActionsClient:
         ----------
         action : str
 
-        idempotency_key : typing.Optional[str]
+        kiln_token : typing.Optional[str]
+
+        run_action_request_kiln_token : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -52,15 +55,59 @@ class ActionsClient:
         --------
         from fern import FernApi
 
-        client = FernApi(
-            idempotency_key="YOUR_IDEMPOTENCY_KEY",
-        )
+        client = FernApi()
         client.actions.run_action(
             action="action",
         )
         """
         _response = self._raw_client.run_action(
-            action=action, idempotency_key=idempotency_key, request_options=request_options
+            action=action,
+            kiln_token=kiln_token,
+            run_action_request_kiln_token=run_action_request_kiln_token,
+            request_options=request_options,
+        )
+        return _response.data
+
+    def queue_action(
+        self,
+        *,
+        batch_label: str,
+        action: str,
+        queue_action_request_batch_label: typing.Optional[str] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> ActionResult:
+        """
+        Parameters
+        ----------
+        batch_label : str
+
+        action : str
+
+        queue_action_request_batch_label : typing.Optional[str]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        ActionResult
+            Queued.
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi()
+        client.actions.queue_action(
+            batch_label="batchLabel",
+            action="action",
+        )
+        """
+        _response = self._raw_client.queue_action(
+            batch_label=batch_label,
+            action=action,
+            queue_action_request_batch_label=queue_action_request_batch_label,
+            request_options=request_options,
         )
         return _response.data
 
@@ -84,7 +131,8 @@ class AsyncActionsClient:
         self,
         *,
         action: str,
-        idempotency_key: typing.Optional[str] = OMIT,
+        kiln_token: typing.Optional[str] = None,
+        run_action_request_kiln_token: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ActionResult:
         """
@@ -92,7 +140,9 @@ class AsyncActionsClient:
         ----------
         action : str
 
-        idempotency_key : typing.Optional[str]
+        kiln_token : typing.Optional[str]
+
+        run_action_request_kiln_token : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -108,9 +158,7 @@ class AsyncActionsClient:
 
         from fern import AsyncFernApi
 
-        client = AsyncFernApi(
-            idempotency_key="YOUR_IDEMPOTENCY_KEY",
-        )
+        client = AsyncFernApi()
 
 
         async def main() -> None:
@@ -122,6 +170,60 @@ class AsyncActionsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.run_action(
-            action=action, idempotency_key=idempotency_key, request_options=request_options
+            action=action,
+            kiln_token=kiln_token,
+            run_action_request_kiln_token=run_action_request_kiln_token,
+            request_options=request_options,
+        )
+        return _response.data
+
+    async def queue_action(
+        self,
+        *,
+        batch_label: str,
+        action: str,
+        queue_action_request_batch_label: typing.Optional[str] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> ActionResult:
+        """
+        Parameters
+        ----------
+        batch_label : str
+
+        action : str
+
+        queue_action_request_batch_label : typing.Optional[str]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        ActionResult
+            Queued.
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi()
+
+
+        async def main() -> None:
+            await client.actions.queue_action(
+                batch_label="batchLabel",
+                action="action",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.queue_action(
+            batch_label=batch_label,
+            action=action,
+            queue_action_request_batch_label=queue_action_request_batch_label,
+            request_options=request_options,
         )
         return _response.data

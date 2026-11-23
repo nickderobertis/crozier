@@ -60,6 +60,88 @@ paths:
       responses:
         '204':
           description: Sent.
+  /notices:
+    post:
+      operationId: sendNotice
+      tags: [verifications]
+      summary: The self-tagged reference members under a schema description.
+      requestBody:
+        description: The notice to send.
+        required: true
+        content:
+          application/json:
+            schema:
+              description: Either address to notify.
+              oneOf:
+                - $ref: '#/components/schemas/EmailVerification'
+                - $ref: '#/components/schemas/SmsVerification'
+      responses:
+        '204':
+          description: Sent.
+  /contacts:
+    post:
+      operationId: addContact
+      tags: [verifications]
+      summary: Inline self-tagged members, described as the body.
+      requestBody:
+        description: The contact to add.
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: object
+                  required: [type, email]
+                  properties:
+                    type:
+                      type: string
+                      enum: [email]
+                    email:
+                      type: string
+                - type: object
+                  required: [type, phone]
+                  properties:
+                    type:
+                      type: string
+                      enum: [sms]
+                    phone:
+                      type: string
+      responses:
+        '204':
+          description: Added.
+  /contacts/tagged:
+    post:
+      operationId: addTaggedContact
+      tags: [verifications]
+      summary: Inline members under a written discriminator.
+      requestBody:
+        description: The contact to add.
+        required: true
+        content:
+          application/json:
+            schema:
+              discriminator:
+                propertyName: type
+              oneOf:
+                - type: object
+                  required: [type, email]
+                  properties:
+                    type:
+                      type: string
+                      enum: [email]
+                    email:
+                      type: string
+                - type: object
+                  required: [type, phone]
+                  properties:
+                    type:
+                      type: string
+                      enum: [sms]
+                    phone:
+                      type: string
+      responses:
+        '204':
+          description: Added.
 components:
   schemas:
     EmailVerification:

@@ -10,9 +10,9 @@ paths:
     post:
       operationId: runAction
       tags: [actions]
-      summary: A body property and a header that normalise to one name.
+      summary: A body property sharing its wire name with an optional header.
       parameters:
-        - name: Idempotency-Key
+        - name: kilnToken
           in: header
           required: false
           schema:
@@ -30,6 +30,36 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ActionResult'
+  /actions/queue:
+    post:
+      operationId: queueAction
+      tags: [actions]
+      summary: A body property sharing its wire name with a required camelCase header.
+      parameters:
+        - name: batchLabel
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [action]
+              properties:
+                action:
+                  type: string
+                batchLabel:
+                  type: string
+      responses:
+        '200':
+          description: Queued.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionResult'
 components:
   schemas:
     RunActionRequest:
@@ -38,7 +68,7 @@ components:
       properties:
         action:
           type: string
-        idempotency_key:
+        kilnToken:
           type: string
     ActionResult:
       type: object

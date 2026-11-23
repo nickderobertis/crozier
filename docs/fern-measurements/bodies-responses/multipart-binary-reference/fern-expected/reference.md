@@ -1,6 +1,6 @@
 # Reference
 ## Uploads
-<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py#L29-L60">upload_log</a>(...)</code></summary>
+<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py#L29-L58">upload_log</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -20,9 +20,7 @@ client = FernApi(
     environment=FernApiEnvironment.DEFAULT,
 )
 
-client.uploads.upload_log(
-    file="file",
-)
+client.uploads.upload_log()
 
 ```
 </dd>
@@ -38,7 +36,7 @@ client.uploads.upload_log(
 <dl>
 <dd>
 
-**file:** `FormFile` 
+**file:** `typing.Optional[FormFile]` 
     
 </dd>
 </dl>
@@ -66,7 +64,7 @@ client.uploads.upload_log(
 </dl>
 </details>
 
-<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py#L62-L98">transcribe_recording</a>(...)</code></summary>
+<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py#L60-L96">transcribe_recording</a>(...)</code></summary>
 <dl>
 <dd>
 

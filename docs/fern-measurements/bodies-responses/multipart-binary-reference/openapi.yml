@@ -10,14 +10,13 @@ paths:
     post:
       operationId: uploadLog
       tags: [uploads]
-      summary: A required part that references a binary string component.
+      summary: A part that references a binary string component.
       requestBody:
         required: true
         content:
           multipart/form-data:
             schema:
               type: object
-              required: [file]
               properties:
                 file:
                   $ref: '#/components/schemas/FormFile'

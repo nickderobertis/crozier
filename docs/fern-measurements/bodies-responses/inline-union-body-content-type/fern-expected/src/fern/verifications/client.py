@@ -5,8 +5,11 @@ import typing
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.request_options import RequestOptions
 from .raw_client import AsyncRawVerificationsClient, RawVerificationsClient
+from .types.add_contact_request import AddContactRequest
+from .types.add_tagged_contact_request import AddTaggedContactRequest
 from .types.add_verification_request import AddVerificationRequest
 from .types.recheck_verification_request import RecheckVerificationRequest
+from .types.send_notice_request import SendNoticeRequest
 from .types.send_reminder_request import SendReminderRequest
 
 
@@ -119,6 +122,99 @@ class VerificationsClient:
         )
         """
         _response = self._raw_client.send_reminder(request=request, request_options=request_options)
+        return _response.data
+
+    def send_notice(
+        self, *, request: SendNoticeRequest, request_options: typing.Optional[RequestOptions] = None
+    ) -> None:
+        """
+        Parameters
+        ----------
+        request : SendNoticeRequest
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        from fern.verifications import SendNoticeRequest_Email
+
+        from fern import FernApi
+
+        client = FernApi()
+        client.verifications.send_notice(
+            request=SendNoticeRequest_Email(
+                email="email",
+            ),
+        )
+        """
+        _response = self._raw_client.send_notice(request=request, request_options=request_options)
+        return _response.data
+
+    def add_contact(
+        self, *, request: AddContactRequest, request_options: typing.Optional[RequestOptions] = None
+    ) -> None:
+        """
+        Parameters
+        ----------
+        request : AddContactRequest
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        from fern.verifications import AddContactRequest_Email
+
+        from fern import FernApi
+
+        client = FernApi()
+        client.verifications.add_contact(
+            request=AddContactRequest_Email(
+                email="email",
+            ),
+        )
+        """
+        _response = self._raw_client.add_contact(request=request, request_options=request_options)
+        return _response.data
+
+    def add_tagged_contact(
+        self, *, request: AddTaggedContactRequest, request_options: typing.Optional[RequestOptions] = None
+    ) -> None:
+        """
+        Parameters
+        ----------
+        request : AddTaggedContactRequest
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        from fern.verifications import AddTaggedContactRequest_Email
+
+        from fern import FernApi
+
+        client = FernApi()
+        client.verifications.add_tagged_contact(
+            request=AddTaggedContactRequest_Email(
+                email="email",
+            ),
+        )
+        """
+        _response = self._raw_client.add_tagged_contact(request=request, request_options=request_options)
         return _response.data
 
 
@@ -252,4 +348,121 @@ class AsyncVerificationsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.send_reminder(request=request, request_options=request_options)
+        return _response.data
+
+    async def send_notice(
+        self, *, request: SendNoticeRequest, request_options: typing.Optional[RequestOptions] = None
+    ) -> None:
+        """
+        Parameters
+        ----------
+        request : SendNoticeRequest
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        import asyncio
+
+        from fern.verifications import SendNoticeRequest_Email
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi()
+
+
+        async def main() -> None:
+            await client.verifications.send_notice(
+                request=SendNoticeRequest_Email(
+                    email="email",
+                ),
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.send_notice(request=request, request_options=request_options)
+        return _response.data
+
+    async def add_contact(
+        self, *, request: AddContactRequest, request_options: typing.Optional[RequestOptions] = None
+    ) -> None:
+        """
+        Parameters
+        ----------
+        request : AddContactRequest
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        import asyncio
+
+        from fern.verifications import AddContactRequest_Email
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi()
+
+
+        async def main() -> None:
+            await client.verifications.add_contact(
+                request=AddContactRequest_Email(
+                    email="email",
+                ),
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.add_contact(request=request, request_options=request_options)
+        return _response.data
+
+    async def add_tagged_contact(
+        self, *, request: AddTaggedContactRequest, request_options: typing.Optional[RequestOptions] = None
+    ) -> None:
+        """
+        Parameters
+        ----------
+        request : AddTaggedContactRequest
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        import asyncio
+
+        from fern.verifications import AddTaggedContactRequest_Email
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi()
+
+
+        async def main() -> None:
+            await client.verifications.add_tagged_contact(
+                request=AddTaggedContactRequest_Email(
+                    email="email",
+                ),
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.add_tagged_contact(request=request, request_options=request_options)
         return _response.data

@@ -29,14 +29,14 @@ class UploadsClient:
     def upload_log(
         self,
         *,
-        file: FormFile,
+        file: typing.Optional[FormFile] = OMIT,
         note: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> None:
         """
         Parameters
         ----------
-        file : FormFile
+        file : typing.Optional[FormFile]
 
         note : typing.Optional[str]
 
@@ -52,9 +52,7 @@ class UploadsClient:
         from fern import FernApi
 
         client = FernApi()
-        client.uploads.upload_log(
-            file="file",
-        )
+        client.uploads.upload_log()
         """
         _response = self._raw_client.upload_log(file=file, note=note, request_options=request_options)
         return _response.data
@@ -116,14 +114,14 @@ class AsyncUploadsClient:
     async def upload_log(
         self,
         *,
-        file: FormFile,
+        file: typing.Optional[FormFile] = OMIT,
         note: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> None:
         """
         Parameters
         ----------
-        file : FormFile
+        file : typing.Optional[FormFile]
 
         note : typing.Optional[str]
 
@@ -144,9 +142,7 @@ class AsyncUploadsClient:
 
 
         async def main() -> None:
-            await client.uploads.upload_log(
-                file="file",
-            )
+            await client.uploads.upload_log()
 
 
         asyncio.run(main())

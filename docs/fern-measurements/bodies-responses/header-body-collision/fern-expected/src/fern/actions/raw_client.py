@@ -24,7 +24,8 @@ class RawActionsClient:
         self,
         *,
         action: str,
-        idempotency_key: typing.Optional[str] = OMIT,
+        kiln_token: typing.Optional[str] = None,
+        run_action_request_kiln_token: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[ActionResult]:
         """
@@ -32,7 +33,9 @@ class RawActionsClient:
         ----------
         action : str
 
-        idempotency_key : typing.Optional[str]
+        kiln_token : typing.Optional[str]
+
+        run_action_request_kiln_token : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -47,10 +50,69 @@ class RawActionsClient:
             method="POST",
             json={
                 "action": action,
-                "idempotency_key": idempotency_key,
+                "kilnToken": run_action_request_kiln_token,
             },
             headers={
                 "content-type": "application/json",
+                "kilnToken": str(kiln_token) if kiln_token is not None else None,
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    ActionResult,
+                    parse_obj_as(
+                        type_=ActionResult,
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    def queue_action(
+        self,
+        *,
+        batch_label: str,
+        action: str,
+        queue_action_request_batch_label: typing.Optional[str] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[ActionResult]:
+        """
+        Parameters
+        ----------
+        batch_label : str
+
+        action : str
+
+        queue_action_request_batch_label : typing.Optional[str]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[ActionResult]
+            Queued.
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            "actions/queue",
+            method="POST",
+            json={
+                "action": action,
+                "batchLabel": queue_action_request_batch_label,
+            },
+            headers={
+                "content-type": "application/json",
+                "batchLabel": str(batch_label) if batch_label is not None else None,
             },
             request_options=request_options,
             omit=OMIT,
@@ -83,7 +145,8 @@ class AsyncRawActionsClient:
         self,
         *,
         action: str,
-        idempotency_key: typing.Optional[str] = OMIT,
+        kiln_token: typing.Optional[str] = None,
+        run_action_request_kiln_token: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[ActionResult]:
         """
@@ -91,7 +154,9 @@ class AsyncRawActionsClient:
         ----------
         action : str
 
-        idempotency_key : typing.Optional[str]
+        kiln_token : typing.Optional[str]
+
+        run_action_request_kiln_token : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -106,10 +171,69 @@ class AsyncRawActionsClient:
             method="POST",
             json={
                 "action": action,
-                "idempotency_key": idempotency_key,
+                "kilnToken": run_action_request_kiln_token,
             },
             headers={
                 "content-type": "application/json",
+                "kilnToken": str(kiln_token) if kiln_token is not None else None,
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    ActionResult,
+                    parse_obj_as(
+                        type_=ActionResult,
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def queue_action(
+        self,
+        *,
+        batch_label: str,
+        action: str,
+        queue_action_request_batch_label: typing.Optional[str] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[ActionResult]:
+        """
+        Parameters
+        ----------
+        batch_label : str
+
+        action : str
+
+        queue_action_request_batch_label : typing.Optional[str]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[ActionResult]
+            Queued.
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            "actions/queue",
+            method="POST",
+            json={
+                "action": action,
+                "batchLabel": queue_action_request_batch_label,
+            },
+            headers={
+                "content-type": "application/json",
+                "batchLabel": str(batch_label) if batch_label is not None else None,
             },
             request_options=request_options,
             omit=OMIT,

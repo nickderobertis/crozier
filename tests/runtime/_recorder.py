@@ -332,10 +332,119 @@ JOURNEYS = [
 JOURNEY_NAMES = [journey.__name__ for journey in JOURNEYS]
 
 
+# The header/body collision SDK: `docs/fern-measurements/bodies-responses/header-body-collision/`,
+# whose operations each send a header and a body property under one wire name
+# (`kilnToken`, `batchLabel`). The method renames the body argument, and each
+# value must still reach its own place: the header's in the header, the body
+# argument's in the JSON body.
+HEADER_VALUE = "header-value"
+BODY_VALUE = "body-value"
+
+
+def load_collision_sdk(src):
+    """Import the collision SDK's clients and error base from its `src/`."""
+    sys.path.insert(0, src)
+    from fern import AsyncFernApi, FernApi
+    from fern.core.api_error import ApiError
+
+    return SimpleNamespace(FernApi=FernApi, AsyncFernApi=AsyncFernApi, ApiError=ApiError)
+
+
+def _collision_record(request, header):
+    """The request, after checking each value reached its own wire place."""
+    if request.headers.get(header) != HEADER_VALUE:
+        raise AssertionError(f"{header} header carries {request.headers.get(header)!r}, not {HEADER_VALUE!r}")
+    body = _body(request)
+    if not isinstance(body, dict) or body.get(header) != BODY_VALUE:
+        raise AssertionError(f"the JSON body's {header} is {body!r}, not {BODY_VALUE!r}")
+    return _request_record(request)
+
+
+def header_and_body_keep_their_values(sdk):
+    """An optional header and a component body property sharing `kilnToken`, and
+    a required header and an inline body property sharing `batchLabel`, each send
+    the header argument as the header and the renamed body argument in the body."""
+    transport, box = _capture(200, {"status": "ran"})
+    client = sdk.FernApi(base_url=BASE_URL, httpx_client=httpx.Client(transport=transport))
+    ran = client.actions.run_action(action="fire", kiln_token=HEADER_VALUE, run_action_request_kiln_token=BODY_VALUE)
+    run = _collision_record(box["request"], "kilnToken")
+    queued = client.actions.queue_action(
+        action="cool", batch_label=HEADER_VALUE, queue_action_request_batch_label=BODY_VALUE
+    )
+    queue = _collision_record(box["request"], "batchLabel")
+    return {"run": run, "run_status": ran.status, "queue": queue, "queue_status": queued.status}
+
+
+def async_header_and_body_keep_their_values(sdk):
+    """The async client binds both values the same way."""
+    transport, box = _capture(200, {"status": "ran"})
+    client = sdk.AsyncFernApi(base_url=BASE_URL, httpx_client=httpx.AsyncClient(transport=transport))
+
+    async def go():
+        ran = await client.actions.run_action(
+            action="fire", kiln_token=HEADER_VALUE, run_action_request_kiln_token=BODY_VALUE
+        )
+        run = _collision_record(box["request"], "kilnToken")
+        queued = await client.actions.queue_action(
+            action="cool", batch_label=HEADER_VALUE, queue_action_request_batch_label=BODY_VALUE
+        )
+        return {
+            "run": run,
+            "run_status": ran.status,
+            "queue": _collision_record(box["request"], "batchLabel"),
+            "queue_status": queued.status,
+        }
+
+    return asyncio.run(go())
+
+
+def collision_error_then_recovery(sdk):
+    """A 400 raises the API error with the values sent in their places, and the
+    next request on the same client succeeds."""
+    calls = []
+
+    def handler(request):
+        calls.append(request)
+        if len(calls) == 1:
+            return httpx.Response(400, json={"detail": "rejected"})
+        return httpx.Response(200, json={"status": "ran"})
+
+    client = sdk.FernApi(base_url=BASE_URL, httpx_client=httpx.Client(transport=httpx.MockTransport(handler)))
+    try:
+        client.actions.run_action(action="fire", kiln_token=HEADER_VALUE, run_action_request_kiln_token=BODY_VALUE)
+    except sdk.ApiError as error:
+        failed = {"status": error.status_code, "body": error.body}
+    else:
+        raise AssertionError("a 400 did not raise")
+    recovered = client.actions.run_action(
+        action="fire", kiln_token=HEADER_VALUE, run_action_request_kiln_token=BODY_VALUE
+    )
+    return {
+        "failed": failed,
+        "failed_request": _collision_record(calls[0], "kilnToken"),
+        "recovered": recovered.status,
+        "recovered_request": _collision_record(calls[1], "kilnToken"),
+    }
+
+
+COLLISION_JOURNEYS = [
+    header_and_body_keep_their_values,
+    async_header_and_body_keep_their_values,
+    collision_error_then_recovery,
+]
+COLLISION_JOURNEY_NAMES = [journey.__name__ for journey in COLLISION_JOURNEYS]
+
+
 def record(src):
     """Run every journey against the SDK at `src` and return the recording dict."""
     sdk = load_sdk(src)
     return {journey.__name__: journey(sdk) for journey in JOURNEYS}
+
+
+def record_collision(src):
+    """Run every collision journey against the collision SDK at `src`."""
+    sdk = load_collision_sdk(src)
+    return {journey.__name__: journey(sdk) for journey in COLLISION_JOURNEYS}
 
 
 def main():
@@ -343,7 +452,8 @@ def main():
     if not src:
         print("WIRE_SDK_SRC is not set (path to the generated SDK's src/ dir)", file=sys.stderr)
         sys.exit(2)
-    json.dump(record(src), sys.stdout, indent=2, sort_keys=True, default=str)
+    recorder = record_collision if os.environ.get("WIRE_JOURNEYS") == "header-body-collision" else record
+    json.dump(recorder(src), sys.stdout, indent=2, sort_keys=True, default=str)
     sys.stdout.write("\n")
 
 

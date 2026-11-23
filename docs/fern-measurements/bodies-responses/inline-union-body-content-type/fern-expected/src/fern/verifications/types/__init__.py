@@ -6,6 +6,16 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
+    from .add_contact_request import AddContactRequest, AddContactRequest_Email, AddContactRequest_Sms
+    from .add_contact_request_email import AddContactRequestEmail
+    from .add_contact_request_sms import AddContactRequestSms
+    from .add_tagged_contact_request import (
+        AddTaggedContactRequest,
+        AddTaggedContactRequest_Email,
+        AddTaggedContactRequest_Sms,
+    )
+    from .add_tagged_contact_request_email import AddTaggedContactRequestEmail
+    from .add_tagged_contact_request_sms import AddTaggedContactRequestSms
     from .add_verification_request import (
         AddVerificationRequest,
         AddVerificationRequest_Email,
@@ -16,14 +26,28 @@ if typing.TYPE_CHECKING:
         RecheckVerificationRequest_Email,
         RecheckVerificationRequest_Sms,
     )
+    from .send_notice_request import SendNoticeRequest, SendNoticeRequest_Email, SendNoticeRequest_Sms
     from .send_reminder_request import SendReminderRequest, SendReminderRequest_Email, SendReminderRequest_Sms
 _dynamic_imports: typing.Dict[str, str] = {
+    "AddContactRequest": ".add_contact_request",
+    "AddContactRequestEmail": ".add_contact_request_email",
+    "AddContactRequestSms": ".add_contact_request_sms",
+    "AddContactRequest_Email": ".add_contact_request",
+    "AddContactRequest_Sms": ".add_contact_request",
+    "AddTaggedContactRequest": ".add_tagged_contact_request",
+    "AddTaggedContactRequestEmail": ".add_tagged_contact_request_email",
+    "AddTaggedContactRequestSms": ".add_tagged_contact_request_sms",
+    "AddTaggedContactRequest_Email": ".add_tagged_contact_request",
+    "AddTaggedContactRequest_Sms": ".add_tagged_contact_request",
     "AddVerificationRequest": ".add_verification_request",
     "AddVerificationRequest_Email": ".add_verification_request",
     "AddVerificationRequest_Sms": ".add_verification_request",
     "RecheckVerificationRequest": ".recheck_verification_request",
     "RecheckVerificationRequest_Email": ".recheck_verification_request",
     "RecheckVerificationRequest_Sms": ".recheck_verification_request",
+    "SendNoticeRequest": ".send_notice_request",
+    "SendNoticeRequest_Email": ".send_notice_request",
+    "SendNoticeRequest_Sms": ".send_notice_request",
     "SendReminderRequest": ".send_reminder_request",
     "SendReminderRequest_Email": ".send_reminder_request",
     "SendReminderRequest_Sms": ".send_reminder_request",
@@ -52,12 +76,25 @@ def __dir__():
 
 
 __all__ = [
+    "AddContactRequest",
+    "AddContactRequestEmail",
+    "AddContactRequestSms",
+    "AddContactRequest_Email",
+    "AddContactRequest_Sms",
+    "AddTaggedContactRequest",
+    "AddTaggedContactRequestEmail",
+    "AddTaggedContactRequestSms",
+    "AddTaggedContactRequest_Email",
+    "AddTaggedContactRequest_Sms",
     "AddVerificationRequest",
     "AddVerificationRequest_Email",
     "AddVerificationRequest_Sms",
     "RecheckVerificationRequest",
     "RecheckVerificationRequest_Email",
     "RecheckVerificationRequest_Sms",
+    "SendNoticeRequest",
+    "SendNoticeRequest_Email",
+    "SendNoticeRequest_Sms",
     "SendReminderRequest",
     "SendReminderRequest_Email",
     "SendReminderRequest_Sms",

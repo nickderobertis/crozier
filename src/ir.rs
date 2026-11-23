@@ -1494,6 +1494,7 @@ fn inline_body_source_names(
         .collect();
     let mut counts: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
     let mut replaced: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
+    let mut multipart_uses: IndexMap<String, usize> = IndexMap::new();
     for (path, item) in &doc.paths {
         for (method, op) in item.operations() {
             // A GET or HEAD body is ignored, so it inlines nothing and its schema
@@ -1579,9 +1580,38 @@ fn inline_body_source_names(
                     || (!is_map(target) || target.all_of.is_some())
                         && (target.properties.declared() || target.all_of.is_some()))
             {
+                // Multipart forms are counted per component, not per class
+                // name: two components whose names collide on one class are each
+                // inlined once, and neither keeps a model (measured in
+                // `docs/fern-measurements/bodies-responses/multipart-only-body-collision/`).
+                // A JSON body's collision keeps the model, as before. An
+                // operation a same-named one replaced counts as a use here too.
+                if multipart_form {
+                    *multipart_uses.entry(reference.clone()).or_default() += 1;
+                    continue;
+                }
                 let tally = if survived { &mut counts } else { &mut replaced };
                 *tally.entry(ref_to_class(reference)).or_default() += 1;
             }
+        }
+    }
+    let mut multipart_classes: std::collections::HashMap<String, bool> =
+        std::collections::HashMap::new();
+    for (reference, uses) in &multipart_uses {
+        *multipart_classes
+            .entry(ref_to_class(reference))
+            .or_insert(true) &= *uses == 1;
+    }
+    for (class, single_uses) in multipart_classes {
+        if counts.contains_key(&class) || !single_uses {
+            let uses = multipart_uses
+                .iter()
+                .filter(|(reference, _)| ref_to_class(reference) == class)
+                .map(|(_, uses)| uses)
+                .sum::<usize>();
+            *counts.entry(class).or_default() += uses;
+        } else {
+            counts.insert(class, 1);
         }
     }
     // A body posted once, by an operation a later one of the same method name
@@ -1740,9 +1770,9 @@ pub(crate) fn empty_root_security_credentials(doc: &OpenApi) -> Vec<String> {
 pub enum BodySchemaShape {
     /// Declared by component `$ref`.
     Ref,
-    /// An inline union (`oneOf`/`anyOf`, no `$ref`) declaring no `title` and
-    /// discriminated neither by a written `discriminator` nor by its members' own
-    /// tags. Fern leaves such a body's content type to httpx; see `emit.rs`.
+    /// An inline union (`oneOf`/`anyOf`, no `$ref`) declaring neither a `title`
+    /// nor a `description`. Fern leaves such a body's content type to httpx;
+    /// see `emit.rs`.
     InlinePlainUnion,
     /// Any other inline schema, or no schema at all.
     #[default]
@@ -1751,7 +1781,7 @@ pub enum BodySchemaShape {
 
 impl BodySchemaShape {
     /// Read the shape off the first media schema a Request Body Object declares.
-    fn of(schema: Option<&Schema>, schemas: &IndexMap<String, Schema>) -> Self {
+    fn of(schema: Option<&Schema>) -> Self {
         let Some(schema) = schema else {
             return Self::Other;
         };
@@ -1762,11 +1792,13 @@ impl BodySchemaShape {
             // is, and keeps the header (the `union-inheritance/map-beside-union`
             // measurement's `logFiring`).
             && !prefer_map_to_union(schema)
-            && schema.discriminator.is_none()
-            // Members tagging themselves discriminate the union as a written
-            // discriminator does, and the header stays: Letta's template body,
-            // its `discriminator` removed, keeps it in Fern's output.
-            && inferred_union_discriminant_property(schema, schemas).is_none()
+            // A union describing itself keeps the header as a titled one does,
+            // whether or not it is discriminated, written or by its members'
+            // own tags: Letta's described `createTemplateNoProject` keeps it,
+            // and the same members undescribed drop it under a `discriminator`
+            // too (measured in
+            // `docs/fern-measurements/bodies-responses/inline-union-body-content-type/`).
+            && schema.description.is_none()
             && schema
                 .title
                 .as_deref()
@@ -5114,10 +5146,20 @@ fn build_endpoint(
     // A union mapping a value to a bare schema name is `typing.Any` as well,
     // and Fern guards its empty body the same way: the openapi-generator AllOf
     // sample's `GET /person/display/{personId}` answers that `Person`.
+    // So is a component crozier declares as a `typing.Any` alias for another
+    // reason: rosen-bridge's `TxCbor`, `items` with no `type` (measured in
+    // `docs/fern-measurements/bodies-responses/unknown-response-guard/`).
     let success_names_unknown = success_response_schema(op)
         .and_then(|schema| schema.reference.as_deref())
-        .and_then(|reference| resolve_ref(doc, reference))
-        .is_some_and(|schema| is_unknown(schema) || bare_name_mapped_union(schema));
+        .is_some_and(|reference| {
+            resolve_ref(doc, reference)
+                .is_some_and(|schema| is_unknown(schema) || bare_name_mapped_union(schema))
+                || types.iter().any(|decl| {
+                    matches!(decl, TypeDecl::Alias(alias)
+                        if alias.name == ref_to_class(reference)
+                            && alias.target == TypeRef::Primitive(Prim::Any))
+                })
+        });
     let has_parameters =
         !path_params.is_empty() || !query_params.is_empty() || !header_params.is_empty();
     let body_collapses_to_type_reference = !has_parameters
@@ -5267,6 +5309,9 @@ fn build_endpoint(
             })
             .and_then(|(_, media)| media.schema.as_ref())
             .and_then(|schema| schema.reference.as_deref())
+            // A reference naming nothing documents no model: the body is
+            // `typing.Any`, as its method types it.
+            .filter(|reference| resolve_ref(doc, reference).is_some())
             // A model declaring no properties is documented only when the body is
             // the operation's sole input: marimo-plugins' `write_marimo_tex_data`
             // reads `**request:** MarimoTexData`, while TrueFoundry's session
@@ -5329,14 +5374,11 @@ fn build_endpoint(
             .map(|(media_type, _)| media_type)
             .filter(|media_type| *media_type != "application/json")
             .map(str::to_string),
-        body_schema_shape: BodySchemaShape::of(
-            op.request_body.as_ref().and_then(|body| {
-                body.content
-                    .values()
-                    .find_map(|media| media.schema.as_ref())
-            }),
-            &doc.components.schemas,
-        ),
+        body_schema_shape: BodySchemaShape::of(op.request_body.as_ref().and_then(|body| {
+            body.content
+                .values()
+                .find_map(|media| media.schema.as_ref())
+        })),
         body_schema_dropped: false,
         body_schema_shared: op
             .request_body
@@ -7191,28 +7233,14 @@ fn one_primitive_union(members: &[Schema]) -> Option<TypeRef> {
 }
 
 /// The schema an error response's body is converted from. Fern imports an
-/// error's first declared concrete representation: FOLIO's shared 400 response
-/// writes `text/plain` before `application/json`, and the generated exception
-/// carries `str` even though the JSON body is typed.
+/// error's first declared representation: FOLIO's shared 400 response writes
+/// `text/plain` before `application/json`, and the generated exception carries
+/// `str` even though the JSON body is typed. A first representation with no
+/// schema, or an unknown `{}` one, leaves the body unknown though a typed one
+/// follows (measured in
+/// `docs/fern-measurements/bodies-responses/schemaless-error-media/`).
 fn error_body_schema(resp: &Response) -> Option<&Schema> {
-    let first_concrete = || {
-        resp.content
-            .values()
-            .filter_map(|media| media.schema.as_ref())
-            .find(|schema| !is_unknown(schema))
-            .or_else(|| {
-                resp.content
-                    .values()
-                    .find_map(|media| media.schema.as_ref())
-            })
-    };
-    // Several representations of one error are where the order decides, as
-    // FOLIO's shared `400` shows above; a single one is read the same way.
-    // This arm lets the reach ledger measure an error declaring several media.
-    if resp.content.len() > 1 {
-        return first_concrete();
-    }
-    first_concrete()
+    resp.content.values().next()?.schema.as_ref()
 }
 
 /// Hoist a standalone `{ErrorClassName}Body` model for each error response whose
@@ -7224,6 +7252,16 @@ fn hoist_error_body_types(doc: &OpenApi, builder: &mut Builder) {
     let mut bodies: IndexMap<String, Schema> = IndexMap::new();
     let mut union_declarations: Vec<(String, Schema)> = Vec::new();
     let mut superseded_enums: IndexMap<String, Schema> = IndexMap::new();
+    let mut superseded_objects: Vec<(String, Schema)> = Vec::new();
+    // A component model already declared under a body's name keeps it: an
+    // inline error object of that name declares nothing, its nested models
+    // included (measured in
+    // `docs/fern-measurements/bodies-responses/inline-error-component-name/`).
+    let declared: std::collections::HashSet<String> = builder
+        .types
+        .iter()
+        .map(|decl| decl.name().to_string())
+        .collect();
     for (_, item) in &doc.paths {
         for (_, op) in item.operations() {
             for (status, resp) in error_response_entries(op) {
@@ -7316,6 +7354,9 @@ fn hoist_error_body_types(doc: &OpenApi, builder: &mut Builder) {
                     continue;
                 }
                 if is_inline_struct(schema) {
+                    if declared.contains(&name) {
+                        continue;
+                    }
                     if bodies.get(&name).is_some_and(|existing| {
                         existing.one_of.is_some() || existing.any_of.is_some()
                     }) {
@@ -7367,6 +7408,12 @@ fn hoist_error_body_types(doc: &OpenApi, builder: &mut Builder) {
                                 ));
                             }
                         }
+                        // Every other model the earlier declaration nested stays
+                        // too, unless the later one declares it again: an
+                        // earlier `400`'s `exception.errorList` item outlives a
+                        // later `400` declaring `exception` alone (measured in
+                        // `docs/fern-measurements/bodies-responses/superseded-error-types/`).
+                        superseded_objects.push((name.clone(), existing.clone()));
                         *existing = schema.clone();
                     } else {
                         // One arm per spelling, so an object declaring properties is
@@ -7395,6 +7442,17 @@ fn hoist_error_body_types(doc: &OpenApi, builder: &mut Builder) {
     }
     for (name, schema) in superseded_enums {
         builder.add_named(&name, &schema);
+    }
+    for (name, schema) in &superseded_objects {
+        let before = builder.types.len();
+        builder.add_named(name, schema);
+        let mut nested = builder.types.split_off(before);
+        nested.retain(|decl| {
+            decl.name() != name
+                && !matches!(decl, TypeDecl::Enum(_))
+                && !builder.types.iter().any(|kept| kept.name() == decl.name())
+        });
+        builder.types.extend(nested);
     }
     // Each union declaration is converted in order, and every type it produces
     // replaces an earlier one of the same name, nested ones included: the
@@ -7452,7 +7510,15 @@ fn hoist_error_body_types(doc: &OpenApi, builder: &mut Builder) {
             object.docstring = None;
             builder.types.push(TypeDecl::Object(object));
         } else {
+            // The last declaration's models replace any an earlier one nested
+            // under the same names.
+            let before = builder.types.len();
             builder.add_named(&name, &schema);
+            let produced = builder.types.split_off(before);
+            builder
+                .types
+                .retain(|decl| !produced.iter().any(|new| new.name() == decl.name()));
+            builder.types.extend(produced);
         }
     }
 }
@@ -7865,8 +7931,17 @@ fn resolve_request_body(
             // An inline urlencoded body that is an `allOf` of `$ref` parents and
             // plain inline objects is laid out as a JSON one is: the inline
             // members' fields, then the parents'. FOSSology's `POST /tokens`.
-            let parents_and_inline = (!multipart && component.is_none())
-                .then(|| parents_with_inline_members(obj))
+            // One composed of plain inline objects alone, multipart or
+            // urlencoded, is their merged fields (measured in
+            // `docs/fern-measurements/bodies-responses/composed-form-body/`).
+            let parents_and_inline = component
+                .is_none()
+                .then(|| {
+                    (!multipart)
+                        .then(|| parents_with_inline_members(obj))
+                        .flatten()
+                        .or_else(|| merged_inline_all_of(obj))
+                })
                 .flatten();
             let mut fields = hoist_form_object(
                 parents_and_inline.as_ref().unwrap_or(obj),
@@ -7983,9 +8058,18 @@ fn resolve_request_body(
     // `required: false` body of `{type: object, additionalProperties: false}`
     // takes a required `request: Dict[str, Any]` (measured in
     // `docs/fern-measurements/handed-off/bodies-media/request-body-optionality/`).
+    // An inline union is passed whole as well, and is required however the
+    // Request Body Object declares it: a `required: false` `oneOf` of two
+    // object components takes a required `request` (measured in
+    // `docs/fern-measurements/bodies-responses/body-requiredness-shapes/`).
+    let inline_union = schema.reference.is_none()
+        && (schema.one_of.is_some() || schema.any_of.is_some())
+        && simple_nullable_member(schema).is_none()
+        && !prefer_map_to_union(schema);
     let required = (media_type == "*/*"
         || declared_required
         || passed_whole
+        || inline_union
         || is_closed_empty_object(schema)
         || is_map(schema)
             && schema.all_of.is_none()
@@ -8009,13 +8093,38 @@ fn resolve_request_body(
         ));
     }
     if let Some(reference) = &schema.reference {
-        let target = resolve_ref(doc, reference)?;
+        // A local reference naming nothing outside `components` is an unknown
+        // body, one required `json=request` with no content-type header, as
+        // Fern types it (measured in
+        // `docs/fern-measurements/bodies-responses/non-component-ref-body/`).
+        let Some(target) = resolve_ref(doc, reference) else {
+            return (reference.starts_with('#') && !reference.starts_with("#/components/"))
+                .then(|| single(TypeRef::Primitive(Prim::Any), required, false, false));
+        };
         let target = if target.reference.is_some() {
             resolve_form_object_alias(target, Some(&doc.components.schemas), types)
         } else {
             target
         };
         let class = ref_to_class(reference);
+        // A component that is a one-member union around an object component is
+        // that object as a body: its fields are the method's keyword arguments,
+        // and the union's own model is still declared (measured in
+        // `docs/fern-measurements/bodies-responses/single-member-union-body/`).
+        // A nullable wrapper keeps the component whole (keyserv's, above).
+        if let Some(member) = sole_object_member_ref(doc, target) {
+            let mut collapsed = rb.clone();
+            for media in collapsed.content.values_mut() {
+                if let Some(schema) = media
+                    .schema
+                    .as_mut()
+                    .filter(|schema| schema.reference.as_deref() == Some(reference.as_str()))
+                {
+                    schema.reference = Some(member.to_string());
+                }
+            }
+            return resolve_request_body(doc, types, &collapsed, hoister, request_ctx, inputs);
+        }
         if target.properties.declared()
             && target.properties.is_empty()
             && target.all_of.is_none()
@@ -8079,7 +8188,15 @@ fn resolve_request_body(
         {
             let mut body = single(TypeRef::Named(class), required, true, true);
             if let RequestBody::Single(single) = &mut body {
-                single.convert = !bare_name_mapped_union(target) && !prefer_map_to_union(target);
+                // A component declared as a nullable scalar alias (`anyOf:
+                // [string, null]` is `Optional[str]`) has nothing to convert,
+                // and is sent as it is (measured in
+                // `docs/fern-measurements/bodies-responses/request-convert-decision/`).
+                single.convert = !bare_name_mapped_union(target)
+                    && !prefer_map_to_union(target)
+                    && simple_nullable_member(target).is_none_or(|member| {
+                        member.reference.is_some() || !is_plain_scalar(member)
+                    });
                 single.content_type_override =
                     (media_type == "*/*").then(|| media_type.to_string());
                 single.example = (media_example(doc, media).map(serde_json::Value::to_string))
@@ -8092,8 +8209,14 @@ fn resolve_request_body(
         // closed empty object, which Fern declares as the same `Dict` alias.
         // Without it the operation falls outside the emittable subset and is
         // dropped from its client.
+        // A map whose values need converting is written through the converter,
+        // as Fern writes `DatasourceQuery`, a map of a recursive union alias
+        // (measured in
+        // `docs/fern-measurements/bodies-responses/request-convert-decision/`).
         if (is_map(target) || is_closed_empty_object(target)) && target.all_of.is_none() {
-            return Some(single(TypeRef::Named(class), required, false, true));
+            let type_ref = TypeRef::Named(class);
+            let convert = is_map(target) && hoister.needs_convert(&type_ref);
+            return Some(single(type_ref, required, convert, true));
         }
         // A titled array component carries the JSON content-type header, as a
         // titled inline array body does: LangChain's agent server posts
@@ -8220,9 +8343,18 @@ fn resolve_request_body(
             |reference| TypeRef::Named(ref_to_class(reference)),
         );
         let convert = hoister.needs_convert(&type_ref);
+        // A free-form object made nullable is an optional `request` however the
+        // body declares `required` (measured in
+        // `docs/fern-measurements/bodies-responses/body-requiredness-shapes/`).
+        let free_form = member.reference.is_none()
+            && is_map(member)
+            && matches!(
+                member.additional_properties,
+                Some(AdditionalProperties::Bool(true))
+            );
         return Some(single_with_override(
             type_ref,
-            rb.required == Some(true),
+            rb.required == Some(true) && !free_form,
             convert,
             true,
             content_type_override,
@@ -10976,6 +11108,43 @@ fn parents_with_inline_members(schema: &Schema) -> Option<Schema> {
     Some(merged)
 }
 
+/// A property-less schema composed only of plain inline objects, as one object
+/// declaring their properties in order and every `required` name, its own and
+/// its members'.
+fn merged_inline_all_of(schema: &Schema) -> Option<Schema> {
+    let members = schema.all_of.as_deref()?;
+    if schema.reference.is_some()
+        || !schema.properties.is_empty()
+        || schema.one_of.is_some()
+        || schema.any_of.is_some()
+        || members.is_empty()
+        || !members.iter().all(|member| {
+            member.reference.is_none()
+                && member.all_of.is_none()
+                && member.one_of.is_none()
+                && member.any_of.is_none()
+                && !member.properties.is_empty()
+        })
+    {
+        return None;
+    }
+    let mut merged = schema.clone();
+    for member in members {
+        for (name, property) in &member.properties {
+            if !merged.properties.contains_key(name) {
+                merged.properties.insert(name.clone(), property.clone());
+            }
+        }
+        for name in &member.required {
+            if !merged.required.contains(name) {
+                merged.required.push(name.clone());
+            }
+        }
+    }
+    merged.all_of = None;
+    Some(merged)
+}
+
 /// Whether a schema's `$ref` `allOf` parents add their own property names.
 #[derive(Clone, Copy)]
 enum Parents {
@@ -11298,9 +11467,19 @@ fn hoist_form_object(
                     .and_then(|e| e.content_type.as_ref())
                     .is_none()
                 && is_multipart_primitive_list(resolved, hoister.schemas);
+            // A nullable reference to a binary string component is that alias of
+            // `bytes`, sent as the part's value itself as the plain reference is:
+            // measured in
+            // `docs/fern-measurements/bodies-responses/multipart-binary-reference/`.
+            let nullable_binary_reference =
+                simple_nullable_member(resolved).is_some_and(|member| {
+                    member.reference.is_some()
+                        && binary_scalar(resolve_multipart_ref(member, hoister.schemas))
+                });
             let form_json = multipart
                 && !is_file
                 && !repeated_part
+                && !nullable_binary_reference
                 && simple_nullable_primitive_member(resolved).is_none()
                 && !nullable_enum_part(resolved, hoister.schemas)
                 && (is_unknown(resolved)
@@ -21235,6 +21414,32 @@ fn short_circuit_description(
 /// `oneOf`/`anyOf` and nothing else: keyserv's `{nullable: true, oneOf: [$ref
 /// CurrentKey]}`. Fern keeps that component and makes it optional (the `R3`
 /// measurement).
+/// The member a non-nullable, one-member `oneOf`/`anyOf` component wraps, when
+/// that member is a `$ref` to an object declaring properties: the body Fern
+/// spreads into keyword arguments.
+fn sole_object_member_ref<'a>(doc: &OpenApi, target: &'a Schema) -> Option<&'a str> {
+    let members = target.one_of.as_deref().or(target.any_of.as_deref())?;
+    let [member] = members else {
+        return None;
+    };
+    let reference = member.reference.as_deref()?;
+    let object = resolve_ref(doc, reference)?;
+    (target.reference.is_none()
+        && target.one_of.is_some() != target.any_of.is_some()
+        && !is_optional(target)
+        && target.ty.is_none()
+        && !target.properties.declared()
+        && target.additional_properties.is_none()
+        && target.all_of.is_none()
+        && target.discriminator.is_none()
+        && object.reference.is_none()
+        && object.one_of.is_none()
+        && object.any_of.is_none()
+        && !is_optional(object)
+        && !object.properties.is_empty())
+    .then_some(reference)
+}
+
 fn nullable_sole_member_ref(schema: &Schema) -> Option<&str> {
     let members = schema.one_of.as_deref().or(schema.any_of.as_deref())?;
     let [member] = members else {
@@ -26468,8 +26673,7 @@ mod tests {
     }
 
     #[test]
-    fn a_self_tagged_inline_union_body_is_no_plain_union() {
-        let schemas = indexmap::IndexMap::new();
+    fn only_a_titled_or_described_inline_union_body_is_no_plain_union() {
         let member = |tag: &str| {
             serde_json::json!({
                 "type": "object",
@@ -26477,19 +26681,27 @@ mod tests {
                 "properties": { "type": { "type": "string", "enum": [tag] } }
             })
         };
-        let tagged = schema(serde_json::json!({ "oneOf": [member("agent"), member("file")] }));
-        assert_eq!(
-            super::BodySchemaShape::of(Some(&tagged), &schemas),
-            super::BodySchemaShape::Other
-        );
-        let plain = schema(serde_json::json!({ "oneOf": [
-            { "type": "object", "properties": { "a": { "type": "string" } } },
-            { "type": "object", "properties": { "b": { "type": "string" } } }
-        ] }));
-        assert_eq!(
-            super::BodySchemaShape::of(Some(&plain), &schemas),
-            super::BodySchemaShape::InlinePlainUnion
-        );
+        for plain in [
+            serde_json::json!({ "oneOf": [member("agent"), member("file")] }),
+            serde_json::json!({
+                "oneOf": [member("agent"), member("file")],
+                "discriminator": { "propertyName": "type" }
+            }),
+        ] {
+            assert_eq!(
+                super::BodySchemaShape::of(Some(&schema(plain))),
+                super::BodySchemaShape::InlinePlainUnion
+            );
+        }
+        for kept in [
+            serde_json::json!({ "oneOf": [member("agent"), member("file")], "description": "Either." }),
+            serde_json::json!({ "oneOf": [member("agent"), member("file")], "title": "Either" }),
+        ] {
+            assert_eq!(
+                super::BodySchemaShape::of(Some(&schema(kept))),
+                super::BodySchemaShape::Other
+            );
+        }
     }
 
     #[test]

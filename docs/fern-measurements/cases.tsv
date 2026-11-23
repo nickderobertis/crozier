@@ -18,6 +18,7 @@ bodies-responses/inline-error-component-name	docs/fern-measurements/bodies-respo
 bodies-responses/inline-union-body-content-type	docs/fern-measurements/bodies-responses/inline-union-body-content-type/openapi.yml	python-enums	packaged	-
 bodies-responses/inline-union-body-content-type/expected-literals	docs/fern-measurements/bodies-responses/inline-union-body-content-type/openapi.yml	literals	packaged	fern-expected:docs/fern-measurements/bodies-responses/inline-union-body-content-type/fern-expected
 bodies-responses/multipart-binary-reference	docs/fern-measurements/bodies-responses/multipart-binary-reference/openapi.yml	python-enums	packaged	-
+bodies-responses/multipart-binary-required-part	docs/fern-measurements/bodies-responses/multipart-binary-required-part/openapi.yml	python-enums	packaged	-
 bodies-responses/multipart-only-body-collision	docs/fern-measurements/bodies-responses/multipart-only-body-collision/openapi.yml	python-enums	packaged	-
 bodies-responses/non-component-ref-body	docs/fern-measurements/bodies-responses/non-component-ref-body/openapi.yml	python-enums	packaged	-
 bodies-responses/request-convert-decision	docs/fern-measurements/bodies-responses/request-convert-decision/openapi.yml	python-enums	packaged	-
