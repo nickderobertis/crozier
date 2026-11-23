@@ -6,7 +6,7 @@
 //! Raybot and FOLIO corpus trees pin the relative-file forms, while Helios pins
 //! the absolute-URL schema form.
 //!
-//! Five rules follow from what Fern was measured to do (see the
+//! Six rules follow from what Fern was measured to do (see the
 //! `helios-verifiable-api` corpus row, whose 27 component schemas are all remote
 //! references into `ethereum/execution-apis`, and the `mockserver` row):
 //!
@@ -15,12 +15,19 @@
 //! - **A fetched schema takes its pointer's name.** The local key that named the
 //!   reference is left as an alias to it, and every other reference to that key
 //!   is renamed, so the SDK agrees with Fern on which class each one means.
-//! - **A local pointer inside a fetched schema stays local to the *root*
-//!   document.** The referenced documents are schema fragments assembled by the
-//!   root, so their `#/components/schemas/…` pointers are left untouched and
-//!   resolve against the root's `components` like any other local ref — and, as
-//!   with any unresolvable local ref, a name the root does not declare degrades
-//!   to the unknown type rather than failing generation.
+//! - **A local pointer resolves from the document that contains it.** A
+//!   `#/components/schemas/…` pointer inside a sibling file or a fetched
+//!   document names *that* document's component, which is imported beside the
+//!   root's, as OpenAPI resolves a relative reference and as the certified pair
+//!   (Fern CLI 5.216.0 / fern-python-sdk 5.42.0) was measured to on
+//!   `docs/fern-measurements/naming-acceptance/relative-response-ref/` (issue
+//!   #942): a `./components.yml#/components/responses/NotFound` response whose
+//!   schema points at that file's `Problem`, which points at its `Detail`, types
+//!   the error with both. A Response Object in another file is read from it the
+//!   same way. Only a pointer the containing document does not carry falls back
+//!   to the root's `components` (Helios's fragments are assembled by the root);
+//!   an unresolvable local ref there degrades to the unknown type rather than
+//!   failing generation.
 //! - **A fetch that fails is a hard error.** A silently dropped schema would
 //!   generate a plausible SDK with the wrong types in it.
 //! - **A schema naming a relative file that does not exist is the unknown
@@ -351,6 +358,21 @@ struct Resolver<'a> {
 }
 
 impl Resolver<'_> {
+    /// Whether `source` is a document other than the root: a fetched URL, or a
+    /// local file the root names. A `#/components/schemas/…` pointer inside one
+    /// names that document's component, as OpenAPI resolves a relative reference
+    /// from the document that contains it and as the certified pair does
+    /// (issue #942).
+    fn is_other_document(&self, source: &DocumentLocation) -> bool {
+        match source {
+            DocumentLocation::Remote(_) => true,
+            DocumentLocation::Local(path) => {
+                path != self.spec
+                    && std::fs::canonicalize(path).ok() != std::fs::canonicalize(self.spec).ok()
+            }
+        }
+    }
+
     /// Reference targets are objects; serde's defaulted structs also accept
     /// empty arrays, so check the document shape before typed deserialization.
     fn deserialize_object<T: serde::de::DeserializeOwned>(
@@ -399,6 +421,9 @@ impl Resolver<'_> {
             if let Some(operation) = slot.as_mut() {
                 for parameter in &mut operation.parameters {
                     self.resolve_parameter(parameter, &source_path)?;
+                }
+                for response in operation.responses.values_mut() {
+                    self.resolve_response(response, &source_path)?;
                 }
             }
         }
@@ -457,6 +482,48 @@ impl Resolver<'_> {
         }
     }
 
+    /// A Response Object another local document declares
+    /// (`./components.yml#/components/responses/NotFound`), read from that file
+    /// with every schema in it resolved from that file, so the file's own
+    /// `#/components/schemas/…` pointers name its components (issue #942). An
+    /// in-document or absolute-URL reference is left as written.
+    fn resolve_response(
+        &mut self,
+        response: &mut crate::openapi::Response,
+        source: &DocumentLocation,
+    ) -> Result<()> {
+        let Some(reference) = response.reference.clone() else {
+            return Ok(());
+        };
+        let Some((_, fragment)) = split_external(&reference) else {
+            return Ok(());
+        };
+        if split_remote(&reference).is_some() {
+            return Ok(());
+        }
+        let path = DocumentLocation::from_reference(&reference, source);
+        let node = pointer(self.document(&path, &reference)?, fragment)
+            .cloned()
+            .ok_or_else(|| {
+                self.error(
+                    &reference,
+                    "the referenced document has no response at that pointer",
+                )
+            })?;
+        let mut resolved: crate::openapi::Response =
+            self.deserialize_object(node, &reference, "a response")?;
+        if resolved.reference.is_some() {
+            self.resolve_response(&mut resolved, &path)?;
+        }
+        for media in resolved.content.values_mut() {
+            if let Some(schema) = &mut media.schema {
+                self.resolve_schema(schema, &path)?;
+            }
+        }
+        *response = resolved;
+        Ok(())
+    }
+
     fn resolve_parameter(
         &mut self,
         parameter: &mut Parameter,
@@ -487,7 +554,7 @@ impl Resolver<'_> {
             // A component pointer in a fetched document names that document's
             // component. Only a pointer the defining document actually carries
             // is promoted; legacy fragments absent there keep the root fallback.
-            if matches!(source, DocumentLocation::Remote(_)) {
+            if self.is_other_document(source) {
                 if let Some(fragment) = reference.strip_prefix('#') {
                     if let Some(name) = fragment
                         .strip_prefix("/components/schemas/")

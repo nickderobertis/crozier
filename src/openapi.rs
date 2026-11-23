@@ -1610,8 +1610,11 @@ pub struct Info {
 /// The `components` block.
 #[derive(Debug, Default, Deserialize)]
 pub struct Components {
-    /// Named schemas, in document order.
-    #[serde(default)]
+    /// Named schemas, in document order. An OpenAPI 3.1 boolean schema
+    /// (`Never: false`, `Anything: true`) is valid there and reads as the
+    /// unknown type, as the certified pair lowers both (see
+    /// [`de_component_schemas`]).
+    #[serde(default, deserialize_with = "de_component_schemas")]
     pub schemas: IndexMap<String, Schema>,
     /// Reusable parameters (`components.parameters`), in document order. A `$ref`
     /// parameter on an operation resolves against this map at load time (see
@@ -2615,6 +2618,40 @@ where
     })
 }
 
+/// Deserialize `components.schemas`, where each value is a Schema Object or, in
+/// OpenAPI 3.1, a boolean schema. Fern CLI 5.216.0 / fern-python-sdk 5.42.0
+/// declares `true` and `false` alike as `typing.Any` aliases
+/// (`docs/fern-measurements/naming-acceptance/boolean-component-schemas/`, issue
+/// #941), which is the unknown node; any other value still fails the document.
+fn de_component_schemas<'de, D>(deserializer: D) -> std::result::Result<IndexMap<String, Schema>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum Entry {
+        Boolean(bool),
+        Schema(Box<Schema>),
+    }
+    let raw = IndexMap::<String, Entry>::deserialize(deserializer)?;
+    Ok(raw
+        .into_iter()
+        .map(|(name, entry)| {
+            let schema = match entry {
+                Entry::Boolean(accepts) => boolean_component_schema(accepts),
+                Entry::Schema(schema) => *schema,
+            };
+            (name, schema)
+        })
+        .collect())
+}
+
+/// The node a boolean component schema reads as: the unknown type, whether it
+/// accepts every instance (`true`) or none (`false`), as Fern types both.
+fn boolean_component_schema(_accepts: bool) -> Schema {
+    Schema::default()
+}
+
 /// Deserialize a Schema Object's `$defs`, which is read only as a pointer walk's
 /// target. A value that is not a map defines nothing and is dropped rather than
 /// failing the document, and an entry that is not a schema object degrades as a
@@ -3232,6 +3269,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     // normalizations run, so every later pass sees one self-contained document.
     let remote_origin = crate::refs::resolve(&mut doc, &crate::refs::CurlFetcher, path)?;
 
+    normalize_colliding_component_classes(&mut doc);
     normalize_slash_named_schema_refs(&mut doc);
     normalize_float_type(&mut doc);
     normalize_parameter_schema_refs(&mut doc);
@@ -4588,6 +4626,86 @@ fn normalize_declared_type_names(doc: &mut OpenApi) {
             (declared != *name).then(|| (name.clone(), declared))
         })
         .collect();
+    rename_component_schemas(doc, &renames);
+}
+
+/// Give every component schema whose class name another, different component
+/// also spells a class of its own, so no model silently replaces another (issue
+/// #944). Fern keeps one class for the name, the *last* declaration's: at the
+/// certified pair (Fern CLI 5.216.0 / fern-python-sdk 5.42.0) components `a/b-c`
+/// and `a-b/c` are the one class `Abc` holding `a-b/c`'s fields, so
+/// `a/b-c`'s operations are typed with the wrong model
+/// (`docs/fern-measurements/naming-acceptance/normalized-component-identity/`).
+/// That last declaration keeps Fern's name byte for byte; each earlier one, in
+/// document order, takes the name followed by the first ordinal from 2 that no
+/// other component's class spells (`Abc2`, `Abc3`, …), which depends only on
+/// the document. Components whose schemas are identical stay one class, as a
+/// merge of equal types loses nothing. The catalogued departure is
+/// `colliding-component-own-class`.
+fn normalize_colliding_component_classes(doc: &mut OpenApi) {
+    let mut groups: IndexMap<String, Vec<String>> = IndexMap::new();
+    for name in doc.components.schemas.keys() {
+        groups
+            .entry(crate::naming::class_name(name))
+            .or_default()
+            .push(name.clone());
+    }
+    let mut taken: std::collections::HashSet<String> = groups.keys().cloned().collect();
+    let mut renames: IndexMap<String, String> = IndexMap::new();
+    for (class, members) in &groups {
+        let Some((winner, losers)) = members.split_last() else {
+            continue;
+        };
+        let winner_schema = &doc.components.schemas[winner];
+        let mut ordinal = 2;
+        for loser in losers {
+            if doc.components.schemas[loser] == *winner_schema {
+                continue;
+            }
+            let renamed = loop {
+                let candidate = format!("{class}{ordinal}");
+                ordinal += 1;
+                if !taken.contains(&crate::naming::class_name(&candidate))
+                    && !doc.components.schemas.contains_key(&candidate)
+                {
+                    break candidate;
+                }
+            };
+            taken.insert(crate::naming::class_name(&renamed));
+            renames.insert(loser.clone(), renamed);
+        }
+    }
+    if renames.is_empty() {
+        return;
+    }
+    // A pointer names a component by its whole tail, a `/` in the name written
+    // escaped (`a~1b-c`) or as is (`a/b-c`), so each is matched whole here
+    // before the keys move.
+    let rewrite = |reference: &mut String| {
+        let renamed = reference
+            .strip_prefix("#/components/schemas/")
+            .map(|tail| tail.replace("~1", "/").replace("~0", "~"))
+            .and_then(|tail| renames.get(&tail));
+        if let Some(renamed) = renamed {
+            *reference = format!("#/components/schemas/{renamed}");
+        }
+    };
+    let mut visit = |schema: &mut Schema| {
+        for_each_schema_in(schema, &mut |node| {
+            if let Some(reference) = node.reference.as_mut() {
+                rewrite(reference);
+            }
+            if let Some(discriminator) = node.discriminator.as_mut() {
+                for target in discriminator.mapping.values_mut() {
+                    rewrite(target);
+                }
+            }
+        });
+    };
+    for_each_root_schema(doc, &mut visit);
+    for item in doc.webhooks.values_mut() {
+        for_each_path_item_schema(item, &mut visit);
+    }
     rename_component_schemas(doc, &renames);
 }
 

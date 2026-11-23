@@ -4524,13 +4524,21 @@ fn build_endpoint(
                 // A `$ref` to a string-enum component serializes by `.value` as
                 // an inline enum does (the measured `enum-header-params-stringified`
                 // document's `X-Shift`).
+                // So does a nullable wrapper of one, `allOf: [$ref]` beside
+                // `nullable: true`: tonik's `X-Nullable-Enum` over `StatusEnum`
+                // is `nullable_enum.value` at the certified pair (issue #946).
                 enum_value: p.schema.as_ref().is_some_and(|schema| {
-                    if let Some(referenced_header_schema) = schema
-                        .reference
-                        .as_deref()
-                        .and_then(|reference| resolve_ref(doc, reference))
-                    {
-                        if string_enum_values(referenced_header_schema).is_some() {
+                    let references = schema.reference.as_deref().into_iter().chain(
+                        schema
+                            .all_of
+                            .iter()
+                            .flatten()
+                            .filter_map(|member| member.reference.as_deref()),
+                    );
+                    for reference in references {
+                        if resolve_ref(doc, reference)
+                            .is_some_and(|target| string_enum_values(target).is_some())
+                        {
                             return true;
                         }
                     }
@@ -12661,10 +12669,19 @@ fn dotted_tag_group_method<'a>(op: &Operation, id: &'a str) -> Option<&'a str> {
 /// `servicebroker.setIamPolicy` is `servicebroker_set_iam_policy`; a *dropped*
 /// group leaves the method lowercased verbatim instead (`App.GetUsage` →
 /// `getusage`), which is the branch above.
+///
+/// A tag whose words lead a longer dotted id is stripped the same way, by
+/// words: lemma's `agent.host.pairing.create` under the tag `agent_host` is
+/// `pairing_create`, and its `agent.host.list` is `list`, as the certified pair
+/// writes them (issue #924). The words left are joined as Fern's location
+/// camelCases them, then snake-cased.
 fn method_from_dotted_id(id: &str, tag: Option<&str>) -> String {
     let (group, method) = id.rsplit_once('.').unwrap_or(("", id));
     if group.is_empty() || tag.is_some_and(|tag| operation_id_matches_tag_spelling(group, tag)) {
         return naming::sanitize_identifier(&method.to_ascii_lowercase());
+    }
+    if let Some(TagLocation::Stripped { method, .. }) = tag.map(|tag| tag_location(tag, id)) {
+        return naming::sanitize_identifier(&naming::to_snake_case(&method));
     }
     naming::sanitize_identifier(&naming::to_snake_case(id))
 }
@@ -13141,7 +13158,14 @@ fn compact_module(tag: &str) -> String {
             naming::sanitize_identifier(&tag.to_ascii_lowercase())
         }
     } else {
+        // Punctuation is a word boundary and nothing more: a run of it leaves
+        // one separator and none at either end, so the tag `Agent Surfaces (Me)`
+        // is `agent_surfaces_me`, as the certified pair names it (issue #924).
         naming::sanitize_identifier(&naming::to_snake_case(tag))
+            .split('_')
+            .filter(|word| !word.is_empty())
+            .collect::<Vec<_>>()
+            .join("_")
     };
     module_identifier(&name)
 }

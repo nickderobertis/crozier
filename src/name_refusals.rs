@@ -545,11 +545,27 @@ fn validate_names(doc: &OpenApi, path: &Path, ir: &crate::ir::Ir) -> Result<()> 
             }
             for parameter in &op.parameters {
                 if let Some(schema) = &parameter.schema {
-                    check_schema(
+                    // A header whose inline schema defaults to a string is sent
+                    // as that constant (or, lifted to the client, typed `str`),
+                    // so Fern names no member of its enum: Airflow's optional
+                    // `accept` header over `application/json`, `text/plain` and
+                    // `*/*`, defaulting to `*/*`, is the constant
+                    // `"accept": "*/*"` at the certified pair (issue #956). Its
+                    // descendants still need names.
+                    let constant_header = parameter.location
+                        == Some(crate::openapi::ParameterLocation::Header)
+                        && schema.reference.is_none()
+                        && schema
+                            .default
+                            .as_ref()
+                            .and_then(serde_json::Value::as_str)
+                            .is_some_and(|value| !value.is_empty());
+                    check_schema_names(
                         schema,
                         &format!("{location} parameter {}", parameter.name),
                         path,
                         &doc.components.schemas,
+                        !constant_header,
                     )?;
                 }
                 for media in parameter.content.values() {

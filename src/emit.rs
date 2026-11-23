@@ -1493,6 +1493,34 @@ fn forward_repair_map(
     // time the module that names it repairs it, so nothing beyond that module is
     // affected — NDW's `Feature` repairs the `FeatureProperties` union and its own
     // referrer `FeatureCollection` needs no repair of its own.
+    //
+    // A cycle of two or more aliases and no class is the exception: every
+    // declaration that reaches it, however indirectly, is repaired — nof1's
+    // `FitSummary` names the acyclic `InferenceReport`, whose
+    // `inference_diagnostics` is the `JsonObjectOutput`/`JsonValueOutput`/
+    // `JsonArrayOutput` cycle, and the certified pair gives it
+    // `from __future__ import annotations` and a bare
+    // `update_forward_refs(FitSummary)` (issue #922). A single self-recursive
+    // alias is not: ramu-shogi's `GetAnalysisSnapshotResponse` reaches the
+    // self-recursive `JsonValue` only through `AnalysisSnapshotDetail`, and
+    // Fern repairs nothing beyond that model.
+    let class_cycles: HashSet<usize> = classes
+        .iter()
+        .filter(|name| cyclic.contains(*name))
+        .filter_map(|name| component.get(*name).copied())
+        .collect();
+    let mut cycle_sizes: HashMap<usize, usize> = HashMap::new();
+    for name in &cyclic {
+        if let Some(id) = component.get(*name) {
+            *cycle_sizes.entry(*id).or_default() += 1;
+        }
+    }
+    let alias_only_cycle = |node: &str| {
+        aliases.contains(node)
+            && component.get(node).is_some_and(|id| {
+                !class_cycles.contains(id) && cycle_sizes.get(id).copied().unwrap_or(0) > 1
+            })
+    };
     let reaches_repairable = |starts: &[String]| -> bool {
         if starts.iter().any(|name| cyclic.contains(name.as_str())) {
             return true;
@@ -1500,7 +1528,7 @@ fn forward_repair_map(
         let mut stack: Vec<&str> = starts.iter().map(String::as_str).collect();
         let mut seen: HashSet<&str> = HashSet::new();
         while let Some(node) = stack.pop() {
-            if cyclic.contains(node) && classes.contains(node) {
+            if cyclic.contains(node) && (classes.contains(node) || alias_only_cycle(node)) {
                 return true;
             }
             if seen.insert(node) {
