@@ -111,6 +111,84 @@ class ActionsClient:
         )
         return _response.data
 
+    def run_action_batch(
+        self,
+        *,
+        actions: typing.Sequence[str],
+        idempotency_key: typing.Optional[str] = None,
+        action_batch_request_idempotency_key: typing.Optional[str] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> ActionResult:
+        """
+        Parameters
+        ----------
+        actions : typing.Sequence[str]
+
+        idempotency_key : typing.Optional[str]
+
+        action_batch_request_idempotency_key : typing.Optional[str]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        ActionResult
+            Ran.
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi()
+        client.actions.run_action_batch(
+            actions=["actions"],
+        )
+        """
+        _response = self._raw_client.run_action_batch(
+            actions=actions,
+            idempotency_key=idempotency_key,
+            action_batch_request_idempotency_key=action_batch_request_idempotency_key,
+            request_options=request_options,
+        )
+        return _response.data
+
+    def preview_action_batch(
+        self,
+        *,
+        actions: typing.Sequence[str],
+        idempotency_key: typing.Optional[str] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> ActionResult:
+        """
+        Parameters
+        ----------
+        actions : typing.Sequence[str]
+
+        idempotency_key : typing.Optional[str]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        ActionResult
+            Previewed.
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi()
+        client.actions.preview_action_batch(
+            actions=["actions"],
+        )
+        """
+        _response = self._raw_client.preview_action_batch(
+            actions=actions, idempotency_key=idempotency_key, request_options=request_options
+        )
+        return _response.data
+
 
 class AsyncActionsClient:
     def __init__(self, *, client_wrapper: AsyncClientWrapper):
@@ -225,5 +303,99 @@ class AsyncActionsClient:
             action=action,
             queue_action_request_batch_label=queue_action_request_batch_label,
             request_options=request_options,
+        )
+        return _response.data
+
+    async def run_action_batch(
+        self,
+        *,
+        actions: typing.Sequence[str],
+        idempotency_key: typing.Optional[str] = None,
+        action_batch_request_idempotency_key: typing.Optional[str] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> ActionResult:
+        """
+        Parameters
+        ----------
+        actions : typing.Sequence[str]
+
+        idempotency_key : typing.Optional[str]
+
+        action_batch_request_idempotency_key : typing.Optional[str]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        ActionResult
+            Ran.
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi()
+
+
+        async def main() -> None:
+            await client.actions.run_action_batch(
+                actions=["actions"],
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.run_action_batch(
+            actions=actions,
+            idempotency_key=idempotency_key,
+            action_batch_request_idempotency_key=action_batch_request_idempotency_key,
+            request_options=request_options,
+        )
+        return _response.data
+
+    async def preview_action_batch(
+        self,
+        *,
+        actions: typing.Sequence[str],
+        idempotency_key: typing.Optional[str] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> ActionResult:
+        """
+        Parameters
+        ----------
+        actions : typing.Sequence[str]
+
+        idempotency_key : typing.Optional[str]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        ActionResult
+            Previewed.
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi()
+
+
+        async def main() -> None:
+            await client.actions.preview_action_batch(
+                actions=["actions"],
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.preview_action_batch(
+            actions=actions, idempotency_key=idempotency_key, request_options=request_options
         )
         return _response.data

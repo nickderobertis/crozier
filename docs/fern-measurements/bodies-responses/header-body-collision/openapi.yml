@@ -60,8 +60,68 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ActionResult'
+  /actions/batch:
+    post:
+      operationId: runActionBatch
+      tags: [actions]
+      summary: A nullable Idempotency-Key header beside a shared titled body's nullable idempotency_key.
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Idempotency-Key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActionBatchRequest'
+      responses:
+        '200':
+          description: Ran.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionResult'
+  /actions/batch/preview:
+    post:
+      operationId: previewActionBatch
+      tags: [actions]
+      summary: The same titled body, shared so its model survives.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActionBatchRequest'
+      responses:
+        '200':
+          description: Previewed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionResult'
 components:
   schemas:
+    ActionBatchRequest:
+      title: ActionBatchRequest
+      type: object
+      additionalProperties: false
+      required: [actions]
+      properties:
+        actions:
+          type: array
+          items:
+            type: string
+        idempotency_key:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Idempotency Key
     RunActionRequest:
       type: object
       required: [action]

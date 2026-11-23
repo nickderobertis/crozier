@@ -42,6 +42,7 @@ docs/fern-measurements/bodies-responses/error-body-shapes-literals/fern-expected
 docs/fern-measurements/bodies-responses/error-body-shapes-literals/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/bodies-responses/error-body-shapes-literals/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/bodies-responses/error-body-shapes-literals/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/bodies-responses/header-body-collision/fern-expected	src/fern/actions/raw_client.py	169	body-query-parameter-value
 docs/fern-measurements/bodies-responses/header-body-collision/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/bodies-responses/header-body-collision/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/fern-measurements/bodies-responses/header-body-collision/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix

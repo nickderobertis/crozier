@@ -4,7 +4,7 @@ docs/fern-measurements/bodies-responses/body-requiredness-shapes/fern-expected	c
 docs/fern-measurements/bodies-responses/byte-text-response-literals/fern-expected	crozier-e2e::e2e	byte_text_response_matches_certified_output_in_both_enum_modes
 docs/fern-measurements/bodies-responses/composed-form-body/fern-expected	crozier-e2e::e2e	bodies_responses::composed_form_bodies_send_every_field
 docs/fern-measurements/bodies-responses/error-body-shapes-literals/fern-expected	crozier-e2e::e2e	error_body_shapes_match_certified_output_in_both_enum_modes
-docs/fern-measurements/bodies-responses/header-body-collision/fern-expected	crozier-e2e::e2e	bodies_responses::header_and_body_sharing_a_wire_name_keep_their_own_arguments
+docs/fern-measurements/bodies-responses/header-body-collision/fern-expected	crozier-e2e::e2e	bodies_responses::header_and_body_sharing_a_name_keep_their_own_arguments
 docs/fern-measurements/bodies-responses/inline-body-readonly-own-overlap-literals/fern-expected	crozier-e2e::e2e	inline_body_read_only_own_overlap_matches_certified_output_and_refuses_a_required_parent
 docs/fern-measurements/bodies-responses/inline-error-component-name/fern-expected	crozier-e2e::e2e	bodies_responses::inline_error_models_leave_component_models_alone
 docs/fern-measurements/bodies-responses/inline-union-body-content-type/expected-literals/fern-expected	crozier-e2e::e2e	bodies_responses::inline_union_body_keeps_its_content_type_only_when_described

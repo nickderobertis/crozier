@@ -6,7 +6,7 @@
 //! crozier's complete SDK for each document must equal the certified pair's
 //! committed tree, and the line each repair decides must fail that comparison
 //! when written the way crozier wrote it before the repair. The header/body
-//! wire-name collision is driven on the wire too, by
+//! argument-name collision is driven on the wire too, by
 //! `tests/runtime/test_header_body_collision.py`.
 
 use std::path::{Path, PathBuf};
@@ -389,18 +389,46 @@ fn required_binary_reference_part_differs_only_in_its_worked_example() {
     assert!(unexplained.is_empty(), "{}", unexplained.join("\n\n"));
 }
 
-/// #926: a body property sharing its wire name with a header is renamed in the
-/// signature and sent from that renamed argument, as the certified pair sends it.
+/// #926: a body property sharing its argument name with a header is renamed in
+/// the signature and sent from that renamed argument. Where the body is inlined
+/// the certified pair does the same; where it is a shared component, the pair
+/// sends the header's variable instead, the catalogued
+/// `body-query-parameter-value` departure, which the ledger pins at that line.
 #[test]
-fn header_and_body_sharing_a_wire_name_keep_their_own_arguments() {
+fn header_and_body_sharing_a_name_keep_their_own_arguments() {
     let case = "header-body-collision";
     let (_temp, out) = matched(case);
+    let raw = "src/fern/actions/raw_client.py";
     decides(
         case,
         &out,
-        "src/fern/actions/raw_client.py",
+        raw,
         "\"kilnToken\": run_action_request_kiln_token,",
         "\"kilnToken\": kiln_token,",
+    );
+    let fern = read(&case_dir(case).join("fern-expected").join(raw));
+    let generated = read(&out.join(raw));
+    let renamed = "                \"idempotency_key\": action_batch_request_idempotency_key,\n";
+    let header = "                \"idempotency_key\": idempotency_key,\n";
+    // `run_action_batch` (sync and async) sends the renamed body argument where
+    // the certified pair sends the header's; `preview_action_batch`, with no
+    // header, sends `idempotency_key` in both trees.
+    assert_eq!(generated.matches(renamed).count(), 2, "{generated}");
+    assert_eq!(generated.matches(header).count(), 2, "{generated}");
+    assert_eq!(fern.matches(header).count(), 4, "{fern}");
+    std::fs::write(
+        out.join(raw),
+        generated.replacen(
+            renamed,
+            "                \"idempotency_key\": actions,\n",
+            1,
+        ),
+    )
+    .expect("rewrite the client");
+    let unexplained = failures(case, &format!("{DIR}/{case}/fern-expected"), &out);
+    assert!(
+        unexplained.iter().any(|failure| failure.contains(raw)),
+        "any other value must fail the comparison: {unexplained:?}"
     );
 }
 

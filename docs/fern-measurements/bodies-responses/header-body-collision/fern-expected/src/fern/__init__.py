@@ -6,13 +6,14 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
-    from .types import ActionResult
+    from .types import ActionBatchRequest, ActionResult
     from . import actions
     from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
     from .environment import FernApiEnvironment
     from .version import __version__
 _dynamic_imports: typing.Dict[str, str] = {
+    "ActionBatchRequest": ".types",
     "ActionResult": ".types",
     "AsyncFernApi": ".client",
     "DefaultAioHttpClient": "._default_clients",
@@ -46,6 +47,7 @@ def __dir__():
 
 
 __all__ = [
+    "ActionBatchRequest",
     "ActionResult",
     "AsyncFernApi",
     "DefaultAioHttpClient",

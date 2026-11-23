@@ -6,8 +6,12 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
+    from .action_batch_request import ActionBatchRequest
     from .action_result import ActionResult
-_dynamic_imports: typing.Dict[str, str] = {"ActionResult": ".action_result"}
+_dynamic_imports: typing.Dict[str, str] = {
+    "ActionBatchRequest": ".action_batch_request",
+    "ActionResult": ".action_result",
+}
 
 
 def __getattr__(attr_name: str) -> typing.Any:
@@ -31,4 +35,4 @@ def __dir__():
     return sorted(lazy_attrs)
 
 
-__all__ = ["ActionResult"]
+__all__ = ["ActionBatchRequest", "ActionResult"]

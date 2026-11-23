@@ -427,10 +427,33 @@ def collision_error_then_recovery(sdk):
     }
 
 
+def shared_body_header_collision(sdk):
+    """A nullable `Idempotency-Key` header beside a shared component body's
+    `idempotency_key`, sync and async. Recorded as sent, without a verdict: the
+    certified pair sends the header's variable as the body value (the
+    `body-query-parameter-value` departure), and the test holds each SDK to what
+    it is known to send."""
+    transport, box = _capture(200, {"status": "ran"})
+    client = sdk.FernApi(base_url=BASE_URL, httpx_client=httpx.Client(transport=transport))
+    client.actions.run_action_batch(
+        actions=["fire"], idempotency_key=HEADER_VALUE, action_batch_request_idempotency_key=BODY_VALUE
+    )
+    sync = _request_record(box["request"])
+    transport, box = _capture(200, {"status": "ran"})
+    async_client = sdk.AsyncFernApi(base_url=BASE_URL, httpx_client=httpx.AsyncClient(transport=transport))
+    asyncio.run(
+        async_client.actions.run_action_batch(
+            actions=["fire"], idempotency_key=HEADER_VALUE, action_batch_request_idempotency_key=BODY_VALUE
+        )
+    )
+    return {"sync": sync, "async": _request_record(box["request"])}
+
+
 COLLISION_JOURNEYS = [
     header_and_body_keep_their_values,
     async_header_and_body_keep_their_values,
     collision_error_then_recovery,
+    shared_body_header_collision,
 ]
 COLLISION_JOURNEY_NAMES = [journey.__name__ for journey in COLLISION_JOURNEYS]
 

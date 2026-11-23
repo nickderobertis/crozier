@@ -149,3 +149,131 @@ client.actions.queue_action(
 </dl>
 </details>
 
+<details><summary><code>client.actions.<a href="src/fern/actions/client.py#L114-L154">run_action_batch</a>(...) -> ActionResult</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
+client.actions.run_action_batch(
+    actions=[
+        "actions"
+    ],
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `ActionBatchRequest` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**idempotency_key:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.actions.<a href="src/fern/actions/client.py#L156-L190">preview_action_batch</a>(...) -> ActionResult</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    environment=FernApiEnvironment.DEFAULT,
+)
+
+client.actions.preview_action_batch(
+    actions=[
+        "actions"
+    ],
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `ActionBatchRequest` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
