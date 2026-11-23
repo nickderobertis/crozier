@@ -3017,18 +3017,18 @@ unreached by any Fern-accepted document.
 | 2 | `request-body-content` | `bodies-media` | **4** | **35** | **370** | open — real-specification witness search remains open |
 | 3 | `oneof-anyof-variant` | `schemas` | **3** | **111** | **8** | open — real-specification witness search remains open |
 | 4 | `allof` | `schemas` | **3** | **27** | **162** | open — real-specification witness search remains open |
-| 5 | `discriminator-mapping` | `schemas` | **2** | **175** | **60** | open — real-specification witness search remains open |
-| 6 | `oneof` | `schemas` | **2** | **119** | **187** | open — real-specification witness search remains open |
+| 5 | `discriminator-mapping` | `schemas` | **2** | **176** | **60** | open — real-specification witness search remains open |
+| 6 | `oneof` | `schemas` | **2** | **138** | **187** | open — real-specification witness search remains open |
 | 7 | `fern-streaming-extension` | `oas31-extensions` | **2** | **57** | **7** | open — real-specification witness search remains open |
 | 8 | `ref-pointer-undeclared-component-head` | `schemas` | **2** | **29** | **17** | open — real-specification witness search remains open |
 | 9 | `parameter-schema` | `parameters` | **2** | **26** | **356** | open — real-specification witness search remains open |
 | 10 | `parameter-in-path` | `parameters` | **2** | **19** | **313** | open — real-specification witness search remains open |
 | 11 | `media-type-multipart` | `bodies-media` | **2** | **14** | **29** | open — real-specification witness search remains open |
 | 12 | `ref-pointer-nested-items` | `schemas` | **2** | **6** | **4** | open — real-specification witness search remains open |
-| 13 | `anyof-discriminated-union` | `schemas` | **1** | **205** | **30** | owned — first-pass search record below |
-| 14 | `array-item-anyof-discriminated-union` | `schemas` | **1** | **199** | **19** | open — real-specification witness search remains open |
-| 15 | `array-item-oneof-discriminated-union` | `schemas` | **1** | **165** | **32** | open — real-specification witness search remains open |
-| 16 | `oneof-discriminated-union` | `schemas` | **1** | **111** | **89** | owned — first-pass search record below |
+| 13 | `anyof-discriminated-union` | `schemas` | **1** | **206** | **30** | owned — first-pass search record below |
+| 14 | `array-item-anyof-discriminated-union` | `schemas` | **1** | **202** | **19** | open — real-specification witness search remains open |
+| 15 | `array-item-oneof-discriminated-union` | `schemas` | **1** | **168** | **32** | open — real-specification witness search remains open |
+| 16 | `oneof-discriminated-union` | `schemas` | **1** | **112** | **89** | owned — first-pass search record below |
 | 17 | `anyof-oneof-variant` | `schemas` | **1** | **97** | **17** | owned — first-pass search record below |
 | 18 | `oneof-array-variant-anyof-item` | `schemas` | **1** | **55** | **1** | open — real-specification witness search remains open |
 | 19 | `additional-properties-schema` | `schemas` | **1** | **51** | **265** | open — real-specification witness search remains open |
