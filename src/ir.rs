@@ -16587,14 +16587,23 @@ impl Builder<'_> {
             return None;
         }
         let container = map_value(prop_schema).filter(|value| value.reference.is_none())?;
-        let (suffix, leaf) = if is_map(container) && !is_optional(container) {
-            ("ValueValue", map_value(container)?)
+        /// The container a map's value is, which names the union it holds.
+        enum Nested {
+            Map,
+            Array,
+        }
+        let (nested, leaf) = if is_map(container) && !is_optional(container) {
+            (Nested::Map, map_value(container)?)
         } else if container.ty.as_ref().and_then(TypeField::primary) == Some("array")
             && !is_optional(container)
         {
-            ("ValueItem", container.items.as_deref()?)
+            (Nested::Array, container.items.as_deref()?)
         } else {
             return None;
+        };
+        let suffix = match nested {
+            Nested::Map => "ValueValue",
+            Nested::Array => "ValueItem",
         };
         let members = leaf.one_of.as_ref().or(leaf.any_of.as_ref())?;
         if leaf.reference.is_some()
@@ -16631,10 +16640,9 @@ impl Builder<'_> {
                 TypeRef::Named(name)
             };
         let string = || Box::new(TypeRef::Primitive(Prim::Str));
-        let inner = if suffix == "ValueValue" {
-            TypeRef::Dict(string(), Box::new(named))
-        } else {
-            sequence_of(container, named)
+        let inner = match nested {
+            Nested::Map => TypeRef::Dict(string(), Box::new(named)),
+            Nested::Array => sequence_of(container, named),
         };
         Some(TypeRef::Dict(string(), Box::new(inner)))
     }
