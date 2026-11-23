@@ -186,7 +186,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if not (args.repo_root / PAGES).is_dir():
         print(
-            f"census-prose-counts: {args.repo_root / PAGES} is no directory, so there is nothing to hold; "
+            f"census-prose-counts: {(args.repo_root / PAGES).as_posix()} is no directory, so there is nothing to hold; "
             "pass the repository root as --repo-root",
             file=sys.stderr,
         )
