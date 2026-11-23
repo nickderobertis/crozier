@@ -16567,10 +16567,6 @@ impl Builder<'_> {
         }
     }
 
-    /// Build a [`DiscriminatedUnion`] from a schema, or `None` if it is not a
-    /// discriminated `oneOf`/`anyOf` with an explicit `mapping`. Each mapping
-    /// entry `value → $ref` becomes a `{Name}_{Variant}` wrapper carrying the
-    /// discriminant literal plus the referenced model's (stripped) fields.
     /// A map whose value is a map or array of an inline union: the union is
     /// hoisted under its container path, `{Owner}{Prop}ValueValue` or
     /// `{Owner}{Prop}ValueItem`, discriminated where its members tag
@@ -16643,6 +16639,10 @@ impl Builder<'_> {
         Some(TypeRef::Dict(string(), Box::new(inner)))
     }
 
+    /// Build a [`DiscriminatedUnion`] from a schema, or `None` if it is not a
+    /// discriminated `oneOf`/`anyOf` with an explicit `mapping`. Each mapping
+    /// entry `value → $ref` becomes a `{Name}_{Variant}` wrapper carrying the
+    /// discriminant literal plus the referenced model's (stripped) fields.
     fn discriminated_union(
         &mut self,
         name: &str,
@@ -19972,13 +19972,6 @@ enum BranchUnion {
     Merged(Box<Schema>),
 }
 
-/// The properties an inline `allOf` member that is an undiscriminated union
-/// contributes: Fern flattens braintrust's `TopicMapFunctionAutomation.function`
-/// — `allOf: [$ref SavedFunctionId, anyOf: [function, global]]` — into one
-/// object carrying `type`, `id`, `version`, `name` and `function_type`, where a
-/// property two branches declare keeps the first branch's position and the last
-/// branch's schema. `None` for a member that is no union, or whose branches
-/// declare no property.
 /// Whether an `allOf` member is a union whose branches merge into the model it
 /// composes ([`BranchUnion::Merged`]).
 fn merged_branch_union(member: &Schema, schemas: &IndexMap<String, Schema>) -> bool {
@@ -20085,6 +20078,14 @@ fn inline_referenced_union_members(
     })
 }
 
+/// The properties an inline `allOf` member that is an undiscriminated union
+/// contributes: Fern flattens braintrust's `TopicMapFunctionAutomation.function`
+/// — `allOf: [$ref SavedFunctionId, anyOf: [function, global]]` — into one
+/// object carrying `type`, `id`, `version`, `name` and `function_type`. A
+/// property two branches declare keeps the first branch's position, and the
+/// first branch's schema unless both are inline and require it (see the body).
+/// `None` for a member that is no union, or whose branches declare no
+/// property.
 fn branch_union_properties(
     member: &Schema,
     schemas: &IndexMap<String, Schema>,
@@ -20878,8 +20879,6 @@ fn prefer_map_to_union(schema: &Schema) -> bool {
     false
 }
 
-/// Map a schema to its base type expression, never adding a top-level
-/// `Optional` (the caller decides optionality for fields).
 /// A JSON `format: binary` string held by a container is the `str` it is
 /// declared as: the `type-lowering/json-binary-strings` measurement's
 /// `ContactSheet.frames` (array items) and `.layers` (map values) are
@@ -20892,6 +20891,8 @@ fn contained_binary_as_str(type_ref: TypeRef) -> TypeRef {
     }
 }
 
+/// Map a schema to its base type expression, never adding a top-level
+/// `Optional` (the caller decides optionality for fields).
 fn base_type_ref(schema: &Schema) -> TypeRef {
     // A node the document put where a schema object was expected but that carried a
     // non-object value (issue #86) degrades to Fern's unknown type, `Optional[Any]`.

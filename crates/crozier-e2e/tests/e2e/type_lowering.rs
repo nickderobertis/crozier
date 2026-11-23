@@ -248,9 +248,27 @@ fn sdk_env_escaped_discriminators_and_recursive_aliases_import() {
             }
         }
     }
-    // A root holding no generated package is a usage error.
-    let (code, _) = run(&envs[0].1, temp.path(), "fern.types:Signal", "{}", "valid");
-    assert_eq!(code, Some(2));
+    // A root holding no generated package, a malformed target or payload, and a
+    // child interpreter that dies without reporting an outcome are usage errors,
+    // never an expected SDK failure.
+    let python = &envs[0].1;
+    let ours = temp.path().join("recursive-json-alias").join("src");
+    assert_eq!(
+        run(python, temp.path(), "fern.types:Signal", "{}", "invalid").0,
+        Some(2)
+    );
+    assert_eq!(run(python, &ours, "fern.types", "{}", "invalid").0, Some(2));
+    assert_eq!(
+        run(python, &ours, "fern.types:Signal", "{", "invalid").0,
+        Some(2)
+    );
+    let crashing = temp.path().join("crashing");
+    std::fs::create_dir_all(crashing.join("fern")).expect("mkdir");
+    std::fs::write(crashing.join("fern/__init__.py"), "raise SystemExit(3)\n").expect("write");
+    assert_eq!(
+        run(python, &crashing, "fern.types:Signal", "{}", "invalid").0,
+        Some(2)
+    );
 }
 
 /// #949: the members of a discriminated union composed as an `allOf` member

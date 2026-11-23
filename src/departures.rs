@@ -6903,6 +6903,101 @@ mod tests {
         ));
     }
 
+    /// `escaped-discriminator-field-name` through the comparison engine: the
+    /// escaped field name of a declared `schema` property holds, and any other
+    /// change, an undeclared name, or a non-Python file still differs.
+    #[test]
+    fn escaped_discriminator_field_names_hold_only_for_a_declared_escaped_property() {
+        let declared = serde_json::json!({"components": {"schemas": {"QueryResult": {
+            "type": "object", "properties": {"schema": {"type": "string", "enum": ["v1"]}}
+        }}}});
+        let fern = "Query = typing_extensions.Annotated[\n    typing.Union[Query_V1, Query_V2], pydantic.Field(discriminator=\"schema\")\n]\n";
+        let crozier = fern.replace("discriminator=\"schema\"", "discriminator=\"schema_\"");
+        let compare = |document: &serde_json::Value, rel: &str, crozier: &str| {
+            let context = Context::default()
+                .with_source_document(serde_json::from_value(document.clone()).expect("a source"));
+            crate::parity::compare_file(&context, rel, crozier, fern).expect("the comparison runs")
+        };
+        let rel = "src/fern/types/query.py";
+        let held = compare(&declared, rel, &crozier);
+        assert!(held.matches(), "{held:?}");
+        assert!(held
+            .departures
+            .iter()
+            .any(|found| found.id == "escaped-discriminator-field-name"));
+        // Another change on the line still differs.
+        assert!(!compare(&declared, rel, &crozier.replace("Query_V2", "Query_V3")).matches());
+        // A name the source does not declare is no departure.
+        let undeclared = serde_json::json!({"components": {"schemas": {"QueryResult": {
+            "type": "object", "properties": {"kind": {"type": "string"}}
+        }}}});
+        assert!(!compare(&undeclared, rel, &crozier).matches());
+        // Nor is the same text outside generated Python.
+        assert!(!compare(&declared, "reference.md", &crozier).matches());
+    }
+
+    /// `recursive-alias-named-type` through the comparison engine: crozier's
+    /// three-branch module built from Fern's own alias holds, and an altered
+    /// target, bounded branch, extra import or trailer still differs.
+    #[test]
+    fn recursive_alias_modules_hold_only_as_the_named_spelling_of_fern_s_alias() {
+        let target = "typing.Union[typing.Optional[JsonValueZero], typing.List[\"JsonValue\"], typing.Dict[str, \"JsonValue\"]]";
+        let bounded = "typing.Union[typing.Optional[JsonValueZero], typing.List[typing.Any], typing.Dict[str, typing.Any]]";
+        let fern = format!(
+            "from __future__ import annotations\n\nimport typing\n\nfrom .json_value_zero import JsonValueZero\n\nJsonValue = {target}\n"
+        );
+        let crozier = |imports: &str, target: &str, bounded: &str, trailer: &str| {
+            format!(
+                "from __future__ import annotations\n\nimport typing\n\nimport typing_extensions\n\
+                 from ..core.pydantic_utilities import IS_PYDANTIC_V2\n{imports}from .json_value_zero import JsonValueZero\n\n\
+                 if typing.TYPE_CHECKING:\n    JsonValue = {target}\nelif IS_PYDANTIC_V2:\n    \
+                 JsonValue = typing_extensions.TypeAliasType(\n        \"JsonValue\",\n        {target},\n    )\n\
+                 else:\n    JsonValue = {bounded}\n{trailer}"
+            )
+        };
+        let compare = |crozier: &str| {
+            crate::parity::compare_file(
+                &Context::default(),
+                "src/fern/types/json_value.py",
+                crozier,
+                &fern,
+            )
+            .expect("the comparison runs")
+        };
+        let held = compare(&crozier("", target, bounded, ""));
+        assert!(held.matches(), "{held:?}");
+        assert!(held
+            .departures
+            .iter()
+            .any(|found| found.id == "recursive-alias-named-type"));
+        let altered = target.replace("typing.Optional[JsonValueZero]", "JsonValueZero");
+        for (case, module) in [
+            (
+                "an altered alias target",
+                crozier(
+                    "",
+                    &altered,
+                    &altered.replace("\"JsonValue\"", "typing.Any"),
+                    "",
+                ),
+            ),
+            (
+                "a bounded branch that keeps a self-reference",
+                crozier("", target, target, ""),
+            ),
+            (
+                "an import Fern does not write",
+                crozier("import pydantic\n", target, bounded, ""),
+            ),
+            (
+                "a trailer after the alias",
+                crozier("", target, bounded, "\nVALUE = 1\n"),
+            ),
+        ] {
+            assert!(!compare(&module).matches(), "{case} must still differ");
+        }
+    }
+
     #[test]
     fn non_string_client_header_examples_admit_only_the_declared_type() {
         let document = serde_json::json!({"paths": {"/berths": {"get": {

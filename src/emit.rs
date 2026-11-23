@@ -5153,6 +5153,10 @@ fn render_recursive_alias(
     contents.push_str(&format!(
         "if typing.TYPE_CHECKING:\n    {name} = {target}\nelif IS_PYDANTIC_V2:\n    {name} = typing_extensions.TypeAliasType(\"{name}\", {target})\nelse:\n    {name} = {bounded}\n{docstring}"
     ));
+    // A model the alias names that refers back to the alias is imported after
+    // the alias is bound, as `render_type_decl`'s forward-reference modules do,
+    // so the import cycle resolves; ruff's E402 (imports at the top) is
+    // suppressed on exactly those lines because their position is the fix.
     if !imports.deferred.is_empty() {
         contents.push('\n');
         for line in &imports.deferred {

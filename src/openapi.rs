@@ -3516,6 +3516,22 @@ pub(crate) fn referenced_component_schema(reference: &str) -> Option<&str> {
         .map(|pointer| pointer.split('/').next().unwrap_or(pointer))
 }
 
+/// Whether `member` is only `nullable` beside a composition keyword holding no
+/// member (see [`normalize_empty_compositions`]).
+fn nullable_empty_composition(member: &Schema) -> bool {
+    let empty = [&member.one_of, &member.any_of, &member.all_of]
+        .into_iter()
+        .any(|members| members.as_ref().is_some_and(Vec::is_empty));
+    let bare = Schema {
+        nullable: None,
+        one_of: member.one_of.clone().filter(|members| !members.is_empty()),
+        any_of: member.any_of.clone().filter(|members| !members.is_empty()),
+        all_of: member.all_of.clone().filter(|members| !members.is_empty()),
+        ..member.clone()
+    };
+    empty && bare == Schema::default()
+}
+
 /// Drop an empty `oneOf`/`anyOf`/`allOf` list.
 ///
 /// An empty composition constrains nothing, and every later pass reads
@@ -3534,22 +3550,6 @@ pub(crate) fn referenced_component_schema(reference: &str) -> Option<&str> {
 /// `allOf` at all: the node left is the bare schema every reader already lowers
 /// as an unconstrained value, so the unit test's structural assertion is the
 /// whole of that case's behaviour.
-/// Whether `member` is only `nullable` beside a composition keyword holding no
-/// member (see [`normalize_empty_compositions`]).
-fn nullable_empty_composition(member: &Schema) -> bool {
-    let empty = [&member.one_of, &member.any_of, &member.all_of]
-        .into_iter()
-        .any(|members| members.as_ref().is_some_and(Vec::is_empty));
-    let bare = Schema {
-        nullable: None,
-        one_of: member.one_of.clone().filter(|members| !members.is_empty()),
-        any_of: member.any_of.clone().filter(|members| !members.is_empty()),
-        all_of: member.all_of.clone().filter(|members| !members.is_empty()),
-        ..member.clone()
-    };
-    empty && bare == Schema::default()
-}
-
 fn normalize_empty_compositions(doc: &mut OpenApi) {
     for_each_root_schema(doc, &mut |schema| {
         for_each_schema_in(schema, &mut |node| {
