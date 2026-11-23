@@ -322,7 +322,6 @@ fn naming_acceptance_documents_generate_as_the_certified_pair_does() {
     }
     assert!(failures.is_empty(), "{}", failures.join("\n\n"));
 }
-// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 /// #956's refusal shapes, measured at the certified pair under
 /// `docs/fern-refusals/enum-name-unsuitable/`: an inline header enum Fern cannot
@@ -432,6 +431,8 @@ fn colliding_response_components_each_keep_their_own_class() {
     }
 }
 
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This `sdk_env_*` journey runs only in the `sdk-env` project (tests/sdk_env/project.json: `tier:promoted`, `cache: false`), promoted out of the affected tier into its own required CI leg; crates/crozier-e2e/AGENTS.md makes `#[ignore]` the one mechanism that routes a journey to that project. The #922 journey inside the block is ignored and selected by no project until its `sdk_env_` prefix is restored.
 /// The SDK-environment journeys `naming_acceptance_runtime.py` runs, each over
 /// the case's SDK under every Pydantic major the generated `pyproject.toml`
 /// admits.
@@ -499,16 +500,20 @@ fn sdk_env_colliding_components_send_and_parse_their_own_shapes() {
 /// whose self-recursive repair does not yet reach a cycle of several aliases
 /// (manager ruling `a5`). This journey waits on that multi-alias extension;
 /// #922's own change (the dependent's forward-reference support) is held by
-/// [`naming_acceptance_repairs_match_the_certified_pair`].
+/// [`naming_acceptance_repairs_match_the_certified_pair`]. Until then it has no
+/// `sdk_env_` prefix, because the `sdk-env` project runs every ignored journey
+/// that has one.
 #[test]
-#[ignore = "waits on #539's multi-alias recursive alias repair (type-lowering; a cycle of several aliases imports in no tree yet); then run via `just test-sdk-env`"]
-fn sdk_env_recursive_alias_dependents_import_and_construct() {
+#[ignore = "waits on #539's multi-alias recursive alias repair (type-lowering; a cycle of several aliases imports in no tree yet); that repair restores the `sdk_env_` prefix, which enrols it in `just test-sdk-env`"]
+fn recursive_alias_dependents_import_and_construct() {
     runtime_journey(
         "recursive-alias-dependents",
         "python-enums",
         "recursive-alias-dependents",
     );
 }
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These journeys generate one small SDK per measurement in each enum mode, comparing each whole against its certified tree, on the crozier-e2e edge every other golden comparison shares; a narrower edge for generator-replay journeys is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 
 /// A document whose `404` is `./components.yml#/components/responses/<name>`,
 /// beside the sibling `components` text, both written under `dir`.
@@ -664,3 +669,4 @@ fn the_colliding_component_departure_explains_only_the_renamed_class() {
         "a module no renamed class owns must fail the comparison: {failures:?}"
     );
 }
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
