@@ -8,7 +8,8 @@ in a child interpreter under a time limit, because an implicit recursive alias
 can make pydantic v1 expand it without end rather than raise. Prints one JSON
 line: `{"pydantic": version, "constructed": repr}` when the payload validates,
 or `{"pydantic": version, "failed": reason}` when the import or the validation
-raises (or `{"failed": "no result within …"}` past the limit). Exits 0 when the
+raises (or `{"failed": "no result within …"}` past the limit, or `{"failed":
+"killed by signal N"}` when the interpreter dies of a signal). Exits 0 when the
 outcome is the one expected, 1 when it is not, and 2 on a usage error, a ROOT
 holding no generated package, or a child interpreter that ends without
 reporting an outcome (a crash, not an SDK failure).
@@ -94,6 +95,10 @@ def screen(root: Path, target: str, payload: str) -> Constructed | Failed:
         )
     except subprocess.TimeoutExpired:
         return Failed(pydantic=None, failed=f"no result within {LIMIT_SECONDS}s")
+    # Killed by a signal is the import's own failure: an implicit recursive alias
+    # overflows the C stack under some pydantic 1.10 releases (SIGSEGV).
+    if child.returncode < 0:
+        return Failed(pydantic=None, failed=f"killed by signal {-child.returncode}")
     if child.returncode != 0:
         tail = child.stderr.strip().splitlines()[-1:] or ["no output"]
         raise UsageError(f"the child interpreter exited {child.returncode}: {tail[0]}")

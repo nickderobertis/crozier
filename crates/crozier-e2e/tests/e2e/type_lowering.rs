@@ -177,8 +177,31 @@ fn recursive_json_aliases_are_named() {
     );
 }
 
+/// #539 extended to a cycle made only of aliases (`JsonValueOutput`, a union of
+/// `JsonArrayOutput` and `JsonObjectOutput`, each holding it): the alias that
+/// closes the cycle is named, and a model reaching the cycle through another is
+/// repaired as the certified module repairs it.
+#[test]
+fn recursive_alias_cycles_are_named() {
+    holds(
+        "recursive-alias-cycle",
+        &[
+            (
+                "#539",
+                "src/fern/types/json_value_output.py",
+                "elif IS_PYDANTIC_V2:\n    JsonValueOutput = typing_extensions.TypeAliasType(",
+            ),
+            (
+                "#539",
+                "src/fern/types/run_summary.py",
+                "update_forward_refs(RunSummary)",
+            ),
+        ],
+    );
+}
+
 /// #539 and #925 at runtime: crozier's generated modules import, and construct
-/// a value through the recursive alias and the escaped-tag union, under both
+/// a value through the recursive alias, the alias cycle and the escaped-tag union, under both
 /// Pydantic majors the SDK declares, where the certified pair's modules fail to
 /// import or never finish. Run by `just test-sdk-env`.
 #[test]
@@ -190,6 +213,11 @@ fn sdk_env_escaped_discriminators_and_recursive_aliases_import() {
             "recursive-json-alias",
             "fern.types:Signal",
             r#"{"id": "a", "payload": {"k": [1, "x", null, {"n": true}]}, "history": [[1, 2], "y"], "labels": {"l": {"m": [3]}}, "tree": ["leaf", {"name": "n", "children": ["x", ["y"]]}]}"#,
+        ),
+        (
+            "recursive-alias-cycle",
+            "fern.types:RunSummary",
+            r#"{"report": {"engine": "e", "inference_diagnostics": {"a": [1, "x", null, {"b": [true]}], "c": {"d": 2.5}}}, "label": "l"}"#,
         ),
         (
             "inferred-discriminator-tags",

@@ -575,9 +575,9 @@ when the two differ.
 ### `recursive-alias-named-type`
 
 - **Kind:** `fern-defect`
-- **Trigger:** A schema whose own type names itself, as a recursive JSON value does (`anyOf` of scalars, an array of itself and a map of itself): its type alias module.
-- **Fern writes:** The implicit recursive alias `NAME = typing.Union[..., typing.List["NAME"], ...]`. pydantic expands it without end, so every model with a field of that type raises RecursionError on import, under pydantic v1 and v2.
-- **crozier writes:** The same alias under `if typing.TYPE_CHECKING:`, the alias named through `typing_extensions.TypeAliasType("NAME", ...)` under pydantic v2, and under v1, which cannot validate a recursive alias, the alias with each self-reference read as `typing.Any`. It imports `typing_extensions` and the core's `IS_PYDANTIC_V2`; every other byte of the module is retained.
+- **Trigger:** A schema whose own type names itself, as a recursive JSON value does (`anyOf` of scalars, an array of itself and a map of itself), or that closes a cycle made only of aliases (a union of an array alias and a map alias, each holding it): the type alias module of that schema.
+- **Fern writes:** The implicit recursive alias `NAME = typing.Union[..., typing.List["NAME"], ...]`, its other cycle members as quoted forward references. pydantic expands it without end, so every model reaching it hangs, crashes or raises RecursionError on import, under pydantic v1 and v2.
+- **crozier writes:** The same alias under `if typing.TYPE_CHECKING:`, the alias named through `typing_extensions.TypeAliasType("NAME", ...)` under pydantic v2, and under v1, which cannot validate a recursive alias, the alias with each quoted reference to itself or to an alias of its cycle read as `typing.Any`. It imports `typing_extensions` and the core's `IS_PYDANTIC_V2`; every other byte of the module is retained.
 - **Why:** A generated package whose modules cannot be imported is a defect. The named alias imports and validates nested values under every pydantic version the SDK declares, needs no Python 3.12 syntax, and type checkers read the same recursive alias Fern writes.
 - **Evidence:** [`docs/departures/evidence/recursive-alias-named-type.md`](../../docs/departures/evidence/recursive-alias-named-type.md)
 

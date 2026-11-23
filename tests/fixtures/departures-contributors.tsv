@@ -463,6 +463,8 @@ docs/fern-measurements/type-lowering/nullable-map-wrappers/expected-literals/fer
 docs/fern-measurements/type-lowering/nullable-map-wrappers/fern-expected	crozier-e2e::e2e	type_lowering::nullable_map_wrappers_keep_value_discrimination_and_optionality
 docs/fern-measurements/type-lowering/parameter-member-nullability/expected-literals/fern-expected	crozier-e2e::e2e	type_lowering::parameter_union_members_keep_their_type_array_nullability
 docs/fern-measurements/type-lowering/parameter-member-nullability/fern-expected	crozier-e2e::e2e	type_lowering::parameter_union_members_keep_their_type_array_nullability
+docs/fern-measurements/type-lowering/recursive-alias-cycle/expected-literals/fern-expected	crozier-e2e::e2e	type_lowering::recursive_alias_cycles_are_named
+docs/fern-measurements/type-lowering/recursive-alias-cycle/fern-expected	crozier-e2e::e2e	type_lowering::recursive_alias_cycles_are_named
 docs/fern-measurements/type-lowering/recursive-json-alias/expected-literals/fern-expected	crozier-e2e::e2e	type_lowering::recursive_json_aliases_are_named
 docs/fern-measurements/type-lowering/recursive-json-alias/fern-expected	crozier-e2e::e2e	type_lowering::recursive_json_aliases_are_named
 docs/fern-measurements/type-lowering/reference-compositions/expected-literals/fern-expected	crozier-e2e::e2e	type_lowering::reference_compositions_match_the_certified_pair

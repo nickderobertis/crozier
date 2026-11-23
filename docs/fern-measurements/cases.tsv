@@ -446,3 +446,5 @@ type-lowering/reference-compositions/expected-literals	docs/fern-measurements/ty
 type-lowering/reference-siblings-legacy/expected-literals	docs/fern-measurements/type-lowering/reference-siblings-legacy/openapi.yml	literals	packaged	fern-expected:docs/fern-measurements/type-lowering/reference-siblings-legacy/fern-expected
 type-lowering/union-branch-flattening/expected-literals	docs/fern-measurements/type-lowering/union-branch-flattening/openapi.yml	literals	packaged	fern-expected:docs/fern-measurements/type-lowering/union-branch-flattening/fern-expected
 type-lowering/union-member-lowering/expected-literals	docs/fern-measurements/type-lowering/union-member-lowering/openapi.yml	literals	packaged	fern-expected:docs/fern-measurements/type-lowering/union-member-lowering/fern-expected
+type-lowering/recursive-alias-cycle	docs/fern-measurements/type-lowering/recursive-alias-cycle/openapi.yml	python-enums	packaged	-
+type-lowering/recursive-alias-cycle/expected-literals	docs/fern-measurements/type-lowering/recursive-alias-cycle/openapi.yml	literals	packaged	fern-expected:docs/fern-measurements/type-lowering/recursive-alias-cycle/fern-expected

@@ -1,0 +1,66 @@
+openapi: 3.1.0
+info:
+  title: Assay Ledger
+  version: 1.0.0
+servers:
+  - url: https://assay.example.com
+paths:
+  /runs/{run_id}:
+    get:
+      operationId: getRun
+      tags: [runs]
+      parameters:
+        - name: run_id
+          in: path
+          required: true
+          schema: {type: string}
+      responses:
+        '200':
+          description: The run.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunSummary'
+components:
+  schemas:
+    RunSummary:
+      type: object
+      additionalProperties: false
+      title: RunSummary
+      required: [report]
+      properties:
+        report:
+          $ref: '#/components/schemas/InferenceReport'
+        label:
+          type: string
+          title: Label
+    InferenceReport:
+      type: object
+      additionalProperties: false
+      title: InferenceReport
+      required: [engine]
+      properties:
+        engine:
+          type: string
+          title: Engine
+        inference_diagnostics:
+          $ref: '#/components/schemas/JsonObject-Output'
+    JsonScalar:
+      anyOf:
+        - type: string
+        - type: number
+        - type: boolean
+        - type: 'null'
+    JsonArray-Output:
+      type: array
+      items:
+        $ref: '#/components/schemas/JsonValue-Output'
+    JsonObject-Output:
+      type: object
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue-Output'
+    JsonValue-Output:
+      anyOf:
+        - $ref: '#/components/schemas/JsonScalar'
+        - $ref: '#/components/schemas/JsonArray-Output'
+        - $ref: '#/components/schemas/JsonObject-Output'

@@ -1493,6 +1493,19 @@ fn forward_repair_map(
     // time the module that names it repairs it, so nothing beyond that module is
     // affected — NDW's `Feature` repairs the `FeatureProperties` union and its own
     // referrer `FeatureCollection` needs no repair of its own.
+    // …unless the cycle is made of aliases alone, which no module repairs as a
+    // whole: the `type-lowering/recursive-alias-cycle` measurement's
+    // `RunSummary` reaches the `JsonValueOutput`/`JsonArrayOutput`/
+    // `JsonObjectOutput` cycle through `InferenceReport`, and the certified
+    // module repairs `RunSummary` too.
+    let alias_only_cycle = |node: &str| {
+        component.get(node).is_some_and(|id| {
+            component
+                .iter()
+                .filter(|(_, other)| *other == id)
+                .all(|(member, _)| aliases.contains(member.as_str()))
+        })
+    };
     let reaches_repairable = |starts: &[String]| -> bool {
         if starts.iter().any(|name| cyclic.contains(name.as_str())) {
             return true;
@@ -1500,7 +1513,7 @@ fn forward_repair_map(
         let mut stack: Vec<&str> = starts.iter().map(String::as_str).collect();
         let mut seen: HashSet<&str> = HashSet::new();
         while let Some(node) = stack.pop() {
-            if cyclic.contains(node) && classes.contains(node) {
+            if cyclic.contains(node) && (classes.contains(node) || alias_only_cycle(node)) {
                 return true;
             }
             if seen.insert(node) {
@@ -4961,10 +4974,19 @@ fn render_type_decl(
                     }
                 })
                 .unwrap_or_default();
-            if forward.contains(&alias.name) {
+            // An alias naming itself, or closing a cycle of aliases (a forward
+            // reference to another alias), is named (see
+            // [`render_recursive_alias`]).
+            let cyclic: std::collections::HashSet<String> = forward
+                .iter()
+                .filter(|name| **name == alias.name || xml_types.is_alias(name))
+                .cloned()
+                .collect();
+            if !cyclic.is_empty() {
                 return Ok(render_recursive_alias(
                     alias,
                     &target.flat(),
+                    &cyclic,
                     &mut imports,
                     &docstring,
                 ));
@@ -5115,34 +5137,36 @@ fn render_literal_enum(env: &Environment<'static>, e: &crate::ir::EnumType) -> R
 }
 
 /// A type alias that names itself (a recursive JSON value, Supabase's
-/// `JsonValue_Output`): an implicit recursive alias overflows pydantic's model
+/// `JsonValue_Output`), or closes a cycle of aliases (`cyclic` names each alias
+/// it reaches that way): an implicit recursive alias overflows pydantic's model
 /// construction, under v1 and v2 alike, so every model holding it fails to
 /// import. Fern writes the implicit alias; crozier names it through the
 /// backported `typing_extensions.TypeAliasType` under pydantic v2, and under v1,
-/// which cannot validate a recursive alias, stops the recursion at
+/// which cannot validate a recursive alias, reads each of the `cyclic` names as
 /// `typing.Any`. Type checkers read the plain recursive alias (the
 /// `recursive-alias-named-type` departure).
 fn render_recursive_alias(
     alias: &crate::ir::AliasType,
     target: &str,
+    cyclic: &std::collections::HashSet<String>,
     imports: &mut Imports,
     docstring: &str,
 ) -> String {
-    fn unrolled(type_ref: &TypeRef, name: &str) -> TypeRef {
-        let boxed = |inner: &TypeRef| Box::new(unrolled(inner, name));
+    fn unrolled(type_ref: &TypeRef, cyclic: &std::collections::HashSet<String>) -> TypeRef {
+        let boxed = |inner: &TypeRef| Box::new(unrolled(inner, cyclic));
         match type_ref {
-            TypeRef::Named(n) if n == name => TypeRef::Primitive(crate::ir::Prim::Any),
+            TypeRef::Named(n) if cyclic.contains(n) => TypeRef::Primitive(crate::ir::Prim::Any),
             TypeRef::Optional(inner) => TypeRef::Optional(boxed(inner)),
             TypeRef::List(inner) => TypeRef::List(boxed(inner)),
             TypeRef::Set(inner) => TypeRef::Set(boxed(inner)),
             TypeRef::Dict(key, value) => TypeRef::Dict(boxed(key), boxed(value)),
             TypeRef::Union(members) => {
-                TypeRef::Union(members.iter().map(|m| unrolled(m, name)).collect())
+                TypeRef::Union(members.iter().map(|m| unrolled(m, cyclic)).collect())
             }
             other => other.clone(),
         }
     }
-    let bounded = render_type(&unrolled(&alias.target, &alias.name), imports).flat();
+    let bounded = render_type(&unrolled(&alias.target, cyclic), imports).flat();
     imports.add_plain("typing_extensions");
     imports.add_core("pydantic_utilities", "IS_PYDANTIC_V2");
     let name = &alias.name;

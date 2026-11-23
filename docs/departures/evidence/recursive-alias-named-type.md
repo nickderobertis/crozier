@@ -23,6 +23,15 @@ same alias under `if typing.TYPE_CHECKING:`, names it through
 and under `else:` (pydantic v1, which cannot validate a recursive alias) writes
 it with each self-reference read as `typing.Any`.
 
+A cycle made only of aliases is the same defect: the independently authored
+[Assay Ledger document](../../fern-measurements/type-lowering/recursive-alias-cycle/openapi.yml)
+declares `JsonValue-Output`, a union of a scalar, `JsonArray-Output` (an array
+of it) and `JsonObject-Output` (a map of it), reached by `InferenceReport`, a
+field of `RunSummary`. Its certified tree, generated the same way, writes
+`JsonValueOutput` as the implicit alias over the quoted `"JsonArrayOutput"` and
+`"JsonObjectOutput"`; crozier writes the three branches above, its pydantic v1
+branch reading both quoted references as `typing.Any`.
+
 ## Executed certified-output evidence
 
 With the SDK's HTTPX and Pydantic dependencies installed, execute the committed
@@ -44,14 +53,26 @@ tree with `valid`, both construct the nested value:
 under 1.10.27, and under 2.14.4 the same with the numbers read as floats and
 the tree's node constructed as `Node(name='n', children=['x', ['y']])`.
 
+Over the cycle (`fern.types:RunSummary`, payload `{"report": {"engine": "e",
+"inference_diagnostics": {"a": [1, "x", null, {"b": [true]}], "c": {"d": 2.5}}},
+"label": "l"}`), the certified tree printed `{"failed": "no result within 30s"}`
+under Pydantic 1.10.26 and 1.10.27, and `{"pydantic": "2.14.4", "failed":
+"RecursionError"}` under 2.14.4; crozier's tree constructs
+`RunSummary(report=InferenceReport(engine='e', inference_diagnostics={...}), label='l')`
+under all three. (The naming-acceptance screen of the same shape saw the
+certified tree crash the interpreter with SIGSEGV under 1.10.26 on its host;
+the script reports such a death as `killed by signal 11`, also a failure.)
+
 ## The rule
 
 `recursive_alias_named_type` admits only a `.py` type-alias module whose Fern
-side is one alias naming itself, and whose crozier side is Fern's imports plus
+side is one alias naming itself or other aliases by quoted reference, and whose crozier side is Fern's imports plus
 `typing_extensions` and the core's `IS_PYDANTIC_V2`, then exactly the three
 branches above built from Fern's own alias target, compared with layout
-dropped. Any other change to the target, the imports or the trailer still
-fails. The `type_lowering::recursive_json_aliases_are_named` journey compares
+dropped, the v1 branch reading at least one quoted reference as `typing.Any`
+and keeping the rest. Any other change to the target, the imports or the
+trailer still fails. The `type_lowering::recursive_alias_cycles_are_named`
+journey holds the cycle's measurement. The `type_lowering::recursive_json_aliases_are_named` journey compares
 the measurement's whole trees with the departure applied, and
 `type_lowering::sdk_env_escaped_discriminators_and_recursive_aliases_import`
 runs this script over both sides under both Pydantic majors.

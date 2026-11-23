@@ -41,6 +41,11 @@ impl<'a> XmlTypes<'a> {
         )
     }
 
+    /// Whether `name` is a type alias declaration of the SDK.
+    pub(super) fn is_alias(&self, name: &str) -> bool {
+        matches!(self.find(name), Some(TypeDecl::Alias(_)))
+    }
+
     fn find(&self, name: &str) -> Option<&'a TypeDecl> {
         self.all()
             .map(|(decl, _)| decl)

@@ -5361,7 +5361,8 @@ fn escaped_field_alias_literal(pair: &Pair<'_>, fern: &str, crozier: &str) -> bo
     })
 }
 
-/// `recursive-alias-named-type`: a type alias module whose alias names itself.
+/// `recursive-alias-named-type`: a type alias module whose alias names itself,
+/// or closes a cycle of aliases.
 /// A guarded `if typing.TYPE_CHECKING:` import block, written alike on both
 /// sides, is set aside before the comparison.
 /// Fern's whole module after its imports is the implicit alias `NAME = T`;
@@ -5429,10 +5430,24 @@ fn recursive_alias_named_type(pair: &Pair<'_>) -> Result<Option<Region>, String>
         return Ok(None);
     }
     let reference = format!("\"{name}\"");
-    if !target.contains(&reference) {
+    // The bounded branch reads as `typing.Any` each quoted reference crozier's
+    // branch no longer names: the alias itself, or the aliases of the cycle it
+    // closes (`"JsonArrayOutput"`, `"JsonObjectOutput"`); at least one must go.
+    let Some(written) = crozier_body
+        .rsplit_once(&format!("else:{name}="))
+        .map(|(_, written)| written)
+    else {
+        return Ok(None);
+    };
+    let mut bounded = target.to_string();
+    for quoted in quoted_identifiers(target) {
+        if !written.contains(&quoted) {
+            bounded = bounded.replace(&quoted, "typing.Any");
+        }
+    }
+    if bounded == target {
         return Ok(None);
     }
-    let bounded = target.replace(&reference, "typing.Any");
     let named = format!(
         "iftyping.TYPE_CHECKING:{name}={target}elifIS_PYDANTIC_V2:{name}=typing_extensions.TypeAliasType({reference},{target})else:{name}={bounded}{trailer}"
     );
@@ -5455,6 +5470,23 @@ fn recursive_alias_named_type(pair: &Pair<'_>) -> Result<Option<Region>, String>
         return Ok(None);
     }
     Ok(differing_window(pair.fern, pair.crozier))
+}
+
+/// Every distinct `"Identifier"` string literal in a layout-free Python
+/// expression, quotes included, in first-appearance order.
+fn quoted_identifiers(expression: &str) -> Vec<String> {
+    let mut found: Vec<String> = Vec::new();
+    for (index, piece) in expression.split('"').enumerate() {
+        let quoted = format!("\"{piece}\"");
+        if index % 2 == 1
+            && !piece.is_empty()
+            && piece.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
+            && !found.contains(&quoted)
+        {
+            found.push(quoted);
+        }
+    }
+    found
 }
 
 /// Python source with its layout dropped: no whitespace, and no trailing comma

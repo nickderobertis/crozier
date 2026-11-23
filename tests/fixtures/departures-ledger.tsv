@@ -2349,6 +2349,13 @@ docs/fern-measurements/type-lowering/parameter-member-nullability/fern-expected	
 docs/fern-measurements/type-lowering/parameter-member-nullability/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/type-lowering/parameter-member-nullability/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/type-lowering/parameter-member-nullability/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/type-lowering/recursive-alias-cycle/expected-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
+docs/fern-measurements/type-lowering/recursive-alias-cycle/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/type-lowering/recursive-alias-cycle/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/type-lowering/recursive-alias-cycle/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/type-lowering/recursive-alias-cycle/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/type-lowering/recursive-alias-cycle/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/type-lowering/recursive-alias-cycle/fern-expected	src/fern/types/json_value_output.py	7	recursive-alias-named-type
 docs/fern-measurements/type-lowering/recursive-json-alias/expected-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
 docs/fern-measurements/type-lowering/recursive-json-alias/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/type-lowering/recursive-json-alias/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
