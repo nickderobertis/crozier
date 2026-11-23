@@ -2775,6 +2775,62 @@ class ArmSearchStageTests(_StageScratch):
         )
         self.assertNotIn("test fixture(s) that do reach it", record)
 
+    def test_a_historical_candidate_the_eligibility_rule_makes_a_tooling_resource_is_owed_nothing(self) -> None:
+        """Issue #953: a query source's candidate screened before the eligibility rule
+        was coded, under a test or fixtures directory, is counted by that rule now: it
+        is neither outstanding nor a historical screen, while a real-world candidate
+        screened the same way still is."""
+        build = self.head[:12]
+        real = f"acme/shop:api/openapi.yaml@{self.REVISION}"
+        tooling = f"acme/generator:test/fixtures/openapi.yaml@{self.REVISION}"
+        golden_reach_search.replace_records(
+            "sourcegraph",
+            [
+                {"key": self.KEY, "kind": "document", "subject": c, "result": "census 1", "file": "records.tsv"}
+                for c in (real, tooling)
+            ],
+        )
+        reached = list(golden_reach_search.unreached_sites(self.KEY))
+        golden_reach_search.file_probes(
+            "sourcegraph",
+            self.KEY,
+            [
+                {"key": self.KEY, "candidate": c, "status": "generated", "build": build, "reached": reached}
+                for c in (real, tooling)
+            ],
+        )
+        for candidate in (real, tooling):
+            golden_reach_search.file_screen(
+                "sourcegraph",
+                self.KEY,
+                candidate,
+                {
+                    "licence": "passed",
+                    "ref": "passed",
+                    "fern": "passed",
+                    "gap_keys": "",
+                    "evidence": "screened by hand",
+                    "declined": "",
+                    "registered": "",
+                },
+            )
+        tally = golden_reach_search._tally(self.KEY, "sourcegraph", build)
+        self.assertEqual((2, 1, 0), (tally["reaching"], tally["historical"], tally["passing"]))
+        self.assertEqual(1, golden_reach_search._outstanding(tally))
+        (golden_reach_search.EVIDENCE / "searches").mkdir(parents=True, exist_ok=True)
+        (golden_reach_search.EVIDENCE / "searches" / f"{self.KEY}.md").write_text(
+            f"build `{build}` only.\n", encoding="utf-8", newline="\n"
+        )
+        with contextlib.redirect_stdout(io.StringIO()) as printed:
+            self.assertEqual(0, golden_reach_search.main(["outstanding"]))
+        self.assertIn("1 outstanding item(s) across 1 arm search(es)", printed.getvalue())
+        with golden_reach_search.OUTSTANDING.open(encoding="utf-8", newline="") as handle:
+            rows = list(csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE))
+        self.assertEqual(
+            [("sourcegraph", real, golden_reach_search.HISTORICAL_SCREEN)],
+            [(row["source"], row["item"], row["blocker"]) for row in rows],
+        )
+
     def test_retire_marks_a_candidate_this_build_no_longer_finds_reaching_the_arm_and_keeps_its_row(self) -> None:
         self.walk()
         build = self.head[:12]

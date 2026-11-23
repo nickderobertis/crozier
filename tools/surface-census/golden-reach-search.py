@@ -1511,6 +1511,33 @@ def fixture_declined(key: str, source: str) -> set[str]:
     return {c for c, row in latest.items() if str(row.get("declined", "")).startswith(FIXTURE_DECLINE)}
 
 
+QUERY_CANDIDATE = re.compile(r"(?:github\.com/)?([^/:]+/[^/:]+):(.+)@([0-9a-f]{40})")
+
+
+def tooling_resources(key: str, source: str) -> set[str]:
+    """The declarers of one key's search the census's eligibility rule finds to be tooling resources.
+
+    A query source's candidate names its repository path, and a path under a
+    test, sample, example, fixture or mock directory is no real-world
+    specification however it was screened, as the rule `screen --registered`
+    enforces. Applied here, at tally time, so a candidate screened before the rule
+    was coded is counted by the rule that holds now, not by its record.
+    """
+    if source not in QUERY_SOURCES:
+        return set()
+    subjects = {r["subject"] for r in read_records(source) if r["key"] == key and r["kind"] == "document"}
+    return {
+        subject
+        for subject in subjects
+        if (found := QUERY_CANDIDATE.fullmatch(subject)) and CENSUS.tooling_resource_path(found.group(2))
+    }
+
+
+def ineligible(key: str, source: str) -> set[str]:
+    """Candidates of one key's search that are no real-world witness: fixture-declined, or tooling by their path."""
+    return fixture_declined(key, source) | tooling_resources(key, source)
+
+
 def candidate_ref(source: str, candidate: str) -> tuple[str, str, str, str]:
     """Where a candidate's bytes are pinned: repository, commit, path, and the digest the search read."""
     if source in QUERY_SOURCES:
@@ -1886,7 +1913,7 @@ def outstanding_items(key: str, source: str, build: str) -> list[tuple[str, str]
     historical = {c for c, state in screen_states(key, source).items() if state == "historical"}
     items += [
         (c, HISTORICAL_SCREEN)
-        for c in sorted((historical & _reaching(key, source, build)) - fixture_declined(key, source))
+        for c in sorted((historical & _reaching(key, source, build)) - ineligible(key, source))
     ]
     return items + [(document, reason) for document, reason in _unreadable(key, source)]
 
@@ -1904,9 +1931,9 @@ def _tally(key: str, source: str, build: str) -> dict[str, int]:
     # it read another arm's regions (see [`measured_build`]) and says nothing.
     probes = {row["candidate"]: row for row in read_probes(source) if row["key"] == key and row.get("build") == build}
     states = screen_states(key, source)
-    declined = fixture_declined(key, source)
-    # A historical screen settles nothing: only a measured one, or a fixture
-    # decline, takes a candidate off the outstanding list.
+    declined = ineligible(key, source)
+    # A historical screen settles nothing: only a measured one, a fixture
+    # decline, or the eligibility rule takes a candidate off the outstanding list.
     screened = {c for c, state in states.items() if state != "historical"} | declined
     historical = {c for c, state in states.items() if state == "historical"} - declined
     reaching = {c for c, row in probes.items() if row["reached"]}
@@ -2207,7 +2234,7 @@ def _historical_note(tallies: dict[str, dict[str, int]]) -> list[str]:
 
 
 def _exhausted_verdict(key: str, build: str) -> str:
-    fixtures = sum(len(fixture_declined(key, source) & _reaching(key, source, build)) for source in DECLARED_SOURCES)
+    fixtures = sum(len(ineligible(key, source) & _reaching(key, source, build)) for source in DECLARED_SOURCES)
     return (
         "**Verdict: `exhausted`.** No real-world document in the six declared sources "
         "both declares this row and reaches the arm while passing every screen, so the "
