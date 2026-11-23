@@ -2899,7 +2899,7 @@ PORT_PINS = (
         "_candidate_tag_values",
         "src/ir.rs::inferred_discriminant_property",
         "that tag inference still applies the same required-property exceptions for referenced and inline members",
-        "77902e58b762442b",
+        "bbec7947b65d731f",
     ),
     PortPin(
         "untyped_enum_tag",
@@ -2934,7 +2934,7 @@ PORT_PINS = (
         "Census.same_primitive_unions",
         "src/ir.rs::base_type_ref",
         "that scalar union members still convert to the same primitive kinds",
-        "bc4f2c4324cbd25b",
+        "360127ac22ebf303",
     ),
     PortPin(
         "last_composed_variant",
