@@ -12,6 +12,7 @@ use super::union_inheritance::{enum_failures_in, generate_in, literals_failures_
 /// Where the measurements live; each case's `fern-expected/` is a compared golden.
 pub(crate) const DIR: &str = "docs/fern-measurements/type-lowering";
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each journey below generates one small SDK per case and compares it whole, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 /// A ticket's characteristic bytes: `(ticket, file, bytes crozier writes)`.
 type Check = (&'static str, &'static str, &'static str);
 
@@ -582,3 +583,4 @@ fn union_members_lower_dedupe_merge_and_hoist_as_the_certified_pair() {
         ],
     );
 }
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
