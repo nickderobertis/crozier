@@ -1724,15 +1724,22 @@ def witness_candidates() -> dict[str, WitnessCandidate]:
                 row = None
             if not isinstance(row, dict):
                 raise ReferenceError(f"{rel(ledger)}:{number} is no JSON object; restore it from git")
-            identity = tuple(row.get(field) for field in IDENTITY)
-            if all(part is None for part in identity):
+            repository, commit, path = (row.get(field) for field in IDENTITY)
+            if repository is None and commit is None and path is None:
                 continue
-            if not all(isinstance(part, str) and part for part in identity):
+            if not (
+                isinstance(repository, str)
+                and repository
+                and isinstance(commit, str)
+                and commit
+                and isinstance(path, str)
+                and path
+            ):
                 raise ReferenceError(
                     f"{rel(ledger)}:{number} names a candidate without a whole repository, commit and path; "
                     "restore it from git"
                 )
-            latest[cast(tuple[str, str, str], identity)] = row
+            latest[(repository, commit, path)] = row
         directory = rel(ledger.parent)[len(str(WITNESS_EVIDENCE)) + 1 :]
         for (repository, commit, path), row in latest.items():
             if not ran_fern_at_a_pair(row):
