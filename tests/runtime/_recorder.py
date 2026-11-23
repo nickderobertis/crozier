@@ -26,7 +26,7 @@ import json
 import os
 import sys
 from types import SimpleNamespace
-from typing import Any, Protocol, TypedDict
+from typing import Any, Protocol, TypeAlias, TypedDict
 
 import httpx
 
@@ -75,7 +75,12 @@ def _canonical_headers(headers):
     return out
 
 
-def _body(request):
+# What a recorded body can hold: a parsed JSON document, or the raw text of a
+# non-JSON body (a `str`), or `None` for an empty one.
+JsonValue: TypeAlias = dict[str, "JsonValue"] | list["JsonValue"] | str | int | float | bool | None
+
+
+def _body(request) -> JsonValue:
     """The request body as JSON when it is JSON, else the raw text, else None."""
     content = request.content
     if not content:
@@ -92,7 +97,7 @@ class RequestObservation(TypedDict):
     method: str
     url: str
     headers: dict[str, str]
-    body: Any
+    body: JsonValue
 
 
 def _request_record(request) -> RequestObservation:
@@ -378,7 +383,7 @@ class ErrorObservation(TypedDict):
     """The status and body the API error carried."""
 
     status: int
-    body: Any
+    body: JsonValue
 
 
 class RecoveryObservation(TypedDict):
