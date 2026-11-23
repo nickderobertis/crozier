@@ -2,12 +2,12 @@
 // the real command, and that command's refusal when the two differ.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { collect, pytestFiles, suitesIn } from "../core.mjs";
+import { collect, pytestFiles, suitesIn, writeTogether } from "../core.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "..");
 const SCRIPT = join(ROOT, "tools/ci/suite-cases/suite-cases.mjs");
@@ -118,6 +118,28 @@ test("a repin refuses a lanes.json whose e2eCases record is malformed, writing n
       assert.equal(readFileSync(lanes, "utf8"), text, `${label}: lanes.json was rewritten`);
       assert.equal(readFileSync(journeys, "utf8"), pinned, `${label}: the pin was rewritten`);
     }
+  } finally {
+    rmSync(scratch, { recursive: true, force: true });
+  }
+});
+
+test("a write that fails part-way restores every file it already moved into place", () => {
+  const scratch = mkdtempSync(join(tmpdir(), "crozier-suite-cases-"));
+  try {
+    const pin = join(scratch, "pin.txt");
+    const fresh = join(scratch, "fresh.txt");
+    const lanes = join(scratch, "lanes.json");
+    writeFileSync(pin, "committed\n");
+    // A directory where lanes.json belongs: its rename fails after the others succeed.
+    mkdirSync(lanes);
+    writeFileSync(join(lanes, "occupied"), "");
+    assert.throws(() => writeTogether(new Map([[pin, "repinned\n"], [fresh, "new\n"], [lanes, "{}\n"]])));
+    assert.equal(readFileSync(pin, "utf8"), "committed\n", "the pin kept the repinned bytes");
+    assert.deepEqual(readdirSync(scratch).sort(), ["lanes.json", "pin.txt"], "a new file or a staged one was left");
+    rmSync(lanes, { recursive: true });
+    writeTogether(new Map([[pin, "repinned\n"], [lanes, "{}\n"]]));
+    assert.equal(readFileSync(pin, "utf8"), "repinned\n");
+    assert.equal(readFileSync(lanes, "utf8"), "{}\n");
   } finally {
     rmSync(scratch, { recursive: true, force: true });
   }

@@ -3,7 +3,7 @@
 // cases, never which cases it has. See docs/ci-gate-timing.md.
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 /** The pytest arguments naming a test target's files, read off its own command so a pin cannot watch other files. */
@@ -112,17 +112,40 @@ export function e2eCasesRecord(cases) {
 
 /**
  * Write `files` (path -> text) together: every one is written beside its final
- * name first and only then renamed into place, so a failed write leaves every
- * committed file as it was.
+ * name first and only then renamed into place; a rename that fails restores
+ * every file already renamed to the bytes it held (or removes one that did not
+ * exist), removes what is still staged, and rethrows, so a failed write leaves
+ * every committed file as it was.
  */
 export function writeTogether(files) {
-  const staged = [...files].map(([path, text]) => {
-    mkdirSync(join(path, ".."), { recursive: true });
-    const temporary = `${path}.${process.pid}.tmp`;
-    writeFileSync(temporary, text);
-    return [temporary, path];
-  });
-  for (const [temporary, path] of staged) renameSync(temporary, path);
+  const staged = [];
+  try {
+    for (const [path, text] of files) {
+      mkdirSync(join(path, ".."), { recursive: true });
+      const temporary = `${path}.${process.pid}.tmp`;
+      writeFileSync(temporary, text);
+      staged.push([temporary, path]);
+    }
+  } catch (error) {
+    for (const [temporary] of staged) rmSync(temporary, { force: true });
+    throw error;
+  }
+  const previous = staged.map(([, path]) => (existsSync(path) && !statSync(path).isDirectory() ? readFileSync(path) : null));
+  let done = 0;
+  try {
+    for (const [temporary, path] of staged) {
+      renameSync(temporary, path);
+      done += 1;
+    }
+  } catch (error) {
+    for (let index = 0; index < done; index += 1) {
+      const [, path] = staged[index];
+      if (previous[index] === null) rmSync(path, { force: true });
+      else writeFileSync(path, previous[index]);
+    }
+    for (const [temporary] of staged.slice(done)) rmSync(temporary, { force: true });
+    throw error;
+  }
 }
 
 /** One line per case the live collection lost or gained against its pin; empty when they are the same set. */

@@ -40,7 +40,5 @@
 
 - Re-read the named Rust decision against its Python port before
   `just census-repin --confirm-port NAME`, even for a local rename.
-- A region page's census count beside an enumerated witness list ("**N** golden-bearing
-  sources, S sites — `a` (1), …") is derived from that list: `census-prose-counts.py check`
-  (held by `CensusProseCountsTests`) fails when they disagree, and `write` renders the
-  counts. Update the list from the census, never the count by hand.
+- A region page's count beside an enumerated witness list is rendered from the list:
+  update the list from the census, never the count by hand.

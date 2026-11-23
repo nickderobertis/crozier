@@ -2,9 +2,7 @@
 
 - `pins/` holds each sped-up suite's collected cases, taken from the base tree, so
   a speed-up cannot lose a case unnoticed. A deliberate change to a pinned suite's
-  cases re-pins it: `node tools/ci/suite-cases/suite-cases.mjs write NAME`, which
-  writes `tools/ci/lanes.json`'s `e2eCases` from the same pins in one step and
-  refuses, writing nothing, when an e2e case the committed pins hold is lost; a
+  cases re-pins it: `node tools/ci/suite-cases/suite-cases.mjs write NAME`; a
   deliberate removal names each case in `CROZIER_SUITE_CASES_RETIRE`. A suite
   whose cases are pinned keeps new reuse tests out of its own target.
 - The pins are Linux collections, so the live comparison runs on Linux only.
