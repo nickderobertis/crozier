@@ -563,6 +563,40 @@ class LegacyScreenCliTests(unittest.TestCase):
                 self.assertIn(f"the filed acme/shop@{COMMIT}:openapi.yaml names no source", refused.stderr)
                 self.assertEqual(text, ledger.read_text(encoding="utf-8"), "a refusal appended a row")
 
+    def test_a_rescreen_refuses_malformed_filed_keys_or_catalog_rows_and_recovers_with_an_explicit_key(self) -> None:
+        good = "key\tsource\nscoped-shape\tsourcegraph\n"
+        ledger, filed, identity = self.filed_scope(good)
+        catalog = ledger.parent.parent / "census.tsv"
+        for label, row in (
+            ("missing", {key: value for key, value in filed.items() if key != "keys"}),
+            ("not a list", {**filed, "keys": "scoped-shape"}),
+            ("an empty key among valid ones", {**filed, "keys": ["scoped-shape", ""]}),
+            ("a key that is no string", {**filed, "keys": ["scoped-shape", 7]}),
+        ):
+            with self.subTest(label):
+                text = json.dumps(row) + "\n"
+                ledger.write_text(text, encoding="utf-8")
+                refused = self.rescreen("--ledger", str(ledger), *identity, "--disposition", "witness-found")
+                self.assertEqual(1, refused.returncode)
+                self.assertIn("carries no list of keys; name the keys to screen with --key", refused.stderr)
+                self.assertEqual(text, ledger.read_text(encoding="utf-8"), "a refusal appended a row")
+        text = ledger.read_text(encoding="utf-8")
+        for label, extra in (("too few cells", "lonely-shape\n"), ("too many cells", "wide-shape\tsourcegraph\tx\n")):
+            with self.subTest(label):
+                catalog.write_text(good + extra, encoding="utf-8")
+                refused = self.rescreen("--ledger", str(ledger), *identity, "--key", "scoped-shape")
+                self.assertEqual(1, refused.returncode)
+                self.assertIn("census.tsv:3 is no 2-cell row with a key", refused.stderr)
+                self.assertEqual(text, ledger.read_text(encoding="utf-8"), "a refusal appended a row")
+        catalog.write_text(good, encoding="utf-8")
+        done = self.rescreen(
+            "--ledger", str(ledger), *identity, "--key", "scoped-shape", "--disposition", "witness-found"
+        )
+        self.assertEqual(0, done.returncode, done.stderr)
+        lines = ledger.read_text(encoding="utf-8").splitlines()
+        self.assertEqual(2, len(lines))
+        self.assertEqual(["scoped-shape"], json.loads(lines[-1])["keys"])
+
     def test_a_rescreen_follows_the_latest_filed_row(self) -> None:
         ledger, filed, identity = self.filed_scope("key\tsource\nscoped-shape\tsourcegraph\nother-shape\tsourcegraph\n")
         later = {**filed, "source": "sourcegraph-later", "keys": ["other-shape"]}
