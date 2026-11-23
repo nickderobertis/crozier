@@ -183,6 +183,8 @@ components:
           type: string
         bic:
           type: string
+        holder:
+          type: string
     AchInstruction:
       type: object
       required: [accountNumber]
@@ -191,6 +193,8 @@ components:
           type: string
         routingNumber:
           type: string
+        holder:
+          type: integer
     FiatSource:
       type: object
       required: [currency]

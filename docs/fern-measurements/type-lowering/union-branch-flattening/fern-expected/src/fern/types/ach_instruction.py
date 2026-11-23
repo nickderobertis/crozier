@@ -15,6 +15,7 @@ class AchInstruction(UniversalBaseModel):
     routing_number: typing_extensions.Annotated[
         typing.Optional[str], FieldMetadata(alias="routingNumber"), pydantic.Field(alias="routingNumber")
     ] = None
+    holder: typing.Optional[int] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

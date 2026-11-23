@@ -20047,17 +20047,35 @@ fn inline_referenced_union_members(
                         && target.all_of.is_none()
                         && target.additional_properties.is_none()
                 });
-            match target {
-                Some(target) => {
-                    changed = true;
-                    Schema {
-                        one_of: target.one_of.clone(),
-                        any_of: target.any_of.clone(),
-                        ..Schema::default()
+            let Some(target) = target else {
+                return member.clone();
+            };
+            // Each branch lends its own and its inline `allOf` members'
+            // properties, all optional, and a property several declare takes
+            // the LAST branch's spelling at the first one's place: fireblocks'
+            // `FiatPaymentInstruction` lends `bankAccountNumber` as SPEI's
+            // `Clabe` and `sortCode` as FPS UK's `FpsUkSortCode` in the
+            // certified `OnRampPaymentInstructions`, where a union written as
+            // the member itself keeps its first branch's (see
+            // [`branch_union_properties`]).
+            let mut merged = Schema {
+                ty: Some(TypeField::Single("object".to_string())),
+                ..Schema::default()
+            };
+            for branch in target.one_of.iter().chain(target.any_of.iter()).flatten() {
+                let branch = branch
+                    .reference
+                    .as_deref()
+                    .and_then(|reference| resolve_ref_from_schemas(schemas, reference))
+                    .unwrap_or(branch);
+                for (key, property) in inline_all_of_properties(branch).properties.iter() {
+                    if !property.negative_only() {
+                        merged.properties.insert(key.clone(), property.clone());
                     }
                 }
-                None => member.clone(),
             }
+            changed = true;
+            merged
         })
         .collect();
     changed.then(|| Schema {

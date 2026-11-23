@@ -11,6 +11,7 @@ from ..core.serialization import FieldMetadata
 class InstructedOffRampPropertiesPaymentInstructions(UniversalBaseModel):
     iban: typing.Optional[str] = None
     bic: typing.Optional[str] = None
+    holder: typing.Optional[int] = None
     account_number: typing_extensions.Annotated[
         typing.Optional[str], FieldMetadata(alias="accountNumber"), pydantic.Field(alias="accountNumber")
     ] = None
