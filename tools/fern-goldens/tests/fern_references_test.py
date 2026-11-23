@@ -504,6 +504,17 @@ class FernReferencesTests(unittest.TestCase):
         typed = self.run_tool("check", "witness-screens")
         self.assertEqual(1, typed.returncode)
         self.assertIn("carries a sha256 or disposition that is no string", typed.stderr)
+        # Decoded at the boundary: a superseded row is held to the same types as the latest.
+        ledger.write_text(
+            json.dumps({**rows[0], "disposition": ["witness-found"]}) + "\n" + json.dumps(rows[0]) + "\n",
+            encoding="utf-8",
+        )
+        superseded = self.run_tool("check", "witness-screens")
+        self.assertEqual(1, superseded.returncode)
+        self.assertIn("screens.jsonl:1: acme/shop@", superseded.stderr)
+        self.assertIn("carries a sha256 or disposition that is no string", superseded.stderr)
+        ledger.write_text(json.dumps(rows[0]) + "\n", encoding="utf-8")
+        self.assertEqual(0, self.run_tool("check", "witness-screens").returncode)
 
     def test_every_committed_measurement_tree_is_an_item_and_an_unregistered_one_fails_the_check(self) -> None:
         """Issue #961: a committed Fern tree under docs/fern-measurements/ that no

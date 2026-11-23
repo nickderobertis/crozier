@@ -1701,11 +1701,52 @@ class WitnessCandidate(NamedTuple):
 IDENTITY = ("repository", "commit", "path")
 
 
-def ran_fern_at_a_pair(row: dict[str, object]) -> bool:
-    """Whether a screen row is a current measurement whose Fern screen ran at a pair."""
+class FiledScreen(NamedTuple):
+    """One candidate row of a `screens.jsonl`, decoded at the JSON boundary: its
+    identity, what a re-screen keeps (digest, "" for none, and disposition), and
+    whether it is a current measurement whose Fern screen ran at a pair."""
+
+    repository: str
+    commit: str
+    path: str
+    sha256: str
+    disposition: str
+    ran_fern_at_a_pair: bool
+
+
+def decode_screen(ledger: Path, number: int, line: str) -> FiledScreen | None:
+    """Line `number` of `ledger` as a candidate screen; None for an arm-search row
+    (no repository, commit or path), which is `golden-reach-search`'s."""
+    try:
+        row = json.loads(line)
+    except ValueError:
+        row = None
+    if not isinstance(row, dict):
+        raise ReferenceError(f"{rel(ledger)}:{number} is no JSON object; restore it from git")
+    repository, commit, path = (row.get(field) for field in IDENTITY)
+    if repository is None and commit is None and path is None:
+        return None
+    if not (
+        isinstance(repository, str)
+        and repository
+        and isinstance(commit, str)
+        and commit
+        and isinstance(path, str)
+        and path
+    ):
+        raise ReferenceError(
+            f"{rel(ledger)}:{number} names a candidate without a whole repository, commit and path; restore it from git"
+        )
+    digest, disposition = row.get("sha256", ""), row.get("disposition", "")
+    if not isinstance(digest, str) or not isinstance(disposition, str):
+        raise ReferenceError(
+            f"{rel(ledger)}:{number}: {repository}@{commit}:{path} carries a sha256 or disposition "
+            "that is no string; restore it from git"
+        )
     measured = row.get("measured")
     fern = measured.get("fern") if isinstance(measured, dict) else None
-    return "historical" not in row and isinstance(fern, dict) and isinstance(fern.get("pins"), dict)
+    at_pair = "historical" not in row and isinstance(fern, dict) and isinstance(fern.get("pins"), dict)
+    return FiledScreen(repository, commit, path, digest, disposition, at_pair)
 
 
 @read_once
@@ -1713,53 +1754,27 @@ def witness_candidates() -> dict[str, WitnessCandidate]:
     """Each filed witness candidate whose latest screen is a current measurement
     that ran Fern at a pair: the evidence a pair move stales. Named
     `<ledger dir>/<owner>/<repo>/<commit>/<path>`. A row already labelled
-    `historical`, or measured with no Fern run, is no pair's measurement; an
-    arm-search row (no repository, commit or path) is `golden-reach-search`'s."""
+    `historical`, or measured with no Fern run, is no pair's measurement."""
     found: dict[str, WitnessCandidate] = {}
     for ledger in sorted((ROOT / WITNESS_EVIDENCE).glob(f"**/{WITNESS_LEDGER}")):
-        latest: dict[tuple[str, str, str], dict[str, object]] = {}
+        latest: dict[tuple[str, str, str], FiledScreen] = {}
         for number, line in enumerate(ledger.read_text(encoding="utf-8").splitlines(), 1):
-            if not line.strip():
-                continue
-            try:
-                row = json.loads(line)
-            except ValueError:
-                row = None
-            if not isinstance(row, dict):
-                raise ReferenceError(f"{rel(ledger)}:{number} is no JSON object; restore it from git")
-            repository, commit, path = (row.get(field) for field in IDENTITY)
-            if repository is None and commit is None and path is None:
-                continue
-            if not (
-                isinstance(repository, str)
-                and repository
-                and isinstance(commit, str)
-                and commit
-                and isinstance(path, str)
-                and path
-            ):
-                raise ReferenceError(
-                    f"{rel(ledger)}:{number} names a candidate without a whole repository, commit and path; "
-                    "restore it from git"
-                )
-            latest[(repository, commit, path)] = row
+            if line.strip() and (screen := decode_screen(ledger, number, line)) is not None:
+                latest[(screen.repository, screen.commit, screen.path)] = screen
         directory = rel(ledger.parent)[len(str(WITNESS_EVIDENCE)) + 1 :]
-        for (repository, commit, path), row in latest.items():
-            if not ran_fern_at_a_pair(row):
+        for screen in latest.values():
+            if not screen.ran_fern_at_a_pair:
                 continue
-            name = f"{directory}/{repository}/{commit}/{path}"
+            name = f"{directory}/{screen.repository}/{screen.commit}/{screen.path}"
             if not WITNESS_NAME.fullmatch(name) or ".." in name.split("/"):
                 raise ReferenceError(
-                    f"{rel(ledger)}: {repository}@{commit}:{path} names no weekly item (letters, digits, `.`, `_`, "
-                    "`-` and `/`); re-screen it by hand with `witness_screen.py screen --ledger`"
+                    f"{rel(ledger)}: {screen.repository}@{screen.commit}:{screen.path} names no weekly item "
+                    "(letters, digits, `.`, `_`, `-` and `/`); re-screen it by hand with "
+                    "`witness_screen.py screen --ledger`"
                 )
-            digest, disposition = row.get("sha256", ""), row.get("disposition", "")
-            if not isinstance(digest, str) or not isinstance(disposition, str):
-                raise ReferenceError(
-                    f"{rel(ledger)}: {repository}@{commit}:{path}'s latest screen carries a sha256 or disposition "
-                    "that is no string; restore it from git"
-                )
-            found[name] = WitnessCandidate(ledger, repository, commit, path, digest, disposition)
+            found[name] = WitnessCandidate(
+                ledger, screen.repository, screen.commit, screen.path, screen.sha256, screen.disposition
+            )
     return found
 
 
