@@ -28,6 +28,7 @@
         "{workspaceRoot}/tools/fern-goldens/certified_tree.py",
         "{workspaceRoot}/tools/fern-refusals/fern-refusals.py",
         "{workspaceRoot}/tools/corpus/corpus-lib.sh",
+        "{workspaceRoot}/tools/corpus/corpus_sources.py",
         "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
         "{workspaceRoot}/tools/corpus/fetch-corpus.sh",
         "{workspaceRoot}/tools/surface-census/openapi-surface-census.py",

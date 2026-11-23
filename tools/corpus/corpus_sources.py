@@ -33,6 +33,14 @@ Commands
 `audit [--fixture NAME]... [--from DIR]`
     The same fetch, compared with the committed copies instead of written:
     exits 1 naming every file whose upstream bytes no longer match.
+`verify-fetch NAME URL FILE PUBLISHED_NAME`
+    What `tools/corpus/corpus-lib.sh` runs on a freshly downloaded root
+    document, its remote-ref pins applied, before publishing it: exits 1, naming
+    the row and both digests, when the manifest records that row's
+    `PUBLISHED_NAME` from the same URL with other bytes. A row the manifest does
+    not record from that URL (one being added, or whose pin is moving) is the
+    `vendor` rebuild's to record. `vendor` and `audit` compare what they fetch
+    themselves, so their fetch sets `CROZIER_CORPUS_REFRESH=1` to skip this.
 """
 
 from __future__ import annotations
@@ -297,6 +305,29 @@ def bash() -> str:
     return found
 
 
+# Set on a `vendor` or `audit` fetch: an explicit refresh compares the bytes it
+# fetches with the committed ones itself, so the fetch does not refuse them.
+REFRESH_ENV = "CROZIER_CORPUS_REFRESH"
+
+
+def verify_fetch(root: Path, name: str, url: str, fetched: Path, published: str) -> None:
+    """Refuse a downloaded root whose bytes differ from what the manifest records for it."""
+    if os.environ.get(REFRESH_ENV) == "1" or not (root / MANIFEST_RELATIVE).is_file():
+        return
+    path = (ROOT_RELATIVE / name / published).as_posix()
+    record = next((r for r in load_manifest(root) if r.corpus_name == name and r.path == path), None)
+    if record is None or record.source_url != url:
+        return
+    actual = sha256(fetched)
+    if actual != record.sha256:
+        raise SourcesError(
+            f"{name}: {url} served bytes whose sha256 is {actual}, not the {record.sha256} "
+            f"{MANIFEST_RELATIVE} records for {path}, so nothing was published; generate from the committed "
+            f"source (`corpus_sources.py prepare --fixture {name}`), or review the upstream change and re-vendor "
+            f"the row (`just corpus-sources vendor --fixture {name}`), then re-run"
+        )
+
+
 def fetch(root: Path, names: list[str], destination: Path) -> None:
     """Fetch each selected row through the real `tools/corpus/fetch-corpus.sh`."""
     script = root / "tools" / "corpus" / "fetch-corpus.sh"
@@ -305,6 +336,7 @@ def fetch(root: Path, names: list[str], destination: Path) -> None:
         result = subprocess.run(
             [shell, str(script), "--fixture", name, str(destination)],
             cwd=root,
+            env={**os.environ, REFRESH_ENV: "1"},
             stdout=subprocess.DEVNULL,
             stderr=subprocess.PIPE,
             text=True,
@@ -489,28 +521,36 @@ def main(argv: list[str] | None = None) -> int:
             metavar="DIR",
             help="reuse a completed tools/corpus/fetch-corpus.sh fetch in DIR",
         )
+    command = commands.add_parser("verify-fetch", help="refuse a fetched root whose bytes differ from its record")
+    command.add_argument("name")
+    command.add_argument("url")
+    command.add_argument("file", type=Path)
+    command.add_argument("published")
     command = commands.add_parser("prepare", help="stage committed sources for offline generation")
     command.add_argument("--fixture", required=True)
     command.add_argument("--output", required=True, type=Path)
     args = parser.parse_args(argv)
     root = (args.root or default_root()).resolve()
     try:
-        if args.command == "check":
-            check(root)
-        elif args.command == "prepare":
-            print(prepare(root, args.fixture, args.output.resolve()))
-        elif args.command == "vendor":
-            refetch(root, args.fixture, args.source, write=True)
-            check(root)
-        else:
-            drifted = refetch(root, args.fixture, args.source, write=False)
-            if drifted:
-                print(
-                    "corpus-sources: upstream no longer serves the committed bytes; restore the pinned bytes or review a new immutable pin and re-vendor the affected rows:",
-                    file=sys.stderr,
-                )
-                print("\n".join(f"  {line}" for line in drifted), file=sys.stderr)
-                return 1
+        match args.command:
+            case "check":
+                check(root)
+            case "verify-fetch":
+                verify_fetch(root, args.name, args.url, args.file, args.published)
+            case "prepare":
+                print(prepare(root, args.fixture, args.output.resolve()))
+            case "vendor":
+                refetch(root, args.fixture, args.source, write=True)
+                check(root)
+            case _:
+                drifted = refetch(root, args.fixture, args.source, write=False)
+                if drifted:
+                    print(
+                        "corpus-sources: upstream no longer serves the committed bytes; restore the pinned bytes or review a new immutable pin and re-vendor the affected rows:",
+                        file=sys.stderr,
+                    )
+                    print("\n".join(f"  {line}" for line in drifted), file=sys.stderr)
+                    return 1
     except (OSError, UnicodeError) as error:
         print(f"corpus-sources: {error}; restore the input file and run just lint-corpus-sources", file=sys.stderr)
         return 1

@@ -17,8 +17,17 @@ at that pair, and everything under the 5.163.1 heading is history at that one.
   10,787 MiB with no OOM kill.
   A run cut short says nothing about whether Fern refuses given more time or
   memory, so [`fern-refusal.txt`](fern-refusal.txt) stays the 5.163.1 / 5.41.3
-  record and [`unsettled.txt`](unsettled.txt) records these timings and the
-  reason. No probe was re-run for this record.
+  record.
+- **Re-measured once more, still unsettled (issue #861).** On 2026-11-23 the
+  probe ran once more at this pair, serialized: `fern-references.py generate
+  refusals heap-exhausted` under the host's Fern generation lock, with no other
+  Fern generation or instrumented measurement beside it, at the same bound
+  (`NODE_OPTIONS=--max-old-space-size=16384`, 900 s a stage, node v26.8.2, a
+  94 GiB host). `fern check` ran about 898 s and `fern generate` about 911 s to
+  that bound, 1,808.9 s for both, printing nothing; the probe reported the
+  class `unsettled`. No bound was raised, so the claim stays retired to the
+  history below, and [`unsettled.txt`](unsettled.txt) records this attempt's
+  timings and reason.
 - **Shapes: not retaken.** The 2 probe and 5 control shapes keep their 5.163.1
   logs.
 - **Real documents: corroboration only.** `confirm` retook both
@@ -31,9 +40,8 @@ at that pair, and everything under the 5.163.1 heading is history at that one.
   the class.
 - **crozier's behaviour is unchanged**: it refuses the probe in both modes, as
   the e2e gate still checks.
-- **Follow-up:** the existing *Settle crozier's heap-exhausted refusal class at
-  Fern CLI 5.200.0 / fern-python-sdk 5.41.25* (drafted by the
-  `upstream-evidence` node) still stands, now at this pair.
+- **Follow-up:** settling the class at this pair needs a larger memory or time
+  bound than 16 GiB and 900 s a stage, which issue #861 leaves to be asked for.
 
 ## At Fern CLI 5.200.0 / fern-python-sdk 5.41.25: not compared (historical)
 

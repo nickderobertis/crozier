@@ -86,6 +86,16 @@ corpus_pin_verify() {
   corpus_pins verify "$name" "$file" >/dev/null 2>&1
 }
 
+# corpus_verify_fetch NAME URL FILE PUBLISHED_NAME — refuse a downloaded root
+# whose bytes differ from the digest the source manifest records for it. A tree
+# with no manifest records no digest, so it has nothing to compare.
+corpus_verify_fetch() {
+  local scripts
+  scripts="$(corpus_scripts_dir_or_fail)" || return 1
+  [ -f "$scripts/../../tests/fixtures/corpus-sources.tsv" ] || return 0
+  python3 "$scripts/corpus_sources.py" --root "$scripts/../.." verify-fetch "$@"
+}
+
 corpus_tree_root() {
   corpus_pins tree-root "$1"
 }
@@ -261,6 +271,13 @@ corpus_fetch_source() {
     # Pin before publishing, so a document carrying a mutable absolute `$ref`
     # never reaches a consumer: this is a gate, not a post-hoc repair.
     if ! corpus_pin_apply "$name" "$temporary" "${target##*/}"; then
+      _corpus_discard_temporary
+      return 1
+    fi
+    # The bytes a registered row's pinned URL serves must be the ones
+    # tests/fixtures/corpus-sources.tsv records (issue #860): changed ones are
+    # refused before they replace the cached document.
+    if ! corpus_verify_fetch "$name" "$url" "$temporary" "${target##*/}"; then
       _corpus_discard_temporary
       return 1
     fi

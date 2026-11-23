@@ -176,7 +176,7 @@ applied, each `could_not_check` reason, and the timings. When no config is found
 | --- | --- |
 | `--reference-command <CMD>` | Use `<CMD>` for every generator, over any `reference.command`. |
 | `--json <PATH>` | Write the JSON report to `<PATH>`; `-` writes it to stdout (the human report stays on stderr). The file is created before any reference command runs, so a target that cannot be written is refused then, with exit 1. |
-| `--diff-dir <DIR>` | Write one normalized unified diff per mismatched generator into `<DIR>` (created if missing); the report and `comparison.diff_file` name each file. A file that cannot be written does not stop the run: the report states it, `diff_file` stays null, and the command exits 1. |
+| `--diff-dir <DIR>` | Write one normalized unified diff per mismatched generator into `<DIR>` (created if missing); the report and `comparison.diff_file` name each file. Each name is numbered in run order and fits a 255-byte file-name limit: one that would not keeps the config's file name and the generator, cut to fit, beside a digest of the whole config path. A file that cannot be written does not stop the run: the report states it, `diff_file` stays null, and the command exits 1. |
 
 ### Colour
 

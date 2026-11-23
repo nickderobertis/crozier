@@ -514,9 +514,13 @@ class GateTableTests(unittest.TestCase):
                 "cargo nextest run --locked --no-fail-fast --status-level fail --final-status-level fail -p crozier-e2e",
                 "cargo nextest run --locked --no-fail-fast --status-level fail --final-status-level fail -p crozier --test refusal_registry",
                 "python3 tools/fern-refusals/fern-refusals.py check",
+                "python3 tools/surface-census/output-insensitive.py",
+                "python3 tools/witness-search/witness_screen.py historical --check",
             },
             commands,
         )
+        self.assertTrue((REPO / "tools/surface-census/output-insensitive.py").is_file())
+        self.assertTrue((REPO / "tools/witness-search/witness_screen.py").is_file())
         justfile = (REPO / "justfile").read_text(encoding="utf-8")
         self.assertIn('fixtures-diff corpus="" file="":', justfile)
         self.assertTrue((REPO / "tests/refusal_registry.rs").is_file())

@@ -606,9 +606,48 @@ fn compared_goldens_inventory_is_current() {
     assert!(
         committed == derived,
         "{} is not the inventory the registered comparisons derive; regenerate it with \
-         `CROZIER_UPDATE_COMPARED_GOLDENS=1 cargo nextest run --locked -E \
-         'binary(e2e) and test(compared_goldens_inventory_is_current)'` and commit it",
-        departures_ledger::INVENTORY
+         `{}` and commit it",
+        departures_ledger::INVENTORY,
+        departures_ledger::INVENTORY_REGENERATE
+    );
+}
+
+/// The inventory's regeneration command runs from the repository root: it
+/// selects the `crozier-e2e` package (the root package holds no such test), the
+/// e2e binary, and exactly the test above, by the path nextest names it with;
+/// `departures-ledger.sh` refuses a stale inventory with this same command.
+#[test]
+fn the_inventory_regeneration_command_selects_the_inventory_test() {
+    let command = departures_ledger::INVENTORY_REGENERATE;
+    let test = format!(
+        "{}::compared_goldens_inventory_is_current",
+        module_path!().rsplit("::").next().unwrap()
+    );
+    assert_eq!(departures_ledger::INVENTORY_TEST, test);
+    let words: Vec<&str> = command.split_whitespace().collect();
+    let package = words
+        .iter()
+        .position(|word| *word == "-p")
+        .map(|at| words[at + 1]);
+    assert_eq!(package, Some(env!("CARGO_PKG_NAME")), "{command}");
+    assert!(
+        command.ends_with(&format!("-E 'binary(e2e) & test(={test})'")),
+        "{command}"
+    );
+    assert!(command.starts_with("CROZIER_UPDATE_COMPARED_GOLDENS=1 cargo nextest run --locked "));
+    let script =
+        std::fs::read_to_string(crate::repo_root().join("crates/crozier-e2e/departures-ledger.sh"))
+            .unwrap();
+    assert!(
+        script.contains(&format!("inventory_test='{test}'")),
+        "departures-ledger.sh does not preflight {test}"
+    );
+    assert!(
+        script.contains(&format!(
+            "inventory_regenerate=\"{}\"",
+            command.replace(&test, "$inventory_test")
+        )),
+        "departures-ledger.sh does not print {command}"
     );
 }
 

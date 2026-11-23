@@ -20,7 +20,8 @@ and the overlay generation (`fern-overlay-goldens.sh`, through
 `generate-fern-fixture.sh`) publish through `publish`, and `find` answers where an
 entry is.
 
-Only a tree that describes itself as that key is published: its
+Only a tree that describes itself as that key is published: it must be the
+packaged SDK (its source package under `src/`, no module at its root), and its
 `.fern/metadata.json` must record the pair and the enum mode, and no other
 generator setting (a client class name, extra fields, retries), because the key
 names nothing else. A caller generating with a setting the metadata does not
@@ -135,12 +136,35 @@ def tree_key(document: Path, tree: Path, mode: EnumMode) -> Key:
         )
     if not generated_files(tree):
         raise RefusedTree(f"{tree} holds no generated file beside its .fern/ record, so it is no SDK Fern wrote")
+    unpackaged = layout_failure(tree)
+    if unpackaged:
+        raise RefusedTree(
+            f"{tree} is not the packaged SDK the store's key names ({unpackaged}); a flat or partial tree "
+            f"is never published under it: {REMEDY}"
+        )
     return Key(cli, generator, document_digest(document), mode)
 
 
 def generated_files(tree: Path) -> bool:
     """Whether `tree` holds any file outside its `.fern/` provenance record."""
     return any(path.is_file() and ".fern" not in path.relative_to(tree).parts for path in tree.rglob("*"))
+
+
+def layout_failure(tree: Path) -> str | None:
+    """Why `tree` is not the packaged layout every key names, or None when it is.
+
+    The store's key names no layout, because every publisher generates the
+    packaged SDK, whose source package lies under `src/`. A flat tree, whose
+    modules lie at its root, is a different output and must never answer for
+    the key, however many files it holds.
+    """
+    flat = sorted(path.name for path in tree.glob("*.py") if path.is_file())
+    if flat:
+        return f"Python modules at its root ({', '.join(flat[:3])}{', …' if len(flat) > 3 else ''}), the flat layout"
+    source = tree / "src"
+    if not source.is_dir() or not any(path.is_file() for path in source.glob("*/*.py")):
+        return "no source package under src/"
+    return None
 
 
 def publish(
@@ -215,6 +239,8 @@ def entry_failure(entry: Path) -> str | None:
         return f"its exit-code reads {status!r}, no exit status"
     if status == "0" and not ((entry / "tree").is_dir() and generated_files(entry / "tree")):
         return "it records a successful generation but holds no generated tree/"
+    if status == "0" and (unpackaged := layout_failure(entry / "tree")):
+        return f"its tree/ is not the packaged SDK the key names: {unpackaged}"
     return None
 
 

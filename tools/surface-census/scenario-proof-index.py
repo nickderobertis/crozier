@@ -119,8 +119,10 @@ MEASUREMENTS = "docs/fern-measurements/"
 # generated from it, outside the hand-written fixtures because it covers no arm.
 PROBES = "docs/openapi-surface/probes/"
 PROBE_EXPECTED = "docs/openapi-surface/probe-expected/"
-# How corpus tests bind their fixtures, as `every_registered_corpus_is_wired_into_the_gate` reads them.
-CORPUS_DRIVERS = ("assert_corpus_matches(&", "assert_committed_corpus_matches(&", "known_fern_failure(&")
+# How corpus tests bind their fixtures, as `every_registered_corpus_is_wired_into_the_gate` reads them:
+# each helper is called with `&CONST`, read through the census's own registration
+# grammar so rustfmt's wrapping cannot hide one.
+CORPUS_DRIVERS = ("assert_corpus_matches", "assert_committed_corpus_matches", "known_fern_failure")
 SETTING_VALUE = (str, int, float, bool)
 DOCUMENTS = ("openapi.yml", "openapi.yaml", "openapi.json")
 
@@ -355,6 +357,18 @@ def _handwritten() -> ModuleType:
     return module
 
 
+@functools.cache
+def _census() -> ModuleType:
+    """The surface census, whose corpus registration grammar this reuses."""
+    path = REPO / "tools" / "surface-census" / "openapi-surface-census.py"
+    spec = importlib.util.spec_from_file_location("scenario_proof_index_census", path)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
 def read_tsv(path: Path, header: tuple[str, ...]) -> tuple[list[dict[str, str]], list[str]]:
     """Rows of a tab-separated file whose first line must be `header`, each cell non-empty."""
     if not path.is_file():
@@ -536,11 +550,12 @@ def _read_e2e_sources(texts: tuple[str, ...]) -> E2e:
     flat_tests: dict[TestName, str] = {}
     for text in texts:
         constants |= dict(re.findall(r'(?m)^\s*(?:pub(?:\(super\))? )?const (\w+): &str = "([^"]*)";', text))
+        corpus_constants |= {name: literal.api for name, literal in _census().corpus_constants(text).items()}
         lines = text.splitlines()
         closers: dict[str, list[int]] = {}
         for index, line in enumerate(lines):
             closers.setdefault(line.rstrip(), []).append(index)
-        attributed, pending_corpus, flat = False, None, False
+        attributed, flat = False, False
         for index, line in enumerate(lines):
             stripped = line.strip()
             if stripped.startswith("#[test]"):
@@ -556,10 +571,6 @@ def _read_e2e_sources(texts: tuple[str, ...]) -> E2e:
                 attributed = False
             elif not stripped.startswith(("#[", "//")):
                 attributed = False
-            if found := re.match(r"^const (\w+): Corpus = Corpus \{", line):
-                pending_corpus = found.group(1)
-            elif pending_corpus and (found := re.match(r'^\s*api: "([^"]+)"', line)):
-                corpus_constants[pending_corpus], pending_corpus = found.group(1), None
             if stripped.startswith("flat_goldens! {"):
                 flat = True
             elif flat and stripped == "}":
@@ -569,8 +580,11 @@ def _read_e2e_sources(texts: tuple[str, ...]) -> E2e:
     tests |= set(flat_tests)
     corpus_tests: dict[str, TestName] = {}
     for name, body in bodies.items():
+        if name not in tests:
+            continue
+        driven = _census().corpus_arguments(body, CORPUS_DRIVERS)
         for constant, fixture in corpus_constants.items():
-            if name in tests and any(f"{driver}{constant})" in body for driver in CORPUS_DRIVERS):
+            if constant in driven:
                 corpus_tests.setdefault(fixture, TestName(name))
     overlay = constants.get("CORPUS_TEST")
     return E2e(
