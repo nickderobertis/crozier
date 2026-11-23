@@ -6062,25 +6062,6 @@ def union_members(node: dict[Any, Any]) -> list[Any] | None:
     return None
 
 
-# The values `inferred_discriminant_property` refuses to read as a
-# `message_type` tag, which is `preserve_const_discriminant` of `src/ir.rs` and is
-# its list rather than one invented here. The four property names that same
-# function supports for a union referencing components are spelled in the `match`
-# `_candidate_tag_values` mirrors below, where the Rust spells them, because each
-# of the four asks something different of the member.
-_PRESERVED_CONST_DISCRIMINANTS = frozenset(
-    {
-        "approval",
-        "approval_request_message",
-        "message",
-        "tool",
-        "tool_return_message",
-        "stop_reason",
-        "usage_statistics",
-    }
-)
-
-
 def _resolved_member(member: Any, schemas: dict[Any, Any]) -> Any:
     """One union member as the *resolving* readers of it see it.
 
@@ -6241,8 +6222,9 @@ def _candidate_tag_values(
             ):
                 supported = True
             elif candidate == "type":
-                # A bare `const` the member leaves unrequired is no tag.
-                supported = (candidate in required_names(variant) and isinstance(schema_example(field), str)) or (
+                # A string example tags it required or not (#912); a bare
+                # `const` the member leaves unrequired is no tag.
+                supported = isinstance(schema_example(field), str) or (
                     written(field, "const")
                     and isinstance(field["const"], str)
                     and (candidate in required_names(variant) or not untyped_const_tag(field))
@@ -6263,8 +6245,6 @@ def _candidate_tag_values(
             return None
         value = discriminant_value(field)
         if value is None:
-            return None
-        if candidate == "message_type" and value in _PRESERVED_CONST_DISCRIMINANTS:
             return None
         values.append(value)
     return values

@@ -20025,6 +20025,12 @@ fn inline_referenced_union_members(
     schema: &Schema,
     schemas: &IndexMap<String, Schema>,
 ) -> Option<Schema> {
+    // A schema declaring properties of its own already lends a referenced
+    // union's branches after them (the hand-written `union-sample` fixture's
+    // `Sample`, `index` before `Signal`'s `voltage` and `bits`).
+    if schema.properties.declared() {
+        return None;
+    }
     let members = schema.all_of.as_ref()?;
     let mut changed = false;
     let rewritten: Vec<Schema> = members
@@ -23241,8 +23247,11 @@ mod tests {
         );
     }
 
+    /// A `const` tag's value preserves nothing (#910): a variant-only member
+    /// drops it whatever it says, as the `type-lowering/const-discriminator-tags`
+    /// measurement's `ApprovalEnvelope` drops `approval`.
     #[test]
-    fn explicit_message_unions_preserve_selected_optional_const_discriminants() {
+    fn explicit_message_unions_strip_every_variant_only_const_discriminant() {
         let doc: OpenApi = serde_json::from_value(serde_json::json!({
             "components": { "schemas": {
                 "Approval": { "type": "object", "properties": {
@@ -23275,7 +23284,10 @@ mod tests {
         }))
         .expect("message schemas deserialize");
         let strips = document_discriminant_strips(&doc);
-        assert!(!strips.contains_key("Approval"));
+        assert_eq!(
+            strips.get("Approval").map(String::as_str),
+            Some("message_type")
+        );
         assert_eq!(
             strips.get("Assistant").map(String::as_str),
             Some("message_type")
@@ -27429,8 +27441,12 @@ mod tests {
             TypeDecl::DiscriminatedUnion(union) if union.name == "OperandHiddenField" && union.members.len() == 3)));
     }
 
+    /// Among the components a `oneOf` of bare `const`s is a union of its
+    /// members, as the `type-lowering/union-member-lowering` measurement's
+    /// `ExposureMode` is at the certified pair (an operation's inline schema
+    /// still merges one).
     #[test]
-    fn untyped_const_compositions_form_one_enum_but_typed_members_stay_distinct() {
+    fn untyped_const_component_compositions_and_typed_members_stay_distinct() {
         let ir = build_document(serde_json::json!({
             "openapi": "3.0.3", "info": {"title": "Api", "version": "1"}, "paths": {},
             "components": {"schemas": {
@@ -27443,9 +27459,7 @@ mod tests {
             .iter()
             .find(|decl| decl.name() == "Operation")
             .expect("operation");
-        assert!(
-            matches!(operation, TypeDecl::Enum(decl) if decl.members.iter().map(|member| member.value.as_str()).collect::<Vec<_>>() == ["create", "update"])
-        );
+        assert!(matches!(operation, TypeDecl::Alias(alias) if alias.name == "Operation"));
         assert!(ir
             .types
             .iter()
@@ -32983,7 +32997,7 @@ components:
             "every document of the shared inputs is driven by some case, and no \
              case names one the file does not write"
         );
-        assert_eq!(330, drives, "the number of drives the thirty cases make");
+        assert_eq!(328, drives, "the number of drives the thirty cases make");
     }
 
     #[test]
@@ -34192,24 +34206,49 @@ components:
             merged.properties.keys().collect::<Vec<_>>(),
             ["a", "b", "c"]
         );
+        // An unrequired conflict keeps the first branch's spelling (#889)…
         assert_eq!(
             merged.properties["b"]
                 .ty
                 .as_ref()
                 .and_then(TypeField::primary),
-            Some("integer")
+            Some("string")
         );
         assert!(merged.required.is_empty());
-        assert!(matches!(
+        // …and one two inline branches both require takes the last one's.
+        let Some(BranchUnion::Merged(required)) = branch_union_properties(
+            &member(serde_json::json!({"anyOf": [
+                {"required": ["b"], "properties": {"b": {"type": "string"}}},
+                {"required": ["b"], "properties": {"b": {"type": "integer"}}}
+            ]})),
+            &schemas,
+        ) else {
+            panic!("an undiscriminated union lends its branches");
+        };
+        assert_eq!(
+            required.properties["b"]
+                .ty
+                .as_ref()
+                .and_then(TypeField::primary),
+            Some("integer")
+        );
+        let tagged = |required: bool| {
+            let required = if required {
+                serde_json::json!(["kind"])
+            } else {
+                serde_json::json!([])
+            };
             branch_union_properties(
                 &member(serde_json::json!({"oneOf": [
-                    {"properties": {"kind": {"type": "string", "enum": ["x"]}, "x": {"type": "string"}}},
-                    {"properties": {"kind": {"type": "string", "enum": ["y"]}, "y": {"type": "string"}}}
+                    {"required": required, "properties": {"kind": {"type": "string", "enum": ["x"]}, "x": {"type": "string"}}},
+                    {"required": required, "properties": {"kind": {"type": "string", "enum": ["y"]}, "y": {"type": "string"}}}
                 ]})),
                 &schemas,
-            ),
-            Some(BranchUnion::Tagged)
-        ));
+            )
+        };
+        assert!(matches!(tagged(true), Some(BranchUnion::Tagged)));
+        // Inline branches leaving the tag unrequired merge.
+        assert!(matches!(tagged(false), Some(BranchUnion::Merged(_))));
         assert!(branch_union_properties(
             &member(serde_json::json!({"properties": {"a": {"type": "string"}}})),
             &schemas

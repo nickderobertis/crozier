@@ -6832,10 +6832,9 @@ class DiscriminatedUnionSelectorDiscriminationTests(unittest.TestCase):
       type list. A union whose members are `$ref`s and which tags them with
       something other than a required one-member `enum` is four more forms, one per
       property name `src/ir.rs` supports by name in that position — `type` (which
-      also needs a string `example`), `role`, `message_type` and
-      `mcp_server_type` — beside the three negatives that bound them: a
-      `message_type` value `preserve_const_discriminant` keeps, a `type` written
-      but not required, and a tag property naming none of the four.
+      also needs a string `example`, required or not), `role`, `message_type`
+      and `mcp_server_type` — beside the negative that bounds them: a tag
+      property naming none of the four.
 
     Where the arm permits a node another case of the same function's table also
     claims, the overlap document is driven too and both selectors are asserted to
@@ -7037,32 +7036,6 @@ class DiscriminatedUnionSelectorDiscriminationTests(unittest.TestCase):
                     self.assertEqual(0, completed.returncode, completed.stderr)
                     self.assertEqual({}, rows(completed))
                     self.assertIn("(declared by no registered source)", completed.stdout)
-
-    def test_the_preserved_const_discriminants_are_the_ones_the_generator_preserves(self) -> None:
-        """The one copied literal across the generator/instrument seam, gated.
-
-        `_PRESERVED_CONST_DISCRIMINANTS` is a verbatim copy of the values
-        `preserve_const_discriminant` of `src/ir.rs` matches, and the census
-        reads it to decide which `const` tag `inferred_discriminant_property_with`
-        refuses as a `message_type` tag. Only one of the seven has a shared-input
-        document, so without this the other six could be added to or removed from
-        the Rust and leave the census silently misreading the arm it ports. This
-        re-derives the Rust's own list from its `matches!` arm and requires the
-        two to be the same set, in either direction.
-        """
-        source = (REPO / "src" / "ir.rs").read_text(encoding="utf-8")
-        body = re.search(
-            r"fn preserve_const_discriminant\(value: &str\) -> bool \{\n"
-            r"\s*matches!\(\n\s*value,\n(.*?)\n\s*\)\n\s*\}",
-            source,
-            re.DOTALL,
-        )
-        self.assertIsNotNone(body, "`preserve_const_discriminant` is no longer a `matches!` over string literals")
-        assert body is not None
-        self.assertEqual(
-            set(re.findall(r'"([^"]+)"', body.group(1))),
-            set(census._PRESERVED_CONST_DISCRIMINANTS),
-        )
 
 
 class DocumentContextTests(unittest.TestCase):

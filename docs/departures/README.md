@@ -213,7 +213,7 @@ when the two differ.
 
 | Kind | Entries | Meaning |
 | --- | --- | --- |
-| `fern-defect` | 43 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
+| `fern-defect` | 45 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
 | `branding` | 1 | crozier names itself where Fern names itself. |
 | `packaging` | 1 | crozier writes the packaged SDK's publishing details from its own settings. |
 | `provenance` | 1 | crozier writes a fixed record of how the SDK was generated. |
@@ -382,6 +382,15 @@ when the two differ.
 - **crozier writes:** The credential optional, `api_key: typing.Optional[str] = None`, and its header set only when a value was given.
 - **Why:** An empty root `security` list means what an absent one does: every operation without its own `security` needs no credential. The certified pair already makes the credential optional for the absent spelling, and crozier reads both spellings alike, so an SDK user can call the unauthenticated operations without inventing a key.
 - **Evidence:** [`docs/departures/evidence/empty-root-security-optional-credential.md`](../../docs/departures/evidence/empty-root-security-optional-credential.md)
+
+### `escaped-discriminator-field-name`
+
+- **Kind:** `fern-defect`
+- **Trigger:** A discriminated union whose tag property is a name pydantic's BaseModel already holds (schema, json, dict, ...), so each variant declares the tag as an escaped field (schema_) aliased to the wire name: the union's pydantic.Field(discriminator=...) in its type module.
+- **Fern writes:** discriminator="schema", the wire name, which no variant declares as a field: the module raises on import under pydantic v1 (ConfigError) and v2 (PydanticUserError), "needs a discriminator field for key 'schema'", and so does every module importing it.
+- **crozier writes:** discriminator="schema_", the escaped field name every variant declares, every other byte of the line unchanged.
+- **Why:** A generated module that cannot be imported is a defect. The escaped field name imports under pydantic v1 and v2, and validates each variant by its wire tag under v2.
+- **Evidence:** [`docs/departures/evidence/escaped-discriminator-field-name.md`](../../docs/departures/evidence/escaped-discriminator-field-name.md)
 
 ### `escaped-field-alias-literal`
 
@@ -562,6 +571,15 @@ when the two differ.
 - **crozier writes:** `client.apis.all_(...)`, the method the client defines (through `with_raw_response` too). Every other byte of the line is retained.
 - **Why:** The documented call raises `AttributeError`: the client has no `all`. The usage snippet in the same README already calls `all_`.
 - **Evidence:** [`docs/departures/evidence/readme-escaped-method-call.md`](../../docs/departures/evidence/readme-escaped-method-call.md)
+
+### `recursive-alias-named-type`
+
+- **Kind:** `fern-defect`
+- **Trigger:** A schema whose own type names itself, as a recursive JSON value does (`anyOf` of scalars, an array of itself and a map of itself): its type alias module.
+- **Fern writes:** The implicit recursive alias `NAME = typing.Union[..., typing.List["NAME"], ...]`. pydantic expands it without end, so every model with a field of that type raises RecursionError on import, under pydantic v1 and v2.
+- **crozier writes:** The same alias under `if typing.TYPE_CHECKING:`, the alias named through `typing_extensions.TypeAliasType("NAME", ...)` under pydantic v2, and under v1, which cannot validate a recursive alias, the alias with each self-reference read as `typing.Any`. It imports `typing_extensions` and the core's `IS_PYDANTIC_V2`; every other byte of the module is retained.
+- **Why:** A generated package whose modules cannot be imported is a defect. The named alias imports and validates nested values under every pydantic version the SDK declares, needs no Python 3.12 syntax, and type checkers read the same recursive alias Fern writes.
+- **Evidence:** [`docs/departures/evidence/recursive-alias-named-type.md`](../../docs/departures/evidence/recursive-alias-named-type.md)
 
 ### `reference-anchor-follows-corrected-client`
 
