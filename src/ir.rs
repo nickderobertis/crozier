@@ -21422,10 +21422,6 @@ fn short_circuit_description(
         .and_then(|description| clean_doc(Some(description)))
 }
 
-/// The component a `nullable: true` schema names through a one-member
-/// `oneOf`/`anyOf` and nothing else: keyserv's `{nullable: true, oneOf: [$ref
-/// CurrentKey]}`. Fern keeps that component and makes it optional (the `R3`
-/// measurement).
 /// The member a non-nullable, one-member `oneOf`/`anyOf` component wraps, when
 /// that member is a `$ref` to an object declaring properties: the body Fern
 /// spreads into keyword arguments.
@@ -21452,6 +21448,10 @@ fn sole_object_member_ref<'a>(doc: &OpenApi, target: &'a Schema) -> Option<&'a s
     .then_some(reference)
 }
 
+/// The component a `nullable: true` schema names through a one-member
+/// `oneOf`/`anyOf` and nothing else: keyserv's `{nullable: true, oneOf: [$ref
+/// CurrentKey]}`. Fern keeps that component and makes it optional (the `R3`
+/// measurement).
 fn nullable_sole_member_ref(schema: &Schema) -> Option<&str> {
     let members = schema.one_of.as_deref().or(schema.any_of.as_deref())?;
     let [member] = members else {

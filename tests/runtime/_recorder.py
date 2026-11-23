@@ -343,7 +343,12 @@ BODY_VALUE = "body-value"
 
 
 class CollisionSdk(Protocol):
-    """What the collision journeys use of an SDK, Fern's or crozier's alike."""
+    """What the collision journeys use of an SDK, Fern's or crozier's alike.
+
+    Each member is a class of a generated package imported at run time from
+    `WIRE_SDK_SRC`, which no checker can see when this module is checked, and
+    the two SDKs under comparison declare them separately; so their types are
+    `Any` here, and the journeys' own assertions check what each returns."""
 
     FernApi: Any
     AsyncFernApi: Any
