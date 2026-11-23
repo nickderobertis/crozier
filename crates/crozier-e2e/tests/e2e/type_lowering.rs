@@ -299,13 +299,50 @@ fn sdk_env_escaped_discriminators_and_recursive_aliases_import() {
         run(python, &ours, "fern.types:Signal", "{", "invalid").0,
         Some(2)
     );
-    let crashing = temp.path().join("crashing");
-    std::fs::create_dir_all(crashing.join("fern")).expect("mkdir");
-    std::fs::write(crashing.join("fern/__init__.py"), "raise SystemExit(3)\n").expect("write");
-    assert_eq!(
-        run(python, &crashing, "fern.types:Signal", "{}", "invalid").0,
-        Some(2)
+    // A child whose package behaves as `init` does on import: its outcome, if
+    // any, decides the exit for an `invalid` expectation.
+    let child = |label: &str, init: &str| {
+        let root = temp.path().join(label);
+        std::fs::create_dir_all(root.join("fern")).expect("mkdir");
+        std::fs::write(root.join("fern/__init__.py"), init).expect("write");
+        run(python, &root, "fern.types:Signal", "{}", "invalid")
+    };
+    let exits = "import os, sys\nsys.stdout.flush()\nos._exit(0)\n";
+    for (label, init) in [
+        ("exits-with-an-error", "raise SystemExit(3)\n".to_string()),
+        ("reports-nothing", exits.to_string()),
+        ("reports-no-json", format!("print('not json')\n{exits}")),
+        (
+            "reports-another-shape",
+            format!("print('{{\"pydantic\": \"2\", \"other\": 1}}')\n{exits}"),
+        ),
+    ] {
+        assert_eq!(
+            child(label, &init).0,
+            Some(2),
+            "{label}: no outcome is a usage error"
+        );
+    }
+    // Death by a signal is the import's own failure, as a stack overflow is.
+    let (code, said) = child(
+        "killed-by-a-signal",
+        "import os, signal\nos.kill(os.getpid(), signal.SIGSEGV)\n",
     );
+    assert_eq!(code, Some(0), "{said}");
+    assert!(said.contains("killed by signal 11"), "{said}");
+    // Missing arguments, and an expectation other than valid or invalid.
+    let usage = |args: &[&str]| {
+        std::process::Command::new(python)
+            .arg(&script)
+            .args(args)
+            .output()
+            .expect("run the evidence script")
+            .status
+            .code()
+    };
+    assert_eq!(usage(&[]), Some(2));
+    let root = ours.display().to_string();
+    assert_eq!(usage(&[&root, "fern.types:Signal", "{}", "maybe"]), Some(2));
 }
 
 /// #949: the members of a discriminated union composed as an `allOf` member
