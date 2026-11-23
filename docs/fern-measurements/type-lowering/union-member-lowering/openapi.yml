@@ -42,6 +42,13 @@ components:
           $ref: "#/components/schemas/ExposureUnit"
         filter:
           $ref: "#/components/schemas/FilterBand"
+        mode:
+          $ref: "#/components/schemas/ExposureMode"
+        shutter:
+          description: A described inline union of bare constants.
+          oneOf:
+            - const: leaf
+            - const: focal-plane
         readingsByOwner:
           description: Readings keyed by owner, then by instrument.
           type: object
@@ -105,6 +112,10 @@ components:
       oneOf:
         - const: seconds
         - const: milliseconds
+    ExposureMode:
+      oneOf:
+        - const: manual
+        - const: automatic
     FilterBand:
       description: A nullable union of one-value enums.
       oneOf:

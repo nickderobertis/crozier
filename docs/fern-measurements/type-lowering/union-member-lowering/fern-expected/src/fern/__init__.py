@@ -7,6 +7,9 @@ from importlib import import_module
 
 if typing.TYPE_CHECKING:
     from .types import (
+        ExposureMode,
+        ExposureModeOne,
+        ExposureModeZero,
         ExposureUnit,
         ExposureUnitOne,
         ExposureUnitZero,
@@ -36,6 +39,9 @@ if typing.TYPE_CHECKING:
         SessionReadingsByOwnerValueValue,
         SessionReadingsByOwnerValueValue_Lens,
         SessionReadingsByOwnerValueValue_Sensor,
+        SessionShutter,
+        SessionShutterOne,
+        SessionShutterZero,
     )
     from .errors import UnprocessableEntityError
     from . import sessions
@@ -46,6 +52,9 @@ _dynamic_imports: typing.Dict[str, str] = {
     "AsyncFernApi": ".client",
     "DefaultAioHttpClient": "._default_clients",
     "DefaultAsyncHttpxClient": "._default_clients",
+    "ExposureMode": ".types",
+    "ExposureModeOne": ".types",
+    "ExposureModeZero": ".types",
     "ExposureUnit": ".types",
     "ExposureUnitOne": ".types",
     "ExposureUnitZero": ".types",
@@ -76,6 +85,9 @@ _dynamic_imports: typing.Dict[str, str] = {
     "SessionReadingsByOwnerValueValue": ".types",
     "SessionReadingsByOwnerValueValue_Lens": ".types",
     "SessionReadingsByOwnerValueValue_Sensor": ".types",
+    "SessionShutter": ".types",
+    "SessionShutterOne": ".types",
+    "SessionShutterZero": ".types",
     "UnprocessableEntityError": ".errors",
     "__version__": ".version",
     "sessions": ".sessions",
@@ -107,6 +119,9 @@ __all__ = [
     "AsyncFernApi",
     "DefaultAioHttpClient",
     "DefaultAsyncHttpxClient",
+    "ExposureMode",
+    "ExposureModeOne",
+    "ExposureModeZero",
     "ExposureUnit",
     "ExposureUnitOne",
     "ExposureUnitZero",
@@ -137,6 +152,9 @@ __all__ = [
     "SessionReadingsByOwnerValueValue",
     "SessionReadingsByOwnerValueValue_Lens",
     "SessionReadingsByOwnerValueValue_Sensor",
+    "SessionShutter",
+    "SessionShutterOne",
+    "SessionShutterZero",
     "UnprocessableEntityError",
     "__version__",
     "sessions",

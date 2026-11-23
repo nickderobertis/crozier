@@ -6,6 +6,9 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
+    from .exposure_mode import ExposureMode
+    from .exposure_mode_one import ExposureModeOne
+    from .exposure_mode_zero import ExposureModeZero
     from .exposure_unit import ExposureUnit
     from .exposure_unit_one import ExposureUnitOne
     from .exposure_unit_zero import ExposureUnitZero
@@ -39,7 +42,13 @@ if typing.TYPE_CHECKING:
         SessionReadingsByOwnerValueValue_Lens,
         SessionReadingsByOwnerValueValue_Sensor,
     )
+    from .session_shutter import SessionShutter
+    from .session_shutter_one import SessionShutterOne
+    from .session_shutter_zero import SessionShutterZero
 _dynamic_imports: typing.Dict[str, str] = {
+    "ExposureMode": ".exposure_mode",
+    "ExposureModeOne": ".exposure_mode_one",
+    "ExposureModeZero": ".exposure_mode_zero",
     "ExposureUnit": ".exposure_unit",
     "ExposureUnitOne": ".exposure_unit_one",
     "ExposureUnitZero": ".exposure_unit_zero",
@@ -69,6 +78,9 @@ _dynamic_imports: typing.Dict[str, str] = {
     "SessionReadingsByOwnerValueValue": ".session_readings_by_owner_value_value",
     "SessionReadingsByOwnerValueValue_Lens": ".session_readings_by_owner_value_value",
     "SessionReadingsByOwnerValueValue_Sensor": ".session_readings_by_owner_value_value",
+    "SessionShutter": ".session_shutter",
+    "SessionShutterOne": ".session_shutter_one",
+    "SessionShutterZero": ".session_shutter_zero",
 }
 
 
@@ -94,6 +106,9 @@ def __dir__():
 
 
 __all__ = [
+    "ExposureMode",
+    "ExposureModeOne",
+    "ExposureModeZero",
     "ExposureUnit",
     "ExposureUnitOne",
     "ExposureUnitZero",
@@ -123,4 +138,7 @@ __all__ = [
     "SessionReadingsByOwnerValueValue",
     "SessionReadingsByOwnerValueValue_Lens",
     "SessionReadingsByOwnerValueValue_Sensor",
+    "SessionShutter",
+    "SessionShutterOne",
+    "SessionShutterZero",
 ]

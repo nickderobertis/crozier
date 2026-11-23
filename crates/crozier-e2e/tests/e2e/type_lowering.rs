@@ -451,3 +451,31 @@ fn flattened_union_branches_keep_fields_and_first_branch_precedence() {
         ],
     );
 }
+
+/// #895: members that lower alike are deduplicated, keeping the last copy.
+/// #896: a component `oneOf` of typed string enums is one enum, where bare
+/// `const` members stay a union of their own. #897: a union nested in a map of
+/// maps, an array of arrays or a map of arrays is hoisted under its container
+/// path, discriminated where its members tag themselves.
+#[test]
+fn union_members_lower_dedupe_merge_and_hoist_as_the_certified_pair() {
+    holds(
+        "union-member-lowering",
+        &[
+            (
+                "#895",
+                "src/fern/types/session_problem_details_item.py",
+                "SessionProblemDetailsItemOne, SessionProblemDetailsItemDescription, SessionProblemDetailsItemThree, str",
+            ),
+            ("#896", "src/fern/types/presence.py", "class Presence(enum.StrEnum):"),
+            ("#896", "src/fern/types/exposure_unit.py", "ExposureUnit = typing.Union[ExposureUnitZero, ExposureUnitOne]"),
+            ("#897", "src/fern/types/session_readings_by_owner_value_value.py", "pydantic.Field(discriminator=\"reading_type\")"),
+            ("#897", "src/fern/types/session_reading_batches_item_item.py", "pydantic.Field(discriminator=\"reading_type\")"),
+            (
+                "#897",
+                "src/fern/types/session_calibrations_value_item.py",
+                "SessionCalibrationsValueItem = typing.Union[str, SessionCalibrationsValueItemOffset]",
+            ),
+        ],
+    );
+}

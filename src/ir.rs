@@ -14835,7 +14835,20 @@ impl Builder<'_> {
         let module = naming::module_name(name);
         let docstring = operation_doc(schema.description.as_deref());
 
-        if let Some(values) = untyped_const_composition_values(schema) {
+        // A `oneOf` of bare `const`s is no enum among the components, where an
+        // operation's inline schema merges one (the
+        // `union-inheritance/list-item-nested-union` measurement's
+        // `…PayloadOperation`): the `type-lowering/union-member-lowering`
+        // measurement's `ExposureUnit` and undescribed `ExposureMode` are the
+        // certified pair's unions of `…Zero` and `…One` (#896's bare-`const`
+        // exception).
+        // A `oneOf` of typed string enums is one enum of their values, in order:
+        // the `type-lowering/union-member-lowering` measurement's `ImageSize`
+        // (two one-value enums) and `Presence` (`[Online]`, `[Idle, Away]`,
+        // `[Busy]`) are the certified pair's `ImageSize` and `Presence` enums
+        // (#896, foopis23's `ImageSize`), where its `FilterBand`, beside
+        // `null`, stays a union of its members.
+        if let Some(values) = merged_string_enum_union_values(schema) {
             self.types
                 .push(TypeDecl::Enum(build_enum(schema, name, values, docstring)));
             return;
@@ -16558,6 +16571,78 @@ impl Builder<'_> {
     /// discriminated `oneOf`/`anyOf` with an explicit `mapping`. Each mapping
     /// entry `value → $ref` becomes a `{Name}_{Variant}` wrapper carrying the
     /// discriminant literal plus the referenced model's (stripped) fields.
+    /// A map whose value is a map or array of an inline union: the union is
+    /// hoisted under its container path, `{Owner}{Prop}ValueValue` or
+    /// `{Owner}{Prop}ValueItem`, discriminated where its members tag
+    /// themselves. The `type-lowering/union-member-lowering` measurement's
+    /// `Session.readingsByOwner` (a map of maps of a `reading_type`-mapped
+    /// `oneOf`) and `Session.calibrations` (a map of arrays of `anyOf:
+    /// [string, object]`) are the certified pair's
+    /// `Dict[str, Dict[str, SessionReadingsByOwnerValueValue]]` and
+    /// `Dict[str, List[SessionCalibrationsValueItem]]` (#897, junjo's
+    /// `operations_by_owner_runtime_id`). `None` for any other property.
+    fn nested_map_union(
+        &mut self,
+        owner: &str,
+        prop: &str,
+        prop_schema: &Schema,
+    ) -> Option<TypeRef> {
+        if prop_schema.reference.is_some() || !is_map(prop_schema) || is_optional(prop_schema) {
+            return None;
+        }
+        let container = map_value(prop_schema).filter(|value| value.reference.is_none())?;
+        let (suffix, leaf) = if is_map(container) && !is_optional(container) {
+            ("ValueValue", map_value(container)?)
+        } else if container.ty.as_ref().and_then(TypeField::primary) == Some("array")
+            && !is_optional(container)
+        {
+            ("ValueItem", container.items.as_deref()?)
+        } else {
+            return None;
+        };
+        let members = leaf.one_of.as_ref().or(leaf.any_of.as_ref())?;
+        if leaf.reference.is_some()
+            || is_optional(leaf)
+            || members.iter().any(is_null_variant)
+            || simple_nullable_member(leaf).is_some()
+        {
+            return None;
+        }
+        let name = format!("{owner}{}{suffix}", naming::class_name(prop));
+        let module = naming::module_name(&name);
+        let docstring = clean_doc(leaf.description.as_deref());
+        let named =
+            if let Some(decl) = self.discriminated_union(&name, &module, leaf, docstring.clone()) {
+                self.types.push(TypeDecl::DiscriminatedUnion(decl));
+                TypeRef::Named(name)
+            } else {
+                let hoisted = self.types.len();
+                let variants: Vec<TypeRef> = members
+                    .iter()
+                    .enumerate()
+                    .map(|(index, variant)| self.variant_ref(&name, index, variant, members))
+                    .collect();
+                if collapsed_union(members, &dedupe_union_members(variants.clone())).is_some() {
+                    self.types.truncate(hoisted);
+                    return None;
+                }
+                self.push_alias(
+                    &name,
+                    module,
+                    TypeRef::Union(dedupe_union_members(variants)),
+                    docstring,
+                );
+                TypeRef::Named(name)
+            };
+        let string = || Box::new(TypeRef::Primitive(Prim::Str));
+        let inner = if suffix == "ValueValue" {
+            TypeRef::Dict(string(), Box::new(named))
+        } else {
+            sequence_of(container, named)
+        };
+        Some(TypeRef::Dict(string(), Box::new(inner)))
+    }
+
     fn discriminated_union(
         &mut self,
         name: &str,
@@ -17266,6 +17351,31 @@ impl Builder<'_> {
     /// The type of a property, hoisting an inline string enum to a named
     /// `enum.Enum` class `{Owner}{Prop}` (as Fern does for `typesAnimal`).
     fn field_type_ref(&mut self, owner: &str, prop: &str, prop_schema: &Schema) -> TypeRef {
+        // A component property's `oneOf` of bare `const`s is a union of its
+        // members, as a component's is (see [`Builder::add_named_shape`]): the
+        // `type-lowering/union-member-lowering` measurement's `Session.shutter`
+        // is the certified `SessionShutter = Union[SessionShutterZero,
+        // SessionShutterOne]`.
+        if untyped_const_composition_values(prop_schema).is_some() {
+            if let Some(members) = prop_schema.one_of.as_ref() {
+                let name = format!("{owner}{}", naming::class_name(prop));
+                let variants = members
+                    .iter()
+                    .enumerate()
+                    .map(|(index, member)| self.variant_ref(&name, index, member, members))
+                    .collect();
+                self.push_alias(
+                    &name,
+                    naming::module_name(&name),
+                    TypeRef::Union(dedupe_union_members(variants)),
+                    None,
+                );
+                return TypeRef::Named(name);
+            }
+        }
+        if let Some(nested) = self.nested_map_union(owner, prop, prop_schema) {
+            return nested;
+        }
         // A lone inline string enum alternative is the property's enum itself:
         // Fern names it `{Owner}{Prop}`, not `{Owner}{Prop}Zero`.
         if let Some(member) = lone_inline_string_enum(prop_schema) {
@@ -17747,6 +17857,23 @@ impl Builder<'_> {
                                 );
                             }
                             let name = format!("{owner}{}ItemItem", naming::class_name(prop));
+                            // A discriminated leaf stays discriminated: the
+                            // `type-lowering/union-member-lowering` measurement's
+                            // `Session.readingBatches` is the certified
+                            // `List[List[SessionReadingBatchesItemItem]]` over
+                            // `…_Lens` | `…_Sensor` (#897).
+                            if let Some(decl) = self.discriminated_union(
+                                &name,
+                                &naming::module_name(&name),
+                                nested_items,
+                                clean_doc(nested_items.description.as_deref()),
+                            ) {
+                                self.types.push(TypeDecl::DiscriminatedUnion(decl));
+                                return sequence_of(
+                                    prop_schema,
+                                    sequence_of(items, TypeRef::Named(name)),
+                                );
+                            }
                             let hoisted = self.types.len();
                             let variants: Vec<TypeRef> = members
                                 .iter()
@@ -17891,10 +18018,17 @@ impl Builder<'_> {
                         {
                             only
                         } else {
+                            // Members that lower alike are one, at the last copy's
+                            // place: the `type-lowering/union-member-lowering`
+                            // measurement's `SessionProblem.details` items repeat
+                            // an inline `SESSION_CLOSED` member and `type: string`,
+                            // and the certified alias is `Union[…One,
+                            // …Description, …Three, str]` (#895, PayPal's 422
+                            // `details`).
                             self.push_alias(
                                 &name,
                                 module,
-                                TypeRef::Union(variants),
+                                TypeRef::Union(dedupe_union_members(variants)),
                                 clean_doc(items.description.as_deref()),
                             );
                             TypeRef::Named(name)
@@ -22086,6 +22220,41 @@ fn is_unknown(schema: &Schema) -> bool {
         && schema.properties.is_empty()
         && schema.additional_properties.is_none()
         && schema.items.is_none()
+}
+
+/// The values of a component `oneOf` whose two or more members are each an
+/// inline `type: string` enum and nothing else, deduplicated in document
+/// order; `None` for any other schema (see [`Builder::add_named_shape`]).
+fn merged_string_enum_union_values(schema: &Schema) -> Option<Vec<String>> {
+    if schema.reference.is_some()
+        || schema.all_of.is_some()
+        || schema.any_of.is_some()
+        || schema.discriminator.is_some()
+        || schema.properties.declared()
+        || schema.additional_properties.is_some()
+        || schema.enum_values.is_some()
+    {
+        return None;
+    }
+    let members = schema.one_of.as_ref().filter(|members| members.len() > 1)?;
+    let mut values: Vec<String> = Vec::new();
+    for member in members {
+        let typed = is_string_type(member)
+            && member.reference.is_none()
+            && member.one_of.is_none()
+            && member.any_of.is_none()
+            && member.all_of.is_none()
+            && !member.properties.declared()
+            && member.const_value.is_none();
+        let member_values = member.enum_values.as_ref().filter(|_| typed)?;
+        for value in member_values {
+            let value = value.as_str()?.to_string();
+            if !values.contains(&value) {
+                values.push(value);
+            }
+        }
+    }
+    Some(values)
 }
 
 /// Untyped string constants without titles or descriptions form one enum.
