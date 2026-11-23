@@ -492,16 +492,44 @@ impl Resolver<'_> {
         response: &mut crate::openapi::Response,
         source: &DocumentLocation,
     ) -> Result<()> {
+        self.resolve_response_chain(response, source, &mut HashSet::new())
+    }
+
+    /// [`Self::resolve_response`], following a chain of Response Objects that
+    /// each name another file's; `seen` holds the chain's references, so one
+    /// naming a response already on it is an actionable error, not a loop.
+    fn resolve_response_chain(
+        &mut self,
+        response: &mut crate::openapi::Response,
+        source: &DocumentLocation,
+        seen: &mut HashSet<(String, String)>,
+    ) -> Result<()> {
         let Some(reference) = response.reference.clone() else {
-            return Ok(());
-        };
-        let Some((_, fragment)) = split_external(&reference) else {
             return Ok(());
         };
         if split_remote(&reference).is_some() {
             return Ok(());
         }
-        let path = DocumentLocation::from_reference(&reference, source);
+        // A local pointer names the containing document's response: the root's
+        // is left to `normalize_responses`, a sibling's is read from it.
+        let (path, fragment) = match split_external(&reference) {
+            Some((_, fragment)) => (
+                DocumentLocation::from_reference(&reference, source),
+                fragment.to_string(),
+            ),
+            None if self.is_other_document(source) => match reference.strip_prefix('#') {
+                Some(fragment) => (source.clone(), fragment.to_string()),
+                None => return Ok(()),
+            },
+            None => return Ok(()),
+        };
+        let fragment = fragment.as_str();
+        if !seen.insert((path.key(), fragment.to_string())) {
+            return Err(self.error(
+                &reference,
+                "the response references form a cycle; point one of them at a Response Object",
+            ));
+        }
         let node = pointer(self.document(&path, &reference)?, fragment)
             .cloned()
             .ok_or_else(|| {
@@ -513,7 +541,7 @@ impl Resolver<'_> {
         let mut resolved: crate::openapi::Response =
             self.deserialize_object(node, &reference, "a response")?;
         if resolved.reference.is_some() {
-            self.resolve_response(&mut resolved, &path)?;
+            self.resolve_response_chain(&mut resolved, &path, seen)?;
         }
         for media in resolved.content.values_mut() {
             if let Some(schema) = &mut media.schema {

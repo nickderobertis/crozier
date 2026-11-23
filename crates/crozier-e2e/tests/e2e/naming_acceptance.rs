@@ -506,3 +506,158 @@ fn sdk_env_recursive_alias_dependents_import_and_construct() {
         "recursive-alias-dependents",
     );
 }
+
+/// A document whose `404` is `./components.yml#/components/responses/<name>`,
+/// beside the sibling `components` text, both written under `dir`.
+fn sibling_response_document(dir: &Path, name: &str, components: &str) -> PathBuf {
+    let spec = dir.join("openapi.yml");
+    std::fs::write(
+        &spec,
+        format!(
+            "openapi: 3.0.3\ninfo: {{title: Vendor Notes, version: 1.0.0}}\npaths:\n  /notes:\n    get:\n      operationId: getNote\n      responses:\n        '200': {{description: The note.}}\n        '404':\n          $ref: './components.yml#/components/responses/{name}'\n"
+        ),
+    )
+    .expect("write the document");
+    std::fs::write(dir.join("components.yml"), components).expect("write the sibling");
+    spec
+}
+
+/// #942's resolution rule beyond the measured case: a sibling's response that
+/// is itself a local pointer resolves inside that sibling, while a cycle, a
+/// pointer the sibling does not hold and a target that is no Response Object
+/// each fail with an actionable message and write nothing.
+#[test]
+fn sibling_response_references_resolve_from_their_file_or_fail_actionably() {
+    const PROBLEM: &str = "  schemas:\n    Problem:\n      type: object\n      required: [title]\n      properties:\n        title: {type: string}\n";
+    let temp = tempfile::tempdir().expect("tempdir");
+    let chained = sibling_response_document(
+        temp.path(),
+        "NotFound",
+        &format!("components:\n  responses:\n    NotFound:\n      $ref: '#/components/responses/Missing'\n    Missing:\n      description: Gone.\n      content:\n        application/json:\n          schema:\n            $ref: '#/components/schemas/Problem'\n{PROBLEM}"),
+    );
+    let out = temp.path().join("sdk");
+    probe_command(&chained, &out).assert().success();
+    let error = read(&out.join("src/fern/errors/not_found_error.py"));
+    assert!(error.contains("body: Problem"), "{error}");
+
+    for (name, components, message) in [
+        (
+            "NotFound",
+            "components:\n  responses:\n    NotFound:\n      $ref: '#/components/responses/Missing'\n    Missing:\n      $ref: '#/components/responses/NotFound'\n",
+            "the response references form a cycle",
+        ),
+        (
+            "Absent",
+            "components:\n  responses:\n    NotFound:\n      description: Gone.\n",
+            "the referenced document has no response at that pointer",
+        ),
+        (
+            "NotFound",
+            "components:\n  responses:\n    NotFound: [Gone]\n",
+            "not a response",
+        ),
+    ] {
+        let case = tempfile::tempdir().expect("tempdir");
+        let spec = sibling_response_document(case.path(), name, components);
+        let out = case.path().join("sdk");
+        let run = probe_command(&spec, &out).assert().failure();
+        let stderr = String::from_utf8_lossy(&run.get_output().stderr).into_owned();
+        assert!(stderr.contains(message), "{name}: {stderr}");
+        assert!(!out.exists(), "{name}: a refused document writes no SDK");
+    }
+}
+
+/// #944's naming beyond one pair: three components spelling one class, beside
+/// a component already named like the first ordinal, each keep a class of
+/// their own; the last declaration keeps the shared class, and the earlier ones
+/// take their own path's class with the first ordinal no other component's
+/// class spells.
+#[test]
+fn colliding_components_take_the_first_free_ordinal_of_their_own_path() {
+    let temp = tempfile::tempdir().expect("tempdir");
+    let spec = temp.path().join("openapi.yml");
+    std::fs::write(
+        &spec,
+        "openapi: 3.0.3\ninfo: {title: Kilns, version: 1.0.0}\npaths:\n  /kilns:\n    post:\n      operationId: createKilns\n      requestBody:\n        content:\n          application/json:\n            schema:\n              type: object\n              properties:\n                first: {$ref: '#/components/schemas/kiln/glaze-coat'}\n                second: {$ref: '#/components/schemas/kiln-glaze/coat'}\n                third: {$ref: '#/components/schemas/kiln-glaze-coat'}\n                taken: {$ref: '#/components/schemas/KilnGlazeCoat2'}\n      responses:\n        '204': {description: Created.}\ncomponents:\n  schemas:\n    KilnGlazeCoat2: {type: object, properties: {taken: {type: boolean}}}\n    kiln/glaze-coat: {type: object, properties: {first: {type: string}}}\n    kiln-glaze/coat: {type: object, properties: {second: {type: integer}}}\n    kiln-glaze-coat: {type: object, properties: {third: {type: number}}}\n",
+    )
+    .expect("write the document");
+    let out = temp.path().join("sdk");
+    probe_command(&spec, &out).assert().success();
+    let client = read(&out.join("src/fern/client.py"));
+    for (field, class) in [
+        ("first", "KilnGlazeCoat3"),
+        ("second", "KilnGlazeCoat4"),
+        ("third", "KilnGlazeCoat"),
+        ("taken", "KilnGlazeCoat2"),
+    ] {
+        assert!(
+            client.contains(&format!(
+                "        {field}: typing.Optional[{class}] = OMIT,"
+            )),
+            "{field} is typed {class}: {client}"
+        );
+    }
+    for (module, field) in [
+        ("kiln_glaze_coat", "third"),
+        ("kiln_glaze_coat2", "taken"),
+        ("kiln_glaze_coat3", "first"),
+        ("kiln_glaze_coat4", "second"),
+    ] {
+        let text = read(&out.join(format!("src/fern/types/{module}.py")));
+        assert!(text.contains(&format!("    {field}: ")), "{module}: {text}");
+    }
+}
+
+/// The `colliding-component-own-class` rule takes exactly the renamed class's
+/// own lines: once the #944 measurement matches, an unrelated change on a line
+/// naming `KilnGlazeCoat2`, an added line naming no renamed class, and a
+/// crozier-only module that is no renamed class's each remain a difference.
+#[test]
+fn the_colliding_component_departure_explains_only_the_renamed_class() {
+    let case = "normalized-component-identity";
+    let temp = tempfile::tempdir().expect("output tempdir");
+    let out = temp.path().join("sdk");
+    generate(case, "python-enums", &out);
+    assert!(enum_failures(case, &out).is_empty());
+    let client = out.join("src/fern/client.py");
+    let text = read(&client);
+    let renamed = "        left: typing.Optional[KilnGlazeCoat2] = OMIT,\n";
+    assert!(text.contains(renamed), "{text}");
+    for (what, edit) in [
+        (
+            "an unrelated change on a renamed line",
+            text.replacen(
+                renamed,
+                "        left: typing.Optional[KilnGlazeCoat2] = None,\n",
+                1,
+            ),
+        ),
+        (
+            "an added line naming no renamed class",
+            text.replacen(
+                renamed,
+                &format!("{renamed}        glaze: str = OMIT,\n"),
+                1,
+            ),
+        ),
+    ] {
+        std::fs::write(&client, &edit).expect("tamper");
+        let failures = enum_failures(case, &out);
+        assert!(
+            failures
+                .iter()
+                .any(|failure| failure.contains("src/fern/client.py")),
+            "{what} must fail the comparison: {failures:?}"
+        );
+    }
+    std::fs::write(&client, &text).expect("restore");
+    let extra = out.join("src/fern/types/kiln_glaze_coat9.py");
+    std::fs::write(&extra, "KilnGlazeCoat9 = str\n").expect("an extra module");
+    let failures = enum_failures(case, &out);
+    assert!(
+        failures
+            .iter()
+            .any(|failure| failure.contains("kiln_glaze_coat9.py")),
+        "a module no renamed class owns must fail the comparison: {failures:?}"
+    );
+}

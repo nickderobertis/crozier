@@ -2147,7 +2147,7 @@ table, with this header and this column order:
 
 ## Parity repair proof index
 
-These 60 rows are the 27 generator categories and the 33 scenarios later
+These 61 rows are the 27 generator categories and the 34 scenarios later
 parity repairs closed: the base-path and string-map example gaps, the
 parameter fix's additional scenarios, and every scenario whose correction is a
 Fern defect. Other
@@ -2230,6 +2230,7 @@ corrections the shared comparison engine applies. All other bytes must match.
 | reference-anchor-follows-corrected-client | Reference line anchors following the client lines crozier corrects | Fern defect | `certify-new-pair` | tests/fixtures/letta/expected | `letta_matches_fern_output` | `reference-anchor-follows-corrected-client` |
 | flat-reference-link-target | Flat-layout reference links to the client file the SDK writes | Fern defect | `certify-new-pair` | tests/fixtures/swagger-petstore/expected-flat | `compare::compare_holds_each_reference_link_departure_to_its_own_shape` | `flat-reference-link-target` |
 | list-item-nested-union-required-field | List of union items whose member requires a field typed by a null-bearing nested union: the README and reference.md item list written empty as Fern writes it; the docstring constructions' omitted required field corrected | Fern behaviour + Fern defect | `union-member-nullability` | docs/fern-measurements/union-inheritance/list-item-nested-union/fern-expected | `list_item_nested_union_markdown_lists_match_the_certified_pair; sdk_env_required_null_union_field_examples_construct_where_fern_s_fail` | `required-null-union-field-example` |
+| colliding-component-classes | Components whose names spell one class | Fern defect | `naming-acceptance` | docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected | `naming_acceptance_documents_generate_as_the_certified_pair_does` | `colliding-component-own-class` |
 
 Additional boundaries of these rows are held by the same gate: the
 `empty-body-guard` row also uses

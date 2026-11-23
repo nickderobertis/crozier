@@ -8349,10 +8349,6 @@ fn client_method(cx: &ClientCtx, ep: &Endpoint, is_async: bool, imports: &mut Im
     if ep.binary_response {
         return client_binary_stream_method(cx, ep, is_async, imports);
     }
-    // A HEAD method returns the response headers, so the high-level client names
-    // no response model and imports none; the raw client still types its
-    // `HttpResponse` with it. The certified pair's Folio client imports no
-    // `GetSiteResponse` once `HEAD /v1/site` replaces its `GET` (issue #921).
     let mp = method_params(ep, imports, ep.http_method != "HEAD");
     let return_type = if ep.http_method == "HEAD" {
         "typing.Dict[str, str]".to_string()

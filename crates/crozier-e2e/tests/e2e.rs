@@ -168,12 +168,14 @@ mod handed_off_type_declarations;
 mod union_inheritance;
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates one small SDK per ticket and compares it whole, on the crozier-e2e edge every other golden comparison shares; its PyPI-installing journeys are `sdk_env_`-ignored into `just test-sdk-env`, and splitting the shared edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 /// The naming, import and document-acceptance tickets (#536, #919–#924,
 /// #941–#944, #946, #948, #955, #956), each settled against a from-scratch
 /// document under `docs/fern-measurements/naming-acceptance/` and held whole
 /// against the certified pair's tree in both enum modes.
 #[path = "e2e/naming_acceptance.rs"]
 mod naming_acceptance;
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These nine local generator journeys and their canonical-header controls generate small SDKs without network access or SDK installation; they exercise the existing real-binary boundary and introduce no promoted-tier setup.
 #[path = "e2e/remeasure.rs"]
