@@ -944,6 +944,35 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         self.assertEqual(1, len(self.calls()), "an altered committed source was generated from")
         self.assertEqual([], self.fetch_calls(), "an altered committed source fell back to upstream")
 
+    def test_compare_reads_a_recorded_row_from_its_committed_source_and_refuses_an_altered_copy(self) -> None:
+        """Issue #862's comparison half: `compare` stages a recorded row's committed,
+        digest-verified source without asking upstream, so a removed upstream still
+        compares; an altered copy is skipped as a source failure, never fetched."""
+        committed = b'{"openapi":"3.0.3","info":{"title":"alpha, as committed"}}\n'
+        source = self.root / "tests" / "fixtures" / "corpus-sources" / "alpha" / "openapi.json"
+        source.parent.mkdir(parents=True)
+        source.write_bytes(committed)
+        (self.root / "tests" / "fixtures" / "corpus-sources.tsv").write_text(
+            "# corpus_name\tpath\tsource_url\tsha256\n"
+            "alpha\ttests/fixtures/corpus-sources/alpha/openapi.json\thttps://example.test/alpha/openapi.json\t"
+            f"{hashlib.sha256(committed).hexdigest()}\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        compared = self.run_tool("compare", FAIL_FETCH="alpha")
+        self.assertEqual(0, compared.returncode, compared.stdout + compared.stderr)
+        self.assertIn("comparing 1/2 alpha", compared.stderr)
+        self.assertNotIn("spec fetch failed", compared.stdout)
+        self.assertNotIn("example.test/alpha", "\n".join(self.fetch_calls()), "upstream was asked for a committed row")
+
+        source.write_bytes(committed.replace(b"as committed", b"edited by hand"))
+        refused = self.run_tool("compare", FAIL_FETCH="alpha")
+        self.assertNotEqual(0, refused.returncode, refused.stdout)
+        self.assertIn("skipped 1/2 alpha: spec fetch failed", refused.stdout)
+        log = (self.root / ".local" / "fern-goldens" / "comparison.log").read_text(encoding="utf-8")
+        self.assertIn("Spec fetch failed: committed source refused", log)
+        self.assertNotIn("example.test/alpha", "\n".join(self.fetch_calls()), "an altered copy fell back to upstream")
+
     def test_generation_uses_the_path_reported_by_fetch_corpus(self) -> None:
         self.run_tool(
             "generate",
