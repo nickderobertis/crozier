@@ -10,7 +10,7 @@ Over the committed `amazonaws.com-cloudformation` corpus document, with the
 corpus's settings:
 
 ```text
-$ spec=$(python3 tools/corpus/corpus_sources.py prepare --fixture amazonaws.com-cloudformation --output /tmp/cf-src)
+$ spec=$(just corpus-sources prepare --fixture amazonaws.com-cloudformation --output /tmp/cf-src)
 $ crozier generate --spec "$spec" --output /tmp/cf --package-name fern --project-name default_package_name
 $ diff <(sed -n '/^if typing.TYPE_CHECKING:/,/^_dynamic_imports/p' tests/fixtures/amazonaws.com-cloudformation/expected/src/fern/types/__init__.py) \
        <(sed -n '/^if typing.TYPE_CHECKING:/,/^_dynamic_imports/p' /tmp/cf/src/fern/types/__init__.py)
@@ -42,7 +42,7 @@ reordering there is a plain difference. The same `alma-france` golden this
 record once cited for the root block now compares equal with no departure:
 
 ```text
-$ spec=$(python3 tools/corpus/corpus_sources.py prepare --fixture alma-france --output /tmp/alma-src)
+$ spec=$(just corpus-sources prepare --fixture alma-france --output /tmp/alma-src)
 $ crozier generate --spec "$spec" --output /tmp/alma --package-name fern --project-name default_package_name
 $ diff <(sed -n '/^if typing.TYPE_CHECKING:/,/^_dynamic_imports/p' tests/fixtures/alma-france/expected/src/fern/__init__.py) \
        <(sed -n '/^if typing.TYPE_CHECKING:/,/^_dynamic_imports/p' /tmp/alma/src/fern/__init__.py); echo $?
