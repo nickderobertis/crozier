@@ -29,25 +29,25 @@ class PrintsClient:
     def submit_print(
         self,
         *,
-        negative: bytes,
+        instructions: str,
+        negative: typing.Optional[bytes] = OMIT,
         contacts: typing.Optional[typing.Sequence[str]] = OMIT,
         layers: typing.Optional[typing.Dict[str, str]] = OMIT,
         mask: typing.Optional[bytes] = OMIT,
-        instructions: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> Print:
         """
         Parameters
         ----------
-        negative : bytes
+        instructions : str
+
+        negative : typing.Optional[bytes]
 
         contacts : typing.Optional[typing.Sequence[str]]
 
         layers : typing.Optional[typing.Dict[str, str]]
 
         mask : typing.Optional[bytes]
-
-        instructions : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -65,15 +65,15 @@ class PrintsClient:
             base_url="https://yourhost.com/path/to/api",
         )
         client.prints.submit_print(
-            negative="negative",
+            instructions="instructions",
         )
         """
         _response = self._raw_client.submit_print(
+            instructions=instructions,
             negative=negative,
             contacts=contacts,
             layers=layers,
             mask=mask,
-            instructions=instructions,
             request_options=request_options,
         )
         return _response.data
@@ -97,25 +97,25 @@ class AsyncPrintsClient:
     async def submit_print(
         self,
         *,
-        negative: bytes,
+        instructions: str,
+        negative: typing.Optional[bytes] = OMIT,
         contacts: typing.Optional[typing.Sequence[str]] = OMIT,
         layers: typing.Optional[typing.Dict[str, str]] = OMIT,
         mask: typing.Optional[bytes] = OMIT,
-        instructions: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> Print:
         """
         Parameters
         ----------
-        negative : bytes
+        instructions : str
+
+        negative : typing.Optional[bytes]
 
         contacts : typing.Optional[typing.Sequence[str]]
 
         layers : typing.Optional[typing.Dict[str, str]]
 
         mask : typing.Optional[bytes]
-
-        instructions : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -138,18 +138,18 @@ class AsyncPrintsClient:
 
         async def main() -> None:
             await client.prints.submit_print(
-                negative="negative",
+                instructions="instructions",
             )
 
 
         asyncio.run(main())
         """
         _response = await self._raw_client.submit_print(
+            instructions=instructions,
             negative=negative,
             contacts=contacts,
             layers=layers,
             mask=mask,
-            instructions=instructions,
             request_options=request_options,
         )
         return _response.data

@@ -20,7 +20,7 @@ client = FernApi(
 )
 
 client.prints.submit_print(
-    negative="negative",
+    instructions="instructions",
 )
 
 ```
@@ -37,7 +37,15 @@ client.prints.submit_print(
 <dl>
 <dd>
 
-**negative:** `bytes` 
+**instructions:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**negative:** `typing.Optional[bytes]` 
     
 </dd>
 </dl>
@@ -62,14 +70,6 @@ client.prints.submit_print(
 <dd>
 
 **mask:** `typing.Optional[bytes]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**instructions:** `typing.Optional[str]` 
     
 </dd>
 </dl>

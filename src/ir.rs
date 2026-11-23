@@ -14108,19 +14108,28 @@ fn collect_discriminant_strips(
                 .iter()
                 .flatten()
                 .filter(|member| !untagged_by_unrequired_tag(member, schemas))
-                .filter(|member| member.one_of.is_none() && member.any_of.is_none()),
+                .filter(|member| !merged_branch_union(member, schemas)),
         )
         .chain(map_value)
     {
         collect_discriminant_strips(child, schemas, standalone, strips);
     }
-    // A union composed as an `allOf` member is flattened into the composing
-    // model, not declared as a union, so it consumes no member's tag: the
+    // A union composed as an `allOf` member whose branches merge into the
+    // composing model (no branch tags itself with a value, see
+    // [`branch_union_properties`]) is no union, so it consumes no member's tag
+    // even under a written discriminator: the
     // `type-lowering/inherited-discriminator-tags` measurement's `Pet` is
     // `allOf: [object, oneOf [$ref Cat, $ref Dog] discriminated on species]`,
-    // and the certified `Cat` and `Dog` keep `species` (#949). Its members'
-    // own nested content is still walked.
-    for member in schema.all_of.iter().flatten() {
+    // `species` a plain string, and the certified `Cat` and `Dog` keep it
+    // (#949), where the `union-inheritance/allof-unrequired-tag-branches`
+    // measurement's `Cart`, over one-value enum tags, still strips them. Its
+    // members' own nested content is still walked.
+    for member in schema
+        .all_of
+        .iter()
+        .flatten()
+        .filter(|member| merged_branch_union(member, schemas))
+    {
         for variant in member.one_of.iter().chain(member.any_of.iter()).flatten() {
             if variant.reference.is_none() {
                 collect_discriminant_strips(variant, schemas, standalone, strips);
@@ -15667,6 +15676,8 @@ impl Builder<'_> {
         }
         let flattened = flatten_nested_all_of(schema);
         let schema = flattened.as_ref().unwrap_or(schema);
+        let inlined_unions = inline_referenced_union_members(schema, self.schemas);
+        let schema = inlined_unions.as_ref().unwrap_or(schema);
         let promoted = promote_required_parent_properties(self.schemas, schema);
         let (schema, promoted_owners) = match &promoted {
             Some((rewritten, owners)) => (rewritten, Some(owners)),
@@ -19833,36 +19844,149 @@ enum BranchUnion {
 /// property two branches declare keeps the first branch's position and the last
 /// branch's schema. `None` for a member that is no union, or whose branches
 /// declare no property.
+/// Whether an `allOf` member is a union whose branches merge into the model it
+/// composes ([`BranchUnion::Merged`]).
+fn merged_branch_union(member: &Schema, schemas: &IndexMap<String, Schema>) -> bool {
+    matches!(
+        branch_union_properties(member, schemas),
+        Some(BranchUnion::Merged(_))
+    )
+}
+
+/// `schema` with the properties and `required` of its inline `allOf` members
+/// merged after its own, each name at its first declaration; `$ref` members
+/// lend nothing (see [`branch_union_properties`]).
+fn inline_all_of_properties(schema: &Schema) -> Schema {
+    let mut merged = schema.clone();
+    merged.all_of = None;
+    for member in schema
+        .all_of
+        .iter()
+        .flatten()
+        .filter(|member| member.reference.is_none())
+    {
+        let member = inline_all_of_properties(member);
+        for (key, property) in member.properties.iter() {
+            if !merged.properties.contains_key(key) {
+                merged.properties.insert(key.clone(), property.clone());
+            }
+        }
+        let mut required: Vec<String> = merged.required.iter().cloned().collect();
+        required.extend(member.required.iter().cloned());
+        merged.required = required.into();
+    }
+    merged
+}
+
+/// `schema` with each `allOf` member that is a `$ref` to an undiscriminated
+/// union component (a `oneOf`/`anyOf` declaring nothing else) written as that
+/// union inline, so it lends its branches' properties as an inline union
+/// member does ([`branch_union_properties`]); `None` where no member is one.
+/// The `type-lowering/union-branch-flattening` measurement's
+/// `paymentInstructions` is `allOf: [$ref PaymentInstruction, {referenceId}]`,
+/// `PaymentInstruction` a `oneOf` of two instructions, and the certified model
+/// carries `iban`, `bic`, `accountNumber`, `routingNumber`, then
+/// `referenceId` (#889, fireblocks' `FiatPaymentInstruction`).
+fn inline_referenced_union_members(
+    schema: &Schema,
+    schemas: &IndexMap<String, Schema>,
+) -> Option<Schema> {
+    let members = schema.all_of.as_ref()?;
+    let mut changed = false;
+    let rewritten: Vec<Schema> = members
+        .iter()
+        .map(|member| {
+            let target = member
+                .reference
+                .as_deref()
+                .and_then(|reference| resolve_ref_from_schemas(schemas, reference))
+                .filter(|target| {
+                    (target.one_of.is_some() || target.any_of.is_some())
+                        && target.discriminator.is_none()
+                        && !target.properties.declared()
+                        && target.all_of.is_none()
+                        && target.additional_properties.is_none()
+                });
+            match target {
+                Some(target) => {
+                    changed = true;
+                    Schema {
+                        one_of: target.one_of.clone(),
+                        any_of: target.any_of.clone(),
+                        ..Schema::default()
+                    }
+                }
+                None => member.clone(),
+            }
+        })
+        .collect();
+    changed.then(|| Schema {
+        all_of: Some(rewritten),
+        ..schema.clone()
+    })
+}
+
 fn branch_union_properties(
     member: &Schema,
     schemas: &IndexMap<String, Schema>,
 ) -> Option<BranchUnion> {
     let branches = member.one_of.as_ref().or(member.any_of.as_ref())?;
+    // Inline branches leaving their tag unrequired merge as `$ref` ones do: the
+    // `type-lowering/union-branch-flattening` measurement's `RampMethod` is
+    // `allOf: [{id}, oneOf: [two objects tagging an unrequired `direction`]]`,
+    // and the certified model carries every branch's fields (#889), where
+    // Zoonk's lesson steps, requiring `kind`, are tagged.
+    let inline_untagged = inferred_discriminant_property(member, schemas).is_some_and(|tag| {
+        branches
+            .iter()
+            .any(|branch| branch.reference.is_none() && !branch.required.contains(&tag))
+    });
     if member.one_of.is_some()
         && !untagged_by_unrequired_tag(member, schemas)
+        && !inline_untagged
         && inferred_discriminant_property(member, schemas).is_some()
     {
         return Some(BranchUnion::Tagged);
     }
-    // Branches merged past an unrequired tag keep the first branch's spelling
-    // of a property several declare: intellifi's `SpotSet` types `type` with
-    // `SpotSetTypeAny`'s one-value enum.
-    let first_wins = untagged_by_unrequired_tag(member, schemas);
+    // A property several branches declare keeps the first branch's spelling
+    // (#889): the same measurement's `Ramp` and `RampRequest` type `direction`
+    // and `source` as their first `$ref` branch does, and its inline `Ticket`
+    // its unrequired `fare` and `price`, as intellifi's `SpotSet` types `type`
+    // with `SpotSetTypeAny`'s one-value enum. Only a property two inline
+    // branches both require takes the last one's: braintrust's
+    // `TopicMapFunctionAutomation.function` types its required `type` with
+    // the `global` branch's enum.
     let mut merged = Schema::default();
-    for branch in branches {
+    let mut required_inline = std::collections::HashSet::new();
+    for written in branches {
         // A `$ref` branch lends its component's properties the same way:
         // pushboy's `LiveActivityEndJobRequest` composes `oneOf: [$ref
         // LiveActivityActivityIdScope, $ref LiveActivityScopedLookup]` and Fern
         // writes `activityId`, `userId`, `topicId`, then `activityType`.
-        let branch = branch
+        let branch = written
             .reference
             .as_deref()
             .and_then(|reference| resolve_ref_from_schemas(schemas, reference))
-            .unwrap_or(branch);
+            .unwrap_or(written);
+        // …and a branch composed with `allOf` lends its inline members' too,
+        // though not what a `$ref` parent lends: the measurement's
+        // `InstructedOffRampProperties` (`allOf: [{paymentInstructions}, $ref
+        // OffRampProperties]`) lends `paymentInstructions`, not `payout`.
+        let branch = inline_all_of_properties(branch);
+        let inline = written.reference.is_none();
         for (prop, prop_schema) in &branch.properties {
-            if !(prop_schema.negative_only() || first_wins && merged.properties.contains_key(prop))
-            {
+            if prop_schema.negative_only() {
+                continue;
+            }
+            let requires = branch.required.contains(prop);
+            let replaces = inline && requires && required_inline.contains(prop);
+            if !merged.properties.contains_key(prop) || replaces {
                 merged.properties.insert(prop.clone(), prop_schema.clone());
+            }
+            if inline && requires {
+                required_inline.insert(prop.clone());
+            } else {
+                required_inline.remove(prop);
             }
         }
     }

@@ -23,25 +23,25 @@ class RawPrintsClient:
     def submit_print(
         self,
         *,
-        negative: bytes,
+        instructions: str,
+        negative: typing.Optional[bytes] = OMIT,
         contacts: typing.Optional[typing.Sequence[str]] = OMIT,
         layers: typing.Optional[typing.Dict[str, str]] = OMIT,
         mask: typing.Optional[bytes] = OMIT,
-        instructions: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[Print]:
         """
         Parameters
         ----------
-        negative : bytes
+        instructions : str
+
+        negative : typing.Optional[bytes]
 
         contacts : typing.Optional[typing.Sequence[str]]
 
         layers : typing.Optional[typing.Dict[str, str]]
 
         mask : typing.Optional[bytes]
-
-        instructions : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -94,25 +94,25 @@ class AsyncRawPrintsClient:
     async def submit_print(
         self,
         *,
-        negative: bytes,
+        instructions: str,
+        negative: typing.Optional[bytes] = OMIT,
         contacts: typing.Optional[typing.Sequence[str]] = OMIT,
         layers: typing.Optional[typing.Dict[str, str]] = OMIT,
         mask: typing.Optional[bytes] = OMIT,
-        instructions: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[Print]:
         """
         Parameters
         ----------
-        negative : bytes
+        instructions : str
+
+        negative : typing.Optional[bytes]
 
         contacts : typing.Optional[typing.Sequence[str]]
 
         layers : typing.Optional[typing.Dict[str, str]]
 
         mask : typing.Optional[bytes]
-
-        instructions : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.

@@ -41,7 +41,7 @@ client = FernApi(
 )
 
 client.prints.submit_print(
-    negative="negative",
+    instructions="instructions",
 )
 ```
 
@@ -61,7 +61,7 @@ client = AsyncFernApi(
 
 async def main() -> None:
     await client.prints.submit_print(
-        negative="negative",
+        instructions="instructions",
     )
 
 

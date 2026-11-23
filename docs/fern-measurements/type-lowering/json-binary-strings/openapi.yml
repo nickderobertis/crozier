@@ -24,7 +24,7 @@ components:
   schemas:
     PrintJob:
       type: object
-      required: [negative]
+      required: [instructions]
       properties:
         negative:
           type: string

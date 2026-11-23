@@ -418,3 +418,36 @@ fn reference_compositions_match_the_certified_pair() {
         ],
     );
 }
+
+/// #889: a union composed as an `allOf` member lends its branches' fields,
+/// the first branch's spelling winning a conflict, inline branches with an
+/// unrequired tag merging, a branch's inline `allOf` members lending too, and
+/// an `allOf` member referencing a union component lending its branches.
+#[test]
+fn flattened_union_branches_keep_fields_and_first_branch_precedence() {
+    holds(
+        "union-branch-flattening",
+        &[
+            (
+                "#889",
+                "src/fern/types/ramp.py",
+                "source: typing.Optional[FiatSource] = None",
+            ),
+            (
+                "#889",
+                "src/fern/types/ramp_method.py",
+                "fiat: typing.Optional[str] = None",
+            ),
+            (
+                "#889",
+                "src/fern/types/ticket.py",
+                "price: typing.Optional[str] = None",
+            ),
+            (
+                "#889",
+                "src/fern/types/instructed_off_ramp_properties_payment_instructions.py",
+                "iban: typing.Optional[str] = None",
+            ),
+        ],
+    );
+}
