@@ -6601,7 +6601,10 @@ fn identifier_starts(text: &str, identifier: &str) -> Vec<usize> {
         .map(|(start, _)| start)
         .filter(|start| {
             !text[..*start].chars().next_back().is_some_and(word)
-                && !text[start + identifier.len()..].chars().next().is_some_and(word)
+                && !text[start + identifier.len()..]
+                    .chars()
+                    .next()
+                    .is_some_and(word)
         })
         .collect()
 }
@@ -6647,7 +6650,10 @@ fn colliding_line_in_fern_form(line: &str, renames: &[(String, String)]) -> Stri
         let repeats = index > 0
             && !core.is_empty()
             && out.ends_with(core)
-            && !out[..out.len() - core.len()].chars().next_back().is_some_and(word);
+            && !out[..out.len() - core.len()]
+                .chars()
+                .next_back()
+                .is_some_and(word);
         if repeats {
             out.push_str(&item[core.len()..]);
         } else {

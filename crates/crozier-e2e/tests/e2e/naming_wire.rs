@@ -389,7 +389,11 @@ fn the_root_imports_are_written_in_the_certified_pair_s_order() {
 
     let committed = compare(&fern);
     assert!(committed.matches(), "{:?}", committed.diff());
-    assert!(committed.departures.is_empty(), "{:?}", committed.departures);
+    assert!(
+        committed.departures.is_empty(),
+        "{:?}",
+        committed.departures
+    );
 
     let types = "    from .types import (\n";
     assert!(fern.contains(types), "{rel} has no `.types` statement");

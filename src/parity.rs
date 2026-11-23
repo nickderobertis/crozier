@@ -1357,7 +1357,10 @@ mod tests {
         // there is a difference (#920).
         for root in ["src/acme/__init__.py", "__init__.py"] {
             let compared = compare(root, crozier, reference);
-            assert!(!compared.matches() && compared.departures.is_empty(), "{root}");
+            assert!(
+                !compared.matches() && compared.departures.is_empty(),
+                "{root}"
+            );
         }
         // Another difference outside the block still fails.
         let other = reference.replace("_dynamic_imports = {}", "_dynamic_imports = {1: 2}");

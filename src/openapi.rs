@@ -2629,7 +2629,9 @@ where
 /// declares `true` and `false` alike as `typing.Any` aliases
 /// (`docs/fern-measurements/naming-acceptance/boolean-component-schemas/`, issue
 /// #941), which is the unknown node; any other value still fails the document.
-fn de_component_schemas<'de, D>(deserializer: D) -> std::result::Result<IndexMap<String, Schema>, D::Error>
+fn de_component_schemas<'de, D>(
+    deserializer: D,
+) -> std::result::Result<IndexMap<String, Schema>, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
@@ -2667,7 +2669,10 @@ where
     }
 
     let raw = IndexMap::<String, ComponentSchema>::deserialize(deserializer)?;
-    Ok(raw.into_iter().map(|(name, schema)| (name, schema.0)).collect())
+    Ok(raw
+        .into_iter()
+        .map(|(name, schema)| (name, schema.0))
+        .collect())
 }
 
 /// The node a boolean component schema reads as: the unknown type, whether it
