@@ -932,7 +932,9 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         [call] = self.calls()
         staged = Path(call.split(" ")[2])
         self.assertEqual(staged.name, "openapi.json")
-        self.assertTrue(staged.is_relative_to(self.root / ".local" / "fern-goldens" / "sources" / "alpha"), call)
+        self.assertTrue(
+            staged.is_relative_to(self.root.resolve() / ".local" / "fern-goldens" / "sources" / "alpha"), call
+        )
         self.assertEqual(staged.read_bytes(), committed)
 
         source.write_bytes(committed.replace(b"as committed", b"edited by hand"))

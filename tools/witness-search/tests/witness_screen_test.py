@@ -433,7 +433,7 @@ class LegacyScreenCliTests(unittest.TestCase):
         self.assertIn("holds no candidate acme/other@", stranger.stderr)
         outside = self.rescreen("--ledger", str(ledger), *identity, "--key", "sample-shape")
         self.assertEqual(1, outside.returncode)
-        self.assertIn(f"'sample-shape' is no witness-search key in {search / 'census.tsv'}", outside.stderr)
+        self.assertIn(f"'sample-shape' is no witness-search key in {(search / 'census.tsv').resolve()}", outside.stderr)
         self.assertEqual(2, len(ledger.read_text(encoding="utf-8").splitlines()))
 
     def test_a_rescreen_refuses_a_ledger_or_scope_it_cannot_read_and_takes_an_explicit_key(self) -> None:
@@ -580,7 +580,8 @@ class LegacyScreenCliTests(unittest.TestCase):
         refused = self.rescreen("--ledger", str(ledger), *identity, "--disposition", "witness-found")
         self.assertEqual(1, refused.returncode)
         self.assertIn(
-            f"'scoped-shape' is no witness-search key in {self.root / 'witness-search-keys.tsv'}", refused.stderr
+            f"'scoped-shape' is no witness-search key in {(self.root / 'witness-search-keys.tsv').resolve()}",
+            refused.stderr,
         )
         self.assertEqual(text, ledger.read_text(encoding="utf-8"))
         done = self.rescreen(

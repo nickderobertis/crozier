@@ -374,7 +374,9 @@ class FernReferencesTests(unittest.TestCase):
         self.assertEqual(0, done.returncode, done.stderr)
         [call] = self.delegate_calls()
         self.assertEqual("output-insensitive-remeasure.py", call["script"])
-        self.assertEqual(["--root", str(self.root), "--only", f"{surface}/a/fern-comparison.json"], call["argv"])
+        self.assertEqual(
+            ["--root", str(self.root.resolve()), "--only", f"{surface}/a/fern-comparison.json"], call["argv"]
+        )
 
         self.env["DELEGATE_EXIT"] = "1"
         moved = self.run_tool("generate", "output-insensitive", f"{surface}/a/fern-comparison.json")
@@ -448,7 +450,7 @@ class FernReferencesTests(unittest.TestCase):
         done = self.run_tool("generate", "witness-screens", item)
         self.assertEqual(0, done.returncode, done.stderr)
         self.assertIn(f"witness-screens: 1 regenerated, 0 failed at Fern CLI {CLI}", done.stdout)
-        evidence = str(self.root / "docs/openapi-surface")
+        evidence = str(self.root.resolve() / "docs/openapi-surface")
         ledger = f"{evidence}/witness-search-x/acme-screen/screens.jsonl"
         self.assertEqual(
             [
