@@ -1406,6 +1406,38 @@ fn object_deferred_order(
     order
 }
 
+/// The aliases of every cycle made of two or more aliases alone: the
+/// `type-lowering/recursive-alias-cycle` measurement's `JsonValueOutput`,
+/// `JsonArrayOutput` and `JsonObjectOutput`, each naming the next.
+fn alias_cycle_members(
+    types: &[TypeDecl],
+    tag_types: &[crate::ir::TagTypeDecl],
+) -> std::collections::HashSet<String> {
+    let decls: Vec<&TypeDecl> = types
+        .iter()
+        .chain(tag_types.iter().map(|tag| &tag.decl))
+        .collect();
+    let aliases: std::collections::HashSet<&str> = decls
+        .iter()
+        .filter_map(|decl| matches!(decl, TypeDecl::Alias(_)).then_some(decl.name()))
+        .collect();
+    let edges: std::collections::HashMap<String, Vec<String>> = decls
+        .iter()
+        .map(|decl| (decl.name().to_string(), decl_refs(decl)))
+        .collect();
+    let component = cycle_components(&edges);
+    let mut members: std::collections::HashMap<usize, Vec<&str>> = std::collections::HashMap::new();
+    for (name, id) in &component {
+        members.entry(*id).or_default().push(name.as_str());
+    }
+    members
+        .into_values()
+        .filter(|names| names.len() > 1 && names.iter().all(|name| aliases.contains(name)))
+        .flatten()
+        .map(str::to_string)
+        .collect()
+}
+
 fn forward_repair_map(
     types: &[TypeDecl],
     tag_types: &[crate::ir::TagTypeDecl],
@@ -1493,17 +1525,24 @@ fn forward_repair_map(
     // time the module that names it repairs it, so nothing beyond that module is
     // affected — NDW's `Feature` repairs the `FeatureProperties` union and its own
     // referrer `FeatureCollection` needs no repair of its own.
-    // …unless the cycle is made of aliases alone, which no module repairs as a
+    // …unless the cycle is made of two or more aliases alone, which no module repairs as a
     // whole: the `type-lowering/recursive-alias-cycle` measurement's
     // `RunSummary` reaches the `JsonValueOutput`/`JsonArrayOutput`/
     // `JsonObjectOutput` cycle through `InferenceReport`, and the certified
     // module repairs `RunSummary` too.
+    // A single self-recursive alias stays as above: ramu-shogi's and
+    // Supabase's `JsonValue` referrers are not repaired.
     let alias_only_cycle = |node: &str| {
         component.get(node).is_some_and(|id| {
-            component
+            let members: Vec<&String> = component
                 .iter()
                 .filter(|(_, other)| *other == id)
-                .all(|(member, _)| aliases.contains(member.as_str()))
+                .map(|(member, _)| member)
+                .collect();
+            members.len() > 1
+                && members
+                    .iter()
+                    .all(|member| aliases.contains(member.as_str()))
         })
     };
     let reaches_repairable = |starts: &[String]| -> bool {
@@ -1749,10 +1788,12 @@ fn generate_files(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         .collect();
 
     // One file per generated type.
+    let alias_cycles = alias_cycle_members(&ir.types, &ir.tag_types);
     let decl_settings = DeclSettings {
         extra: ir.extra_fields,
         enum_type: ir.enum_type,
         xml_types: xml::XmlTypes::new(&ir.types, &ir.tag_types),
+        alias_cycles: Some(&alias_cycles),
     };
     for decl in &ir.types {
         let forward = forward_map.get(decl.name()).unwrap_or(&empty_forward);
@@ -4799,6 +4840,9 @@ struct DeclSettings<'a> {
     /// Every declaration in the SDK, which an XML model reads to type its child
     /// elements (see [`xml::XmlTypes`]).
     xml_types: xml::XmlTypes<'a>,
+    /// The aliases of every cycle made of two or more aliases alone (see
+    /// [`alias_cycle_members`]).
+    alias_cycles: Option<&'a std::collections::HashSet<String>>,
 }
 
 /// Render one type declaration to a file body. `loc` is the file's location
@@ -4822,6 +4866,7 @@ fn render_type_decl(
         extra,
         enum_type,
         xml_types,
+        alias_cycles,
     } = settings;
     match decl {
         TypeDecl::Object(obj) => {
@@ -4974,12 +5019,18 @@ fn render_type_decl(
                     }
                 })
                 .unwrap_or_default();
-            // An alias naming itself, or closing a cycle of aliases (a forward
-            // reference to another alias), is named (see
-            // [`render_recursive_alias`]).
+            // An alias naming itself, or closing a cycle made of aliases alone
+            // (a forward reference to another alias of that cycle), is named
+            // (see [`render_recursive_alias`]). A cycle through a model is not:
+            // sim-tables' `TablePredicateAllAllItem` and cradl's
+            // `GroundTruthListZeroItemValue` import as Fern writes them.
+            let in_alias_cycle =
+                |name: &str| alias_cycles.is_some_and(|members| members.contains(name));
             let cyclic: std::collections::HashSet<String> = forward
                 .iter()
-                .filter(|name| **name == alias.name || xml_types.is_alias(name))
+                .filter(|name| {
+                    **name == alias.name || in_alias_cycle(&alias.name) && in_alias_cycle(name)
+                })
                 .cloned()
                 .collect();
             if !cyclic.is_empty() {
