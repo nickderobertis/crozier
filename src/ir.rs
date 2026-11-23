@@ -17862,12 +17862,13 @@ impl Builder<'_> {
                             // `Session.readingBatches` is the certified
                             // `List[List[SessionReadingBatchesItemItem]]` over
                             // `…_Lens` | `…_Sensor` (#897).
-                            if let Some(decl) = self.discriminated_union(
+                            let discriminated = self.discriminated_union(
                                 &name,
                                 &naming::module_name(&name),
                                 nested_items,
                                 clean_doc(nested_items.description.as_deref()),
-                            ) {
+                            );
+                            if let Some(decl) = discriminated {
                                 self.types.push(TypeDecl::DiscriminatedUnion(decl));
                                 return sequence_of(
                                     prop_schema,

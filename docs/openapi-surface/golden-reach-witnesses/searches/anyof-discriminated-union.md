@@ -1,6 +1,6 @@
 # Arm search: `anyof-discriminated-union`
 
-The unreached handling site(s) searched for: `src/ir.rs::Builder::discriminated_union[if schema.discriminator.is_some\(\) && schema.one_of.is_none\(\) \{]`, `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]`.
+The unreached handling site(s) searched for: `src/ir.rs::Builder::discriminated_union[^ {8}if schema\.discriminator\.is_some\(\)$]`, `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]`.
 Read with: `schema.anyOf:discriminated-union`.
 
 A walked or fetched document declaring the row is a `document` row of the
