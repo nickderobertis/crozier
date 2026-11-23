@@ -1613,7 +1613,7 @@ pub struct Components {
     /// Named schemas, in document order. An OpenAPI 3.1 boolean schema
     /// (`Never: false`, `Anything: true`) is valid there and reads as the
     /// unknown type, as the certified pair lowers both (see
-    /// [`de_component_schemas`]).
+    /// `de_component_schemas`).
     #[serde(default, deserialize_with = "de_component_schemas")]
     pub schemas: IndexMap<String, Schema>,
     /// Reusable parameters (`components.parameters`), in document order. A `$ref`

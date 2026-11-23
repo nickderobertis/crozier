@@ -1023,7 +1023,7 @@ pub fn is_reserved(name: &str) -> bool {
 /// is *model-scoped*, so an enum visitor's `copy` argument (otoroshi's
 /// `PatchItemOp`, komga's `BookImportBatchDtoCopyMode`) keeps its spelling.
 ///
-/// The whole set is [`PYDANTIC_MODEL_API`], measured at Fern CLI 5.216.0 /
+/// The whole set is `PYDANTIC_MODEL_API`, measured at Fern CLI 5.216.0 /
 /// fern-python-sdk 5.42.0 on `docs/fern-measurements/naming-acceptance/
 /// model-api-field-names/` (issue #536): every public `BaseModel` method or
 /// attribute of Pydantic v1 and v2, where `fields`, `Config` and the validator
