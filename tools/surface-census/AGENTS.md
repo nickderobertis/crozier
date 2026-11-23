@@ -40,5 +40,3 @@
 
 - Re-read the named Rust decision against its Python port before
   `just census-repin --confirm-port NAME`, even for a local rename.
-- A region page's count beside an enumerated witness list is rendered from the list:
-  update the list from the census, never the count by hand.

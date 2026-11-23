@@ -2,8 +2,7 @@
 
 - `pins/` holds each sped-up suite's collected cases, taken from the base tree, so
   a speed-up cannot lose a case unnoticed. A deliberate change to a pinned suite's
-  cases re-pins it: `node tools/ci/suite-cases/suite-cases.mjs write NAME`; a
-  deliberate removal names each case in `CROZIER_SUITE_CASES_RETIRE`. A suite
+  cases re-pins it: `node tools/ci/suite-cases/suite-cases.mjs write NAME`. A suite
   whose cases are pinned keeps new reuse tests out of its own target.
 - The pins are Linux collections, so the live comparison runs on Linux only.
 - `measures:` tags: it reads the pinned suites' sources to collect them and the
