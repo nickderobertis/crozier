@@ -237,7 +237,7 @@ else	schema.else	none
 unevaluated-properties	schema.unevaluatedProperties	none	
 type-array-with-null	fixture=auto-agent-protocol,fixture=cyberark-conjur-api,fixture=discord-com,fixture=discourse.local,fixture=docu-goapiserver,fixture=dot-ai,fixture=frankfurter,fixture=helixdb-http-api,fixture=langchain-agent-protocol,fixture=marimo-plugins,fixture=mistle-control-plane,fixture=mosip-esignet,fixture=paypal-catalog-products,fixture=ramu-shogi,fixture=standrig,fixture=steaminputdb,fixture=timelyapp,fixture=timelyapp-entry,fixture=tlon-notes,fixture=truefoundry-trueforge,fixture=truefoundry-trueforge-5adde28,fixture=ziptax-node	src/openapi.rs::TypeField::primary,src/openapi.rs::Schema::explicitly_nullable	
 type-array-multi-nonnull	schema.type	src/openapi.rs::normalize_multi_type_schemas,src/ir.rs::Builder::variant_ref[if variant\.multi_type_union \{]	
-const	schema.const	src/ir.rs::string_enum_values[^ {4}\} else \{$],src/ir.rs::preserve_const_discriminant,src/ir.rs::inferred_strip_discriminant_property	
+const	schema.const	src/ir.rs::string_enum_values[^ {4}\} else \{$],src/ir.rs::inferred_strip_discriminant_property	
 dependent-required	schema.dependentRequired	none	
 examples	schema.examples	src/openapi.rs::de_schema_examples,src/ir.rs::schema_example,src/ir.rs::schema_example_literal	
 format-date-time	schema.format=date-time	src/ir.rs::base_type_ref[=Some\("date-time"\)],src/ir.rs::scalar_body[=Some\("date-time"\)],src/emit.rs::render_type[Prim::Datetime => \{],src/emit.rs::raw_type_str_ctx[TypeRef::Primitive\(Prim::Datetime\) => \{],src/emit.rs::ExampleCtx::value[TypeRef::Primitive\(Prim::Datetime\) => \{]	
