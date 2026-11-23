@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.171](https://github.com/nickderobertis/crozier/compare/v0.0.170...v0.0.171) - 2026-11-23
+
+### Fixed
+
+- *(census)* keep pair-adoption evidence, corpus fetches, ledgers and lane inventories current and honest ([#968](https://github.com/nickderobertis/crozier/pull/968))
+
 ## [0.0.170](https://github.com/nickderobertis/crozier/compare/v0.0.169...v0.0.170) - 2026-11-22
 
 ### Fixed
