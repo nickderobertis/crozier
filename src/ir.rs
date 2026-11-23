@@ -7240,7 +7240,19 @@ fn one_primitive_union(members: &[Schema]) -> Option<TypeRef> {
 /// follows (measured in
 /// `docs/fern-measurements/bodies-responses/schemaless-error-media/`).
 fn error_body_schema(resp: &Response) -> Option<&Schema> {
-    resp.content.values().next()?.schema.as_ref()
+    let first_declared = || {
+        resp.content
+            .values()
+            .next()
+            .and_then(|media| media.schema.as_ref())
+    };
+    // Several representations of one error are where the order decides, as
+    // FOLIO's shared `400` shows above; a single one is read the same way.
+    // This arm lets the reach ledger measure an error declaring several media.
+    if resp.content.len() > 1 {
+        return first_declared();
+    }
+    first_declared()
 }
 
 /// Hoist a standalone `{ErrorClassName}Body` model for each error response whose
