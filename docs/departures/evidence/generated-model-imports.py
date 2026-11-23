@@ -71,13 +71,13 @@ def parse_outcome(stdout: str) -> Constructed | Failed:
         reported = json.loads(lines[-1])
     except json.JSONDecodeError as error:
         raise UsageError(f"the child interpreter reported no outcome: {lines[-1]}") from error
-    if not isinstance(reported, dict) or not isinstance(reported.get("pydantic"), str):
-        raise UsageError(f"the child interpreter reported no outcome: {lines[-1]}")
-    if isinstance(reported.get("constructed"), str) and "failed" not in reported:
-        return Constructed(pydantic=reported["pydantic"], constructed=reported["constructed"])
-    if isinstance(reported.get("failed"), str) and "constructed" not in reported:
-        return Failed(failed=reported["failed"], pydantic=reported["pydantic"])
-    raise UsageError(f"the child interpreter reported no outcome: {lines[-1]}")
+    match reported:
+        case {"pydantic": str(version), "constructed": str(value), **rest} if not rest:
+            return Constructed(pydantic=version, constructed=value)
+        case {"pydantic": str(version), "failed": str(reason), **rest} if not rest:
+            return Failed(pydantic=version, failed=reason)
+        case _:
+            raise UsageError(f"the child interpreter reported no outcome: {lines[-1]}")
 
 
 def screen(root: Path, target: str, payload: str) -> Constructed | Failed:

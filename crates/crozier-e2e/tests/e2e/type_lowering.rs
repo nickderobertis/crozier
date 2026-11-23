@@ -155,16 +155,25 @@ fn inferred_tags_discriminate_and_name_the_variant_field() {
 }
 
 /// #539: a recursive JSON alias is named under pydantic v2 and bounded at
-/// `typing.Any` under v1 (the `recursive-alias-named-type` departure).
+/// `typing.Any` under v1 (the `recursive-alias-named-type` departure), and one
+/// naming a model that refers back to it imports that model for type checkers
+/// only, as the certified module does.
 #[test]
 fn recursive_json_aliases_are_named() {
     holds(
         "recursive-json-alias",
-        &[(
-            "#539",
-            "src/fern/types/json_value.py",
-            "elif IS_PYDANTIC_V2:\n    JsonValue = typing_extensions.TypeAliasType(",
-        )],
+        &[
+            (
+                "#539",
+                "src/fern/types/json_value.py",
+                "elif IS_PYDANTIC_V2:\n    JsonValue = typing_extensions.TypeAliasType(",
+            ),
+            (
+                "#539",
+                "src/fern/types/tree.py",
+                "if typing.TYPE_CHECKING:\n    from .node import Node\nif typing.TYPE_CHECKING:\n    Tree = ",
+            ),
+        ],
     );
 }
 
@@ -180,7 +189,7 @@ fn sdk_env_escaped_discriminators_and_recursive_aliases_import() {
         (
             "recursive-json-alias",
             "fern.types:Signal",
-            r#"{"id": "a", "payload": {"k": [1, "x", null, {"n": true}]}, "history": [[1, 2], "y"], "labels": {"l": {"m": [3]}}}"#,
+            r#"{"id": "a", "payload": {"k": [1, "x", null, {"n": true}]}, "history": [[1, 2], "y"], "labels": {"l": {"m": [3]}}, "tree": ["leaf", {"name": "n", "children": ["x", ["y"]]}]}"#,
         ),
         (
             "inferred-discriminator-tags",

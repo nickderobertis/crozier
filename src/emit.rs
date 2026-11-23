@@ -5150,19 +5150,19 @@ fn render_recursive_alias(
         "{HEADER}\n\nfrom __future__ import annotations\n\n{}\n",
         imports.render()
     );
+    // A model the alias names that refers back to it is imported for type
+    // checkers only, as every forward-reference alias module writes it: the
+    // `type-lowering/recursive-json-alias` measurement's `Tree` names `Node`,
+    // whose `children` is a `Tree`, and the certified module guards that import.
+    if !imports.deferred.is_empty() {
+        contents.push_str("\nif typing.TYPE_CHECKING:\n");
+        for line in &imports.deferred {
+            contents.push_str(&format!("    {line}\n"));
+        }
+    }
     contents.push_str(&format!(
         "if typing.TYPE_CHECKING:\n    {name} = {target}\nelif IS_PYDANTIC_V2:\n    {name} = typing_extensions.TypeAliasType(\"{name}\", {target})\nelse:\n    {name} = {bounded}\n{docstring}"
     ));
-    // A model the alias names that refers back to the alias is imported after
-    // the alias is bound, as `render_type_decl`'s forward-reference modules do,
-    // so the import cycle resolves; ruff's E402 (imports at the top) is
-    // suppressed on exactly those lines because their position is the fix.
-    if !imports.deferred.is_empty() {
-        contents.push('\n');
-        for line in &imports.deferred {
-            contents.push_str(&format!("{line}  # noqa: E402\n"));
-        }
-    }
     contents
 }
 

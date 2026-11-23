@@ -38,6 +38,8 @@ components:
           type: object
           additionalProperties:
             $ref: "#/components/schemas/JsonValue"
+        tree:
+          $ref: "#/components/schemas/Tree"
     JsonValue:
       description: Any JSON-serializable value.
       anyOf:
@@ -52,3 +54,19 @@ components:
         - type: object
           additionalProperties:
             $ref: "#/components/schemas/JsonValue"
+    Tree:
+      description: A label, a list of trees, or a node holding a tree.
+      anyOf:
+        - type: string
+        - type: array
+          items:
+            $ref: "#/components/schemas/Tree"
+        - $ref: "#/components/schemas/Node"
+    Node:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        children:
+          $ref: "#/components/schemas/Tree"

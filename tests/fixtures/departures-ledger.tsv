@@ -2356,6 +2356,7 @@ docs/fern-measurements/type-lowering/recursive-json-alias/fern-expected	src/fern
 docs/fern-measurements/type-lowering/recursive-json-alias/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/type-lowering/recursive-json-alias/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/type-lowering/recursive-json-alias/fern-expected	src/fern/types/json_value.py	7	recursive-alias-named-type
+docs/fern-measurements/type-lowering/recursive-json-alias/fern-expected	src/fern/types/tree.py	7	recursive-alias-named-type
 docs/fern-measurements/type-lowering/reference-compositions/expected-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
 docs/fern-measurements/type-lowering/reference-compositions/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/type-lowering/reference-compositions/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix

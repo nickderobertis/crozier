@@ -5362,6 +5362,8 @@ fn escaped_field_alias_literal(pair: &Pair<'_>, fern: &str, crozier: &str) -> bo
 }
 
 /// `recursive-alias-named-type`: a type alias module whose alias names itself.
+/// A guarded `if typing.TYPE_CHECKING:` import block, written alike on both
+/// sides, is set aside before the comparison.
 /// Fern's whole module after its imports is the implicit alias `NAME = T`;
 /// crozier's imports are Fern's plus `typing_extensions` and the core's
 /// `IS_PYDANTIC_V2`, and its statement is `NAME = T` under
@@ -5375,21 +5377,48 @@ fn recursive_alias_named_type(pair: &Pair<'_>) -> Result<Option<Region>, String>
         return Ok(None);
     }
     let is_import = |line: &str| line.starts_with("import ") || line.starts_with("from ");
-    let split = |lines: &[&str]| -> (BTreeSet<String>, String) {
-        let imports = lines
-            .iter()
-            .filter(|line| is_import(line) && **line != "from __future__ import annotations")
-            .map(|line| line.to_string())
-            .collect();
-        let body: String = lines
-            .iter()
-            .filter(|line| !is_import(line))
-            .copied()
-            .collect();
-        (imports, unlaid(&body))
+    // An `if typing.TYPE_CHECKING:` block of nothing but imports (a model the
+    // alias names that refers back to it) is set aside with the imports: both
+    // sides must write it alike.
+    let split = |lines: &[&str]| -> (BTreeSet<String>, Vec<String>, String) {
+        let mut imports = BTreeSet::new();
+        let mut guarded = Vec::new();
+        let mut body = String::new();
+        let mut index = 0;
+        while index < lines.len() {
+            let line = lines[index];
+            let guarded_import = |line: &str| {
+                let inner = line.trim_start();
+                line.starts_with("    ") && is_import(inner)
+            };
+            if line == "if typing.TYPE_CHECKING:"
+                && lines
+                    .get(index + 1)
+                    .is_some_and(|next| guarded_import(next))
+            {
+                index += 1;
+                while lines.get(index).is_some_and(|next| guarded_import(next)) {
+                    guarded.push(lines[index].trim_start().to_string());
+                    index += 1;
+                }
+                continue;
+            }
+            if is_import(line) {
+                if line != "from __future__ import annotations" {
+                    imports.insert(line.to_string());
+                }
+            } else {
+                body.push_str(line);
+            }
+            index += 1;
+        }
+        (imports, guarded, unlaid(&body))
     };
-    let (fern_imports, fern_body) = split(pair.fern);
-    let (mut crozier_imports, crozier_body) = split(pair.crozier);
+    let (fern_imports, fern_guarded, fern_body) = split(pair.fern);
+    let (mut crozier_imports, crozier_guarded, crozier_body) = split(pair.crozier);
+    if fern_guarded != crozier_guarded {
+        return Ok(None);
+    }
     let Some((name, rest)) = fern_body.split_once('=') else {
         return Ok(None);
     };

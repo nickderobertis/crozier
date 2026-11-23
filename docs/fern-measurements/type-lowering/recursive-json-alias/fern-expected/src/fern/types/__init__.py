@@ -8,11 +8,15 @@ from importlib import import_module
 if typing.TYPE_CHECKING:
     from .json_value import JsonValue
     from .json_value_zero import JsonValueZero
+    from .node import Node
     from .signal import Signal
+    from .tree import Tree
 _dynamic_imports: typing.Dict[str, str] = {
     "JsonValue": ".json_value",
     "JsonValueZero": ".json_value_zero",
+    "Node": ".node",
     "Signal": ".signal",
+    "Tree": ".tree",
 }
 
 
@@ -37,4 +41,4 @@ def __dir__():
     return sorted(lazy_attrs)
 
 
-__all__ = ["JsonValue", "JsonValueZero", "Signal"]
+__all__ = ["JsonValue", "JsonValueZero", "Node", "Signal", "Tree"]

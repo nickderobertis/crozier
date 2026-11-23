@@ -6,7 +6,7 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
-    from .types import JsonValue, JsonValueZero, Signal
+    from .types import JsonValue, JsonValueZero, Node, Signal, Tree
     from . import signals
     from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
@@ -18,7 +18,9 @@ _dynamic_imports: typing.Dict[str, str] = {
     "FernApi": ".client",
     "JsonValue": ".types",
     "JsonValueZero": ".types",
+    "Node": ".types",
     "Signal": ".types",
+    "Tree": ".types",
     "__version__": ".version",
     "signals": ".signals",
 }
@@ -52,7 +54,9 @@ __all__ = [
     "FernApi",
     "JsonValue",
     "JsonValueZero",
+    "Node",
     "Signal",
+    "Tree",
     "__version__",
     "signals",
 ]
