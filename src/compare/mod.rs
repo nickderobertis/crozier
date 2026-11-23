@@ -1432,7 +1432,6 @@ mod tests {
         );
         assert!(name.starts_with("001-crozier.yml-python-"), "{name}");
         assert!(name.ends_with(".diff"), "{name}");
-        // The same config and generator always give the same name.
         assert_eq!(name, diff_file_name(1, &deep, "python"));
         let other = format!("{}/crozier.yml", "e".repeat(400));
         assert_ne!(
