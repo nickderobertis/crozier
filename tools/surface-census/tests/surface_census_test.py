@@ -20797,6 +20797,26 @@ class ScenarioProofIndexTests(unittest.TestCase):
         run = self.run_script("check", root=root)
         self.assertEqual((0, "", ""), (run.returncode, run.stdout, run.stderr))
 
+    def test_a_commented_out_corpus_registration_reaches_no_golden(self) -> None:
+        """Issue #884's grammar reads only live calls: a driver call commented out
+        whole-line registers nothing, so the goldens it alone reached go unreached."""
+        root = self.mirror()
+        e2e = root / "crates/crozier-e2e/tests/e2e.rs"
+        text = e2e.read_text(encoding="utf-8")
+        commented, count = re.subn(
+            r"(?m)^(\s*)((?:assert_corpus_matches|assert_committed_corpus_matches|known_fern_failure)\(&\w+\);)$",
+            r"\1// \2",
+            text,
+        )
+        self.assertGreater(count, 100, "the suite's corpus drivers changed shape")
+        e2e.write_text(commented, encoding="utf-8")
+        run = self.run_script("check", root=root)
+        self.assertNotEqual(0, run.returncode, "commented-out registrations still reached their goldens")
+        self.assertIn(
+            "allof-body-example-id-field-order: none of its tests reaches golden tests/fixtures/jobster-api/expected",
+            run.stderr,
+        )
+
     def test_every_owner_has_shapes_and_every_kind_is_read(self) -> None:
         module = self.index_script
         rows, failures = module.read_tsv(REPO / module.INDEX, module.INDEX_HEADER)

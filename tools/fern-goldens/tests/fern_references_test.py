@@ -385,6 +385,17 @@ class FernReferencesTests(unittest.TestCase):
         self.assertEqual(2, pinned.returncode)
         self.assertIn("output-insensitive cannot take --version", pinned.stderr)
 
+    def test_the_pair_variable_is_the_one_witness_screen_reads(self) -> None:
+        """The pair `generate witness-screens` names is read by `witness_screen.py` under one name."""
+        spec = importlib.util.spec_from_file_location(
+            "witness_screen_pair_name", REPO / "tools/witness-search/witness_screen.py"
+        )
+        assert spec is not None and spec.loader is not None
+        screen = importlib.util.module_from_spec(spec)
+        sys.modules[spec.name] = screen
+        spec.loader.exec_module(screen)
+        self.assertEqual(screen.PAIR_ENV, self.load_tool().WITNESS_PAIR_ENV)
+
     def test_a_pair_adoption_labels_and_rescreens_each_witness_measured_at_a_pair(self) -> None:
         """Issue #865: every filed candidate whose latest screen ran Fern at a pair
         is an item. Its generation labels earlier-pair screens `historical`, then
@@ -423,7 +434,8 @@ class FernReferencesTests(unittest.TestCase):
             "".join(json.dumps(row) + "\n" for row in rows),
         )
         stub = STUB_DELEGATE.replace(
-            '"cli": os.environ.get("FERN_CLI_VERSION")', '"pair": os.environ.get("CROZIER_WITNESS_SCREEN_PAIR")'
+            '"cli": os.environ.get("FERN_CLI_VERSION")',
+            f'"pair": os.environ.get("{self.load_tool().WITNESS_PAIR_ENV}")',
         )
         self.env["DELEGATE_LOG"] = str(self.root / "delegate-calls.jsonl")
         self.write("tools/witness-search/witness_screen.py", stub, executable=True)
@@ -477,6 +489,11 @@ class FernReferencesTests(unittest.TestCase):
         broken = self.run_tool("check", "witness-screens")
         self.assertEqual(1, broken.returncode)
         self.assertIn("screens.jsonl:5 names a candidate without a whole repository, commit and path", broken.stderr)
+        ledger = self.root / "docs/openapi-surface/witness-search-x/acme-screen/screens.jsonl"
+        ledger.write_text(json.dumps({**rows[0], "sha256": 7}) + "\n", encoding="utf-8")
+        typed = self.run_tool("check", "witness-screens")
+        self.assertEqual(1, typed.returncode)
+        self.assertIn("carries a sha256 or disposition that is no string", typed.stderr)
 
     def test_every_committed_measurement_tree_is_an_item_and_an_unregistered_one_fails_the_check(self) -> None:
         """Issue #961: a committed Fern tree under docs/fern-measurements/ that no

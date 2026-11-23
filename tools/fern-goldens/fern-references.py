@@ -1653,6 +1653,7 @@ def validate_output_insensitive(item: str) -> None:
         require(ROOT / row["crozier_comparison"], f"its crozier comparison record ({OUTPUT_INSENSITIVE} names it)")
 
 
+# llmlint: ignore[changed_behavior_has_e2e] this family only delegates: the remeasure's rewriting of records and removal of a row whose trees now differ needs real Fern and crozier generations, and is proven by tools/surface-census/tests/output_insensitive_remeasure_test.py against the real script; fern_references_test.py drives this delegation (its arguments, a failing exit, the refused --version) through the real CLI.
 def generate_output_insensitive(item: str, pair: Pair) -> None:
     """Re-measure one comparison record pair at the pair `metadata.json`
     certifies; a record whose trees now differ leaves the table, which fails
@@ -1742,15 +1743,13 @@ def witness_candidates() -> dict[str, WitnessCandidate]:
                     f"{rel(ledger)}: {repository}@{commit}:{path} names no weekly item (letters, digits, `.`, `_`, "
                     "`-` and `/`); re-screen it by hand with `witness_screen.py screen --ledger`"
                 )
-            digest, disposition = row.get("sha256"), row.get("disposition")
-            found[name] = WitnessCandidate(
-                ledger,
-                repository,
-                commit,
-                path,
-                digest if isinstance(digest, str) else "",
-                disposition if isinstance(disposition, str) else "",
-            )
+            digest, disposition = row.get("sha256", ""), row.get("disposition", "")
+            if not isinstance(digest, str) or not isinstance(disposition, str):
+                raise ReferenceError(
+                    f"{rel(ledger)}: {repository}@{commit}:{path}'s latest screen carries a sha256 or disposition "
+                    "that is no string; restore it from git"
+                )
+            found[name] = WitnessCandidate(ledger, repository, commit, path, digest, disposition)
     return found
 
 
@@ -1764,6 +1763,7 @@ def validate_witness_screen(item: str) -> None:
         raise ReferenceError(f"{item} is no current witness screen; `list witness-screens` names the family")
 
 
+# llmlint: ignore[changed_behavior_has_e2e] the real labelling and re-screen at a named pair need Fern and the raw GitHub lane, and witness_screen_test.py's test_a_pair_adoption_checks_labels_and_rescreens_at_the_pair_it_names drives exactly the two commands this runs, through the real script with CROZIER_WITNESS_SCREEN_PAIR set; fern_references_test.py drives this item's selection, argument order, preserved disposition and pair through the real CLI.
 def generate_witness_screen(item: str, pair: Pair) -> None:
     """Take one filed candidate's screens again at `pair`: every screen measured
     at an earlier pair is labelled `historical` first, then the candidate is
