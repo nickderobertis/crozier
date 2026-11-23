@@ -2054,7 +2054,7 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 57] = [
+pub const RULE_IDS: [&str; 59] = [
     "anyof-path-param-schema-example",
     "binary-json-body-example",
     "body-query-parameter-value",
@@ -2073,6 +2073,7 @@ pub const RULE_IDS: [&str; 57] = [
     "emoji-tag-reference-identifiers",
     "empty-namespace-package",
     "empty-root-security-optional-credential",
+    "escaped-discriminator-field-name",
     "escaped-field-alias-literal",
     "fern-metadata-generator-config",
     "flat-reference-link-target",
@@ -2093,6 +2094,7 @@ pub const RULE_IDS: [&str; 57] = [
     "readme-constructor-required-header",
     "readme-environment-constructor-arguments",
     "readme-escaped-method-call",
+    "recursive-alias-named-type",
     "reference-anchor-follows-corrected-client",
     "reference-heading-escaped-method-name",
     "repeated-credential-example-keyword",

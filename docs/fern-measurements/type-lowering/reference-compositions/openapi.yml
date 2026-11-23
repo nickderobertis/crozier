@@ -116,6 +116,32 @@ components:
           allOf:
             - $ref: "#/components/schemas/PortalSettings"
           additionalProperties: true
+        overrides:
+          allOf:
+            - $ref: "#/components/schemas/PortalSettings"
+          additionalProperties: true
+        sources:
+          description: Inline objects nesting the same compositions.
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              tables:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    configuration:
+                      allOf:
+                        - $ref: "#/components/schemas/PortalSettings"
+                      additionalProperties: true
+                    links:
+                      type: array
+                      items:
+                        allOf:
+                          - $ref: "#/components/schemas/SeamlessLink"
     SeamlessLink:
       type: object
       required: [url]

@@ -1692,6 +1692,9 @@ pub struct Schema {
     /// Format qualifier (`date-time`, `uuid`, `base64`, ...).
     #[serde(default)]
     pub format: Option<String>,
+    /// 3.1's `contentEncoding` (`base64`, `base16`, ...) of a string's content.
+    #[serde(rename = "contentEncoding", default)]
+    pub content_encoding: Option<String>,
     /// Boolean literal or datetime override; the crozier spelling is canonical.
     #[serde(rename = "x-crozier-type", default)]
     pub(crate) type_crozier: Option<LiteralTypeOverride>,
@@ -4123,6 +4126,22 @@ fn inline_schema_pointers(
             return;
         }
         if !expanding.contains(&reference) {
+            // A pointer naming no `properties` segment is no copy Fern makes: the
+            // `type-lowering/reference-compositions` measurement's
+            // `#/components/schemas/VoteList/items` (koios' `drep_votes/items`)
+            // is the unknown type in the certified pair, where its
+            // `…/Ballot/properties/tallies/items` and dnd5eapi's
+            // `…/Monster/allOf/3/properties/actions/items` are copied (#906).
+            if schema_pointer_target(components, &reference).is_some()
+                && !reference.contains("properties")
+            {
+                *schema = Schema {
+                    description: schema.description.take(),
+                    unresolved: Some(Unresolved::Pointer),
+                    ..Schema::default()
+                };
+                return;
+            }
             if let Some(target) = schema_pointer_target(components, &reference) {
                 *schema = target.clone();
                 schema.pointer_copy = true;

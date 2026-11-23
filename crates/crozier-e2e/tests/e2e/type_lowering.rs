@@ -296,8 +296,124 @@ fn nullable_components_keep_and_lose_optional_as_declared() {
             ),
             (
                 "#904",
-                "src/fern/client.py",
+                "src/fern/feedback/raw_client.py",
                 "queries: typing.Sequence[FeedbackQuery],",
+            ),
+        ],
+    );
+}
+
+/// #893: a JSON `format: binary` string is `bytes` as a scalar and `str` as an
+/// array item or map value. #894: a `contentEncoding: base64` string beside
+/// `null` is `bytes`, where a bare one and an array of them stay `str`.
+#[test]
+fn json_binary_and_base64_strings_take_the_certified_types() {
+    holds(
+        "json-binary-strings",
+        &[
+            (
+                "#893",
+                "src/fern/types/contact_sheet.py",
+                "frames: typing.Optional[typing.List[str]] = None",
+            ),
+            (
+                "#893",
+                "src/fern/types/contact_sheet.py",
+                "layers: typing.Optional[typing.Dict[str, str]] = None",
+            ),
+            ("#893", "src/fern/types/contact_sheet.py", "master: bytes"),
+            (
+                "#894",
+                "src/fern/types/print.py",
+                "thumbnail: typing.Optional[bytes] = None",
+            ),
+            ("#894", "src/fern/types/print.py", "image: str"),
+        ],
+    );
+}
+
+/// #898: a map of a discriminated union beside `null` keeps the discriminated
+/// value union. #902: a component map of `$ref` values beside `null` makes its
+/// values optional, as a nullable map does.
+#[test]
+fn nullable_map_wrappers_keep_value_discrimination_and_optionality() {
+    holds(
+        "nullable-map-wrappers",
+        &[
+            (
+                "#898",
+                "src/fern/types/plan_activities_value.py",
+                "typing.Union[PlanActivitiesValue_Inline, PlanActivitiesValue_Git], pydantic.Field(discriminator=\"kind\")",
+            ),
+            (
+                "#902",
+                "src/fern/types/job_results.py",
+                "JobResults = typing.Optional[typing.Dict[str, typing.Optional[ResultValue]]]",
+            ),
+        ],
+    );
+}
+
+/// #905: a `$ref` beside `properties` (3.1) or `type: object` (3.0) aliases
+/// its target. #906: a pointer naming no `properties` segment (an array
+/// component's own `items`) is the unknown type, where one through
+/// `properties` is copied. #907: an element that is only `allOf: [$ref]` is
+/// the reference. #908: an undescribed `allOf: [$ref]` beside an open map is a
+/// model extending the reference, where a described one is the reference.
+#[test]
+fn reference_compositions_match_the_certified_pair() {
+    holds(
+        "reference-compositions",
+        &[
+            (
+                "#905",
+                "src/fern/types/accepted_response.py",
+                "AcceptedResponse = BaseResponse",
+            ),
+            (
+                "#906",
+                "src/fern/types/portal.py",
+                "votes: typing.Optional[typing.List[typing.Any]]",
+            ),
+            (
+                "#906",
+                "src/fern/types/portal.py",
+                "tallies: typing.Optional[typing.List[PortalTalliesItem]]",
+            ),
+            (
+                "#907",
+                "src/fern/types/portal.py",
+                "links: typing.Optional[typing.List[SeamlessLink]]",
+            ),
+            (
+                "#908",
+                "src/fern/types/portal_overrides.py",
+                "class PortalOverrides(PortalSettings):",
+            ),
+            (
+                "#908",
+                "src/fern/types/portal.py",
+                "settings: typing.Optional[PortalSettings]",
+            ),
+        ],
+    );
+    holds(
+        "reference-siblings-legacy",
+        &[
+            (
+                "#905",
+                "src/fern/types/font_assignments.py",
+                "FontAssignments = ThemeFonts",
+            ),
+            (
+                "#908",
+                "src/fern/types/export_response_tables_item_configuration.py",
+                "class ExportResponseTablesItemConfiguration(TableConfig):",
+            ),
+            (
+                "#907",
+                "src/fern/types/export_response_tables_item.py",
+                "columns: typing.Optional[typing.List[ColumnConfig]] = None",
             ),
         ],
     );

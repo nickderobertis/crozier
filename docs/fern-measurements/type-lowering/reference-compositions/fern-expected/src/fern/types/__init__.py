@@ -11,7 +11,11 @@ if typing.TYPE_CHECKING:
     from .ballot_tallies_item import BallotTalliesItem
     from .base_response import BaseResponse
     from .portal import Portal
+    from .portal_overrides import PortalOverrides
     from .portal_settings import PortalSettings
+    from .portal_sources_item import PortalSourcesItem
+    from .portal_sources_item_tables_item import PortalSourcesItemTablesItem
+    from .portal_sources_item_tables_item_configuration import PortalSourcesItemTablesItemConfiguration
     from .portal_tallies_item import PortalTalliesItem
     from .scan_response import ScanResponse
     from .seamless_link import SeamlessLink
@@ -23,7 +27,11 @@ _dynamic_imports: typing.Dict[str, str] = {
     "BallotTalliesItem": ".ballot_tallies_item",
     "BaseResponse": ".base_response",
     "Portal": ".portal",
+    "PortalOverrides": ".portal_overrides",
     "PortalSettings": ".portal_settings",
+    "PortalSourcesItem": ".portal_sources_item",
+    "PortalSourcesItemTablesItem": ".portal_sources_item_tables_item",
+    "PortalSourcesItemTablesItemConfiguration": ".portal_sources_item_tables_item_configuration",
     "PortalTalliesItem": ".portal_tallies_item",
     "ScanResponse": ".scan_response",
     "SeamlessLink": ".seamless_link",
@@ -59,7 +67,11 @@ __all__ = [
     "BallotTalliesItem",
     "BaseResponse",
     "Portal",
+    "PortalOverrides",
     "PortalSettings",
+    "PortalSourcesItem",
+    "PortalSourcesItemTablesItem",
+    "PortalSourcesItemTablesItemConfiguration",
     "PortalTalliesItem",
     "ScanResponse",
     "SeamlessLink",

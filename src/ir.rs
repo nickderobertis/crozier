@@ -13924,13 +13924,21 @@ fn propagate_strips_to_bases(
 }
 
 /// Whether an `anyOf`'s explicit discriminator mapping is one Fern honours: a
-/// non-empty mapping over `$ref` members, each declaring the tag property with
-/// `type: string` (see [`Builder::discriminated_union`]).
+/// non-empty mapping to references over `$ref` members, each declaring the tag
+/// property with `type: string` (see [`Builder::discriminated_union`]).
 fn typed_any_of_mapping(schema: &Schema, schemas: &IndexMap<String, Schema>) -> bool {
     let (Some(members), Some(discriminator)) = (&schema.any_of, &schema.discriminator) else {
         return false;
     };
+    // A mapping to bare names is read as no mapping, the members' own tags
+    // deciding: openapi-generator's `ResponseStreamEvent` maps
+    // `response.created` to `ResponseCreatedEvent`, and its members' tags are
+    // consumed as under an unmapped `anyOf`.
     !discriminator.mapping.is_empty()
+        && discriminator
+            .mapping
+            .values()
+            .all(|target| target.contains('/'))
         && !discriminator.property_name.is_empty()
         && members.iter().all(|member| {
             member
@@ -14853,12 +14861,19 @@ impl Builder<'_> {
         // A 3.1 `$ref` written beside a `oneOf`/`anyOf` is that reference: Fern
         // reads no sibling composition, and the
         // `pattern-properties-only-oneof-member` measurement's `CollectorNote`
-        // and `CollectorAny` are both `= CollectorRef`.
-        if let Some(reference) = schema
-            .reference
-            .as_deref()
-            .filter(|_| schema.one_of.is_some() || schema.any_of.is_some())
-        {
+        // and `CollectorAny` are both `= CollectorRef`. Nor does it read sibling
+        // `properties`, `required` or `type`: the
+        // `type-lowering/reference-compositions` measurement's
+        // `AcceptedResponse` (`$ref BaseResponse` beside `properties`) and the
+        // `type-lowering/reference-siblings-legacy` measurement's
+        // `FontAssignments` (`type: object` beside `$ref ThemeFonts`, nginx's
+        // `FontAssignments`) are `= BaseResponse` and `= ThemeFonts` (#905).
+        if let Some(reference) = schema.reference.as_deref().filter(|_| {
+            schema.one_of.is_some()
+                || schema.any_of.is_some()
+                || schema.properties.declared()
+                || is_object_type(schema)
+        }) {
             self.push_alias(
                 name,
                 module,
@@ -15037,8 +15052,28 @@ impl Builder<'_> {
                         .and_then(|member| clean_doc(member.description.as_deref())),
                     _ => None,
                 });
+                // A map beside `null` is a nullable map, whose values are
+                // optional too: the `type-lowering/nullable-map-wrappers`
+                // measurement's `JobResults` is `anyOf: [{additionalProperties:
+                // $ref ResultValue}, null]`, and the certified alias is
+                // `Optional[Dict[str, Optional[ResultValue]]]` (#902, Swoop's
+                // `/jobs/{jobID}/results` body).
+                let nullable_map = sole_non_null_member(schema)
+                    .filter(|member| member.reference.is_none() && is_map(member))
+                    .filter(|_| dropped_null && members.len() == 1)
+                    .and_then(|map| match (map_value(map), &members[0]) {
+                        (Some(value), TypeRef::Dict(key, lowered)) if value.reference.is_some() => {
+                            Some(TypeRef::Dict(
+                                key.clone(),
+                                Box::new(optional_type_ref(*lowered.clone())),
+                            ))
+                        }
+                        _ => None,
+                    });
                 let target = match (dropped_null, members.len()) {
-                    (true, 1) => optional_type_ref(members.remove(0)),
+                    (true, 1) => {
+                        optional_type_ref(nullable_map.unwrap_or_else(|| members.remove(0)))
+                    }
                     (true, _) => TypeRef::Union(members),
                     // A composition the DOCUMENT writes with exactly one member
                     // is an alias to that member, not a one-armed `Union`:
@@ -17541,8 +17576,20 @@ impl Builder<'_> {
                     return self.field_type_ref(owner, prop, member);
                 }
             }
-            let extends_with_own_properties =
-                single_all_of_ref(prop_schema).is_some() && !prop_schema.properties.is_empty();
+            // So is one beside an open map that no description annotates: the
+            // `type-lowering/reference-compositions` measurement's undescribed
+            // `Portal.overrides` (`allOf: [$ref PortalSettings]`,
+            // `additionalProperties: true`) is the certified `PortalOverrides
+            // (PortalSettings)`, where its described `settings` is the
+            // annotated `PortalSettings` itself (#908, nhost's
+            // `…TablesItemConfiguration`).
+            let extends_with_own_properties = single_all_of_ref(prop_schema).is_some()
+                && (!prop_schema.properties.is_empty()
+                    || prop_schema.description.is_none()
+                        && matches!(
+                            prop_schema.additional_properties,
+                            Some(AdditionalProperties::Bool(true))
+                        ));
             if is_inline_struct(prop_schema)
                 && (single_all_of_ref(prop_schema).is_none() || extends_with_own_properties)
                 && prop_schema.one_of.is_none()
@@ -17851,6 +17898,15 @@ impl Builder<'_> {
                     // not an empty inline object: braintrust's `RunEval.scores` is a
                     // list of `allOf: [$ref FunctionId, {description}]` and Fern
                     // declares a `RunEvalScoresItem` of its own.
+                    // An element that is only `allOf: [$ref]`, annotating nothing,
+                    // is that reference: the `type-lowering/reference-compositions`
+                    // measurement's `Portal.links` items are `allOf: [$ref
+                    // SeamlessLink]`, and the certified field is
+                    // `List[SeamlessLink]` (#907, epilot's
+                    // `PortalExtensionConfig.links`).
+                    if let Some(reference) = bare_sole_all_of_ref(items) {
+                        return sequence_of(prop_schema, TypeRef::Named(ref_to_class(reference)));
+                    }
                     if described_all_of_ref(items).is_some() {
                         let name = format!("{owner}{}Item", naming::class_name(prop));
                         if let Some(element) = self.annotated_ref_type(&name, items) {
@@ -18175,6 +18231,27 @@ impl Builder<'_> {
                                 ) {
                                     let value_name =
                                         format!("{owner}{}Value", naming::class_name(prop));
+                                    // A discriminated value union stays one: the
+                                    // `type-lowering/nullable-map-wrappers`
+                                    // measurement's `Plan.activities` is `anyOf:
+                                    // [map of oneOf InlineScript | GitScript on
+                                    // kind, null]`, and the certified value is
+                                    // `PlanActivitiesValue_Inline` | `…_Git`
+                                    // (#898, ska-oso-ptt's `activities`).
+                                    if let Some(decl) = self.discriminated_union(
+                                        &value_name,
+                                        &naming::module_name(&value_name),
+                                        value,
+                                        clean_doc(value.description.as_deref()),
+                                    ) {
+                                        self.types.push(TypeDecl::DiscriminatedUnion(decl));
+                                        return TypeRef::Dict(
+                                            Box::new(TypeRef::Primitive(Prim::Str)),
+                                            Box::new(TypeRef::Optional(Box::new(TypeRef::Named(
+                                                value_name,
+                                            )))),
+                                        );
+                                    }
                                     let variants = value_members
                                         .iter()
                                         .enumerate()
@@ -18212,6 +18289,18 @@ impl Builder<'_> {
                         }
                     }
                     if let Some(member) = simple_nullable_primitive_member(prop_schema) {
+                        // A base64-encoded string beside `null` is bytes: the
+                        // `type-lowering/json-binary-strings` measurement's
+                        // `Print.thumbnail` is `anyOf: [{type: string,
+                        // contentEncoding: base64}, null]` and the certified field
+                        // is `Optional[bytes]`, where its bare base64 `image` and
+                        // its `proofs` items stay `str` (#894).
+                        if is_string_type(member)
+                            && member.format.is_none()
+                            && member.content_encoding.as_deref() == Some("base64")
+                        {
+                            return TypeRef::Primitive(Prim::Bytes);
+                        }
                         return base_type_ref(member);
                     }
                     let name = format!("{owner}{}", naming::class_name(prop));
@@ -20399,6 +20488,14 @@ fn optional_type_ref(base: TypeRef) -> TypeRef {
     }
 }
 
+/// A map's value schema, where `additionalProperties` is one.
+fn map_value(schema: &Schema) -> Option<&Schema> {
+    match &schema.additional_properties {
+        Some(AdditionalProperties::Schema(value)) => Some(value),
+        _ => None,
+    }
+}
+
 fn nullable_map_value_type_ref(schema: &Schema) -> TypeRef {
     match (&schema.additional_properties, base_type_ref(schema)) {
         (Some(AdditionalProperties::Schema(value_schema)), TypeRef::Dict(key, value)) => {
@@ -20500,6 +20597,18 @@ fn prefer_map_to_union(schema: &Schema) -> bool {
 
 /// Map a schema to its base type expression, never adding a top-level
 /// `Optional` (the caller decides optionality for fields).
+/// A JSON `format: binary` string held by a container is the `str` it is
+/// declared as: the `type-lowering/json-binary-strings` measurement's
+/// `ContactSheet.frames` (array items) and `.layers` (map values) are
+/// `List[str]` and `Dict[str, str]` in the certified pair, where its scalar
+/// `master`, `overlay` and `backing` are `bytes` (#893).
+fn contained_binary_as_str(type_ref: TypeRef) -> TypeRef {
+    match type_ref {
+        TypeRef::Primitive(Prim::Bytes) => TypeRef::Primitive(Prim::Str),
+        other => other,
+    }
+}
+
 fn base_type_ref(schema: &Schema) -> TypeRef {
     // A node the document put where a schema object was expected but that carried a
     // non-object value (issue #86) degrades to Fern's unknown type, `Optional[Any]`.
@@ -20567,7 +20676,7 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
                 {
                     TypeRef::Primitive(Prim::Any)
                 } else {
-                    base_type_ref(value)
+                    contained_binary_as_str(base_type_ref(value))
                 };
                 // Fern makes a nullable map's value type optional too, and a
                 // `$ref` to a nullable component carries that nullability into
@@ -20649,7 +20758,7 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
                             TypeRef::Primitive(Prim::Any)
                         }
                     } else {
-                        array_item_type_ref(i)
+                        contained_binary_as_str(array_item_type_ref(i))
                     }
                 });
             if array_uses_set(schema) {
@@ -20768,6 +20877,16 @@ fn annotated_sole_all_of_ref(schema: &Schema) -> Option<&str> {
         && schema.nullable != Some(true))
     .then(|| sole_all_of_ref(schema))
     .flatten()
+}
+
+/// The reference of an `allOf` holding one `$ref` beside nothing at all.
+fn bare_sole_all_of_ref(schema: &Schema) -> Option<&str> {
+    let reference = sole_all_of_ref(schema)?;
+    (Schema {
+        all_of: None,
+        ..schema.clone()
+    } == Schema::default())
+    .then_some(reference)
 }
 
 fn sole_all_of_ref(schema: &Schema) -> Option<&str> {
