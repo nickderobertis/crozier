@@ -162,12 +162,12 @@ these totals: each names its root cause and owner, under manager ruling a13
 ([record](openapi-surface/witness-search-combinations-schemas/README.md#what-the-attributed-rows-are-and-who-owns-them)).
 
 `golden` is still not `golden`-exhausted, so the handling sites are split the
-same way. The 628 `golden` rows declare 1128 handling sites in
+same way. The 628 `golden` rows declare 1127 handling sites in
 [the site table](openapi-surface/golden-reach-sites.tsv). The
 [ledger](openapi-surface/golden-reach.tsv) retains the base measurement's
 provenance and records scoped updates beside their rows.
 
-- **1044 are reached by a registered real specification.** Its scoped
+- **1043 are reached by a registered real specification.** Its scoped
   golden test executes the site; file-level residuals remain recorded separately.
 - **81 are reached only by a hand-written fixture.** Each arm-level
   cover executes the site and byte-matches the certified tree. Thus each of the 81 is still one of the 84 [unreached arms](#every-unreached-arm-and-its-search-verdict).
@@ -180,7 +180,7 @@ provenance and records scoped updates beside their rows.
   before/after trees in both generators recorded in [the shared table](openapi-surface/output-insensitive.tsv).
 - **0 are named gaps**, whose outstanding evidence is in [Unproven arms, named](#unproven-arms-named).
 
-1044 + 81 + 3 + 0 + 0 = 1128. `combo-allof-with-required` replaced `co-occurrence` with its promotion arm `promote_parent_property`, which `groupe-psa` reaches, and `combo-property-anyof-composed-sibling` and the two `combo-unrequired-tag-*-reference` rows became `golden` on the dedicated arms their registered declarers reach ([their record](openapi-surface/witness-search-combinations-schemas/README.md#keys)). Nine sites replaced `co-occurrence` with the body and response
+1043 + 81 + 3 + 0 + 0 = 1127. `combo-allof-with-required` replaced `co-occurrence` with its promotion arm `promote_parent_property`, which `groupe-psa` reaches, and `combo-property-anyof-composed-sibling` and the two `combo-unrequired-tag-*-reference` rows became `golden` on the dedicated arms their registered declarers reach ([their record](openapi-surface/witness-search-combinations-schemas/README.md#keys)). Nine sites replaced `co-occurrence` with the body and response
 interaction arms [their search record](openapi-surface/witness-search-combinations-bodies-responses/README.md#dedicated-regions)
 names, `combo-allof-schema-example` replaced it with its interaction branch in `Builder::add_object`, and the two `combo-oas31-*` rows left `golden` once decided output-insensitive. Twelve more
 replaced `co-occurrence` with the parameter, security and name-collision arms
@@ -2329,7 +2329,7 @@ link and expect the named failure. The counts below are the output of
 shapes: 160
 by kind: handwritten 104, measurement 5, real 46, refusal 5
 by owner: bodies-responses 20, clients-extensions 29, examples-docs 16, models-refs 21, parameters 16, prove-matches 30, streaming 13, unions 15
-by outcome: default=refuse;strict=refuse 5, departure 75, match 80
+by outcome: default=refuse;strict=refuse 5, departure 76, match 79
 closed with no open residual: 160
 closed on their proof with a residual open: 0
 witnesses: registered 6
