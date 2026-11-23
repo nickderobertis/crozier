@@ -29,7 +29,16 @@ $ grep -n 'left' src/fern/client.py | head -1
 ```
 
 So `create_records(left=...)` takes the `right`-holding model: a caller cannot
-build the `left` object the document declares, and a server answering with
+build the `left` object the document declares. Run over Fern's tree with
+Pydantic 1.10.26 and 2.14.1 (`uv run --no-project --python 3.11 --with
+pydantic==<v> --with httpx==0.28.1 --with typing_extensions==4.16.0`):
+
+```text
+$ python -c "from fern import KilnGlazeCoat; KilnGlazeCoat(left='matte')"
+pydantic ... ValidationError: 1 validation error for KilnGlazeCoat   (both versions)
+```
+
+and a server answering with
 `{"left": "matte"}` where `kiln/glaze-coat` is the declared response fails
 `KilnGlazeCoat`'s validation (its required `right` is missing). That is a
 runtime failure under the defect rule.

@@ -2693,7 +2693,22 @@ fn root_init_file(
         sourced.push((".version".to_string(), vec!["__version__".to_string()]));
     }
     sourced.sort_by(|a, b| a.0.cmp(&b.0));
-    for (module, names) in &sourced {
+    // A tag package named like a root module (`client`) shares its statement:
+    // rapidata-identity's root client and its `client` tag's hoisted request
+    // enums are one `from .client import AsyncFernApi, FernApi,
+    // GetClientsRequestLogic, …`, the names sorted.
+    let mut merged: Vec<(String, Vec<String>)> = Vec::new();
+    for (module, names) in sourced {
+        match merged.last_mut() {
+            Some((last, all)) if *last == module => {
+                all.extend(names);
+                all.sort();
+                all.dedup();
+            }
+            _ => merged.push((module, names)),
+        }
+    }
+    for (module, names) in &merged {
         tc.push_str(&from_import_block(module, names, 4));
     }
 

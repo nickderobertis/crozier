@@ -19,14 +19,17 @@ import pkgutil
 import sys
 from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 import httpx
 
 
-def client(handler: Callable[[httpx.Request], httpx.Response]) -> object:
+def client(handler: Callable[[httpx.Request], httpx.Response]) -> Any:
     from fern import FernApi
 
-    return FernApi(base_url="https://slash.example.com", httpx_client=httpx.Client(transport=httpx.MockTransport(handler)))
+    return FernApi(
+        base_url="https://slash.example.com", httpx_client=httpx.Client(transport=httpx.MockTransport(handler))
+    )
 
 
 def colliding_request() -> None:
