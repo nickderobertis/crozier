@@ -24,6 +24,9 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
+MAX_BODY = 1 << 20
+"""The largest request body the journey server reads; an SDK request is far smaller."""
+
 
 class Server:
     """A real HTTP server on a free local port, answering each path with its
@@ -38,8 +41,12 @@ class Server:
                 self._answer()
 
             def do_POST(self) -> None:
-                length = int(self.headers.get("Content-Length") or 0)
-                server.received.append(json.loads(self.rfile.read(length) or b"null"))
+                declared = self.headers.get("Content-Length") or "0"
+                ascii_decimal = declared.isascii() and declared.isdecimal() and len(declared) <= 8
+                if not ascii_decimal or int(declared) > MAX_BODY:
+                    self.send_error(400, f"Content-Length must be 0..{MAX_BODY}, not {declared!r}")
+                    return
+                server.received.append(json.loads(self.rfile.read(int(declared)) or b"null"))
                 self._answer()
 
             def _answer(self) -> None:
