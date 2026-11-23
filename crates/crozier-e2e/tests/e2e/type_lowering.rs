@@ -272,6 +272,7 @@ fn sdk_env_escaped_discriminators_and_recursive_aliases_import() {
             // runtime core's key renaming hides its wire tag (a drafted
             // follow-up), so only its import is held there.
             if case == "inferred-discriminator-tags" && *label == "pydantic 1" {
+                assert_eq!(code, Some(1), "{case} {label}: {said}");
                 assert!(
                     said.contains("\"failed\": \"ValidationError\""),
                     "{case} {label}: {said}"
@@ -282,6 +283,11 @@ fn sdk_env_escaped_discriminators_and_recursive_aliases_import() {
                     Some(0),
                     "{case} {label}: crozier's tree must construct: {said}"
                 );
+                // The opposite expectations are mismatches, which exit 1.
+                let (code, said) = run(python, &ours.join("src"), target, payload, "invalid");
+                assert_eq!(code, Some(1), "{case} {label}: {said}");
+                let (code, said) = run(python, &fern, target, payload, "valid");
+                assert_eq!(code, Some(1), "{case} {label}: {said}");
             }
         }
     }
@@ -330,7 +336,6 @@ fn sdk_env_escaped_discriminators_and_recursive_aliases_import() {
     );
     assert_eq!(code, Some(0), "{said}");
     assert!(said.contains("killed by signal 11"), "{said}");
-    // Missing arguments, and an expectation other than valid or invalid.
     let usage = |args: &[&str]| {
         std::process::Command::new(python)
             .arg(&script)

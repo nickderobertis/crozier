@@ -8266,6 +8266,80 @@
     }
    }
   },
+  "du-prop-referenced-preserved-message-type": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "TaggedOne": {
+     "type": "object",
+     "properties": {
+      "message_type": {
+       "const": "message"
+      }
+     }
+    },
+    "TaggedTwo": {
+     "type": "object",
+     "properties": {
+      "message_type": {
+       "const": "farewell"
+      }
+     }
+    }
+   },
+   "body": {
+    "pet": {
+     "oneOf": [
+      {
+       "$ref": "#/components/schemas/TaggedOne"
+      },
+      {
+       "$ref": "#/components/schemas/TaggedTwo"
+      }
+     ]
+    }
+   }
+  },
   "du-prop-referenced-type-not-required": {
    "schemas": {
     "Cat": {
@@ -12979,6 +13053,12 @@
       "prop_type_ref:13"
      ]
     },
+    "du-prop-referenced-preserved-message-type": {
+     "form": "the same over `message_type` holding `message`, a value the removed `preserve_const_discriminant` list once refused (#910)",
+     "arms": [
+      "prop_type_ref:13"
+     ]
+    },
     "du-prop-referenced-mcp-server-type-tag": {
      "form": "the same over `mcp_server_type`, the other name supported unconditionally",
      "arms": [
@@ -13180,6 +13260,12 @@
     },
     "du-prop-referenced-message-type-tag": {
      "form": "the same over `message_type`, supported unconditionally, whatever its value (#910)",
+     "arms": [
+      "prop_type_ref:13"
+     ]
+    },
+    "du-prop-referenced-preserved-message-type": {
+     "form": "the same over `message_type` holding `message`, a value the removed `preserve_const_discriminant` list once refused (#910)",
      "arms": [
       "prop_type_ref:13"
      ]

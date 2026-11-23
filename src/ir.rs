@@ -33025,7 +33025,7 @@ components:
             "every document of the shared inputs is driven by some case, and no \
              case names one the file does not write"
         );
-        assert_eq!(328, drives, "the number of drives the thirty cases make");
+        assert_eq!(330, drives, "the number of drives the thirty cases make");
     }
 
     #[test]
