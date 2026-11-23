@@ -15,6 +15,7 @@ import importlib.util
 import json
 import os
 import re
+import runpy
 import shutil
 import subprocess
 import sys
@@ -344,6 +345,224 @@ class FernReferencesTests(unittest.TestCase):
         (call,) = self.calls()
         self.assertNotIn("enum_type", call["generators"])
 
+    def test_the_output_insensitive_header_is_the_tables_own_validator_columns(self) -> None:
+        """`output-insensitive.py` owns `output-insensitive.tsv`'s columns; the header
+        this tool reads the table under must stay equal to them, or one drifts alone."""
+        owner = runpy.run_path(str(REPO / "tools/surface-census/output-insensitive.py"))["COLUMNS"]
+        reader = runpy.run_path(str(TOOL))["OUTPUT_INSENSITIVE_HEADER"]
+        self.assertEqual(tuple(owner), reader)
+
+    def test_a_pair_adoption_remeasures_each_output_insensitive_comparison_record(self) -> None:
+        """Issue #865: each comparison record `output-insensitive.tsv` cites is an
+        item, re-measured through `output-insensitive-remeasure.py --only`; one
+        whose trees moved fails its item, and the pair is the certified one."""
+        surface = "docs/openapi-surface/witness-search-x"
+        self.write(
+            "docs/openapi-surface/output-insensitive.tsv",
+            "key\tcontext\tsearch_record\tfern_comparison\tcrozier_comparison\n"
+            f"k\tc\t{surface}/README.md\t{surface}/a/fern-comparison.json\t{surface}/a/crozier-comparison.json\n"
+            f"k\td\t{surface}/README.md\t{surface}/b/fern-comparison.json\t{surface}/b/crozier-comparison.json\n",
+        )
+        for record in ("a/fern", "a/crozier", "b/fern"):
+            self.write(f"{surface}/{record}-comparison.json", "{}\n")
+        self.install_delegates("tools/surface-census/output-insensitive-remeasure.py")
+
+        listed = self.run_tool("list", "output-insensitive")
+        self.assertEqual(
+            (0, f"{surface}/a/fern-comparison.json\n{surface}/b/fern-comparison.json\n"),
+            (listed.returncode, listed.stdout),
+        )
+        checked = self.run_tool("check", "output-insensitive")
+        self.assertEqual(1, checked.returncode)
+        self.assertIn(
+            f"output-insensitive {surface}/b/fern-comparison.json: its crozier comparison record", checked.stderr
+        )
+
+        done = self.run_tool("generate", "output-insensitive", f"{surface}/a/fern-comparison.json")
+        self.assertEqual(0, done.returncode, done.stderr)
+        [call] = self.delegate_calls()
+        self.assertEqual("output-insensitive-remeasure.py", call["script"])
+        self.assertEqual(
+            ["--root", str(self.root.resolve()), "--only", f"{surface}/a/fern-comparison.json"], call["argv"]
+        )
+
+        self.env["DELEGATE_EXIT"] = "1"
+        moved = self.run_tool("generate", "output-insensitive", f"{surface}/a/fern-comparison.json")
+        self.assertEqual(1, moved.returncode)
+        self.assertIn("output-insensitive-remeasure.py --root", moved.stderr)
+        self.assertIn("exited 1; see .local/fern-references/output-insensitive/", moved.stderr)
+        pinned = self.run_tool("generate", "output-insensitive", "--version", "1.2.3")
+        self.assertEqual(2, pinned.returncode)
+        self.assertIn("output-insensitive cannot take --version", pinned.stderr)
+
+    def test_the_pair_variable_is_the_one_witness_screen_reads(self) -> None:
+        """The pair `generate witness-screens` names is read by `witness_screen.py` under one name."""
+        spec = importlib.util.spec_from_file_location(
+            "witness_screen_pair_name", REPO / "tools/witness-search/witness_screen.py"
+        )
+        assert spec is not None and spec.loader is not None
+        screen = importlib.util.module_from_spec(spec)
+        sys.modules[spec.name] = screen
+        spec.loader.exec_module(screen)
+        self.assertEqual(screen.PAIR_ENV, self.load_tool().WITNESS_PAIR_ENV)
+
+    def test_a_pair_adoption_labels_and_rescreens_each_witness_measured_at_a_pair(self) -> None:
+        """Issue #865: every filed candidate whose latest screen ran Fern at a pair
+        is an item. Its generation labels earlier-pair screens `historical`, then
+        re-screens it in its own ledger at the pair it generates, keeping its
+        disposition; history, an unmeasured row and a Fern-less record are none."""
+        pins = {"fern_cli": OLD, "generator": "fernapi/fern-python-sdk", "generator_version": OLD}
+        commit = "c" * 40
+        rows = [
+            {
+                "repository": "acme/shop",
+                "commit": commit,
+                "path": "openapi.yaml",
+                "sha256": "d" * 64,
+                "disposition": "witness-found",
+                "measured": {"fern": {"pins": pins}},
+            },
+            {
+                "repository": "acme/old",
+                "commit": commit,
+                "path": "a.yaml",
+                "disposition": "not-owed",
+                "historical": "measured at an earlier certified pair",
+                "measured": {"fern": {"pins": pins}},
+            },
+            {"repository": "acme/bare", "commit": commit, "path": "b.yaml", "disposition": "rejected"},
+            {
+                "repository": "acme/unrun",
+                "commit": commit,
+                "path": "c.yaml",
+                "disposition": "rejected",
+                "measured": {"fern": {"outcome": "not-run"}},
+            },
+        ]
+        self.write(
+            "docs/openapi-surface/witness-search-x/acme-screen/screens.jsonl",
+            "".join(json.dumps(row) + "\n" for row in rows),
+        )
+        stub = STUB_DELEGATE.replace(
+            '"cli": os.environ.get("FERN_CLI_VERSION")',
+            f'"pair": os.environ.get("{self.load_tool().WITNESS_PAIR_ENV}")',
+        )
+        self.env["DELEGATE_LOG"] = str(self.root / "delegate-calls.jsonl")
+        self.write("tools/witness-search/witness_screen.py", stub, executable=True)
+        item = f"witness-search-x/acme-screen/acme/shop/{commit}/openapi.yaml"
+
+        listed = self.run_tool("list", "witness-screens")
+        self.assertEqual((0, f"{item}\n"), (listed.returncode, listed.stdout))
+        self.assertEqual(0, self.run_tool("check", "witness-screens").returncode)
+
+        done = self.run_tool("generate", "witness-screens", item)
+        self.assertEqual(0, done.returncode, done.stderr)
+        self.assertIn(f"witness-screens: 1 regenerated, 0 failed at Fern CLI {CLI}", done.stdout)
+        evidence = str(self.root.resolve() / "docs/openapi-surface")
+        ledger = f"{evidence}/witness-search-x/acme-screen/screens.jsonl"
+        self.assertEqual(
+            [
+                ["historical", "--evidence-root", evidence],
+                [
+                    "screen",
+                    "--ledger",
+                    ledger,
+                    "--repository",
+                    "acme/shop",
+                    "--commit",
+                    commit,
+                    "--path",
+                    "openapi.yaml",
+                    "--evidence-root",
+                    evidence,
+                    "--sha256",
+                    "d" * 64,
+                    "--disposition",
+                    "witness-found",
+                ],
+            ],
+            [call["argv"] for call in self.delegate_calls()],
+        )
+        self.assertEqual({f"{CLI}/{SDK}"}, {call["pair"] for call in self.delegate_calls()})
+
+        self.env["DELEGATE_EXIT"] = "1"
+        refused = self.run_tool("generate", "witness-screens", item)
+        self.assertEqual(1, refused.returncode)
+        self.assertIn("`witness_screen.py historical` exited 1", refused.stderr)
+        unknown = self.run_tool("generate", "witness-screens", f"witness-search-x/acme-screen/acme/old/{commit}/a.yaml")
+        self.assertEqual(2, unknown.returncode)
+        self.assertIn("no witness-screens item", unknown.stderr)
+
+        # A row naming part of a candidate is refused, never skipped.
+        with (self.root / "docs/openapi-surface/witness-search-x/acme-screen/screens.jsonl").open("a") as ledger:
+            ledger.write(json.dumps({"repository": "acme/half", "path": "d.yaml"}) + "\n")
+        broken = self.run_tool("check", "witness-screens")
+        self.assertEqual(1, broken.returncode)
+        self.assertIn("screens.jsonl:5 names a candidate without a whole repository, commit and path", broken.stderr)
+        ledger = self.root / "docs/openapi-surface/witness-search-x/acme-screen/screens.jsonl"
+        ledger.write_text(json.dumps({**rows[0], "sha256": 7}) + "\n", encoding="utf-8")
+        typed = self.run_tool("check", "witness-screens")
+        self.assertEqual(1, typed.returncode)
+        self.assertIn("carries a sha256 or disposition that is no string", typed.stderr)
+        # Decoded at the boundary: a superseded row is held to the same types as the latest.
+        ledger.write_text(
+            json.dumps({**rows[0], "disposition": ["witness-found"]}) + "\n" + json.dumps(rows[0]) + "\n",
+            encoding="utf-8",
+        )
+        superseded = self.run_tool("check", "witness-screens")
+        self.assertEqual(1, superseded.returncode)
+        self.assertIn("screens.jsonl:1: acme/shop@", superseded.stderr)
+        self.assertIn("carries a sha256 or disposition that is no string", superseded.stderr)
+        ledger.write_text(json.dumps(rows[0]) + "\n", encoding="utf-8")
+        self.assertEqual(0, self.run_tool("check", "witness-screens").returncode)
+
+    def test_every_committed_measurement_tree_is_an_item_and_an_unregistered_one_fails_the_check(self) -> None:
+        """Issue #961: a committed Fern tree under docs/fern-measurements/ that no
+        `cases.tsv` row regenerates fails `check`, naming it, rather than staying at
+        its old pair through a weekly regeneration that skips it; once registered,
+        a variant kept as a tree beside its case (`<case>/expected-literals/`) is
+        regenerated in place, and the case's own tree and evidence are untouched."""
+        case = "docs/fern-measurements/handed-off/client-structure/init-order"
+        self.write(f"{case}/openapi.yml", "openapi: 3.0.3\n")
+        self.write(f"{case}/README.md", "evidence\n")
+        for tree in ("fern-expected", "expected-literals"):
+            self.write(f"{case}/{tree}/.fern/metadata.json", json.dumps({**METADATA, "cliVersion": OLD}))
+            self.write(f"{case}/{tree}/src/fern/client.py", "OLD = 1\n")
+        header = "case\tdocument\tenum_type\tlayout\toverlay\n"
+        registered = f"handed-off/client-structure/init-order\t{case}/openapi.yml\tpython-enums\tpackaged\t-\n"
+        self.write("docs/fern-measurements/cases.tsv", header + registered)
+
+        checked = self.run_tool("check", "measurements")
+        self.assertEqual(checked.returncode, 1, checked.stderr)
+        self.assertIn(
+            f"measurements {case}/expected-literals: a committed Fern tree no docs/fern-measurements/cases.tsv "
+            "row regenerates",
+            checked.stderr,
+        )
+        self.assertNotIn(f"{case}/fern-expected:", checked.stderr)
+        self.assertEqual([], self.calls(), "check ran Fern")
+
+        variant = (
+            f"handed-off/client-structure/init-order/expected-literals\t{case}/openapi.yml\tliterals\tpackaged\t-\n"
+        )
+        self.write("docs/fern-measurements/cases.tsv", header + registered + variant)
+        checked = self.run_tool("check", "measurements")
+        self.assertEqual(checked.returncode, 0, checked.stderr)
+        listed = self.run_tool("list", "measurements")
+        self.assertIn("handed-off/client-structure/init-order/expected-literals", listed.stdout.split())
+
+        result = self.run_tool("generate", "measurements", "handed-off/client-structure/init-order/expected-literals")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        literals = self.root / case / "expected-literals"
+        self.assertEqual((literals / "src/fern/client.py").read_text(encoding="utf-8"), "CLIENT = 1\n")
+        self.assertTrue((literals / "src/fern/literal.py").is_file())
+        self.assertEqual(CLI, json.loads((literals / ".fern/metadata.json").read_text(encoding="utf-8"))["cliVersion"])
+        self.assertFalse((literals / "fern-expected").exists(), "the variant was written beside itself, not in place")
+        self.assertEqual(
+            "OLD = 1\n", (self.root / case / "fern-expected/src/fern/client.py").read_text(encoding="utf-8")
+        )
+        self.assertEqual("evidence\n", (self.root / case / "README.md").read_text(encoding="utf-8"))
+
     def test_a_triage_cause_directory_is_a_measurement_case(self) -> None:
         """Issue #823: the recorded triage layout's upper-case cause directories, and
         their literals trees, regenerate like any other case."""
@@ -557,6 +776,54 @@ class FernReferencesTests(unittest.TestCase):
         store = self.load_tool().certified_tree_store()
         with self.assertRaisesRegex(ValueError, "must be plain file names"):
             store.publish(self.root / document, tree, store.EnumMode.LITERALS, records={"tree": "x"})
+
+    def test_a_flat_tree_never_answers_for_the_packaged_key(self) -> None:
+        """Issue #886: a regeneration that installed its modules at the tree root is
+        refused before it can win first-wins publication, and a flat entry already
+        cached under the key is neither found nor kept: publication names the
+        directory to remove, after which the packaged tree publishes."""
+        document = "docs/fern-measurements/kept/psi/openapi.yml"
+        self.write(document, "openapi: 3.0.3\ninfo: {title: psi}\n")
+        metadata = json.dumps(
+            {
+                "cliVersion": CLI,
+                "generatorName": "fernapi/fern-python-sdk",
+                "generatorVersion": SDK,
+                "generatorConfig": {"pydantic_config": {"enum_type": "python_enums"}},
+            }
+        )
+        for name in ("client.py", "raw_client.py", "core/enum.py", "README.md", ".fern/metadata.json"):
+            self.write(f"flat/{name}", metadata if name.endswith(".json") else "X = 1\n")
+        refused = self.publish(document, self.root / "flat")
+        self.assertEqual(refused.returncode, 1, refused.stdout)
+        self.assertIn("is not the packaged SDK the store's key names", refused.stderr)
+        self.assertIn("Python modules at its root (client.py, raw_client.py), the flat layout", refused.stderr)
+        self.assertIn("regenerate with the certified pair", refused.stderr)
+        self.assertNotEqual(self.find_entry(document, "python-enums").returncode, 0)
+        # Neither is a tree with no source package under src/.
+        self.write("readme-only/README.md", "# psi\n")
+        self.write("readme-only/.fern/metadata.json", metadata)
+        refused = self.publish(document, self.root / "readme-only")
+        self.assertIn("no source package under src/", refused.stderr)
+
+        # A flat entry cached before this rule: never read, never kept.
+        entry = self.store_entry(document, "python_enums")
+        shutil.copytree(self.root / "flat", entry / "tree")
+        for name, text in (("document.sha256", entry.parent.name + "\n"), ("exit-code", "0\n"), ("fern.log", "")):
+            self.write(str((entry / name).relative_to(self.root)), text)
+        self.assertNotEqual(self.find_entry(document, "python-enums").returncode, 0)
+        self.write("packaged/src/fern/client.py", "CLIENT = 1\n")
+        self.write("packaged/.fern/metadata.json", metadata)
+        refused = self.publish(document, self.root / "packaged")
+        self.assertEqual(refused.returncode, 1, refused.stdout)
+        self.assertIn(f"the entry already at {entry} is incomplete", refused.stderr)
+        self.assertIn("its tree/ is not the packaged SDK the key names", refused.stderr)
+        self.assertIn("remove that directory", refused.stderr)
+        shutil.rmtree(entry)
+        published = self.publish(document, self.root / "packaged")
+        self.assertEqual(published.returncode, 0, published.stderr)
+        self.assertEqual(self.find_entry(document, "python-enums").stdout.strip(), str(entry))
+        self.assertTrue((entry / "tree/src/fern/client.py").is_file())
 
     def test_the_store_lives_under_the_home_cache_unless_an_absolute_xdg_cache_home_moves_it(self) -> None:
         """XDG_CACHE_HOME places the store only when absolute, as XDG asks; otherwise ~/.cache."""
@@ -1315,7 +1582,14 @@ class FernReferencesTests(unittest.TestCase):
         for rel, text in {**tree, "src/fern/core/enum.py": "ENUM = 1\n", ".fern/metadata.json": "{}"}.items():
             self.write(f"docs/fern-measurements/parameter-lowering/retired/fern-expected/{rel}", text)
         self.write("docs/fern-measurements/parameter-literals/certified-trees.json", json.dumps({"retired": "0" * 64}))
-        self.write("docs/fern-measurements/cases.tsv", "case\tdocument\tenum_type\tlayout\toverlay\n")
+        # The python-enums tree is a committed tree of its own case, as every
+        # parameter-lowering case's is.
+        self.write(
+            "docs/fern-measurements/cases.tsv",
+            "case\tdocument\tenum_type\tlayout\toverlay\n"
+            "parameter-lowering/retired\tdocs/fern-measurements/parameter-lowering/retired/openapi.yml\t"
+            "python-enums\tpackaged\t-\n",
+        )
         self.assertFalse((self.root / "docs/openapi-surface/handwritten/retired").exists())
         clean = self.run_tool("check", "measurements")
         self.assertEqual(0, clean.returncode, clean.stderr)

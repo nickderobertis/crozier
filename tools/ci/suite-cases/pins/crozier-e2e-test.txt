@@ -171,6 +171,7 @@ crozier-e2e::e2e compare::compare_checks_every_generator_and_reports_each_status
 crozier-e2e::e2e compare::compare_colours_statuses_only_when_the_rule_says_so
 crozier-e2e::e2e compare::compare_hands_the_config_files_settings_to_the_reference_command
 crozier-e2e::e2e compare::compare_holds_each_reference_link_departure_to_its_own_shape
+crozier-e2e::e2e compare::compare_names_every_diff_file_within_the_component_limit_for_a_deep_config
 crozier-e2e::e2e compare::compare_narrows_to_a_directory_or_a_file
 crozier-e2e::e2e compare::compare_normalizes_the_generator_config_of_fern_metadata_only
 crozier-e2e::e2e compare::compare_over_the_action_fixture_layout_gives_one_of_each_status
@@ -206,6 +207,7 @@ crozier-e2e::e2e confluent_kafka_connect_matches_fern_output
 crozier-e2e::e2e contribly_com_matches_fern_output
 crozier-e2e::e2e cookie_parameters_matches_fern_output
 crozier-e2e::e2e corpus_fixture_aliases_resolve_to_registered_goldens
+crozier-e2e::e2e corpus_registration_readers_accept_rustfmt_wrapping
 crozier-e2e::e2e cphos_ai_question_matches_fern_output
 crozier-e2e::e2e cradl_matches_fern_output
 crozier-e2e::e2e crozier_base_path_alias_matches_and_wins
@@ -258,6 +260,7 @@ crozier-e2e::e2e departures_ledger_gate::rows_naming_an_unknown_departure_golden
 crozier-e2e::e2e departures_ledger_gate::the_corpus_gate_holds_its_golden_to_the_ledger
 crozier-e2e::e2e departures_ledger_gate::the_documented_ledger_format_is_the_loaders
 crozier-e2e::e2e departures_ledger_gate::the_flat_and_reporter_comparison_holds_the_ledger
+crozier-e2e::e2e departures_ledger_gate::the_inventory_regeneration_command_selects_the_inventory_test
 crozier-e2e::e2e departures_ledger_gate::write_departures_ledger
 crozier-e2e::e2e descope_authzcache_matches_fern_output
 crozier-e2e::e2e digit_leading_enum_values_spelling_one_name_keep_the_first
@@ -919,6 +922,7 @@ crozier-e2e::e2e report_scripts::a_report_of_any_size_survives_the_temporary_fil
 crozier-e2e::e2e report_scripts::a_reporter_that_prints_no_summary_fails_with_its_log_and_the_fix
 crozier-e2e::e2e report_scripts::a_run_the_inventory_does_not_describe_stops_before_the_merge
 crozier-e2e::e2e report_scripts::a_selection_records_only_its_goldens_contributors
+crozier-e2e::e2e report_scripts::a_stale_compared_goldens_inventory_is_refused_before_anything_records
 crozier-e2e::e2e report_scripts::an_unknown_report_is_refused_with_the_usage
 crozier-e2e::e2e report_scripts::discovery_runs_the_whole_suite_and_rederives_the_inventory
 crozier-e2e::e2e report_scripts::each_report_prints_only_from_its_first_corpus_through_its_summary

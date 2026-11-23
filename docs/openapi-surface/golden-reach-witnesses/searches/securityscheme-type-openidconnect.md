@@ -46,7 +46,7 @@ error, its version and the document's digest in the source's
 `census-refused.tsv`, it is not outstanding, and it never settles a
 search on its own.
 
-99 candidate(s) reaching the arm carry only a historical screen: one filed
+85 candidate(s) reaching the arm carry only a historical screen: one filed
 before the measured screening stage (`tools/witness-search/witness_screen.py`), with no exit
 status, pins or redacted log behind its outcomes. A historical screen is kept as
 it was filed and settles nothing, so each such candidate is outstanding — counted
@@ -56,9 +56,9 @@ in `outstanding` below and listed in `outstanding.tsv` — until it is re-screen
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | `apis.guru` | 3 | 0 | 0 | 3 | 0 | 0 | 0 | 3 | 0 | 0 |
 | `jentic` | 50 | 0 | 0 | 50 | 0 | 0 | 5 | 50 | 0 | 5 |
-| `github-code-search` | 175 | 0 | 0 | 175 | 0 | 0 | 16 | 163 | 0 | 71 |
+| `github-code-search` | 175 | 0 | 0 | 175 | 0 | 0 | 16 | 163 | 5 | 69 |
 | `github-publisher-trees` | 0 | 0 | 46 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| `sourcegraph` | 156 | 0 | 5 | 156 | 0 | 0 | 57 | 104 | 0 | 23 |
+| `sourcegraph` | 156 | 0 | 5 | 156 | 0 | 0 | 57 | 104 | 39 | 11 |
 | `vendor-portals` | 0 | 0 | 161 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 
 #### Candidates passing every screen

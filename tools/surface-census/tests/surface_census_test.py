@@ -20483,6 +20483,7 @@ class LegacyLocaleEncodingTests(unittest.TestCase):
     # Each entry point's arguments that make it echo an em dash on stderr before it does any work.
     ECHOED: ClassVar[dict[str, tuple[str, ...]]] = {
         "apis-guru-gap-screen.py": ("\u2014",),
+        "census-prose-counts.py": ("\u2014",),
         "combination-independence.py": ("--json", "\u2014"),
         "fixtures-coverage-report.py": ("--repo-root", ".", "--tier", ".", "--golden-tier", ".", "\u2014"),
         "handed-off-combination-verdicts.py": ("check", "--repo-root", "missing-root"),
@@ -20532,6 +20533,98 @@ class LegacyLocaleEncodingTests(unittest.TestCase):
         )
         self.assertEqual(0, run.returncode, run.stderr)
         self.assertIn("witness hunks by owner: \u2014", run.stdout.decode("utf-8").splitlines())
+
+
+class CensusProseCountsTests(unittest.TestCase):
+    """Issue #477: a region page's census count agrees with the witnesses listed beside it."""
+
+    script = REPO / "tools/surface-census/census-prose-counts.py"
+
+    def run_script(self, root: Path, command: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            [sys.executable, str(self.script), "--repo-root", str(root), command],
+            capture_output=True,
+            encoding="utf-8",
+            check=False,
+        )
+
+    def test_the_committed_pages_state_the_counts_their_lists_give(self) -> None:
+        run = self.run_script(REPO, "check")
+        self.assertEqual((0, "", ""), (run.returncode, run.stdout, run.stderr))
+
+    def test_a_count_drifting_from_its_list_fails_and_write_renders_it_back(self) -> None:
+        root = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, root)
+        (root / "docs/openapi-surface").mkdir(parents=True)
+        for region in (REPO / "docs/openapi-surface").glob("*.md"):
+            shutil.copyfile(region, root / "docs/openapi-surface" / region.name)
+        page = root / "docs/openapi-surface/security.md"
+        committed = page.read_text(encoding="utf-8")
+        implicit = "**6** golden-bearing sources, 6 sites — `daniweb-connect` (1)"
+        password = "**3** declaration sites in 3 registered sources, `maximo-wxo-integration` (1)"
+        self.assertIn(implicit, committed)
+        self.assertIn(password, committed)
+        page.write_text(
+            committed.replace(implicit, implicit.replace("**6**", "**5**").replace("6 sites", "5 sites")).replace(
+                password, "**1** declaration site in one registered source, `maximo-wxo-integration` (1)"
+            ),
+            encoding="utf-8",
+        )
+        drifted = self.run_script(root, "check")
+        self.assertEqual(1, drifted.returncode, drifted.stderr)
+        self.assertRegex(
+            drifted.stderr,
+            r"docs/openapi-surface/security\.md:\d+: oauth2-implicit: says 5 listed entr\(ies\) and 5 site\(s\) "
+            r"\(golden-bearing-sources\), lists 6 entr\(ies\) and 6 site\(s\)",
+        )
+        self.assertIn(
+            "oauth2-password: says 1 listed entr(ies) and 1 site(s) (sites-in-sources), lists 3", drifted.stderr
+        )
+        self.assertIn("2 count(s) disagree with the witnesses listed beside them", drifted.stderr)
+        written = self.run_script(root, "write")
+        self.assertEqual((0, ""), (written.returncode, written.stderr))
+        self.assertEqual(committed, page.read_text(encoding="utf-8"))
+        self.assertEqual(0, self.run_script(root, "check").returncode)
+
+    def test_every_form_is_checked_and_rendered_and_a_root_without_pages_is_refused(self) -> None:
+        """The two forms the committed pages hold no drift in: a cell across sources,
+        and declarations in fixtures counting each listed entry (a name listed in
+        two runs is two entries)."""
+        root = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, root)
+        refused = self.run_script(root, "check")
+        self.assertEqual(2, refused.returncode)
+        self.assertIn("docs/openapi-surface is no directory, so there is nothing to hold", refused.stderr)
+        (root / "docs/openapi-surface").mkdir(parents=True)
+        page = root / "docs/openapi-surface/schemas.md"
+        right = (
+            "| `across` | 4 declaration sites across 2 sources — `a` (1), `b` (3) |\n"
+            "| `fixtures` | 5 declarations in 3 fixtures — `a` (1), `b` (3), `a` (1) |\n"
+        )
+        page.write_text(
+            right.replace("4 declaration sites across 2 sources", "**2** declaration sites across one source").replace(
+                "5 declarations in 3 fixtures", "1 declaration in 2 fixtures"
+            ),
+            encoding="utf-8",
+        )
+        drifted = self.run_script(root, "check")
+        self.assertEqual(1, drifted.returncode)
+        self.assertIn(
+            "across: says 1 listed entr(ies) and 2 site(s) (sites-across-sources), lists 2 entr(ies) and 4 site(s)",
+            drifted.stderr,
+        )
+        self.assertIn(
+            "fixtures: says 2 listed entr(ies) and 1 site(s) (declarations-in-fixtures), lists 3 entr(ies) and 5 site(s)",
+            drifted.stderr,
+        )
+        self.assertEqual(0, self.run_script(root, "write").returncode)
+        self.assertEqual(right.replace("4 declaration", "**4** declaration"), page.read_text(encoding="utf-8"))
+        self.assertEqual(0, self.run_script(root, "check").returncode)
+
+    def test_a_partial_list_is_no_claim_to_hold(self) -> None:
+        module = load_script("tools/surface-census/census-prose-counts.py")
+        partial = "census `schema.example`: 25609 declarations across 151 registered golden sources, the five largest being `a` (9), `b` (8)"
+        self.assertEqual((partial, []), module.restate(partial))
 
 
 class ScenarioProofIndexTests(unittest.TestCase):
@@ -20708,6 +20801,45 @@ class ScenarioProofIndexTests(unittest.TestCase):
         self.assertEqual([], self.index_script.check(self.base), "the mirror is incomplete")
         run = self.run_script("check")
         self.assertEqual((0, "", ""), (run.returncode, run.stdout, run.stderr))
+
+    def test_a_rustfmt_wrapped_corpus_registration_still_reaches_its_goldens(self) -> None:
+        """Issue #884: rustfmt may break a `const NAME: Corpus =` binding before its
+        initializer and a driver call after its `(`; the index still reads every
+        registration, so every corpus golden it cites stays reached."""
+        root = self.mirror()
+        e2e = root / "crates/crozier-e2e/tests/e2e.rs"
+        text = e2e.read_text(encoding="utf-8")
+        wrapped, bindings = re.subn(r"(?m)^(const \w+: Corpus =) (Corpus \{)", r"\1\n    \2", text)
+        wrapped, calls = re.subn(
+            r"\b(assert_corpus_matches|assert_committed_corpus_matches|known_fern_failure)\(&(\w+)\)",
+            r"\1(\n        &\2,\n    )",
+            wrapped,
+        )
+        self.assertGreater(bindings, 100, "the suite's corpus bindings changed shape")
+        self.assertGreater(calls, 100, "the suite's corpus drivers changed shape")
+        e2e.write_text(wrapped, encoding="utf-8")
+        run = self.run_script("check", root=root)
+        self.assertEqual((0, "", ""), (run.returncode, run.stdout, run.stderr))
+
+    def test_a_commented_out_corpus_registration_reaches_no_golden(self) -> None:
+        """Issue #884's grammar reads only live calls: a driver call commented out
+        whole-line registers nothing, so the goldens it alone reached go unreached."""
+        root = self.mirror()
+        e2e = root / "crates/crozier-e2e/tests/e2e.rs"
+        text = e2e.read_text(encoding="utf-8")
+        commented, count = re.subn(
+            r"(?m)^(\s*)((?:assert_corpus_matches|assert_committed_corpus_matches|known_fern_failure)\(&\w+\);)$",
+            r"\1// \2",
+            text,
+        )
+        self.assertGreater(count, 100, "the suite's corpus drivers changed shape")
+        e2e.write_text(commented, encoding="utf-8")
+        run = self.run_script("check", root=root)
+        self.assertNotEqual(0, run.returncode, "commented-out registrations still reached their goldens")
+        self.assertIn(
+            "allof-body-example-id-field-order: none of its tests reaches golden tests/fixtures/jobster-api/expected",
+            run.stderr,
+        )
 
     def test_every_owner_has_shapes_and_every_kind_is_read(self) -> None:
         module = self.index_script
