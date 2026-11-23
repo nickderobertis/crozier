@@ -35,12 +35,8 @@ out of the affected tier.
   trivially. `test_wire.py` picks it up via `JOURNEY_NAMES`. Keep to the SDK's own
   runtime deps + pytest. When a new generated shape lands, add a journey that
   *calls* it — the Fern fixture supplies the expected behavior for free.
-- **`test_header_body_collision.py`** records a second pair the same way: the
-  header/body wire-name collision document under
-  `docs/fern-measurements/bodies-responses/header-body-collision/`, Fern's
-  committed tree against crozier's SDK (`*_COLLISION_SDK_SRC`), through
-  `_recorder.COLLISION_JOURNEYS`, which fail unless the header argument travels
-  as the header and the renamed body argument in the JSON body.
+- The collision pair's Fern SDK is a committed measurement tree: regenerate it with
+  `just fern-references measurements bodies-responses/header-body-collision`.
 - **No skip.** Missing Python / venv / deps fails the test (see
   `runtime_python_env`): the tier exists to run it, so it never passes unrun.
 

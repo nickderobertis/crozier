@@ -483,3 +483,4 @@ fn unresolved_non_component_body_reference_is_any() {
         "self, *, request: FeatureFlag, request_options",
     );
 }
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]

@@ -26,6 +26,7 @@ import json
 import os
 import sys
 from types import SimpleNamespace
+from typing import Any, Protocol
 
 import httpx
 
@@ -341,7 +342,15 @@ HEADER_VALUE = "header-value"
 BODY_VALUE = "body-value"
 
 
-def load_collision_sdk(src):
+class CollisionSdk(Protocol):
+    """What the collision journeys use of an SDK, Fern's or crozier's alike."""
+
+    FernApi: Any
+    AsyncFernApi: Any
+    ApiError: Any
+
+
+def load_collision_sdk(src) -> CollisionSdk:
     """Import the collision SDK's clients and error base from its `src/`."""
     sys.path.insert(0, src)
     from fern import AsyncFernApi, FernApi
@@ -360,7 +369,7 @@ def _collision_record(request, header):
     return _request_record(request)
 
 
-def header_and_body_keep_their_values(sdk):
+def header_and_body_keep_their_values(sdk: CollisionSdk):
     """An optional header and a component body property sharing `kilnToken`, and
     a required header and an inline body property sharing `batchLabel`, each send
     the header argument as the header and the renamed body argument in the body."""
@@ -375,7 +384,7 @@ def header_and_body_keep_their_values(sdk):
     return {"run": run, "run_status": ran.status, "queue": queue, "queue_status": queued.status}
 
 
-def async_header_and_body_keep_their_values(sdk):
+def async_header_and_body_keep_their_values(sdk: CollisionSdk):
     """The async client binds both values the same way."""
     transport, box = _capture(200, {"status": "ran"})
     client = sdk.AsyncFernApi(base_url=BASE_URL, httpx_client=httpx.AsyncClient(transport=transport))
@@ -398,7 +407,7 @@ def async_header_and_body_keep_their_values(sdk):
     return asyncio.run(go())
 
 
-def collision_error_then_recovery(sdk):
+def collision_error_then_recovery(sdk: CollisionSdk):
     """A 400 raises the API error with the values sent in their places, and the
     next request on the same client succeeds."""
     calls = []
@@ -427,7 +436,7 @@ def collision_error_then_recovery(sdk):
     }
 
 
-def shared_body_header_collision(sdk):
+def shared_body_header_collision(sdk: CollisionSdk):
     """A nullable `Idempotency-Key` header beside a shared component body's
     `idempotency_key`, sync and async. Recorded as sent, without a verdict: the
     certified pair sends the header's variable as the body value (the
@@ -475,7 +484,16 @@ def main():
     if not src:
         print("WIRE_SDK_SRC is not set (path to the generated SDK's src/ dir)", file=sys.stderr)
         sys.exit(2)
-    recorder = record_collision if os.environ.get("WIRE_JOURNEYS") == "header-body-collision" else record
+    recorders = {"": record, "header-body-collision": record_collision}
+    selected = os.environ.get("WIRE_JOURNEYS", "")
+    if selected not in recorders:
+        print(
+            f"WIRE_JOURNEYS={selected!r} names no journey set; use one of {sorted(name for name in recorders if name)}"
+            " or leave it unset for the default journeys",
+            file=sys.stderr,
+        )
+        sys.exit(2)
+    recorder = recorders[selected]
     json.dump(recorder(src), sys.stdout, indent=2, sort_keys=True, default=str)
     sys.stdout.write("\n")
 
