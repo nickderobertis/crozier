@@ -15,6 +15,7 @@ import importlib.util
 import json
 import os
 import re
+import runpy
 import shutil
 import subprocess
 import sys
@@ -343,6 +344,13 @@ class FernReferencesTests(unittest.TestCase):
         )
         (call,) = self.calls()
         self.assertNotIn("enum_type", call["generators"])
+
+    def test_the_output_insensitive_header_is_the_tables_own_validator_columns(self) -> None:
+        """`output-insensitive.py` owns `output-insensitive.tsv`'s columns; the header
+        this tool reads the table under must stay equal to them, or one drifts alone."""
+        owner = runpy.run_path(str(REPO / "tools/surface-census/output-insensitive.py"))["COLUMNS"]
+        reader = runpy.run_path(str(TOOL))["OUTPUT_INSENSITIVE_HEADER"]
+        self.assertEqual(tuple(owner), reader)
 
     def test_a_pair_adoption_remeasures_each_output_insensitive_comparison_record(self) -> None:
         """Issue #865: each comparison record `output-insensitive.tsv` cites is an

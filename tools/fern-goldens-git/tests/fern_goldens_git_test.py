@@ -946,6 +946,34 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         self.assertEqual(1, len(self.calls()), "an altered committed source was generated from")
         self.assertEqual([], self.fetch_calls(), "an altered committed source fell back to upstream")
 
+    def test_a_malformed_source_manifest_fails_rather_than_falling_back_to_upstream(self) -> None:
+        """A `corpus-sources.tsv` record the corpus tooling's reader refuses is not
+        read as an unrecorded row: generation fails naming the manifest line and
+        asks upstream for nothing, then recovers once the record is restored."""
+        committed = b'{"openapi":"3.0.3","info":{"title":"alpha, as committed"}}\n'
+        source = self.root / "tests" / "fixtures" / "corpus-sources" / "alpha" / "openapi.json"
+        source.parent.mkdir(parents=True)
+        source.write_bytes(committed)
+        manifest = self.root / "tests" / "fixtures" / "corpus-sources.tsv"
+        record = (
+            "alpha\ttests/fixtures/corpus-sources/alpha/openapi.json\thttps://example.test/alpha/openapi.json\t"
+            f"{hashlib.sha256(committed).hexdigest()}\n"
+        )
+        header = "# corpus_name\tpath\tsource_url\tsha256\n"
+        manifest.write_text(header + record.replace("\t", " ", 1), encoding="utf-8", newline="\n")
+        refused = self.run_tool("generate", "--version", "4.9.0", "--fixture", "alpha")
+        self.assertEqual(refused.returncode, 1, refused.stdout)
+        output = refused.stdout + refused.stderr
+        self.assertIn("corpus-sources.tsv:2: expected 4 tab-separated cells", output)
+        self.assertIn("a malformed source manifest is not read as an unrecorded row", output)
+        self.assertEqual([], self.fetch_calls(), "a malformed manifest fell back to upstream")
+        self.assertEqual([], self.calls(), "a malformed manifest was generated from")
+
+        manifest.write_text(header + record, encoding="utf-8", newline="\n")
+        self.run_tool("generate", "--version", "4.9.0", "--fixture", "alpha", check=True, FAIL_FETCH="alpha")
+        self.assertEqual([], self.fetch_calls(), "upstream was asked for a committed row")
+        self.assertEqual(1, len(self.calls()))
+
     def test_compare_reads_a_recorded_row_from_its_committed_source_and_refuses_an_altered_copy(self) -> None:
         """Issue #862's comparison half: `compare` stages a recorded row's committed,
         digest-verified source without asking upstream, so a removed upstream still

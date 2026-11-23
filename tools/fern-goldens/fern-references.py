@@ -1630,6 +1630,9 @@ def validate_departure_evidence(item: str) -> None:
 
 
 OUTPUT_INSENSITIVE = Path("docs/openapi-surface/output-insensitive.tsv")
+
+# `output-insensitive.py`'s COLUMNS, the validator that owns the table; fern_references_test.py
+# holds the two equal.
 OUTPUT_INSENSITIVE_HEADER = ("key", "context", "search_record", "fern_comparison", "crozier_comparison")
 
 
@@ -1789,6 +1792,8 @@ def generate_witness_screen(item: str, pair: Pair) -> None:
     argv += ["--evidence-root", evidence]
     if candidate.sha256:
         argv += ["--sha256", candidate.sha256]
+    # A `rejected` screen re-screens with no --disposition, which is how witness_screen.py files one.
+    # llmlint: ignore[modern_domain_modeling] the disposition domain is open, not finite: known_disposition in witness-search-github-index.py admits parametric `pending-registration; owner <node>` and `byte-identical to CORPUS row <n>, sha256 <digest>` forms, and witness_screen.py's --disposition validates it on receipt; this site only forwards the filed string.
     if candidate.disposition and candidate.disposition != "rejected":
         argv += ["--disposition", candidate.disposition]
     for name, command in (
