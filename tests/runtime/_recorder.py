@@ -26,7 +26,7 @@ import json
 import os
 import sys
 from types import SimpleNamespace
-from typing import Any, Protocol
+from typing import Any, Protocol, TypedDict
 
 import httpx
 
@@ -86,13 +86,22 @@ def _body(request):
         return content.decode("utf-8", "replace")
 
 
-def _request_record(request):
-    return {
-        "method": request.method,
-        "url": str(request.url),
-        "headers": _canonical_headers(request.headers),
-        "body": _body(request),
-    }
+class RequestObservation(TypedDict):
+    """One captured request, as a recording writes it."""
+
+    method: str
+    url: str
+    headers: dict[str, str]
+    body: Any
+
+
+def _request_record(request) -> RequestObservation:
+    return RequestObservation(
+        method=request.method,
+        url=str(request.url),
+        headers=_canonical_headers(request.headers),
+        body=_body(request),
+    )
 
 
 def _dump(model):
@@ -355,6 +364,37 @@ class CollisionSdk(Protocol):
     ApiError: Any
 
 
+class CollisionObservation(TypedDict):
+    """Both collision operations' requests and the status each call returned,
+    as the sync and async journeys record them alike."""
+
+    run: RequestObservation
+    run_status: str
+    queue: RequestObservation
+    queue_status: str
+
+
+class ErrorObservation(TypedDict):
+    """The status and body the API error carried."""
+
+    status: int
+    body: Any
+
+
+class RecoveryObservation(TypedDict):
+    """A rejected request, its error, and the request that succeeded after it."""
+
+    failed: ErrorObservation
+    failed_request: RequestObservation
+    recovered: str
+    recovered_request: RequestObservation
+
+
+# One operation's request as the sync and the async client sent it; functional
+# form because `async` is a keyword and the recording's key is `async`.
+PairedObservation = TypedDict("PairedObservation", {"sync": RequestObservation, "async": RequestObservation})
+
+
 def load_collision_sdk(src) -> CollisionSdk:
     """Import the collision SDK's clients and error base from its `src/`."""
     sys.path.insert(0, src)
@@ -364,7 +404,7 @@ def load_collision_sdk(src) -> CollisionSdk:
     return SimpleNamespace(FernApi=FernApi, AsyncFernApi=AsyncFernApi, ApiError=ApiError)
 
 
-def _collision_record(request, header):
+def _collision_record(request, header) -> RequestObservation:
     """The request, after checking each value reached its own wire place."""
     if request.headers.get(header) != HEADER_VALUE:
         raise AssertionError(f"{header} header carries {request.headers.get(header)!r}, not {HEADER_VALUE!r}")
@@ -374,7 +414,7 @@ def _collision_record(request, header):
     return _request_record(request)
 
 
-def header_and_body_keep_their_values(sdk: CollisionSdk):
+def header_and_body_keep_their_values(sdk: CollisionSdk) -> CollisionObservation:
     """An optional header and a component body property sharing `kilnToken`, and
     a required header and an inline body property sharing `batchLabel`, each send
     the header argument as the header and the renamed body argument in the body."""
@@ -386,15 +426,15 @@ def header_and_body_keep_their_values(sdk: CollisionSdk):
         action="cool", batch_label=HEADER_VALUE, queue_action_request_batch_label=BODY_VALUE
     )
     queue = _collision_record(box["request"], "batchLabel")
-    return {"run": run, "run_status": ran.status, "queue": queue, "queue_status": queued.status}
+    return CollisionObservation(run=run, run_status=ran.status, queue=queue, queue_status=queued.status)
 
 
-def async_header_and_body_keep_their_values(sdk: CollisionSdk):
+def async_header_and_body_keep_their_values(sdk: CollisionSdk) -> CollisionObservation:
     """The async client binds both values the same way."""
     transport, box = _capture(200, {"status": "ran"})
     client = sdk.AsyncFernApi(base_url=BASE_URL, httpx_client=httpx.AsyncClient(transport=transport))
 
-    async def go():
+    async def go() -> CollisionObservation:
         ran = await client.actions.run_action(
             action="fire", kiln_token=HEADER_VALUE, run_action_request_kiln_token=BODY_VALUE
         )
@@ -402,17 +442,17 @@ def async_header_and_body_keep_their_values(sdk: CollisionSdk):
         queued = await client.actions.queue_action(
             action="cool", batch_label=HEADER_VALUE, queue_action_request_batch_label=BODY_VALUE
         )
-        return {
-            "run": run,
-            "run_status": ran.status,
-            "queue": _collision_record(box["request"], "batchLabel"),
-            "queue_status": queued.status,
-        }
+        return CollisionObservation(
+            run=run,
+            run_status=ran.status,
+            queue=_collision_record(box["request"], "batchLabel"),
+            queue_status=queued.status,
+        )
 
     return asyncio.run(go())
 
 
-def collision_error_then_recovery(sdk: CollisionSdk):
+def collision_error_then_recovery(sdk: CollisionSdk) -> RecoveryObservation:
     """A 400 raises the API error with the values sent in their places, and the
     next request on the same client succeeds."""
     calls = []
@@ -427,21 +467,21 @@ def collision_error_then_recovery(sdk: CollisionSdk):
     try:
         client.actions.run_action(action="fire", kiln_token=HEADER_VALUE, run_action_request_kiln_token=BODY_VALUE)
     except sdk.ApiError as error:
-        failed = {"status": error.status_code, "body": error.body}
+        failed = ErrorObservation(status=error.status_code, body=error.body)
     else:
         raise AssertionError("a 400 did not raise")
     recovered = client.actions.run_action(
         action="fire", kiln_token=HEADER_VALUE, run_action_request_kiln_token=BODY_VALUE
     )
-    return {
-        "failed": failed,
-        "failed_request": _collision_record(calls[0], "kilnToken"),
-        "recovered": recovered.status,
-        "recovered_request": _collision_record(calls[1], "kilnToken"),
-    }
+    return RecoveryObservation(
+        failed=failed,
+        failed_request=_collision_record(calls[0], "kilnToken"),
+        recovered=recovered.status,
+        recovered_request=_collision_record(calls[1], "kilnToken"),
+    )
 
 
-def shared_body_header_collision(sdk: CollisionSdk):
+def shared_body_header_collision(sdk: CollisionSdk) -> PairedObservation:
     """A nullable `Idempotency-Key` header beside a shared component body's
     `idempotency_key`, sync and async. Recorded as sent, without a verdict: the
     certified pair sends the header's variable as the body value (the
@@ -460,7 +500,7 @@ def shared_body_header_collision(sdk: CollisionSdk):
             actions=["fire"], idempotency_key=HEADER_VALUE, action_batch_request_idempotency_key=BODY_VALUE
         )
     )
-    return {"sync": sync, "async": _request_record(box["request"])}
+    return PairedObservation({"sync": sync, "async": _request_record(box["request"])})
 
 
 COLLISION_JOURNEYS = [
