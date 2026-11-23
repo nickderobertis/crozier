@@ -13,6 +13,7 @@ Exit status: 0 when the journey holds; 1 with the failing check's message;
 
 from __future__ import annotations
 
+import asyncio
 import http.server
 import importlib
 import json
@@ -61,12 +62,12 @@ class Server:
         threading.Thread(target=self.httpd.serve_forever, daemon=True).start()
 
     def client(self) -> Any:
-        """The generated SDK's client pointed at this server. Its class is
+        """The generated SDK's async client pointed at this server. Its class is
         imported from the SDK under test, generated at run time, so this script
         has no static type for it."""
-        from fern import FernApi
+        from fern import AsyncFernApi
 
-        return FernApi(base_url=f"http://127.0.0.1:{self.httpd.server_address[1]}")
+        return AsyncFernApi(base_url=f"http://127.0.0.1:{self.httpd.server_address[1]}")
 
     def close(self) -> None:
         self.httpd.shutdown()
@@ -79,7 +80,7 @@ def colliding_request() -> None:
 
     server = Server({})
     try:
-        server.client().create_records(left=KilnGlazeCoat2(left="matte"), right=KilnGlazeCoat(right=3))
+        asyncio.run(server.client().create_records(left=KilnGlazeCoat2(left="matte"), right=KilnGlazeCoat(right=3)))
     finally:
         server.close()
     if server.received != [{"left": {"left": "matte"}, "right": {"right": 3}}]:
@@ -93,8 +94,8 @@ def colliding_responses() -> None:
     server = Server({"/left": {"left": "matte"}, "/right": {"right": 3}})
     try:
         api = server.client()
-        left = api.get_left()
-        right = api.get_right()
+        left = asyncio.run(api.get_left())
+        right = asyncio.run(api.get_right())
     finally:
         server.close()
     if not isinstance(left, KilnGlazeCoat2) or left.left != "matte":
@@ -109,7 +110,7 @@ def colliding_control() -> None:
 
     server = Server({"/left": {"left": "matte"}})
     try:
-        left = server.client().get_left()
+        left = asyncio.run(server.client().get_left())
     finally:
         server.close()
     if not isinstance(left, KilnGlazeCoat) or left.left != "matte":
@@ -141,7 +142,15 @@ def main() -> None:
     if len(sys.argv) != 3 or sys.argv[1] not in JOURNEYS:
         print(f"usage: {Path(sys.argv[0]).name} {{{','.join(JOURNEYS)}}} SDK_SRC", file=sys.stderr)
         raise SystemExit(2)
-    sys.path.insert(0, sys.argv[2])
+    source = Path(sys.argv[2]).resolve()
+    if not (source / "fern" / "__init__.py").is_file():
+        print(f"{source}: no generated `fern` package; pass the SDK's src/ directory", file=sys.stderr)
+        raise SystemExit(2)
+    sys.path.insert(0, str(source))
+    import fern
+
+    if Path(fern.__file__).resolve().parent != source / "fern":
+        raise SystemExit(f"imported {fern.__file__}, not the SDK under {source}")
     JOURNEYS[sys.argv[1]]()
     print(f"{sys.argv[1]}: ok")
 
