@@ -393,14 +393,31 @@ class FernReferencesTests(unittest.TestCase):
         pins = {"fern_cli": OLD, "generator": "fernapi/fern-python-sdk", "generator_version": OLD}
         commit = "c" * 40
         rows = [
-            {"repository": "acme/shop", "commit": commit, "path": "openapi.yaml", "sha256": "d" * 64,
-             "disposition": "witness-found", "measured": {"fern": {"pins": pins}}},
-            {"repository": "acme/old", "commit": commit, "path": "a.yaml", "disposition": "not-owed",
-             "historical": "measured at an earlier certified pair", "measured": {"fern": {"pins": pins}}},
+            {
+                "repository": "acme/shop",
+                "commit": commit,
+                "path": "openapi.yaml",
+                "sha256": "d" * 64,
+                "disposition": "witness-found",
+                "measured": {"fern": {"pins": pins}},
+            },
+            {
+                "repository": "acme/old",
+                "commit": commit,
+                "path": "a.yaml",
+                "disposition": "not-owed",
+                "historical": "measured at an earlier certified pair",
+                "measured": {"fern": {"pins": pins}},
+            },
             {"repository": "acme/bare", "commit": commit, "path": "b.yaml", "disposition": "rejected"},
-            {"repository": "acme/unrun", "commit": commit, "path": "c.yaml", "disposition": "rejected",
-             "measured": {"fern": {"outcome": "not-run"}}},
-        ]  # fmt: skip
+            {
+                "repository": "acme/unrun",
+                "commit": commit,
+                "path": "c.yaml",
+                "disposition": "rejected",
+                "measured": {"fern": {"outcome": "not-run"}},
+            },
+        ]
         self.write(
             "docs/openapi-surface/witness-search-x/acme-screen/screens.jsonl",
             "".join(json.dumps(row) + "\n" for row in rows),
@@ -424,11 +441,26 @@ class FernReferencesTests(unittest.TestCase):
         self.assertEqual(
             [
                 ["historical", "--evidence-root", evidence],
-                ["screen", "--ledger", ledger, "--repository", "acme/shop", "--commit", commit, "--path",
-                 "openapi.yaml", "--evidence-root", evidence, "--sha256", "d" * 64, "--disposition", "witness-found"],
+                [
+                    "screen",
+                    "--ledger",
+                    ledger,
+                    "--repository",
+                    "acme/shop",
+                    "--commit",
+                    commit,
+                    "--path",
+                    "openapi.yaml",
+                    "--evidence-root",
+                    evidence,
+                    "--sha256",
+                    "d" * 64,
+                    "--disposition",
+                    "witness-found",
+                ],
             ],
             [call["argv"] for call in self.delegate_calls()],
-        )  # fmt: skip
+        )
         self.assertEqual({f"{CLI}/{SDK}"}, {call["pair"] for call in self.delegate_calls()})
 
         self.env["DELEGATE_EXIT"] = "1"
@@ -438,6 +470,13 @@ class FernReferencesTests(unittest.TestCase):
         unknown = self.run_tool("generate", "witness-screens", f"witness-search-x/acme-screen/acme/old/{commit}/a.yaml")
         self.assertEqual(2, unknown.returncode)
         self.assertIn("no witness-screens item", unknown.stderr)
+
+        # A row naming part of a candidate is refused, never skipped.
+        with (self.root / "docs/openapi-surface/witness-search-x/acme-screen/screens.jsonl").open("a") as ledger:
+            ledger.write(json.dumps({"repository": "acme/half", "path": "d.yaml"}) + "\n")
+        broken = self.run_tool("check", "witness-screens")
+        self.assertEqual(1, broken.returncode)
+        self.assertIn("screens.jsonl:5 names a candidate without a whole repository, commit and path", broken.stderr)
 
     def test_every_committed_measurement_tree_is_an_item_and_an_unregistered_one_fails_the_check(self) -> None:
         """Issue #961: a committed Fern tree under docs/fern-measurements/ that no

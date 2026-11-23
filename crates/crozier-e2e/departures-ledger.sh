@@ -143,6 +143,7 @@ fi
 # under the old inventory and fail only at the gate.
 inventory_test='departures_ledger_gate::compared_goldens_inventory_is_current'
 inventory_regenerate="CROZIER_UPDATE_COMPARED_GOLDENS=1 cargo nextest run --locked -p crozier-e2e -E 'binary(e2e) & test(=$inventory_test)'"
+# llmlint: ignore[changed_behavior_has_e2e] the refusal's real half is the inventory test itself, departures_ledger_gate::compared_goldens_inventory_is_current, which fails on a stale inventory in every e2e run; departures_ledger_gate::the_inventory_regeneration_command_selects_the_inventory_test pins that this preflight runs exactly that test in the crozier-e2e package; and report_scripts.rs::a_stale_compared_goldens_inventory_is_refused_before_anything_records drives this script's refusal and its no-recording guarantee with only `cargo` stood in, since running the real nextest from inside a nextest run rebuilds the workspace (the ignored-only path the recording run below documents).
 if ! cargo nextest run --locked -p crozier-e2e -E "binary(e2e) & test(=$inventory_test)" >"$log" 2>&1; then
   cat "$log" >&2 || echo "departures-ledger: could not read the run log $log" >&2
   fail "tests/fixtures/compared-goldens.json is not the inventory the registered comparisons derive (above), so nothing was recorded" \

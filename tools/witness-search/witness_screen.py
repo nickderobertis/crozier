@@ -80,7 +80,7 @@ from collections.abc import Callable, Mapping
 from enum import Enum
 from pathlib import Path, PurePosixPath
 from types import ModuleType
-from typing import Any, NamedTuple, NoReturn
+from typing import Any, NamedTuple, NoReturn, cast
 
 REPO = Path(__file__).resolve().parents[2]
 RULE = REPO / "docs" / "corpus-licensing.md"
@@ -1210,6 +1210,7 @@ def scope_keys(evidence_root: Path, ledger: Path) -> tuple[set[str], Path]:
 
     A search directory carrying its own `census.tsv` (a `key` column) scopes its
     ledgers to those keys; every other ledger is scoped to the general key set.
+    A catalog row of another width, or with an empty key, is refused.
     """
     search = evidence_root / ledger.relative_to(evidence_root).parts[0]
     catalog = search / SEARCH_CATALOG
@@ -1220,29 +1221,74 @@ def scope_keys(evidence_root: Path, ledger: Path) -> tuple[set[str], Path]:
     if "key" not in header:
         fail(f"{catalog} has no `key` column, so it scopes no key; restore it from git")
     column = header.index("key")
-    return {cells[column] for cells in (line.split("\t") for line in lines[1:]) if len(cells) > column}, catalog
+    keys: set[str] = set()
+    for number, line in enumerate(lines[1:], 2):
+        cells = line.split("\t")
+        if len(cells) != len(header) or not cells[column]:
+            fail(f"{catalog}:{number} is no {len(header)}-cell row with a key; restore it from git")
+        keys.add(cells[column])
+    return keys, catalog
 
 
-def rescreen_scope(args: argparse.Namespace) -> tuple[Path, str, list[str], set[str], Path]:
+class RescreenScope(NamedTuple):
+    """What `--ledger` re-screens in: the ledger, the filed candidate's source, the
+    keys to screen, the keys its scope admits, and the file that admits them."""
+
+    ledger: Path
+    source: str
+    keys: list[str]
+    known: set[str]
+    catalog: Path
+
+
+def filed_rows(ledger: Path, root: Path) -> list[dict[str, Any]]:
+    """Every row of a ledger, each a JSON object, refusing the first line that is not."""
+    rows = []
+    for number, line in enumerate(ledger.read_text(encoding="utf-8").splitlines(), 1):
+        if not line.strip():
+            continue
+        try:
+            row = json.loads(line)
+        except ValueError:
+            row = None
+        if not isinstance(row, dict):
+            fail(f"{ledger.relative_to(root).as_posix()}:{number} is no JSON object; restore it from git")
+        rows.append(row)
+    return rows
+
+
+def rescreen_scope(args: argparse.Namespace) -> RescreenScope:
     """`--ledger`'s ledger, the filed candidate's source, the keys to screen, and the scope's keys."""
     root = args.evidence_root.resolve()
     ledger = (args.ledger if args.ledger.is_absolute() else root / args.ledger).resolve()
     if ledger.name != "screens.jsonl" or not ledger.is_file() or not ledger.is_relative_to(root):
         fail(f"--ledger {args.ledger} is no screens.jsonl under {root}; name the ledger the candidate was filed in")
+    identity = (args.repository, args.commit, args.path)
     filed = [
         row
-        for row in (json.loads(line) for line in ledger.read_text(encoding="utf-8").splitlines() if line.strip())
-        if (row.get("repository"), row.get("commit"), row.get("path")) == (args.repository, args.commit, args.path)
+        for row in filed_rows(ledger, root)
+        if (row.get("repository"), row.get("commit"), row.get("path")) == identity
     ]
+    where = f"{ledger.relative_to(root).as_posix()}"
     if not filed:
         fail(
-            f"{ledger.relative_to(root).as_posix()} holds no candidate {args.repository}@{args.commit}:{args.path}; "
+            f"{where} holds no candidate {args.repository}@{args.commit}:{args.path}; "
             "--ledger re-screens a filed candidate by its repository, commit and path"
         )
     candidate = filed[-1]
+    source, filed_keys = candidate.get("source"), candidate.get("keys")
+    if not isinstance(source, str) or not source:
+        fail(f"{where}: the filed {args.repository}@{args.commit}:{args.path} names no source; restore it from git")
+    if not args.key and not (
+        isinstance(filed_keys, list) and filed_keys and all(isinstance(key, str) and key for key in filed_keys)
+    ):
+        fail(
+            f"{where}: the filed {args.repository}@{args.commit}:{args.path} carries no list of keys; "
+            "name the keys to screen with --key"
+        )
     known, catalog = scope_keys(root, ledger)
-    keys = list(args.key) if args.key else list(candidate.get("keys") or [])
-    return ledger, str(candidate.get("source", "")), keys, known, catalog
+    keys = list(args.key) if args.key else list(cast(list[str], filed_keys))
+    return RescreenScope(ledger, source, keys, known, catalog)
 
 
 def legacy_screen(args: argparse.Namespace) -> int:
@@ -1293,6 +1339,7 @@ def legacy_screen(args: argparse.Namespace) -> int:
             repository=args.repository,
             commit=args.commit,
             path=args.path,
+            # llmlint: ignore[async_typed_clients_at_boundaries] AGENTS.md keeps the witness tooling stdlib-only and synchronous so it runs installless; one candidate's document is read once, through the guarded acquirer's own paced client, so there is nothing to run concurrently.
             fetch=lambda url, subject: acquirer.raw_github_get(url, keys[0], subject),
             raw_base=acquirer.raw_github_url,
             logs=directory / LOG_DIR,

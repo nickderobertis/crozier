@@ -95,6 +95,34 @@ test("a repin refreshes lanes.json's e2e count with its pins, and a lost case wr
   }
 });
 
+test("a repin refuses a lanes.json whose e2eCases record is malformed, writing nothing", () => {
+  const scratch = mkdtempSync(join(tmpdir(), "crozier-suite-cases-"));
+  try {
+    const pins = join(scratch, "pins");
+    const lanes = join(scratch, "lanes.json");
+    cpSync(join(ROOT, "tools/ci/suite-cases/pins"), pins, { recursive: true });
+    const committed = JSON.parse(readFileSync(join(ROOT, "tools/ci/lanes.json"), "utf8"));
+    const env = { CROZIER_SUITE_CASES_PINS: pins, CROZIER_SUITE_CASES_LANES: lanes };
+    const journeys = join(pins, `${committed.e2eCases.moved}.txt`);
+    const pinned = readFileSync(journeys, "utf8");
+    for (const [label, text] of [
+      ["no JSON", "{"],
+      ["no e2eCases", JSON.stringify({ ...committed, e2eCases: undefined })],
+      ["an unknown moved suite", JSON.stringify({ ...committed, e2eCases: { ...committed.e2eCases, moved: "no-such-suite" } })],
+      ["a count that is no integer", JSON.stringify({ ...committed, e2eCases: { ...committed.e2eCases, count: "12" } })],
+    ]) {
+      writeFileSync(lanes, text);
+      const refused = command(env, "write", committed.e2eCases.moved);
+      assert.equal(refused.status, 1, `${label}: ${refused.stderr}`);
+      assert.match(refused.stderr, /restore it with git checkout -- tools\/ci\/lanes\.json/i, label);
+      assert.equal(readFileSync(lanes, "utf8"), text, `${label}: lanes.json was rewritten`);
+      assert.equal(readFileSync(journeys, "utf8"), pinned, `${label}: the pin was rewritten`);
+    }
+  } finally {
+    rmSync(scratch, { recursive: true, force: true });
+  }
+});
+
 test("an unknown suite is refused with the known names", () => {
   const run = command({}, "check", "no-such-suite");
   assert.equal(run.status, 2);

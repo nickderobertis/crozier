@@ -1682,13 +1682,26 @@ WITNESS_PAIR_ENV = "CROZIER_WITNESS_SCREEN_PAIR"
 
 
 class WitnessCandidate(NamedTuple):
-    """A filed candidate a pair move stales: its ledger, its stable identity, and its latest row."""
+    """A filed candidate a pair move stales: its ledger, its stable identity, and
+    what its latest screen recorded that a re-screen keeps (the digest the
+    acquisition pinned, "" for none, and the disposition it was filed with)."""
 
     ledger: Path
     repository: str
     commit: str
     path: str
-    row: dict[str, object]
+    sha256: str
+    disposition: str
+
+
+IDENTITY = ("repository", "commit", "path")
+
+
+def ran_fern_at_a_pair(row: dict[str, object]) -> bool:
+    """Whether a screen row is a current measurement whose Fern screen ran at a pair."""
+    measured = row.get("measured")
+    fern = measured.get("fern") if isinstance(measured, dict) else None
+    return "historical" not in row and isinstance(fern, dict) and isinstance(fern.get("pins"), dict)
 
 
 @read_once
@@ -1696,7 +1709,8 @@ def witness_candidates() -> dict[str, WitnessCandidate]:
     """Each filed witness candidate whose latest screen is a current measurement
     that ran Fern at a pair: the evidence a pair move stales. Named
     `<ledger dir>/<owner>/<repo>/<commit>/<path>`. A row already labelled
-    `historical`, or measured with no Fern run, is no pair's measurement."""
+    `historical`, or measured with no Fern run, is no pair's measurement; an
+    arm-search row (no repository, commit or path) is `golden-reach-search`'s."""
     found: dict[str, WitnessCandidate] = {}
     for ledger in sorted((ROOT / WITNESS_EVIDENCE).glob(f"**/{WITNESS_LEDGER}")):
         latest: dict[tuple[str, str, str], dict[str, object]] = {}
@@ -1709,14 +1723,18 @@ def witness_candidates() -> dict[str, WitnessCandidate]:
                 row = None
             if not isinstance(row, dict):
                 raise ReferenceError(f"{rel(ledger)}:{number} is no JSON object; restore it from git")
-            identity = (row.get("repository"), row.get("commit"), row.get("path"))
-            if all(isinstance(part, str) and part for part in identity):
-                latest[cast(tuple[str, str, str], identity)] = row
+            identity = tuple(row.get(field) for field in IDENTITY)
+            if all(part is None for part in identity):
+                continue
+            if not all(isinstance(part, str) and part for part in identity):
+                raise ReferenceError(
+                    f"{rel(ledger)}:{number} names a candidate without a whole repository, commit and path; "
+                    "restore it from git"
+                )
+            latest[cast(tuple[str, str, str], identity)] = row
         directory = rel(ledger.parent)[len(str(WITNESS_EVIDENCE)) + 1 :]
         for (repository, commit, path), row in latest.items():
-            measured = row.get("measured")
-            fern = measured.get("fern") if isinstance(measured, dict) else None
-            if "historical" in row or not (isinstance(fern, dict) and isinstance(fern.get("pins"), dict)):
+            if not ran_fern_at_a_pair(row):
                 continue
             name = f"{directory}/{repository}/{commit}/{path}"
             if not WITNESS_NAME.fullmatch(name) or ".." in name.split("/"):
@@ -1724,7 +1742,15 @@ def witness_candidates() -> dict[str, WitnessCandidate]:
                     f"{rel(ledger)}: {repository}@{commit}:{path} names no weekly item (letters, digits, `.`, `_`, "
                     "`-` and `/`); re-screen it by hand with `witness_screen.py screen --ledger`"
                 )
-            found[name] = WitnessCandidate(ledger, repository, commit, path, row)
+            digest, disposition = row.get("sha256"), row.get("disposition")
+            found[name] = WitnessCandidate(
+                ledger,
+                repository,
+                commit,
+                path,
+                digest if isinstance(digest, str) else "",
+                disposition if isinstance(disposition, str) else "",
+            )
     return found
 
 
@@ -1754,11 +1780,10 @@ def generate_witness_screen(item: str, pair: Pair) -> None:
     argv = ["python3", tool, "screen", "--ledger", str(candidate.ledger)]
     argv += ["--repository", candidate.repository, "--commit", candidate.commit, "--path", candidate.path]
     argv += ["--evidence-root", evidence]
-    digest, disposition = candidate.row.get("sha256"), candidate.row.get("disposition")
-    if isinstance(digest, str) and digest:
-        argv += ["--sha256", digest]
-    if isinstance(disposition, str) and disposition and disposition != "rejected":
-        argv += ["--disposition", disposition]
+    if candidate.sha256:
+        argv += ["--sha256", candidate.sha256]
+    if candidate.disposition and candidate.disposition != "rejected":
+        argv += ["--disposition", candidate.disposition]
     for name, command in (
         ("historical", ["python3", tool, "historical", "--evidence-root", evidence]),
         ("screen", argv),

@@ -40,7 +40,14 @@ _LIST = r"((?:`[^`]+` \(\d+\))(?:, `[^`]+` \(\d+\))*)"
 
 
 class Counts(NamedTuple):
-    sources: int
+    """A cell's two counts: the entries its list names, and the sites they sum to.
+
+    `entries` counts list entries, not distinct names: the census prints a
+    population that joins two sorted runs (a fixture's packaged and flat
+    goldens, say) with each run's entries, and counts every one of them.
+    """
+
+    entries: int
     sites: int
 
 
@@ -57,8 +64,8 @@ class Form(NamedTuple):
 
     name: str
     pattern: re.Pattern[str]
-    # The count groups as (sources, sites), each a (bold, number) pair of group indices.
-    sources: tuple[int, int]
+    # The count groups as (entries, sites), each a (bold, number) pair of group indices.
+    entries: tuple[int, int]
     sites: tuple[int, int]
     render: Callable[[re.Match[str], Counts], str]
 
@@ -67,7 +74,7 @@ def _sites_in_sources(match: re.Match[str], counts: Counts) -> str:
     golden = "golden-bearing " if match.group("golden") else ""
     return (
         f"{_number(counts.sites, match.group(1))} declaration {_plural(counts.sites, 'site')} in "
-        f"{_number(counts.sources, match.group(3))} {golden}registered {_plural(counts.sources, 'source')}"
+        f"{_number(counts.entries, match.group(3))} {golden}registered {_plural(counts.entries, 'source')}"
         f"{match.group('separator')} "
     )
 
@@ -90,7 +97,7 @@ FORMS = (
         (1, 2),
         lambda match, counts: (
             f"{_number(counts.sites, match.group(1))} declaration {_plural(counts.sites, 'site')} across "
-            f"{_number(counts.sources, match.group(3))} {_plural(counts.sources, 'source')} — "
+            f"{_number(counts.entries, match.group(3))} {_plural(counts.entries, 'source')} — "
         ),
     ),
     Form(
@@ -99,7 +106,7 @@ FORMS = (
         (1, 2),
         (3, 4),
         lambda match, counts: (
-            f"{_number(counts.sources, match.group(1))} golden-bearing {_plural(counts.sources, 'source')}, "
+            f"{_number(counts.entries, match.group(1))} golden-bearing {_plural(counts.entries, 'source')}, "
             f"{_number(counts.sites, match.group(3))} {_plural(counts.sites, 'site')} — "
         ),
     ),
@@ -110,7 +117,7 @@ FORMS = (
         (1, 2),
         lambda match, counts: (
             f"{_number(counts.sites, match.group(1))} {_plural(counts.sites, 'declaration')} in "
-            f"{_number(counts.sources, match.group(3))} {_plural(counts.sources, 'fixture')} — "
+            f"{_number(counts.entries, match.group(3))} {_plural(counts.entries, 'fixture')} — "
         ),
     ),
 )
@@ -138,8 +145,8 @@ class Drift(NamedTuple):
 
     def __str__(self) -> str:
         return (
-            f"{self.key}: says {self.said.sources} source(s) and {self.said.sites} site(s) "
-            f"({self.form}), lists {self.listed.sources} source(s) and {self.listed.sites} site(s)"
+            f"{self.key}: says {self.said.entries} listed entr(ies) and {self.said.sites} site(s) "
+            f"({self.form}), lists {self.listed.entries} entr(ies) and {self.listed.sites} site(s)"
         )
 
 
@@ -156,7 +163,7 @@ def restate(text: str) -> tuple[str, list[Drift]]:
         for form in FORMS:
 
             def rendered(match: re.Match[str], form: Form = form, number: int = number) -> str:
-                said = Counts(_value(match, form.sources[1]), _value(match, form.sites[1]))
+                said = Counts(_value(match, form.entries[1]), _value(match, form.sites[1]))
                 counts = listed(match.string, match.end())
                 if said == counts:
                     return match.group(0)
@@ -177,6 +184,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--repo-root", type=Path, default=REPO)
     parser.add_argument("command", choices=("check", "write"))
     args = parser.parse_args(argv)
+    if not (args.repo_root / PAGES).is_dir():
+        print(
+            f"census-prose-counts: {args.repo_root / PAGES} is no directory, so there is nothing to hold; "
+            "pass the repository root as --repo-root",
+            file=sys.stderr,
+        )
+        return 2
     drifted = 0
     for path in pages(args.repo_root):
         text = path.read_text(encoding="utf-8")

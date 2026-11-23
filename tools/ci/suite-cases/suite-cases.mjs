@@ -29,7 +29,26 @@ if (!["check", "write"].includes(verb) || unknown.length || (verb === "write" &&
 const suites = known.filter((suite) => (names.length ? names.includes(suite.name) : !suite.checkedBy));
 if (verb === "write") {
   const fresh = new Map(suites.map((suite) => [suite.name, collect(root, suite)]));
-  const lanes = JSON.parse(readFileSync(lanesPath(root), "utf8"));
+  let lanes;
+  try {
+    lanes = JSON.parse(readFileSync(lanesPath(root), "utf8"));
+  } catch (error) {
+    console.error(`suite-cases: cannot read ${lanesPath(root)}: ${error.message}; restore it with git checkout -- tools/ci/lanes.json`);
+    process.exit(1);
+  }
+  const record = lanes?.e2eCases;
+  if (
+    !record ||
+    typeof record !== "object" ||
+    !known.some((suite) => suite.name === record.moved) ||
+    typeof record.sha256 !== "string" ||
+    !Number.isInteger(record.count)
+  ) {
+    console.error(
+      `suite-cases: ${lanesPath(root)} carries no e2eCases record naming a known suite as \`moved\` with a \`sha256\` and an integer \`count\`; nothing was written. Restore it with git checkout -- tools/ci/lanes.json`,
+    );
+    process.exit(1);
+  }
   const pinned = (name) => readPin(root, known.find((suite) => suite.name === name));
   const current = (name) => fresh.get(name) ?? pinned(name);
   const before = e2eCaseList(pinned(E2E_SUITE), pinned(lanes.e2eCases.moved));
@@ -52,11 +71,11 @@ if (verb === "write") {
     process.exit(1);
   }
   const files = new Map([...fresh].map(([name, cases]) => [pinPath(root, known.find((suite) => suite.name === name)), `${cases.join("\n")}\n`]));
-  const record = e2eCasesRecord(after);
-  const changed = record.sha256 !== lanes.e2eCases.sha256 || record.count !== lanes.e2eCases.count;
-  if (changed) files.set(lanesPath(root), `${JSON.stringify({ ...lanes, e2eCases: { ...lanes.e2eCases, ...record } }, null, 2)}\n`);
+  const measured = e2eCasesRecord(after);
+  const changed = measured.sha256 !== record.sha256 || measured.count !== record.count;
+  if (changed) files.set(lanesPath(root), `${JSON.stringify({ ...lanes, e2eCases: { ...record, ...measured } }, null, 2)}\n`);
   writeTogether(files);
-  console.log(`suite-cases: wrote ${suites.length} pin(s)${changed ? ` and tools/ci/lanes.json's e2eCases (${record.count} cases)` : ""}`);
+  console.log(`suite-cases: wrote ${suites.length} pin(s)${changed ? ` and tools/ci/lanes.json's e2eCases (${measured.count} cases)` : ""}`);
   process.exit(0);
 }
 const failures = suites.flatMap((suite) => difference(suite.name, readPin(root, suite), collect(root, suite)));

@@ -20550,14 +20550,51 @@ class CensusProseCountsTests(unittest.TestCase):
         self.assertEqual(1, drifted.returncode, drifted.stderr)
         self.assertRegex(
             drifted.stderr,
-            r"docs/openapi-surface/security\.md:\d+: oauth2-implicit: says 5 source\(s\) and 5 site\(s\) "
-            r"\(golden-bearing-sources\), lists 6 source\(s\) and 6 site\(s\)",
+            r"docs/openapi-surface/security\.md:\d+: oauth2-implicit: says 5 listed entr\(ies\) and 5 site\(s\) "
+            r"\(golden-bearing-sources\), lists 6 entr\(ies\) and 6 site\(s\)",
         )
-        self.assertIn("oauth2-password: says 1 source(s) and 1 site(s) (sites-in-sources), lists 3", drifted.stderr)
+        self.assertIn(
+            "oauth2-password: says 1 listed entr(ies) and 1 site(s) (sites-in-sources), lists 3", drifted.stderr
+        )
         self.assertIn("2 count(s) disagree with the witnesses listed beside them", drifted.stderr)
         written = self.run_script(root, "write")
         self.assertEqual((0, ""), (written.returncode, written.stderr))
         self.assertEqual(committed, page.read_text(encoding="utf-8"))
+        self.assertEqual(0, self.run_script(root, "check").returncode)
+
+    def test_every_form_is_checked_and_rendered_and_a_root_without_pages_is_refused(self) -> None:
+        """The two forms the committed pages hold no drift in: a cell across sources,
+        and declarations in fixtures counting each listed entry (a name listed in
+        two runs is two entries)."""
+        root = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, root)
+        refused = self.run_script(root, "check")
+        self.assertEqual(2, refused.returncode)
+        self.assertIn("docs/openapi-surface is no directory, so there is nothing to hold", refused.stderr)
+        (root / "docs/openapi-surface").mkdir(parents=True)
+        page = root / "docs/openapi-surface/schemas.md"
+        right = (
+            "| `across` | 4 declaration sites across 2 sources — `a` (1), `b` (3) |\n"
+            "| `fixtures` | 5 declarations in 3 fixtures — `a` (1), `b` (3), `a` (1) |\n"
+        )
+        page.write_text(
+            right.replace("4 declaration sites across 2 sources", "**2** declaration sites across one source").replace(
+                "5 declarations in 3 fixtures", "1 declaration in 2 fixtures"
+            ),
+            encoding="utf-8",
+        )
+        drifted = self.run_script(root, "check")
+        self.assertEqual(1, drifted.returncode)
+        self.assertIn(
+            "across: says 1 listed entr(ies) and 2 site(s) (sites-across-sources), lists 2 entr(ies) and 4 site(s)",
+            drifted.stderr,
+        )
+        self.assertIn(
+            "fixtures: says 2 listed entr(ies) and 1 site(s) (declarations-in-fixtures), lists 3 entr(ies) and 5 site(s)",
+            drifted.stderr,
+        )
+        self.assertEqual(0, self.run_script(root, "write").returncode)
+        self.assertEqual(right.replace("4 declaration", "**4** declaration"), page.read_text(encoding="utf-8"))
         self.assertEqual(0, self.run_script(root, "check").returncode)
 
     def test_a_partial_list_is_no_claim_to_hold(self) -> None:

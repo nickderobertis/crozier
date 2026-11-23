@@ -532,24 +532,25 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     root = (args.root or default_root()).resolve()
     try:
-        if args.command == "check":
-            check(root)
-        elif args.command == "verify-fetch":
-            verify_fetch(root, args.name, args.url, args.file, args.published)
-        elif args.command == "prepare":
-            print(prepare(root, args.fixture, args.output.resolve()))
-        elif args.command == "vendor":
-            refetch(root, args.fixture, args.source, write=True)
-            check(root)
-        else:
-            drifted = refetch(root, args.fixture, args.source, write=False)
-            if drifted:
-                print(
-                    "corpus-sources: upstream no longer serves the committed bytes; restore the pinned bytes or review a new immutable pin and re-vendor the affected rows:",
-                    file=sys.stderr,
-                )
-                print("\n".join(f"  {line}" for line in drifted), file=sys.stderr)
-                return 1
+        match args.command:
+            case "check":
+                check(root)
+            case "verify-fetch":
+                verify_fetch(root, args.name, args.url, args.file, args.published)
+            case "prepare":
+                print(prepare(root, args.fixture, args.output.resolve()))
+            case "vendor":
+                refetch(root, args.fixture, args.source, write=True)
+                check(root)
+            case _:
+                drifted = refetch(root, args.fixture, args.source, write=False)
+                if drifted:
+                    print(
+                        "corpus-sources: upstream no longer serves the committed bytes; restore the pinned bytes or review a new immutable pin and re-vendor the affected rows:",
+                        file=sys.stderr,
+                    )
+                    print("\n".join(f"  {line}" for line in drifted), file=sys.stderr)
+                    return 1
     except (OSError, UnicodeError) as error:
         print(f"corpus-sources: {error}; restore the input file and run just lint-corpus-sources", file=sys.stderr)
         return 1
