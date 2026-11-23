@@ -80,7 +80,7 @@ from collections.abc import Callable, Mapping
 from enum import Enum
 from pathlib import Path, PurePosixPath
 from types import ModuleType
-from typing import Any, NamedTuple, NoReturn, cast
+from typing import Any, NamedTuple, NoReturn
 
 REPO = Path(__file__).resolve().parents[2]
 RULE = REPO / "docs" / "corpus-licensing.md"
@@ -1279,15 +1279,18 @@ def rescreen_scope(args: argparse.Namespace) -> RescreenScope:
     source, filed_keys = candidate.get("source"), candidate.get("keys")
     if not isinstance(source, str) or not source:
         fail(f"{where}: the filed {args.repository}@{args.commit}:{args.path} names no source; restore it from git")
-    if not args.key and not (
-        isinstance(filed_keys, list) and filed_keys and all(isinstance(key, str) and key for key in filed_keys)
-    ):
+    filed_list: list[str] = []
+    if isinstance(filed_keys, list):
+        filed_list = [key for key in filed_keys if isinstance(key, str) and key]
+        if len(filed_list) != len(filed_keys):
+            filed_list = []
+    if not args.key and not filed_list:
         fail(
             f"{where}: the filed {args.repository}@{args.commit}:{args.path} carries no list of keys; "
             "name the keys to screen with --key"
         )
     known, catalog = scope_keys(root, ledger)
-    keys = list(args.key) if args.key else list(cast(list[str], filed_keys))
+    keys = list(args.key) if args.key else filed_list
     return RescreenScope(ledger, source, keys, known, catalog)
 
 
