@@ -8925,10 +8925,10 @@ def pinned_tree_root(fixtures_root: Path, corpus_root: Path, fixture: str) -> Pa
 # scopes one instrumented run to it.
 GOLDEN_TEST = re.compile(r"matches_fern_output")
 # A corpus assertion helper's name, wherever a call to it starts. Its argument is
-# parsed separately (`_CORPUS_ARGUMENT`) so rustfmt's wrapping — the call broken
+# parsed separately (`CORPUS_ARGUMENT`) so rustfmt's wrapping — the call broken
 # across lines, a trailing comma, spacing around `&` — cannot hide a registration.
 _CORPUS_HELPER = re.compile(r"\b(assert_(?:link_ok_|committed_)?corpus_matches)\s*\(")
-_CORPUS_ARGUMENT = re.compile(r"\s*&\s*(\w+)\s*,?\s*\)")
+CORPUS_ARGUMENT = re.compile(r"\s*&\s*(\w+)\s*,?\s*\)")
 # A `Corpus { api: "…", … }` literal, optionally bound to a `const`, however the
 # binding is wrapped: rustfmt moves a long `const NAME: Corpus =` onto its own line.
 _CORPUS_LITERAL = re.compile(
@@ -8943,6 +8943,19 @@ _LINE_COMMENT = re.compile(r"^[ \t]*//[^\n]*", re.M)
 def _rust_code(source: str) -> str:
     """`source` with its whole-line comments blanked, line numbers kept."""
     return _LINE_COMMENT.sub("", source)
+
+
+def corpus_arguments(source: str, helpers: tuple[str, ...]) -> set[str]:
+    """Every `&CONST` that a call to one of `helpers` in `source` passes, read as
+    `corpus_drives` reads a call: across rustfmt's wrapping, a trailing comma and
+    spacing around `&`. Whole-line comments are prose, not calls."""
+    call = re.compile(rf"\b(?:{'|'.join(map(re.escape, helpers))})\s*\(")
+    code = _rust_code(source)
+    return {
+        argument.group(1)
+        for match in call.finditer(code)
+        if (argument := CORPUS_ARGUMENT.match(code, match.end())) is not None
+    }
 
 
 class CorpusLiteral(NamedTuple):
@@ -9005,7 +9018,7 @@ def corpus_drives(source: str) -> list[CorpusDrive]:
         test = starts[index][1] if index >= 0 else None
         if test is None or not GOLDEN_TEST.search(test):
             continue
-        argument = _CORPUS_ARGUMENT.match(code, call.end())
+        argument = CORPUS_ARGUMENT.match(code, call.end())
         if argument and argument.group(1) in constants:
             drives.append(CorpusDrive(test, argument.group(1)))
             continue

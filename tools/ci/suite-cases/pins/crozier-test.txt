@@ -25,6 +25,7 @@ crozier compare::report::tests::spellings_match_the_contract
 crozier compare::report::tests::timing_derives_every_figure_from_the_two_measurements
 crozier compare::tests::a_crozier_failure_after_a_good_reference_is_a_mismatch
 crozier compare::tests::a_diff_file_name_is_numbered_and_filesystem_safe
+crozier compare::tests::a_diff_file_name_past_the_component_limit_is_cut_to_fit_and_stays_distinct
 crozier compare::tests::a_diff_file_that_cannot_be_written_still_checks_and_reports_everything
 crozier compare::tests::a_refused_spec_a_bad_reference_tree_and_no_shell_are_could_not_check
 crozier compare::tests::a_rendered_diff_describes_each_kind_of_difference

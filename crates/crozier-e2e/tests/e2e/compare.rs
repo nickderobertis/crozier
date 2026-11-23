@@ -1059,6 +1059,60 @@ fn compare_still_checks_and_reports_when_a_diff_file_cannot_be_written() {
     );
 }
 
+/// A config nested deep enough that its path alone passes a filesystem's
+/// 255-byte file-name limit still gets one `--diff-dir` file per mismatched
+/// generator, each named within that limit, distinct, and after the config's
+/// file name and its generator.
+#[cfg(unix)]
+#[test]
+fn compare_names_every_diff_file_within_the_component_limit_for_a_deep_config() {
+    let dirs: Vec<String> = ["a", "b", "c"].iter().map(|c| c.repeat(90)).collect();
+    let config = format!("{}/crozier.yml", dirs.join("/"));
+    assert!(config.len() > 255, "the config path must pass the limit");
+    let reference = format!("{}scripts/reference.sh edit", "../".repeat(dirs.len()));
+    let repo = small_repo(
+        &config,
+        &format!(
+            "  edited:\n    reference:\n      command: ./{reference}\n  \
+             also-edited:\n    reference:\n      command: ./{reference}\n"
+        ),
+    );
+    let outputs = tempfile::tempdir().unwrap();
+    let diffs = outputs.path().join("diffs");
+    let json = outputs.path().join("report.json");
+    let assert = compare_cmd(repo.path())
+        .arg("--diff-dir")
+        .arg(&diffs)
+        .arg("--json")
+        .arg(&json)
+        .assert()
+        .code(3);
+    let stderr = String::from_utf8_lossy(&assert.get_output().stderr).into_owned();
+    assert!(!stderr.contains("could not write"), "{stderr}");
+    let report: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string(&json).unwrap()).unwrap();
+    validate_against_committed_schema(&report);
+    let mut names = Vec::new();
+    for generator in ["edited", "also-edited"] {
+        let edited = result(&report, &config, generator);
+        assert_eq!(edited["status"], "mismatched", "{edited:#}");
+        let file = Path::new(edited["comparison"]["diff_file"].as_str().unwrap());
+        let name = file.file_name().unwrap().to_str().unwrap().to_owned();
+        assert!(name.len() <= 255, "{} bytes: {name}", name.len());
+        assert!(
+            name.contains(&format!("crozier.yml-{generator}-")),
+            "{name}"
+        );
+        let diff = std::fs::read_to_string(diffs.join(&name)).unwrap();
+        assert!(
+            diff.contains(&format!("# crozier compare: {config} {generator}")),
+            "{diff}"
+        );
+        names.push(name);
+    }
+    assert_ne!(names[0], names[1]);
+}
+
 /// When the reference produced output and crozier's own generation fails — here
 /// because `ruff`, which crozier formats with, is not on `PATH` — the generator
 /// is mismatched, with crozier's error as the reason.

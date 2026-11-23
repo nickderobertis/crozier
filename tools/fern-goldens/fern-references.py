@@ -13,10 +13,13 @@ here through the script that owns one item of it:
                     expected-default-max-retries/ through `fern-overlay-goldens.sh`
   handwritten       docs/openapi-surface/handwritten/<fixture>/fern-expected/,
                     with its evidence.toml versions and digest
-  measurements      docs/fern-measurements/<group>/<case>/fern-expected/, or
-                    the case's Contract A fern-refusal.txt where Fern refuses
-                    it, each case's document and setting declared in
-                    docs/fern-measurements/cases.tsv; a `<stem>.fern.log`
+  measurements      docs/fern-measurements/<group>/<case>/fern-expected/ (or
+                    the case directory itself where it is the tree, as a
+                    `<case>/expected-literals/` variant is), or the case's
+                    Contract A fern-refusal.txt where Fern refuses it, each
+                    case's document and setting declared in
+                    docs/fern-measurements/cases.tsv, which must register every
+                    committed tree there (`check` names one it does not); a `<stem>.fern.log`
                     beside its `<stem>.openapi.*` document; and a case's
                     pinned run its measurement.json records
   probes            docs/openapi-surface/probe-expected/<name>/ or its Contract A
@@ -31,6 +34,11 @@ here through the script that owns one item of it:
                     probe document; a class whose probe no longer reproduces its
                     record keeps it, and is reported (not failed) through
                     .local/fern-references/refusals/probe.<class>.changes.jsonl
+  output-insensitive  each comparison record docs/openapi-surface/output-insensitive.tsv
+                    cites, through `output-insensitive-remeasure.py --only`
+  witness-screens   a filed witness candidate whose latest screen ran Fern at a
+                    pair: earlier-pair screens labelled `historical`, then a live
+                    `witness_screen.py screen --ledger` at the pair generated
 
 Usage:
   fern-references.py list FAMILY
@@ -1052,6 +1060,28 @@ def pinned_runs() -> dict[str, Path]:
     }
 
 
+def case_tree(item: str) -> Path:
+    """Where a `cases.tsv` row's tree is committed: `<case>/fern-expected/`, or
+    the case directory itself where that directory is the Fern tree (a variant
+    kept beside its python-enums case, as `<case>/expected-literals/` is)."""
+    case = ROOT / MEASUREMENTS / item
+    nested = case / "fern-expected"
+    return case if not nested.exists() and (case / ".fern" / "metadata.json").is_file() else nested
+
+
+def unregistered_measurement_trees() -> list[str]:
+    """Every committed Fern tree under docs/fern-measurements/ that no item of
+    this family regenerates: a directory holding `.fern/metadata.json` that is
+    no `cases.tsv` row's tree. A gate compares each such tree, so one left out
+    would stay at the pair it was written at when the certified pair moves."""
+    registered = {case_tree(item).resolve() for item in cases()}
+    return sorted(
+        rel(metadata.parent.parent)
+        for metadata in (ROOT / MEASUREMENTS).rglob(".fern/metadata.json")
+        if metadata.parent.parent.resolve() not in registered
+    )
+
+
 def list_measurements() -> list[str]:
     extra = (
         [f"parameter-literals/{case}" for case in parameter_literal_cases()]
@@ -1221,12 +1251,13 @@ def generate_measurement(item: str, pair: Pair) -> None:
     row = cases().get(item)
     if row is None:
         raise ReferenceError(f"{item} is no {CASES} row; `list measurements` names the family")
-    destination = ROOT / MEASUREMENTS / item / "fern-expected"
-    record = destination.with_name(MEASUREMENT_REFUSAL)
+    case = ROOT / MEASUREMENTS / item
+    destination = case_tree(item)
+    record = case / MEASUREMENT_REFUSAL
     if record.is_file() and not destination.exists():
         refused_measurement(item, row, record, pair)
         return
-    evidence = destination.parent / "evidence.toml"
+    evidence = case / "evidence.toml"
     # `validate_measurement` held both provenance files before Fern started.
     restates_evidence = evidence.is_file() and "digest = " in evidence.read_text(encoding="utf-8")
     generated_tree(row.document, destination, pair, enum_type=row.enum_type, layout=row.layout)
@@ -1245,7 +1276,7 @@ def generate_measurement(item: str, pair: Pair) -> None:
         reduce_overlay(destination, base_tree, provenance)
     if restates_evidence:
         rewrite_evidence(evidence, pair, contract_digest(destination))
-    note = destination.parent / "evidence.md"
+    note = case / "evidence.md"
     if note.is_file():
         restate_evidence_note(note, pair, contract_digest(destination))
 
@@ -1598,6 +1629,202 @@ def validate_departure_evidence(item: str) -> None:
     departure_settings(item)
 
 
+OUTPUT_INSENSITIVE = Path("docs/openapi-surface/output-insensitive.tsv")
+
+# `output-insensitive.py`'s COLUMNS, the validator that owns the table; fern_references_test.py
+# holds the two equal.
+OUTPUT_INSENSITIVE_HEADER = ("key", "context", "search_record", "fern_comparison", "crozier_comparison")
+
+
+def list_output_insensitive() -> list[str]:
+    """Each Fern comparison record `output-insensitive.tsv` cites: the record
+    `output-insensitive-remeasure.py --only` re-measures with its crozier twin."""
+    if not (ROOT / OUTPUT_INSENSITIVE).is_file():
+        return []
+    return sorted({row["fern_comparison"] for row in read_tsv(OUTPUT_INSENSITIVE, OUTPUT_INSENSITIVE_HEADER)})
+
+
+def validate_output_insensitive(item: str) -> None:
+    """Both comparison records a row of the table pairs with `item`."""
+    rows = [row for row in read_tsv(OUTPUT_INSENSITIVE, OUTPUT_INSENSITIVE_HEADER) if row["fern_comparison"] == item]
+    if not rows:
+        raise ReferenceError(
+            f"{item} is no {OUTPUT_INSENSITIVE} fern_comparison; `list output-insensitive` names the family"
+        )
+    for row in rows:
+        require(ROOT / row["fern_comparison"], f"its Fern comparison record ({OUTPUT_INSENSITIVE} names it)")
+        require(ROOT / row["crozier_comparison"], f"its crozier comparison record ({OUTPUT_INSENSITIVE} names it)")
+
+
+# llmlint: ignore[changed_behavior_has_e2e] this family only delegates: the remeasure's rewriting of records and removal of a row whose trees now differ needs real Fern and crozier generations, and is proven by tools/surface-census/tests/output_insensitive_remeasure_test.py against the real script; fern_references_test.py drives this delegation (its arguments, a failing exit, the refused --version) through the real CLI.
+def generate_output_insensitive(item: str, pair: Pair) -> None:
+    """Re-measure one comparison record pair at the pair `metadata.json`
+    certifies; a record whose trees now differ leaves the table, which fails
+    the item naming each moved path in its log."""
+    run_script(
+        [
+            "python3",
+            str(ROOT / "tools/surface-census/output-insensitive-remeasure.py"),
+            "--root",
+            str(ROOT),
+            "--only",
+            item,
+        ],
+        ROOT / LOGS / "output-insensitive" / f"{hashlib.sha256(item.encode()).hexdigest()[:12]}.log",
+        pair,
+    )
+
+
+WITNESS_EVIDENCE = Path("docs/openapi-surface")
+WITNESS_LEDGER = "screens.jsonl"
+# A weekly item name: path segments of letters, digits, `.`, `_` and `-`.
+WITNESS_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9._/-]*")
+# What `witness_screen.py` reads as the pair a live screen is held to, set to the
+# pair an item regenerates at, so a screen is taken there before the corpus
+# goldens it otherwise reads the pair from have moved.
+WITNESS_PAIR_ENV = "CROZIER_WITNESS_SCREEN_PAIR"
+
+
+class WitnessCandidate(NamedTuple):
+    """A filed candidate a pair move stales: its ledger, its stable identity, and
+    what its latest screen recorded that a re-screen keeps (the digest the
+    acquisition pinned, "" for none, and the disposition it was filed with)."""
+
+    ledger: Path
+    repository: str
+    commit: str
+    path: str
+    sha256: str
+    disposition: str
+
+
+IDENTITY = ("repository", "commit", "path")
+
+
+class FiledScreen(NamedTuple):
+    """One candidate row of a `screens.jsonl`, decoded at the JSON boundary: its
+    identity, what a re-screen keeps (digest, "" for none, and disposition), and
+    whether it is a current measurement whose Fern screen ran at a pair."""
+
+    repository: str
+    commit: str
+    path: str
+    sha256: str
+    disposition: str
+    ran_fern_at_a_pair: bool
+
+
+def decode_screen(ledger: Path, number: int, line: str) -> FiledScreen | None:
+    """Line `number` of `ledger` as a candidate screen; None for an arm-search row
+    (no repository, commit or path), which is `golden-reach-search`'s."""
+    try:
+        row = json.loads(line)
+    except ValueError:
+        row = None
+    if not isinstance(row, dict):
+        raise ReferenceError(f"{rel(ledger)}:{number} is no JSON object; restore it from git")
+    repository, commit, path = (row.get(field) for field in IDENTITY)
+    if repository is None and commit is None and path is None:
+        return None
+    if not (
+        isinstance(repository, str)
+        and repository
+        and isinstance(commit, str)
+        and commit
+        and isinstance(path, str)
+        and path
+    ):
+        raise ReferenceError(
+            f"{rel(ledger)}:{number} names a candidate without a whole repository, commit and path; restore it from git"
+        )
+    digest, disposition = row.get("sha256", ""), row.get("disposition", "")
+    if not isinstance(digest, str) or not isinstance(disposition, str):
+        raise ReferenceError(
+            f"{rel(ledger)}:{number}: {repository}@{commit}:{path} carries a sha256 or disposition "
+            "that is no string; restore it from git"
+        )
+    measured = row.get("measured")
+    fern = measured.get("fern") if isinstance(measured, dict) else None
+    at_pair = "historical" not in row and isinstance(fern, dict) and isinstance(fern.get("pins"), dict)
+    return FiledScreen(repository, commit, path, digest, disposition, at_pair)
+
+
+@read_once
+def witness_candidates() -> dict[str, WitnessCandidate]:
+    """Each filed witness candidate whose latest screen is a current measurement
+    that ran Fern at a pair: the evidence a pair move stales. Named
+    `<ledger dir>/<owner>/<repo>/<commit>/<path>`. A row already labelled
+    `historical`, or measured with no Fern run, is no pair's measurement."""
+    found: dict[str, WitnessCandidate] = {}
+    for ledger in sorted((ROOT / WITNESS_EVIDENCE).glob(f"**/{WITNESS_LEDGER}")):
+        latest: dict[tuple[str, str, str], FiledScreen] = {}
+        for number, line in enumerate(ledger.read_text(encoding="utf-8").splitlines(), 1):
+            if line.strip() and (screen := decode_screen(ledger, number, line)) is not None:
+                latest[(screen.repository, screen.commit, screen.path)] = screen
+        directory = rel(ledger.parent)[len(str(WITNESS_EVIDENCE)) + 1 :]
+        for screen in latest.values():
+            if not screen.ran_fern_at_a_pair:
+                continue
+            name = f"{directory}/{screen.repository}/{screen.commit}/{screen.path}"
+            if not WITNESS_NAME.fullmatch(name) or ".." in name.split("/"):
+                raise ReferenceError(
+                    f"{rel(ledger)}: {screen.repository}@{screen.commit}:{screen.path} names no weekly item "
+                    "(letters, digits, `.`, `_`, `-` and `/`); re-screen it by hand with "
+                    "`witness_screen.py screen --ledger`"
+                )
+            found[name] = WitnessCandidate(
+                ledger, screen.repository, screen.commit, screen.path, screen.sha256, screen.disposition
+            )
+    return found
+
+
+def list_witness_screens() -> list[str]:
+    return sorted(witness_candidates())
+
+
+def validate_witness_screen(item: str) -> None:
+    """The candidate's ledger and its filed row, read before Fern or the network."""
+    if item not in witness_candidates():
+        raise ReferenceError(f"{item} is no current witness screen; `list witness-screens` names the family")
+
+
+# llmlint: ignore[changed_behavior_has_e2e] the real labelling and re-screen at a named pair need Fern and the raw GitHub lane, and witness_screen_test.py's test_a_pair_adoption_checks_labels_and_rescreens_at_the_pair_it_names drives exactly the two commands this runs, through the real script with CROZIER_WITNESS_SCREEN_PAIR set; fern_references_test.py drives this item's selection, argument order, preserved disposition and pair through the real CLI.
+def generate_witness_screen(item: str, pair: Pair) -> None:
+    """Take one filed candidate's screens again at `pair`: every screen measured
+    at an earlier pair is labelled `historical` first, then the candidate is
+    re-screened live in its own ledger and key scope (`screen --ledger`), keeping
+    the disposition it was filed with. A candidate that no longer passes what
+    that disposition claims is refused, failing the item for a person."""
+    candidate = witness_candidates().get(item)
+    if candidate is None:
+        raise ReferenceError(f"{item} is no current witness screen; `list witness-screens` names the family")
+    tool = str(ROOT / "tools/witness-search/witness_screen.py")
+    evidence = str(ROOT / WITNESS_EVIDENCE)
+    logs = ROOT / LOGS / "witness-screens" / hashlib.sha256(item.encode()).hexdigest()[:12]
+    environment = {**os.environ, WITNESS_PAIR_ENV: f"{pair.cli}/{pair.generator}"}
+    argv = ["python3", tool, "screen", "--ledger", str(candidate.ledger)]
+    argv += ["--repository", candidate.repository, "--commit", candidate.commit, "--path", candidate.path]
+    argv += ["--evidence-root", evidence]
+    if candidate.sha256:
+        argv += ["--sha256", candidate.sha256]
+    # A `rejected` screen re-screens with no --disposition, which is how witness_screen.py files one.
+    # llmlint: ignore[modern_domain_modeling] the disposition domain is open, not finite: known_disposition in witness-search-github-index.py admits parametric `pending-registration; owner <node>` and `byte-identical to CORPUS row <n>, sha256 <digest>` forms, and witness_screen.py's --disposition validates it on receipt; this site only forwards the filed string.
+    if candidate.disposition and candidate.disposition != "rejected":
+        argv += ["--disposition", candidate.disposition]
+    for name, command in (
+        ("historical", ["python3", tool, "historical", "--evidence-root", evidence]),
+        ("screen", argv),
+    ):
+        log = logs / f"{name}.log"
+        log.parent.mkdir(parents=True, exist_ok=True)
+        with log.open("w", encoding="utf-8", newline="\n") as handle:
+            result = subprocess.run(
+                command, cwd=ROOT, stdout=handle, stderr=subprocess.STDOUT, env=environment, check=False
+            )
+        if result.returncode != 0:
+            raise ReferenceError(f"`witness_screen.py {name}` exited {result.returncode}; see {rel(log)}")
+
+
 @dataclass(frozen=True)
 class Family:
     """One reference family: what lists its item names, what validates one's
@@ -1619,6 +1846,8 @@ FAMILY: dict[str, Family] = {
     "authored-probes": Family(list_authored, generate_authored, validate_authored),
     "refusals": Family(list_refusals, generate_refusal, validate_refusal),
     "departure-evidence": Family(list_departure_evidence, generate_departure_evidence, validate_departure_evidence),
+    "output-insensitive": Family(list_output_insensitive, generate_output_insensitive, validate_output_insensitive),
+    "witness-screens": Family(list_witness_screens, generate_witness_screen, validate_witness_screen),
 }
 
 
@@ -1645,6 +1874,12 @@ def check(families: list[str]) -> int:
             lines.append(f"{family} (its listing): {reason}")
             continue
         lines += [line for item in items if (line := broken(family, item)) is not None]
+        if family == "measurements":
+            lines += [
+                f"measurements {tree}: a committed Fern tree no {CASES} row regenerates, so a pair move "
+                "would leave it at its old pair; add the row naming its document, enum_type, layout and overlay"
+                for tree in unregistered_measurement_trees()
+            ]
     sys.stderr.write("".join(f"{line}\n" for line in lines))
     if lines:
         print(f"fern-references: check: {len(lines)} broken item(s); repair each input named above", file=sys.stderr)
@@ -1660,6 +1895,10 @@ UNPINNABLE: dict[str, dict[str, str]] = {
     "refusals": {
         "--version": "fern-refusals.py measures at the certified pair metadata.json declares",
         "--cli-version": "fern-refusals.py measures at the certified pair metadata.json declares",
+    },
+    "output-insensitive": {
+        "--version": "output-insensitive-remeasure.py measures at the certified pair metadata.json declares",
+        "--cli-version": "output-insensitive-remeasure.py measures at the certified pair metadata.json declares",
     },
 }
 
