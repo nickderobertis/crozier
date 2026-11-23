@@ -1511,6 +1511,8 @@ def fixture_declined(key: str, source: str) -> set[str]:
     return {c for c, row in latest.items() if str(row.get("declined", "")).startswith(FIXTURE_DECLINE)}
 
 
+# A query source's candidate, `<owner>/<repo>:<path>@<commit>`: the one grammar both
+# eligibility (`tooling_resources`) and acquisition (`candidate_ref`) read.
 QUERY_CANDIDATE = re.compile(r"(?:github\.com/)?([^/:]+/[^/:]+):(.+)@([0-9a-f]{40})")
 
 
@@ -1541,7 +1543,7 @@ def ineligible(key: str, source: str) -> set[str]:
 def candidate_ref(source: str, candidate: str) -> tuple[str, str, str, str]:
     """Where a candidate's bytes are pinned: repository, commit, path, and the digest the search read."""
     if source in QUERY_SOURCES:
-        found = re.fullmatch(r"(?:github\.com/)?([^/:]+/[^/:]+):(.+)@([0-9a-f]{40})", candidate)
+        found = QUERY_CANDIDATE.fullmatch(candidate)
         if not found:
             fail(
                 f"{candidate} names no `<owner>/<repo>:<path>@<commit>` a screen can read at its commit; "
