@@ -297,7 +297,8 @@ class LegacyScreenCliTests(unittest.TestCase):
         digest = self.rows()[-1]["measured"]["document"]["sha256"]
         entry = store / digest / "python_enums"
         self.assertEqual(
-            (entry / "tree" / "src" / "sdk" / "core.py").read_text(encoding="utf-8"), "# a comment Fern writes\nCORE = 1\n"
+            (entry / "tree" / "src" / "sdk" / "core.py").read_text(encoding="utf-8"),
+            "# a comment Fern writes\nCORE = 1\n",
         )
         self.assertEqual(json.loads((entry / "tree" / ".fern" / "metadata.json").read_text(encoding="utf-8")), metadata)
         self.assertEqual((entry / "document.sha256").read_text(encoding="utf-8"), digest + "\n")
@@ -1332,6 +1333,52 @@ class HistoricalPairTests(unittest.TestCase):
             env_stub=stub,
         )
         self.assertEqual(0, filed.returncode, filed.stderr)
+
+    def test_a_pair_adoption_checks_labels_and_rescreens_at_the_pair_it_names(self) -> None:
+        """Issue #865: a pair adoption names the pair it adopts before the corpus
+        goldens move (`CROZIER_WITNESS_SCREEN_PAIR`, which `fern-references.py
+        generate witness-screens` sets). `historical --check` then refuses the
+        current screen without writing, `historical` labels it, and the candidate
+        is re-screened in its ledger at that pair."""
+        identity = ("--repository", "acme/shop", "--commit", COMMIT, "--path", "openapi.yaml")
+        filed = self.run_stage(
+            REPO, "screen", "--source", "sourcegraph", "--key", "sample-shape", *identity,
+            "--evidence-root", str(self.surface), "--timeout", "60", "--disposition", "witness-found",
+        )  # fmt: skip
+        self.assertEqual(0, filed.returncode, filed.stderr)
+        before = self.screens().read_bytes()
+        current = self.run_stage(REPO, "historical", "--check", "--evidence-root", str(self.surface))
+        self.assertEqual(0, current.returncode, current.stderr)
+        self.assertNotIn("holds a screen measured at an earlier pair", current.stderr)
+
+        cli, generator, version = self.LATER
+        self.env[SCREEN.PAIR_ENV] = f"{cli}/{version}"
+        stale = self.run_stage(REPO, "historical", "--check", "--evidence-root", str(self.surface))
+        self.assertEqual(1, stale.returncode, stale.stderr)
+        self.assertIn(f"{self.screens()} holds a screen measured at an earlier pair", stale.stderr)
+        self.assertEqual(before, self.screens().read_bytes(), "--check wrote the ledger")
+
+        labelled = self.run_stage(REPO, "historical", "--evidence-root", str(self.surface))
+        self.assertEqual(0, labelled.returncode, labelled.stderr)
+        self.assertIn("labelled 1 screen(s)", labelled.stdout)
+        rescreened = self.run_stage(
+            REPO, "screen", "--ledger", str(self.screens()), *identity, "--evidence-root", str(self.surface),
+            "--timeout", "60", "--disposition", "witness-found",
+        )  # fmt: skip
+        self.assertEqual(0, rescreened.returncode, rescreened.stderr)
+        old, new = (json.loads(line) for line in self.screens().read_text(encoding="utf-8").splitlines())
+        self.assertIn(SCREEN.HISTORICAL_PAIR, old)
+        self.assertNotIn(SCREEN.HISTORICAL_PAIR, new)
+        self.assertEqual(
+            {"fern_cli": cli, "generator": generator, "generator_version": version}, new["measured"]["fern"]["pins"]
+        )
+        done = self.run_stage(REPO, "historical", "--check", "--evidence-root", str(self.surface))
+        self.assertEqual(0, done.returncode, done.stderr)
+
+        self.env[SCREEN.PAIR_ENV] = "9.0.0"
+        malformed = self.run_stage(REPO, "historical", "--check", "--evidence-root", str(self.surface))
+        self.assertEqual(1, malformed.returncode)
+        self.assertIn(f"{SCREEN.PAIR_ENV}='9.0.0' is no `<fern cli>/<fern-python-sdk>` pair", malformed.stderr)
 
     def test_a_mixed_ledger_labels_exactly_its_earlier_pair_runs_and_keeps_every_other_line(self) -> None:
         # A row filed before the stage, with no record and no date: history already.

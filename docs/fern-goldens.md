@@ -328,6 +328,8 @@ breaks a weekly input fails its own pull request.
 | `authored-probes` | `docs/openapi-surface/authored-probes/<case>/fern.log` and `fern-expected/` | the probe workspace below |
 | `departure-evidence` | `docs/departures/evidence/<id>/fern-reference/`, a departure note's own Fern tree, under the settings its `fern-reference.json` records | the probe workspace below |
 | `refusals` | `docs/fern-refusals/<class>/fern-refusal.txt`, `findings.tsv`, and each `<class>/evidence/<stem>.pinned-fern.log` whose probe document sits beside it | `fern-refusals.py probe` / `finding` with `--jobs 1` |
+| `output-insensitive` | each comparison record [`output-insensitive.tsv`](openapi-surface/output-insensitive.tsv) cites, with its crozier twin, at the pair `metadata.json` certifies; a record whose trees now differ leaves the table and fails its item | `output-insensitive-remeasure.py --only <record>` |
+| `witness-screens` | every filed witness candidate whose latest screen ran Fern at a pair (`<ledger dir>/<owner>/<repo>/<commit>/<path>`): earlier-pair screens labelled `historical`, then a live screen at the pair appended to its own ledger, keeping its disposition; one that no longer passes what that disposition claims fails its item | `witness_screen.py historical`, then `screen --ledger`, with `CROZIER_WITNESS_SCREEN_PAIR` naming the pair |
 
 The probe workspace is the one `generate-fern-fixture.sh` scaffolds, built by
 `tools/fern-goldens/fern-references.py` itself so it can write outside

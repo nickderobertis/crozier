@@ -15,3 +15,5 @@ corpus	item	fixtures-report	just fixtures-diff {item}
 corpus,overlays,handwritten,measurements,probes,authored-probes,departure-evidence,refusals	family	exit:0/100	cargo nextest run --locked --no-fail-fast --status-level fail --final-status-level fail -p crozier-e2e
 refusals	family	exit:0/100	cargo nextest run --locked --no-fail-fast --status-level fail --final-status-level fail -p crozier --test refusal_registry
 refusals	family	exit:0/1	python3 tools/fern-refusals/fern-refusals.py check
+output-insensitive	family	exit:0/1	python3 tools/surface-census/output-insensitive.py
+witness-screens	family	exit:0/1	python3 tools/witness-search/witness_screen.py historical --check

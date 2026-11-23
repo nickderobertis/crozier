@@ -55,7 +55,8 @@ same ledger, its logs filed beside it.
 refused to file (an unknown key, a path outside the repository, a record that
 is not whole, a success claim the outcomes do not support, a Fern timeout); 2
 on a usage error. `historical` exits 0 when every committed screen it read is
-labelled where it owes one (printing how many it labelled, or nothing), 1 when
+labelled where it owes one (printing how many it labelled, or nothing; with
+`--check` it writes nothing and exits 1 naming each ledger still owing one), 1 when
 the evidence root is no directory, a ledger line is no JSON object, or a label
 already there does not hold, writing nothing, and 2 on a usage error.
 """
@@ -169,7 +170,20 @@ def corpus_fern_pins() -> tuple[str, str, str, dict[str, Any]]:
             "restore the corpus goldens from git"
         )
     cli, name, version, config = json.loads(counts.most_common(1)[0][0])
+    override = os.environ.get(PAIR_ENV, "")
+    if override:
+        # A pair adoption screens at the pair it adopts, before the goldens it
+        # reads the pins from have moved (`fern-references.py generate witness-screens`).
+        found = re.fullmatch(r"(\d+\.\d+\.\d+)/(\d+\.\d+\.\d+)", override)
+        if found is None:
+            fail(f"{PAIR_ENV}={override!r} is no `<fern cli>/<fern-python-sdk>` pair of release versions; unset it")
+        cli, version = found.group(1), found.group(2)
     return cli, name, version, config
+
+
+# The pair a live screen is held to, where a caller names it rather than the
+# corpus goldens: `<fern cli>/<fern-python-sdk>`, both exact release versions.
+PAIR_ENV = "CROZIER_WITNESS_SCREEN_PAIR"
 
 
 def _yaml_block(value: Any, indent: int) -> list[str]:
@@ -1363,7 +1377,7 @@ def screen_fields(root: Path, screens: Path) -> dict[str, str]:
     return {name: name for name in SCREENS}
 
 
-def label_historical(root: Path) -> int:
+def label_historical(root: Path, check: bool = False) -> int:
     """Label every committed screen measured at a pair other than the corpus's as history of that pair,
     in each ledger and in every numbered part of one.
 
@@ -1411,6 +1425,15 @@ def label_historical(root: Path) -> int:
             labelled += 1
         if changed:
             rewrites[screens] = lines
+    if check:
+        # Read only: a pair move left screens a gate would read as current.
+        for screens in rewrites:
+            print(
+                f"witness-screen: {screens} holds a screen measured at an earlier pair with no "
+                f"`{HISTORICAL_PAIR}` label; run `witness_screen.py historical`, then re-screen the candidate",
+                file=sys.stderr,
+            )
+        return 1 if rewrites else 0
     for screens, lines in rewrites.items():
         screens.write_bytes("".join(lines).encode("utf-8"))
     if labelled:
@@ -1444,9 +1467,10 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--fern", help=argparse.SUPPRESS)
     h = sub.add_parser("historical", help="label every screen measured at an earlier certified pair as its history")
     h.add_argument("--evidence-root", type=Path, default=REPO / "docs" / "openapi-surface")
+    h.add_argument("--check", action="store_true", help="write nothing; exit 1 naming each ledger a label is owed in")
     args = parser.parse_args(argv)
     if args.command == "historical":
-        return label_historical(args.evidence_root)
+        return label_historical(args.evidence_root, args.check)
     return legacy_screen(args)
 
 

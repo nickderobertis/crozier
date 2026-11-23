@@ -344,6 +344,101 @@ class FernReferencesTests(unittest.TestCase):
         (call,) = self.calls()
         self.assertNotIn("enum_type", call["generators"])
 
+    def test_a_pair_adoption_remeasures_each_output_insensitive_comparison_record(self) -> None:
+        """Issue #865: each comparison record `output-insensitive.tsv` cites is an
+        item, re-measured through `output-insensitive-remeasure.py --only`; one
+        whose trees moved fails its item, and the pair is the certified one."""
+        surface = "docs/openapi-surface/witness-search-x"
+        self.write(
+            "docs/openapi-surface/output-insensitive.tsv",
+            "key\tcontext\tsearch_record\tfern_comparison\tcrozier_comparison\n"
+            f"k\tc\t{surface}/README.md\t{surface}/a/fern-comparison.json\t{surface}/a/crozier-comparison.json\n"
+            f"k\td\t{surface}/README.md\t{surface}/b/fern-comparison.json\t{surface}/b/crozier-comparison.json\n",
+        )
+        for record in ("a/fern", "a/crozier", "b/fern"):
+            self.write(f"{surface}/{record}-comparison.json", "{}\n")
+        self.install_delegates("tools/surface-census/output-insensitive-remeasure.py")
+
+        listed = self.run_tool("list", "output-insensitive")
+        self.assertEqual(
+            (0, f"{surface}/a/fern-comparison.json\n{surface}/b/fern-comparison.json\n"),
+            (listed.returncode, listed.stdout),
+        )
+        checked = self.run_tool("check", "output-insensitive")
+        self.assertEqual(1, checked.returncode)
+        self.assertIn(
+            f"output-insensitive {surface}/b/fern-comparison.json: its crozier comparison record", checked.stderr
+        )
+
+        done = self.run_tool("generate", "output-insensitive", f"{surface}/a/fern-comparison.json")
+        self.assertEqual(0, done.returncode, done.stderr)
+        [call] = self.delegate_calls()
+        self.assertEqual("output-insensitive-remeasure.py", call["script"])
+        self.assertEqual(["--root", str(self.root), "--only", f"{surface}/a/fern-comparison.json"], call["argv"])
+
+        self.env["DELEGATE_EXIT"] = "1"
+        moved = self.run_tool("generate", "output-insensitive", f"{surface}/a/fern-comparison.json")
+        self.assertEqual(1, moved.returncode)
+        self.assertIn("output-insensitive-remeasure.py --root", moved.stderr)
+        self.assertIn("exited 1; see .local/fern-references/output-insensitive/", moved.stderr)
+        pinned = self.run_tool("generate", "output-insensitive", "--version", "1.2.3")
+        self.assertEqual(2, pinned.returncode)
+        self.assertIn("output-insensitive cannot take --version", pinned.stderr)
+
+    def test_a_pair_adoption_labels_and_rescreens_each_witness_measured_at_a_pair(self) -> None:
+        """Issue #865: every filed candidate whose latest screen ran Fern at a pair
+        is an item. Its generation labels earlier-pair screens `historical`, then
+        re-screens it in its own ledger at the pair it generates, keeping its
+        disposition; history, an unmeasured row and a Fern-less record are none."""
+        pins = {"fern_cli": OLD, "generator": "fernapi/fern-python-sdk", "generator_version": OLD}
+        commit = "c" * 40
+        rows = [
+            {"repository": "acme/shop", "commit": commit, "path": "openapi.yaml", "sha256": "d" * 64,
+             "disposition": "witness-found", "measured": {"fern": {"pins": pins}}},
+            {"repository": "acme/old", "commit": commit, "path": "a.yaml", "disposition": "not-owed",
+             "historical": "measured at an earlier certified pair", "measured": {"fern": {"pins": pins}}},
+            {"repository": "acme/bare", "commit": commit, "path": "b.yaml", "disposition": "rejected"},
+            {"repository": "acme/unrun", "commit": commit, "path": "c.yaml", "disposition": "rejected",
+             "measured": {"fern": {"outcome": "not-run"}}},
+        ]  # fmt: skip
+        self.write(
+            "docs/openapi-surface/witness-search-x/acme-screen/screens.jsonl",
+            "".join(json.dumps(row) + "\n" for row in rows),
+        )
+        stub = STUB_DELEGATE.replace(
+            '"cli": os.environ.get("FERN_CLI_VERSION")', '"pair": os.environ.get("CROZIER_WITNESS_SCREEN_PAIR")'
+        )
+        self.env["DELEGATE_LOG"] = str(self.root / "delegate-calls.jsonl")
+        self.write("tools/witness-search/witness_screen.py", stub, executable=True)
+        item = f"witness-search-x/acme-screen/acme/shop/{commit}/openapi.yaml"
+
+        listed = self.run_tool("list", "witness-screens")
+        self.assertEqual((0, f"{item}\n"), (listed.returncode, listed.stdout))
+        self.assertEqual(0, self.run_tool("check", "witness-screens").returncode)
+
+        done = self.run_tool("generate", "witness-screens", item)
+        self.assertEqual(0, done.returncode, done.stderr)
+        self.assertIn(f"witness-screens: 1 regenerated, 0 failed at Fern CLI {CLI}", done.stdout)
+        evidence = str(self.root / "docs/openapi-surface")
+        ledger = f"{evidence}/witness-search-x/acme-screen/screens.jsonl"
+        self.assertEqual(
+            [
+                ["historical", "--evidence-root", evidence],
+                ["screen", "--ledger", ledger, "--repository", "acme/shop", "--commit", commit, "--path",
+                 "openapi.yaml", "--evidence-root", evidence, "--sha256", "d" * 64, "--disposition", "witness-found"],
+            ],
+            [call["argv"] for call in self.delegate_calls()],
+        )  # fmt: skip
+        self.assertEqual({f"{CLI}/{SDK}"}, {call["pair"] for call in self.delegate_calls()})
+
+        self.env["DELEGATE_EXIT"] = "1"
+        refused = self.run_tool("generate", "witness-screens", item)
+        self.assertEqual(1, refused.returncode)
+        self.assertIn("`witness_screen.py historical` exited 1", refused.stderr)
+        unknown = self.run_tool("generate", "witness-screens", f"witness-search-x/acme-screen/acme/old/{commit}/a.yaml")
+        self.assertEqual(2, unknown.returncode)
+        self.assertIn("no witness-screens item", unknown.stderr)
+
     def test_every_committed_measurement_tree_is_an_item_and_an_unregistered_one_fails_the_check(self) -> None:
         """Issue #961: a committed Fern tree under docs/fern-measurements/ that no
         `cases.tsv` row regenerates fails `check`, naming it, rather than staying at
@@ -370,7 +465,9 @@ class FernReferencesTests(unittest.TestCase):
         self.assertNotIn(f"{case}/fern-expected:", checked.stderr)
         self.assertEqual([], self.calls(), "check ran Fern")
 
-        variant = f"handed-off/client-structure/init-order/expected-literals\t{case}/openapi.yml\tliterals\tpackaged\t-\n"
+        variant = (
+            f"handed-off/client-structure/init-order/expected-literals\t{case}/openapi.yml\tliterals\tpackaged\t-\n"
+        )
         self.write("docs/fern-measurements/cases.tsv", header + registered + variant)
         checked = self.run_tool("check", "measurements")
         self.assertEqual(checked.returncode, 0, checked.stderr)
@@ -384,7 +481,9 @@ class FernReferencesTests(unittest.TestCase):
         self.assertTrue((literals / "src/fern/literal.py").is_file())
         self.assertEqual(CLI, json.loads((literals / ".fern/metadata.json").read_text(encoding="utf-8"))["cliVersion"])
         self.assertFalse((literals / "fern-expected").exists(), "the variant was written beside itself, not in place")
-        self.assertEqual("OLD = 1\n", (self.root / case / "fern-expected/src/fern/client.py").read_text(encoding="utf-8"))
+        self.assertEqual(
+            "OLD = 1\n", (self.root / case / "fern-expected/src/fern/client.py").read_text(encoding="utf-8")
+        )
         self.assertEqual("evidence\n", (self.root / case / "README.md").read_text(encoding="utf-8"))
 
     def test_a_triage_cause_directory_is_a_measurement_case(self) -> None:
