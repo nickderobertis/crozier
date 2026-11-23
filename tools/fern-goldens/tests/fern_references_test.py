@@ -344,6 +344,49 @@ class FernReferencesTests(unittest.TestCase):
         (call,) = self.calls()
         self.assertNotIn("enum_type", call["generators"])
 
+    def test_every_committed_measurement_tree_is_an_item_and_an_unregistered_one_fails_the_check(self) -> None:
+        """Issue #961: a committed Fern tree under docs/fern-measurements/ that no
+        `cases.tsv` row regenerates fails `check`, naming it, rather than staying at
+        its old pair through a weekly regeneration that skips it; once registered,
+        a variant kept as a tree beside its case (`<case>/expected-literals/`) is
+        regenerated in place, and the case's own tree and evidence are untouched."""
+        case = "docs/fern-measurements/handed-off/client-structure/init-order"
+        self.write(f"{case}/openapi.yml", "openapi: 3.0.3\n")
+        self.write(f"{case}/README.md", "evidence\n")
+        for tree in ("fern-expected", "expected-literals"):
+            self.write(f"{case}/{tree}/.fern/metadata.json", json.dumps({**METADATA, "cliVersion": OLD}))
+            self.write(f"{case}/{tree}/src/fern/client.py", "OLD = 1\n")
+        header = "case\tdocument\tenum_type\tlayout\toverlay\n"
+        registered = f"handed-off/client-structure/init-order\t{case}/openapi.yml\tpython-enums\tpackaged\t-\n"
+        self.write("docs/fern-measurements/cases.tsv", header + registered)
+
+        checked = self.run_tool("check", "measurements")
+        self.assertEqual(checked.returncode, 1, checked.stderr)
+        self.assertIn(
+            f"measurements {case}/expected-literals: a committed Fern tree no docs/fern-measurements/cases.tsv "
+            "row regenerates",
+            checked.stderr,
+        )
+        self.assertNotIn(f"{case}/fern-expected:", checked.stderr)
+        self.assertEqual([], self.calls(), "check ran Fern")
+
+        variant = f"handed-off/client-structure/init-order/expected-literals\t{case}/openapi.yml\tliterals\tpackaged\t-\n"
+        self.write("docs/fern-measurements/cases.tsv", header + registered + variant)
+        checked = self.run_tool("check", "measurements")
+        self.assertEqual(checked.returncode, 0, checked.stderr)
+        listed = self.run_tool("list", "measurements")
+        self.assertIn("handed-off/client-structure/init-order/expected-literals", listed.stdout.split())
+
+        result = self.run_tool("generate", "measurements", "handed-off/client-structure/init-order/expected-literals")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        literals = self.root / case / "expected-literals"
+        self.assertEqual((literals / "src/fern/client.py").read_text(encoding="utf-8"), "CLIENT = 1\n")
+        self.assertTrue((literals / "src/fern/literal.py").is_file())
+        self.assertEqual(CLI, json.loads((literals / ".fern/metadata.json").read_text(encoding="utf-8"))["cliVersion"])
+        self.assertFalse((literals / "fern-expected").exists(), "the variant was written beside itself, not in place")
+        self.assertEqual("OLD = 1\n", (self.root / case / "fern-expected/src/fern/client.py").read_text(encoding="utf-8"))
+        self.assertEqual("evidence\n", (self.root / case / "README.md").read_text(encoding="utf-8"))
+
     def test_a_triage_cause_directory_is_a_measurement_case(self) -> None:
         """Issue #823: the recorded triage layout's upper-case cause directories, and
         their literals trees, regenerate like any other case."""
@@ -1331,7 +1374,14 @@ class FernReferencesTests(unittest.TestCase):
         for rel, text in {**tree, "src/fern/core/enum.py": "ENUM = 1\n", ".fern/metadata.json": "{}"}.items():
             self.write(f"docs/fern-measurements/parameter-lowering/retired/fern-expected/{rel}", text)
         self.write("docs/fern-measurements/parameter-literals/certified-trees.json", json.dumps({"retired": "0" * 64}))
-        self.write("docs/fern-measurements/cases.tsv", "case\tdocument\tenum_type\tlayout\toverlay\n")
+        # The python-enums tree is a committed tree of its own case, as every
+        # parameter-lowering case's is.
+        self.write(
+            "docs/fern-measurements/cases.tsv",
+            "case\tdocument\tenum_type\tlayout\toverlay\n"
+            "parameter-lowering/retired\tdocs/fern-measurements/parameter-lowering/retired/openapi.yml\t"
+            "python-enums\tpackaged\t-\n",
+        )
         self.assertFalse((self.root / "docs/openapi-surface/handwritten/retired").exists())
         clean = self.run_tool("check", "measurements")
         self.assertEqual(0, clean.returncode, clean.stderr)

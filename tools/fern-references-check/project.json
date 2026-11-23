@@ -38,6 +38,8 @@
         "{workspaceRoot}/docs/fern-measurements/**/evidence.toml",
         "{workspaceRoot}/docs/fern-measurements/**/evidence.md",
         "{workspaceRoot}/docs/fern-measurements/**/fern-expected/.fern/metadata.json",
+        "{workspaceRoot}/docs/fern-measurements/**/.fern/metadata.json",
+        "{workspaceRoot}/docs/fern-measurements/**/openapi.yaml",
         "{workspaceRoot}/docs/openapi-surface/handwritten/*/evidence.toml",
         "{workspaceRoot}/docs/openapi-surface/handwritten/*/openapi.yml",
         "{workspaceRoot}/docs/openapi-surface/handwritten/*/fern-expected/.fern/metadata.json",

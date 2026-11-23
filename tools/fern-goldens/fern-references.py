@@ -13,10 +13,13 @@ here through the script that owns one item of it:
                     expected-default-max-retries/ through `fern-overlay-goldens.sh`
   handwritten       docs/openapi-surface/handwritten/<fixture>/fern-expected/,
                     with its evidence.toml versions and digest
-  measurements      docs/fern-measurements/<group>/<case>/fern-expected/, or
-                    the case's Contract A fern-refusal.txt where Fern refuses
-                    it, each case's document and setting declared in
-                    docs/fern-measurements/cases.tsv; a `<stem>.fern.log`
+  measurements      docs/fern-measurements/<group>/<case>/fern-expected/ (or
+                    the case directory itself where it is the tree, as a
+                    `<case>/expected-literals/` variant is), or the case's
+                    Contract A fern-refusal.txt where Fern refuses it, each
+                    case's document and setting declared in
+                    docs/fern-measurements/cases.tsv, which must register every
+                    committed tree there (`check` names one it does not); a `<stem>.fern.log`
                     beside its `<stem>.openapi.*` document; and a case's
                     pinned run its measurement.json records
   probes            docs/openapi-surface/probe-expected/<name>/ or its Contract A
@@ -1052,6 +1055,28 @@ def pinned_runs() -> dict[str, Path]:
     }
 
 
+def case_tree(item: str) -> Path:
+    """Where a `cases.tsv` row's tree is committed: `<case>/fern-expected/`, or
+    the case directory itself where that directory is the Fern tree (a variant
+    kept beside its python-enums case, as `<case>/expected-literals/` is)."""
+    case = ROOT / MEASUREMENTS / item
+    nested = case / "fern-expected"
+    return case if not nested.exists() and (case / ".fern" / "metadata.json").is_file() else nested
+
+
+def unregistered_measurement_trees() -> list[str]:
+    """Every committed Fern tree under docs/fern-measurements/ that no item of
+    this family regenerates: a directory holding `.fern/metadata.json` that is
+    no `cases.tsv` row's tree. A gate compares each such tree, so one left out
+    would stay at the pair it was written at when the certified pair moves."""
+    registered = {case_tree(item).resolve() for item in cases()}
+    return sorted(
+        rel(metadata.parent.parent)
+        for metadata in (ROOT / MEASUREMENTS).rglob(".fern/metadata.json")
+        if metadata.parent.parent.resolve() not in registered
+    )
+
+
 def list_measurements() -> list[str]:
     extra = (
         [f"parameter-literals/{case}" for case in parameter_literal_cases()]
@@ -1221,12 +1246,13 @@ def generate_measurement(item: str, pair: Pair) -> None:
     row = cases().get(item)
     if row is None:
         raise ReferenceError(f"{item} is no {CASES} row; `list measurements` names the family")
-    destination = ROOT / MEASUREMENTS / item / "fern-expected"
-    record = destination.with_name(MEASUREMENT_REFUSAL)
+    case = ROOT / MEASUREMENTS / item
+    destination = case_tree(item)
+    record = case / MEASUREMENT_REFUSAL
     if record.is_file() and not destination.exists():
         refused_measurement(item, row, record, pair)
         return
-    evidence = destination.parent / "evidence.toml"
+    evidence = case / "evidence.toml"
     # `validate_measurement` held both provenance files before Fern started.
     restates_evidence = evidence.is_file() and "digest = " in evidence.read_text(encoding="utf-8")
     generated_tree(row.document, destination, pair, enum_type=row.enum_type, layout=row.layout)
@@ -1245,7 +1271,7 @@ def generate_measurement(item: str, pair: Pair) -> None:
         reduce_overlay(destination, base_tree, provenance)
     if restates_evidence:
         rewrite_evidence(evidence, pair, contract_digest(destination))
-    note = destination.parent / "evidence.md"
+    note = case / "evidence.md"
     if note.is_file():
         restate_evidence_note(note, pair, contract_digest(destination))
 
@@ -1645,6 +1671,12 @@ def check(families: list[str]) -> int:
             lines.append(f"{family} (its listing): {reason}")
             continue
         lines += [line for item in items if (line := broken(family, item)) is not None]
+        if family == "measurements":
+            lines += [
+                f"measurements {tree}: a committed Fern tree no {CASES} row regenerates, so a pair move "
+                "would leave it at its old pair; add the row naming its document, enum_type, layout and overlay"
+                for tree in unregistered_measurement_trees()
+            ]
     sys.stderr.write("".join(f"{line}\n" for line in lines))
     if lines:
         print(f"fern-references: check: {len(lines)} broken item(s); repair each input named above", file=sys.stderr)
