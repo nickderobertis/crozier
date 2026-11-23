@@ -4528,21 +4528,23 @@ fn build_endpoint(
                 // `nullable: true`: tonik's `X-Nullable-Enum` over `StatusEnum`
                 // is `nullable_enum.value` at the certified pair (issue #946).
                 enum_value: p.schema.as_ref().is_some_and(|schema| {
-                    let references = schema.reference.as_deref().into_iter().chain(
-                        schema
-                            .all_of
-                            .iter()
-                            .flatten()
-                            .filter_map(|member| member.reference.as_deref()),
-                    );
-                    for reference in references {
-                        if resolve_ref(doc, reference)
-                            .is_some_and(|target| string_enum_values(target).is_some())
-                        {
+                    if let Some(referenced_header_schema) = schema
+                        .reference
+                        .as_deref()
+                        .and_then(|reference| resolve_ref(doc, reference))
+                    {
+                        if string_enum_values(referenced_header_schema).is_some() {
                             return true;
                         }
                     }
-                    string_enum_values(schema).is_some()
+                    let wrapped_enum = schema
+                        .all_of
+                        .iter()
+                        .flatten()
+                        .filter_map(|member| member.reference.as_deref())
+                        .filter_map(|reference| resolve_ref(doc, reference))
+                        .any(|target| string_enum_values(target).is_some());
+                    wrapped_enum || string_enum_values(schema).is_some()
                 }),
             }
         })

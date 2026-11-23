@@ -4707,7 +4707,7 @@ fn normalize_colliding_component_classes(doc: &mut OpenApi) {
     }
     let mut taken: std::collections::HashSet<String> = groups.keys().cloned().collect();
     let mut renames: IndexMap<String, String> = IndexMap::new();
-    for (class, members) in &groups {
+    for members in groups.values() {
         let Some((winner, losers)) = members.split_last() else {
             continue;
         };
@@ -4721,8 +4721,11 @@ fn normalize_colliding_component_classes(doc: &mut OpenApi) {
             {
                 continue;
             }
+            // The loser's own path, its `/` a word break as everywhere else in
+            // a class name, then the ordinal: `kiln/glaze-coat` is
+            // `kiln-glaze-coat-2`, the class `KilnGlazeCoat2`.
             let renamed = loop {
-                let candidate = format!("{class}{ordinal}");
+                let candidate = format!("{}-{ordinal}", loser.replace(['/', '~'], "-"));
                 ordinal += 1;
                 if !taken.contains(&crate::naming::class_name(&candidate))
                     && !doc.components.schemas.contains_key(&candidate)

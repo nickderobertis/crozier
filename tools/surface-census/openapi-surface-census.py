@@ -2773,7 +2773,7 @@ PORT_PINS = (
         "_id_method_name",
         "src/ir.rs::method_from_dotted_id",
         "that dotted IDs still strip only a matching group",
-        "e79e67e3e2ceee79",
+        "6763701e86ed9566",
     ),
     PortPin(
         "method_from_groupless_id",
@@ -5306,6 +5306,13 @@ def _id_method_name(operation: dict[Any, Any], method: str, url: str) -> tuple[s
         dotted_group, _, dotted_method = text.rpartition(".")
         if not dotted_group or (tag is not None and _matches_tag_spelling(dotted_group, tag)):
             return _sanitized(_ascii_lower(dotted_method))
+        # A tag whose words lead the longer id is stripped by words (#924).
+        if tag is not None:
+            match _tag_location(tag, text):
+                case _StrippedLocation(method=stripped):
+                    return _sanitized(to_snake_case(stripped))
+                case _:
+                    pass
         return _sanitized(to_snake_case(text))
     if "_" in text:
         if tag is None:

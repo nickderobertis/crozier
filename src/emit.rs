@@ -3440,7 +3440,7 @@ fn reference_entry(
     tag_types: &BTreeMap<String, String>,
 ) -> Result<String> {
     let mut imports = Imports::at(RefLoc::Client(module.to_string()), tag_types);
-    let mp = method_params(ep, &mut imports);
+    let mp = method_params(ep, &mut imports, true);
     let has_args = !mp.path.is_empty()
         || !mp.query.is_empty()
         || !mp.header.is_empty()
@@ -5580,13 +5580,13 @@ struct MethodParams {
 
 /// Compute an endpoint's resolved parameters and response type, registering the
 /// imports the annotations need. Independent of sync/async.
-fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
-    method_params_importing(ep, imports, true)
-}
-
-/// [`method_params`], importing the response type only when `response` asks:
-/// a high-level HEAD method returns its headers and names no response model.
-fn method_params_importing(ep: &Endpoint, imports: &mut Imports, response: bool) -> MethodParams {
+///
+/// The response type's imports are registered only when `response` asks: a
+/// high-level HEAD method returns the response headers and names no response
+/// model, while the raw client still types its `HttpResponse` with it. The
+/// certified pair's Folio client imports no `GetSiteResponse` once
+/// `HEAD /v1/site` replaces its `GET` (issue #921).
+fn method_params(ep: &Endpoint, imports: &mut Imports, response: bool) -> MethodParams {
     let inner = if ep.binary_response || !response {
         "None".to_string()
     } else {
@@ -5882,7 +5882,7 @@ fn raw_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> String {
     } else {
         imports.core_local("http_response", "HttpResponse")
     };
-    let mp = method_params(ep, imports);
+    let mp = method_params(ep, imports, true);
     let return_type = pager_return_type(ep, &mp.inner, is_async, imports)
         .unwrap_or_else(|| format!("{wrapper}[{}]", mp.inner));
     let signature = signature(ep, &mp, &return_type, is_async);
@@ -7035,7 +7035,7 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
                 "_response.read()",
             )
         };
-    let mp = method_params(ep, imports);
+    let mp = method_params(ep, imports, true);
     let chunk = sse_chunk(ep, imports);
     // A streaming operation still declares error statuses, and Fern raises them
     // from inside the stream body once the response has been read, exactly as the
@@ -7294,7 +7294,7 @@ fn raw_binary_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports
                 "_stream()",
             )
         };
-    let mp = method_params(ep, imports);
+    let mp = method_params(ep, imports, true);
     let data_type = format!("{data_iter}[bytes]");
     let return_type = format!("{iter_t}[{wrapper}[{data_type}]]");
     let sig = signature(ep, &mp, &return_type, is_async);
@@ -8353,7 +8353,7 @@ fn client_method(cx: &ClientCtx, ep: &Endpoint, is_async: bool, imports: &mut Im
     // no response model and imports none; the raw client still types its
     // `HttpResponse` with it. The certified pair's Folio client imports no
     // `GetSiteResponse` once `HEAD /v1/site` replaces its `GET` (issue #921).
-    let mp = method_params_importing(ep, imports, ep.http_method != "HEAD");
+    let mp = method_params(ep, imports, ep.http_method != "HEAD");
     let return_type = if ep.http_method == "HEAD" {
         "typing.Dict[str, str]".to_string()
     } else {
@@ -8401,7 +8401,7 @@ fn client_stream_method(
     is_async: bool,
     imports: &mut Imports,
 ) -> String {
-    let mp = method_params(ep, imports);
+    let mp = method_params(ep, imports, true);
     let iter_t = if is_async {
         "typing.AsyncIterator"
     } else {
@@ -8529,7 +8529,7 @@ fn client_binary_stream_method(
     imports: &mut Imports,
 ) -> String {
     imports.add_plain("typing");
-    let mp = method_params(ep, imports);
+    let mp = method_params(ep, imports, true);
     let iter_t = if is_async {
         "typing.AsyncIterator"
     } else {
