@@ -1912,8 +1912,7 @@ def outstanding_items(key: str, source: str, build: str) -> list[tuple[str, str]
     ]
     historical = {c for c, state in screen_states(key, source).items() if state == "historical"}
     items += [
-        (c, HISTORICAL_SCREEN)
-        for c in sorted((historical & _reaching(key, source, build)) - ineligible(key, source))
+        (c, HISTORICAL_SCREEN) for c in sorted((historical & _reaching(key, source, build)) - ineligible(key, source))
     ]
     return items + [(document, reason) for document, reason in _unreadable(key, source)]
 
