@@ -385,7 +385,7 @@ fn sdk_env_escaped_discriminators_and_recursive_aliases_import() {
     assert_eq!(code, Some(1), "{said} [stderr: {stderr}]");
     // A limit that is no positive whole number of seconds is a usage error,
     // refused before any child starts.
-    for limit in ["0", "-1", "1.5", "soon"] {
+    for limit in ["0", "-1", "1.5", "soon", "\u{b2}", "01"] {
         let (code, _said, stderr) = limited(limit, "invalid");
         assert_eq!(code, Some(2), "{limit}: {stderr}");
         assert!(

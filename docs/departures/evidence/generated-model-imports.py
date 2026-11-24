@@ -30,6 +30,8 @@ from pathlib import Path
 
 LIMIT_SECONDS = 30
 LIMIT_ENV = "GENERATED_MODEL_IMPORTS_LIMIT_SECONDS"
+# ASCII digits only: `str.isdigit` also admits characters `int` refuses (`²`).
+POSITIVE_SECONDS = re.compile(r"[1-9][0-9]*")
 # The severity bits of an error NTSTATUS, the exit code of a Windows process an
 # unhandled exception ended.
 NTSTATUS_ERROR = 0xC0000000
@@ -94,7 +96,7 @@ def limit_seconds() -> int:
     raw = os.environ.get(LIMIT_ENV)
     if raw is None:
         return LIMIT_SECONDS
-    if not raw.isdigit() or int(raw) == 0:
+    if not POSITIVE_SECONDS.fullmatch(raw):
         raise UsageError(f"{LIMIT_ENV}={raw!r} is no positive whole number of seconds")
     return int(raw)
 
