@@ -208,6 +208,11 @@ mod client_structure;
 /// the causes whose verdict rests on what an SDK sends or returns.
 #[path = "e2e/bodies_media.rs"]
 mod bodies_media;
+/// The request-body, form/multipart and response causes measured on
+/// from-scratch documents under `docs/fern-measurements/bodies-responses/`,
+/// each held whole against the certified pair's tree.
+#[path = "e2e/bodies_responses.rs"]
+mod bodies_responses;
 /// The union-modelling root causes the fixture-only witness searches handed
 /// off, each in a document written for it under
 /// `docs/fern-measurements/handed-off/union-modelling/`, held whole against the
@@ -1076,7 +1081,7 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         (CLIENTS_EXTENSIONS_DIR, "fern-expected"),
         (examples_docs::EXAMPLES_DOCS_DIR, "fern-expected"),
         (naming_wire::NAMING_WIRE_DIR, "fern-expected"),
-        ("docs/fern-measurements/bodies-responses", "fern-expected"),
+        (bodies_responses::DIR, "fern-expected"),
         (output_defects::OUTPUT_DEFECTS_DIR, "fern-expected"),
         (follow_up_tickets::DIR, "fern-expected"),
         (refusal_parity::REFUSAL_PARITY_DIR, "fern-expected"),
@@ -1131,6 +1136,7 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         handed_off_type_declarations::DIR,
         remeasure::DIR,
         union_inheritance::DIR,
+        bodies_responses::DIR,
         naming_acceptance::DIR,
     ] {
         if let Ok(entries) = std::fs::read_dir(root.join(dir)) {
@@ -17756,6 +17762,15 @@ fn sdk_env_crozier_matches_fern_runtime_behavior() {
         .assert()
         .success();
 
+    // The header/body wire-name collision pair: crozier's SDK for the
+    // measurement document beside the certified pair's committed tree.
+    let collision =
+        repo_root().join("docs/fern-measurements/bodies-responses/header-body-collision");
+    let collision_out = out.path().join("collision");
+    probe_command(&collision.join("openapi.yml"), &collision_out)
+        .assert()
+        .success();
+
     let py = runtime_python_env()
         .unwrap_or_else(|reason| panic!("runtime wire tests require a Python env: {reason}"));
 
@@ -17768,6 +17783,11 @@ fn sdk_env_crozier_matches_fern_runtime_behavior() {
         // is the SDK under test. Keep the repo tree clean of pytest byte-caches.
         .env("FERN_SDK_SRC", &fern_src)
         .env("CROZIER_SDK_SRC", out.path().join("src"))
+        .env(
+            "FERN_COLLISION_SDK_SRC",
+            collision.join("fern-expected/src"),
+        )
+        .env("CROZIER_COLLISION_SDK_SRC", collision_out.join("src"))
         .env("PYTHONDONTWRITEBYTECODE", "1")
         .output()
         .expect("run the runtime wire-test suite (pytest)");

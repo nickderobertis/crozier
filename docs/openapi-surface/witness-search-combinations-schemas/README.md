@@ -25,6 +25,17 @@ holds one row per candidate and mode: its outcome is `byte-match`,
 departure, an `attributed-residual` (a difference outside the key's interaction,
 named in `detail`), or a Fern refusal.
 
+## Re-measured at Fern CLI 5.216.0 / fern-python-sdk 5.42.0
+
+Thirteen candidates whose rows named a request-body, form, error or response
+cause (tickets #888, #890, #892, #903, #913–#918, #926, #938, #939) were
+generated again at the current certified pair in both enum modes, published to
+the certified-tree store, and compared whole with the finished generator. Their
+rows in [`certified.tsv`](certified.tsv) say so and supersede the 5.200.0
+outcome: six byte-match (`repaired-here`); seven keep an `attributed-residual`
+whose `detail` records the ticket's cause as repaired or catalogued and names
+the cause that remains. The per-key tallies below are the 5.200.0 screen's.
+
 The rows of eight candidates (`012938b1…`, `7cff4ee7…`, `95cd1e1e…`,
 `cc1eaf26…`, `e156a56e…`, `58d3c068…`, `bc9b7f5c…`, `0c046ac2…`) were screened
 again at Fern CLI 5.216.0 / fern-python-sdk 5.42.0 in both enum modes after the

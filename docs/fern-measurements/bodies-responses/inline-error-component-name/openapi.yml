@@ -1,0 +1,95 @@
+openapi: 3.1.0
+info:
+  title: Session Ledger
+  version: 1.0.0
+  description: Records studio sessions.
+servers:
+  - url: https://sessions.example.com
+paths:
+  /sessions/{sessionId}:
+    patch:
+      operationId: updateSession
+      tags: [sessions]
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+      responses:
+        '200':
+          description: Updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '409':
+          description: The title changed under another writer.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [name, data]
+                properties:
+                  name:
+                    type: string
+                  data:
+                    type: object
+                    required: [current]
+                    properties:
+                      current:
+                        $ref: '#/components/schemas/Session'
+  /sessions/{sessionId}/resume:
+    post:
+      operationId: resumeSession
+      tags: [sessions]
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Resumed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '409':
+          description: The session is busy.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConflictError'
+components:
+  schemas:
+    Session:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+    ConflictError:
+      type: object
+      required: [name, data]
+      properties:
+        name:
+          type: string
+        data:
+          type: object
+          required: [message]
+          properties:
+            message:
+              type: string

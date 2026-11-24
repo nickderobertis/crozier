@@ -1,0 +1,113 @@
+openapi: 3.1.0
+info:
+  title: Glaze Function Runner
+  version: 1.0.0
+  description: Validates and runs glaze recipe functions.
+servers:
+  - url: https://functions.example.com
+paths:
+  /functions/{functionId}/validate:
+    post:
+      operationId: validateInputs
+      tags: [functions]
+      summary: A required body that is anyOf a free-form object and null, beside a path parameter.
+      parameters:
+        - name: functionId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              anyOf:
+                - type: object
+                  additionalProperties: true
+                - type: 'null'
+              title: Inputs
+      responses:
+        '200':
+          description: Validated.
+          content:
+            application/json:
+              schema:
+                type: boolean
+  /functions/run:
+    post:
+      operationId: runFunction
+      tags: [functions]
+      summary: The same required nullable free-form body, with no parameter.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              anyOf:
+                - type: object
+                  additionalProperties: true
+                - type: 'null'
+      responses:
+        '204':
+          description: Ran.
+  /functions/schedule:
+    post:
+      operationId: scheduleFunction
+      tags: [functions]
+      summary: A required free-form body that is not nullable.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '204':
+          description: Scheduled.
+  /drops:
+    post:
+      operationId: createDrop
+      tags: [drops]
+      summary: An unrequired inline oneOf of two object references.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/KilnDrop'
+                - $ref: '#/components/schemas/ShelfDrop'
+      responses:
+        '204':
+          description: Created.
+  /drops/preview:
+    post:
+      operationId: previewDrop
+      tags: [drops]
+      summary: The same oneOf with no required flag at all.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/KilnDrop'
+                - $ref: '#/components/schemas/ShelfDrop'
+      responses:
+        '204':
+          description: Previewed.
+components:
+  schemas:
+    KilnDrop:
+      type: object
+      required: [kiln]
+      properties:
+        kiln:
+          type: string
+    ShelfDrop:
+      type: object
+      required: [shelf]
+      properties:
+        shelf:
+          type: integer

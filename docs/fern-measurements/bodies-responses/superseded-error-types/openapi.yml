@@ -1,0 +1,101 @@
+openapi: 3.0.3
+info:
+  title: Payout Desk
+  version: 1.0.0
+  description: Sends payouts to studio suppliers.
+servers:
+  - url: https://payouts.example.com
+paths:
+  /payouts:
+    post:
+      operationId: createPayout
+      tags: [payouts]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [amount]
+              properties:
+                amount:
+                  type: integer
+      responses:
+        '201':
+          description: Created.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+        '400':
+          description: Rejected.
+          content:
+            application/json:
+              schema:
+                properties:
+                  exception:
+                    type: object
+                    properties:
+                      code:
+                        type: integer
+                      message:
+                        type: string
+                      errorList:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            property:
+                              type: string
+                            message:
+                              type: string
+        '403':
+          description: Forbidden.
+          content:
+            application/json:
+              schema:
+                properties:
+                  exception:
+                    type: object
+                    properties:
+                      code:
+                        type: integer
+                      message:
+                        type: string
+  /reports:
+    get:
+      operationId: listReports
+      tags: [reports]
+      responses:
+        '200':
+          description: The reports.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '400':
+          description: Rejected.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  exception:
+                    type: object
+                    properties:
+                      code:
+                        type: number
+                      message:
+                        type: string
+        '403':
+          description: Forbidden.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}

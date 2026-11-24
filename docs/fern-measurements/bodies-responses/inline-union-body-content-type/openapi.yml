@@ -1,0 +1,164 @@
+openapi: 3.0.3
+info:
+  title: Glaze Verification Desk
+  version: 1.0.0
+  description: Verifies the contact addresses glaze notices are sent to.
+servers:
+  - url: https://glaze.example.com
+paths:
+  /verifications:
+    post:
+      operationId: addVerification
+      tags: [verifications]
+      summary: A described, required inline oneOf of self-tagged members.
+      requestBody:
+        description: The address to verify.
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/EmailVerification'
+                - $ref: '#/components/schemas/SmsVerification'
+      responses:
+        '204':
+          description: Started.
+  /recheck:
+    post:
+      operationId: recheckVerification
+      tags: [verifications]
+      summary: The same members under a discriminator.
+      requestBody:
+        description: The address to check again.
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/EmailVerification'
+                - $ref: '#/components/schemas/SmsVerification'
+              discriminator:
+                propertyName: type
+                mapping:
+                  email: '#/components/schemas/EmailVerification'
+                  sms: '#/components/schemas/SmsVerification'
+      responses:
+        '204':
+          description: Rechecked.
+  /reminders:
+    post:
+      operationId: sendReminder
+      tags: [verifications]
+      summary: The self-tagged members, undescribed and unrequired.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/EmailVerification'
+                - $ref: '#/components/schemas/SmsVerification'
+      responses:
+        '204':
+          description: Sent.
+  /notices:
+    post:
+      operationId: sendNotice
+      tags: [verifications]
+      summary: The self-tagged reference members under a schema description.
+      requestBody:
+        description: The notice to send.
+        required: true
+        content:
+          application/json:
+            schema:
+              description: Either address to notify.
+              oneOf:
+                - $ref: '#/components/schemas/EmailVerification'
+                - $ref: '#/components/schemas/SmsVerification'
+      responses:
+        '204':
+          description: Sent.
+  /contacts:
+    post:
+      operationId: addContact
+      tags: [verifications]
+      summary: Inline self-tagged members, described as the body.
+      requestBody:
+        description: The contact to add.
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: object
+                  required: [type, email]
+                  properties:
+                    type:
+                      type: string
+                      enum: [email]
+                    email:
+                      type: string
+                - type: object
+                  required: [type, phone]
+                  properties:
+                    type:
+                      type: string
+                      enum: [sms]
+                    phone:
+                      type: string
+      responses:
+        '204':
+          description: Added.
+  /contacts/tagged:
+    post:
+      operationId: addTaggedContact
+      tags: [verifications]
+      summary: Inline members under a written discriminator.
+      requestBody:
+        description: The contact to add.
+        required: true
+        content:
+          application/json:
+            schema:
+              discriminator:
+                propertyName: type
+              oneOf:
+                - type: object
+                  required: [type, email]
+                  properties:
+                    type:
+                      type: string
+                      enum: [email]
+                    email:
+                      type: string
+                - type: object
+                  required: [type, phone]
+                  properties:
+                    type:
+                      type: string
+                      enum: [sms]
+                    phone:
+                      type: string
+      responses:
+        '204':
+          description: Added.
+components:
+  schemas:
+    EmailVerification:
+      type: object
+      required: [type, email]
+      properties:
+        type:
+          type: string
+          enum: [email]
+        email:
+          type: string
+    SmsVerification:
+      type: object
+      required: [type, phone]
+      properties:
+        type:
+          type: string
+          enum: [sms]
+        phone:
+          type: string

@@ -1,0 +1,90 @@
+openapi: 3.0.3
+info:
+  title: Studio Feature Flags
+  version: 1.0.0
+  description: Toggles studio features.
+servers:
+  - url: https://flags.example.com
+paths:
+  /feature-flags:
+    get:
+      operationId: listFeatureFlags
+      tags: [featureFlags]
+      responses:
+        '200':
+          description: The flags.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FeatureFlag'
+    post:
+      operationId: createFeatureFlag
+      tags: [featureFlags]
+      summary: A body naming a schema outside components that does not exist.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/ApiRequests/feature-flag'
+      responses:
+        '201':
+          description: Created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureFlag'
+  /feature-flags/{flagId}:
+    patch:
+      operationId: updateFeatureFlag
+      tags: [featureFlags]
+      parameters:
+        - name: flagId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/ApiRequests/feature-flag-update'
+      responses:
+        '200':
+          description: Updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureFlag'
+  /users/{userId}:
+    get:
+      operationId: getUser
+      tags: [users]
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The user.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+components:
+  schemas:
+    FeatureFlag:
+      type: object
+      properties:
+        id:
+          type: string
+        enabled:
+          type: boolean
