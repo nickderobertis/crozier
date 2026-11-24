@@ -258,6 +258,9 @@ const MEASUREMENTS: &[(&str, &str, &str, &str, &str)] = &[
     ),
 ];
 
+/// Unix only, like its one caller: the `crozier compare` journey, which runs no
+/// reference command on Windows.
+#[cfg(unix)]
 fn spec(case: &str) -> PathBuf {
     spec_in(DIR, case)
 }
