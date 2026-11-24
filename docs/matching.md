@@ -277,11 +277,12 @@ not reproduced: their leading blank lines (a comment-strip artifact of Fern's
 multi-line header that a one-line header plus `ruff`, which caps module-top
 blanks at two, cannot reproduce), which the comparison drops on both sides as
 comment residue, and the order of the `if typing.TYPE_CHECKING:` import block.
-That block is never executed, so its order is meaningless — Fern emits it in
-traversal order; crozier sorts it straightforwardly, and the comparison accepts
-the reordering as the `init-type-checking-import-order` departure
-([catalog](departures/README.md)) wherever both blocks sort to the same text
-under `ruff` isort. The
+That block is never executed, so its order is meaningless — Fern emits a
+subpackage's in traversal order; crozier sorts it straightforwardly, and the
+comparison accepts the reordering as the `init-type-checking-import-order`
+departure ([catalog](departures/README.md)) wherever both blocks sort to the
+same text under `ruff` isort. The root package's block is written in the
+certified pair's own order (issue #920) and takes no departure. The
 `_dynamic_imports` map and `__all__` (which *are* executed) stay alphabetical.
 
 **Which parameter examples reach a worked call.** Fern keeps a *parameter-level*

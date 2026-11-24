@@ -1350,24 +1350,34 @@ mod tests {
             "\n\n\nimport typing\n\nif typing.TYPE_CHECKING:\n    from .b import B\n    ",
             "from .a import A\n    from .c import C\n_dynamic_imports = {}\n"
         );
-        let compared = compare("src/acme/__init__.py", crozier, reference);
+        let compared = compare("src/acme/types/__init__.py", crozier, reference);
         assert!(compared.matches(), "{:?}", compared.diff());
         assert_eq!(ids(&compared), [(5, "init-type-checking-import-order")]);
+        // The root package's block is written in Fern's order, so a reordering
+        // there is a difference (#920).
+        for root in ["src/acme/__init__.py", "__init__.py"] {
+            let compared = compare(root, crozier, reference);
+            assert!(
+                !compared.matches() && compared.departures.is_empty(),
+                "{root}"
+            );
+        }
         // Another difference outside the block still fails.
         let other = reference.replace("_dynamic_imports = {}", "_dynamic_imports = {1: 2}");
-        let compared = compare("src/acme/__init__.py", crozier, &other);
+        let compared = compare("src/acme/types/__init__.py", crozier, &other);
         assert!(!compared.matches());
         // A block importing something else is no reordering.
         let other = reference.replace("from .c import C", "from .c import D");
-        let compared = compare("src/acme/__init__.py", crozier, &other);
+        let compared = compare("src/acme/types/__init__.py", crozier, &other);
         assert!(!compared.matches() && compared.departures.is_empty());
     }
 
     #[test]
     fn init_import_order_admits_reordered_statements_beside_another_difference() {
-        // Fern sorts `from .client` and `from .environment` among the tag
-        // subpackages' re-exports; crozier writes them first. The `.types`
-        // statement also differs by a name, which no rule explains.
+        // A subpackage's block whose statements the two sides order
+        // differently (the root package's is written in Fern's order, #920).
+        // The `.types` statement also differs by a name, which no rule
+        // explains.
         let block = |types: &str, order: [&str; 4]| {
             format!(
                 "import typing\n\nif typing.TYPE_CHECKING:\n    from .types import {types}\n{}_dynamic_imports = {{}}\n",
@@ -1382,12 +1392,12 @@ mod tests {
         );
         let crozier = block("Account", [client, environment, auth, user]);
         let reference = block("Account", [auth, client, environment, user]);
-        let compared = compare("src/fern/__init__.py", &crozier, &reference);
+        let compared = compare("src/fern/types/__init__.py", &crozier, &reference);
         assert!(compared.matches(), "{:?}", compared.diff());
         assert_eq!(ids(&compared), [(5, "init-type-checking-import-order")]);
 
         let reference = block("Account, ErrorBody", [auth, client, environment, user]);
-        let compared = compare("src/fern/__init__.py", &crozier, &reference);
+        let compared = compare("src/fern/types/__init__.py", &crozier, &reference);
         assert!(!compared.matches());
         assert_eq!(ids(&compared), [(5, "init-type-checking-import-order")]);
         let diff = compared.diff().expect("the name difference remains");
@@ -1399,18 +1409,18 @@ mod tests {
         // A moved statement importing another name is no reordering.
         let moved = auth.replace("AuthMeResponse", "AuthMeResponse,\n        AuthToken");
         let reference = block("Account, ErrorBody", [&moved, client, environment, user]);
-        let compared = compare("src/fern/__init__.py", &crozier, &reference);
+        let compared = compare("src/fern/types/__init__.py", &crozier, &reference);
         assert!(!compared.matches() && compared.departures.is_empty());
         // Nor is a tag subpackage's statement moving among the others.
         let reference = block("Account, ErrorBody", [user, client, environment, auth]);
-        let compared = compare("src/fern/__init__.py", &crozier, &reference);
+        let compared = compare("src/fern/types/__init__.py", &crozier, &reference);
         assert!(!compared.matches() && compared.departures.is_empty());
         // Nor is one importing from a module only one side has.
         let reference = block(
             "Account, ErrorBody",
             [auth, client, "from .zone import Zone", user],
         );
-        let compared = compare("src/fern/__init__.py", &crozier, &reference);
+        let compared = compare("src/fern/types/__init__.py", &crozier, &reference);
         assert!(!compared.matches() && compared.departures.is_empty());
     }
 
@@ -1553,7 +1563,7 @@ mod tests {
     fn a_rule_that_cannot_run_is_an_error() {
         let error = compare_file(
             &Context::default(),
-            "__init__.py",
+            "types/__init__.py",
             "if typing.TYPE_CHECKING:\n    def (:\n    import b\nx\n",
             "if typing.TYPE_CHECKING:\n    import b\n    def (:\nx\n",
         )
@@ -1774,12 +1784,12 @@ mod tests {
         let crozier = tempfile::tempdir().unwrap();
         write(
             reference.path(),
-            "__init__.py",
+            "types/__init__.py",
             b"if typing.TYPE_CHECKING:\n    import b\n    def (:\nx\n",
         );
         write(
             crozier.path(),
-            "__init__.py",
+            "types/__init__.py",
             b"if typing.TYPE_CHECKING:\n    def (:\n    import b\nx\n",
         );
         let found = compare_trees(reference.path(), crozier.path(), None, true).unwrap();

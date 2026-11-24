@@ -2054,13 +2054,14 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 57] = [
+pub const RULE_IDS: [&str; 58] = [
     "anyof-path-param-schema-example",
     "binary-json-body-example",
     "body-query-parameter-value",
     "bracket-query-parameter-call-keyword",
     "closed-empty-object-example",
     "collapsed-anyof-property-description",
+    "colliding-component-own-class",
     "constant-header-docs-arguments",
     "dangling-mapping-variant-fields",
     "date-header-constructor-example",
@@ -2214,6 +2215,12 @@ pub fn rule(id: &str) -> Option<Rule> {
         "closed-empty-object-example" => Rule {
             region: Some(closed_empty_object_example_region),
             line: Some(closed_empty_object_example_line),
+            ..none
+        },
+        "colliding-component-own-class" => Rule {
+            line: Some(colliding_component_own_class),
+            added: Some(colliding_component_own_class_line),
+            file: Some(colliding_component_own_class_file),
             ..none
         },
         "constant-header-docs-arguments" => Rule {
@@ -3687,6 +3694,16 @@ pub fn differing_window(fern: &[&str], crozier: &[&str]) -> Option<Region> {
     })
 }
 
+/// Whether `rel` is the root package's `__init__.py`: `src/<package>/__init__.py`
+/// in the packaged layout, `__init__.py` in the flat one.
+fn root_package_init(rel: &str) -> bool {
+    rel == "__init__.py"
+        || rel
+            .strip_prefix("src/")
+            .and_then(|rest| rest.strip_suffix("/__init__.py"))
+            .is_some_and(|package| !package.is_empty() && !package.contains('/'))
+}
+
 /// `init-type-checking-import-order`: in an `__init__.py`, both sides'
 /// `if typing.TYPE_CHECKING:` blocks differ, yet sort to the same text under
 /// ruff's isort. The region is the blocks' differing window. When they do not
@@ -3694,8 +3711,16 @@ pub fn differing_window(fern: &[&str], crozier: &[&str]) -> Option<Region> {
 /// sides order differently, when that window is the same statements, each
 /// importing the same names ([`reordered_statements`]); every other difference
 /// in the block stays a difference.
+///
+/// The root package's own `__init__.py` is no part of it: crozier writes that
+/// block in the certified pair's order, the default clients, root client,
+/// environment, tag subpackages' re-exports and `__version__` sorted by module
+/// (issue #920), so a reordering there is a difference.
 fn init_type_checking_import_order(pair: &Pair<'_>) -> Result<Option<Region>, String> {
     if pair.rel != "__init__.py" && !pair.rel.ends_with("/__init__.py") {
+        return Ok(None);
+    }
+    if root_package_init(pair.rel) {
         return Ok(None);
     }
     let (Some(fern_block), Some(crozier_block)) = (
@@ -6550,6 +6575,129 @@ fn flat_reference_link_target(pair: &Pair<'_>, fern: &str, crozier: &str) -> boo
         && flat_link_in_fern_form(pair, fern, crozier).is_some_and(|line| line == fern)
 }
 
+/// The classes crozier gave components whose class Fern's merges with another
+/// (`colliding-component-own-class`), each with the class Fern writes in its
+/// place: `KilnGlazeCoat2` for `KilnGlazeCoat`. Read from the source document's
+/// load, which records each renamed component's shared class.
+fn colliding_classes(context: &Context) -> Vec<(String, String)> {
+    let Some(document) = context.source_document.as_ref() else {
+        return Vec::new();
+    };
+    document
+        .components
+        .schemas
+        .iter()
+        .filter_map(|(key, schema)| {
+            let shared = schema.colliding_class.as_ref()?;
+            Some((crate::naming::class_name(key), shared.clone()))
+        })
+        .collect()
+}
+
+/// The starts of `identifier`'s whole-identifier occurrences in `text`.
+fn identifier_starts(text: &str, identifier: &str) -> Vec<usize> {
+    let word = |c: char| c.is_alphanumeric() || c == '_';
+    text.match_indices(identifier)
+        .map(|(start, _)| start)
+        .filter(|start| {
+            !text[..*start].chars().next_back().is_some_and(word)
+                && !text[start + identifier.len()..]
+                    .chars()
+                    .next()
+                    .is_some_and(word)
+        })
+        .collect()
+}
+
+/// Whether `text` names `identifier` as a whole identifier.
+fn names_identifier(text: &str, identifier: &str) -> bool {
+    !identifier_starts(text, identifier).is_empty()
+}
+
+/// `text` with every whole-identifier `from` written `to`.
+fn replace_identifier(text: &str, from: &str, to: &str) -> String {
+    let mut out = String::with_capacity(text.len());
+    let mut done = 0;
+    for start in identifier_starts(text, from) {
+        out.push_str(&text[done..start]);
+        out.push_str(to);
+        done = start + from.len();
+    }
+    out.push_str(&text[done..]);
+    out
+}
+
+/// crozier's line as Fern writes it: each renamed class (and its module) read
+/// as the class Fern merges it into, a name an import list then repeats kept
+/// once.
+fn colliding_line_in_fern_form(line: &str, renames: &[(String, String)]) -> String {
+    let mut text = line.to_string();
+    for (own, shared) in renames {
+        text = replace_identifier(&text, own, shared);
+        text = replace_identifier(
+            &text,
+            &crate::naming::module_name(own),
+            &crate::naming::module_name(shared),
+        );
+    }
+    // An item repeating the end of the one before it (`import A, A`,
+    // `{"A": ".a", "A": ".a"}`, `["A", "A"]`) is dropped, its closing brackets
+    // kept.
+    let word = |c: char| c.is_alphanumeric() || c == '_';
+    let mut out = String::new();
+    for (index, item) in text.split(", ").enumerate() {
+        let core = item.trim_end_matches([']', '}', ')']);
+        let repeats = index > 0
+            && !core.is_empty()
+            && out.ends_with(core)
+            && !out[..out.len() - core.len()]
+                .chars()
+                .next_back()
+                .is_some_and(word);
+        if repeats {
+            out.push_str(&item[core.len()..]);
+        } else {
+            if index > 0 {
+                out.push_str(", ");
+            }
+            out.push_str(item);
+        }
+    }
+    out
+}
+
+/// `colliding-component-own-class`: a line naming a component's own class
+/// where Fern names the class it merged that component into, and which is
+/// otherwise Fern's line (`left: typing.Optional[KilnGlazeCoat2] = OMIT,` for
+/// `left: typing.Optional[KilnGlazeCoat] = OMIT,`; `KilnGlazeCoat,
+/// KilnGlazeCoat2` imported for `KilnGlazeCoat`).
+fn colliding_component_own_class(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    if fern == crozier {
+        return false;
+    }
+    let renames = colliding_classes(pair.context);
+    !renames.is_empty() && colliding_line_in_fern_form(crozier, &renames) == fern
+}
+
+/// `colliding-component-own-class`: a line only crozier writes that names a
+/// renamed component's class or module — its import, its lazy-import entry and
+/// its `__all__` entry.
+fn colliding_component_own_class_line(pair: &Pair<'_>, crozier: &str) -> bool {
+    colliding_classes(pair.context).iter().any(|(own, _)| {
+        names_identifier(crozier, own)
+            || names_identifier(crozier, &crate::naming::module_name(own))
+    })
+}
+
+/// `colliding-component-own-class`: the module only crozier writes for a
+/// renamed component, under a `types/` package.
+fn colliding_component_own_class_file(context: &Context, rel: &str, side: Side) -> bool {
+    side == Side::Crozier
+        && colliding_classes(context).iter().any(|(own, _)| {
+            rel.ends_with(&format!("/types/{}.py", crate::naming::module_name(own)))
+        })
+}
+
 /// `reference-anchor-follows-corrected-client`: a `reference.md` heading whose
 /// only difference is its link's `#L<start>-L<end>` range, where each side's
 /// range is exactly the documented method's lines in its own tree's linked
@@ -9283,22 +9431,25 @@ mod tests {
             "from .a import A\n_dynamic_imports = {}\n"
         );
         assert_eq!(
-            region(reordered, "src/acme/__init__.py"),
+            region(reordered, "src/acme/types/__init__.py"),
             Some(Region {
                 fern: 3..5,
                 crozier: 3..5
             })
         );
-        assert!(region(reordered, "__init__.py").is_some());
+        assert!(region(reordered, "types/__init__.py").is_some());
+        // The root package's block is written in Fern's order (#920).
+        assert_eq!(region(reordered, "src/acme/__init__.py"), None);
+        assert_eq!(region(reordered, "__init__.py"), None);
         // Another import, another module, no block, or the same order.
         let other = reordered.replace("from .b import B", "from .c import C");
-        assert_eq!(region(&other, "__init__.py"), None);
+        assert_eq!(region(&other, "types/__init__.py"), None);
         assert_eq!(region(reordered, "client.py"), None);
-        assert_eq!(region("import typing\n", "__init__.py"), None);
-        assert_eq!(region(&crozier.join("\n"), "__init__.py"), None);
+        assert_eq!(region("import typing\n", "types/__init__.py"), None);
+        assert_eq!(region(&crozier.join("\n"), "types/__init__.py"), None);
         // A block line that is not indented one level cannot be sorted alone.
         let shallow = "if typing.TYPE_CHECKING:\n  from .b import B\n    from .a import A\nx\n";
-        assert_eq!(region(shallow, "__init__.py"), None);
+        assert_eq!(region(shallow, "types/__init__.py"), None);
     }
 
     #[test]

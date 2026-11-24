@@ -254,14 +254,25 @@ pub fn field_name(wire_name: &str) -> String {
 }
 
 /// Python argument name for an inlined request-body property. Fern prefixes a
-/// digit-leading body argument with `_` (distinct from model fields' `f_`).
+/// digit-leading body argument with `_` (distinct from model fields' `f_`), and
+/// suffixes the two names a method's own signature already binds, `self` and
+/// `kwargs`, keeping the wire key: easy-langent's `kwargs` body property is
+/// `kwargs_`, sent as `"kwargs"`. Measured at Fern CLI 5.216.0 / fern-python-sdk
+/// 5.42.0 on `docs/fern-measurements/naming-acceptance/model-api-field-names/`
+/// (issue #923), where `args`, `json`, `data`, `cls` and every other body name
+/// keep their spelling.
 #[must_use]
 pub fn request_field_name(wire_name: &str) -> String {
     let snake = field_snake_case(wire_name);
     if snake.starts_with(|c: char| c.is_ascii_digit()) {
         format!("_{snake}")
     } else {
-        field_name(wire_name)
+        let name = field_name(wire_name);
+        if matches!(name.as_str(), "self" | "kwargs") {
+            format!("{name}_")
+        } else {
+            name
+        }
     }
 }
 
@@ -1011,18 +1022,56 @@ pub fn is_reserved(name: &str) -> bool {
 /// document (as Nussknacker's `TypedDict.dict` is). The protection
 /// is *model-scoped*, so an enum visitor's `copy` argument (otoroshi's
 /// `PatchItemOp`, komga's `BookImportBatchDtoCopyMode`) keeps its spelling.
+///
+/// The whole set is `PYDANTIC_MODEL_API`, measured at Fern CLI 5.216.0 /
+/// fern-python-sdk 5.42.0 on `docs/fern-measurements/naming-acceptance/
+/// model-api-field-names/` (issue #536): every public `BaseModel` method or
+/// attribute of Pydantic v1 and v2, where `fields`, `Config` and the validator
+/// decorators keep their spelling.
 #[must_use]
 pub fn model_field_name(wire_name: &str) -> String {
     let name = field_name(wire_name);
-    if matches!(
-        name.as_str(),
-        "construct" | "copy" | "dict" | "json" | "kwargs" | "schema" | "self" | "validate"
-    ) {
+    if PYDANTIC_MODEL_API.contains(&name.as_str()) {
         format!("{name}_")
     } else {
         name
     }
 }
+
+/// The model-field names Fern suffixes with `_` because a Pydantic model
+/// exposes them (see [`model_field_name`]).
+const PYDANTIC_MODEL_API: &[&str] = &[
+    "construct",
+    "copy",
+    "dict",
+    "from_orm",
+    "json",
+    "kwargs",
+    "model_computed_fields",
+    "model_config",
+    "model_construct",
+    "model_copy",
+    "model_dump",
+    "model_dump_json",
+    "model_extra",
+    "model_fields",
+    "model_fields_set",
+    "model_json_schema",
+    "model_parametrized_name",
+    "model_post_init",
+    "model_rebuild",
+    "model_validate",
+    "model_validate_json",
+    "model_validate_strings",
+    "parse_file",
+    "parse_obj",
+    "parse_raw",
+    "schema",
+    "schema_json",
+    "self",
+    "update_forward_refs",
+    "validate",
+];
 
 /// Reserved-word check for *derived method* names, tagged or not. Fern safe-names
 /// every name [`is_reserved`] holds except `list` and `set`: an operation `all`,

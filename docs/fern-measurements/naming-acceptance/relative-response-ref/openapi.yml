@@ -1,0 +1,32 @@
+openapi: 3.0.3
+info:
+  title: Vendor Notes
+  version: 1.0.0
+servers:
+  - url: https://notes.example.com
+paths:
+  /notes/{note_id}:
+    get:
+      operationId: getNote
+      parameters:
+        - name: note_id
+          in: path
+          required: true
+          schema: {type: string}
+      responses:
+        '200':
+          description: The note.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
+        '404':
+          $ref: './components.yml#/components/responses/NotFound'
+components:
+  schemas:
+    Note:
+      type: object
+      required: [id]
+      properties:
+        id: {type: string}
+        body: {type: string}

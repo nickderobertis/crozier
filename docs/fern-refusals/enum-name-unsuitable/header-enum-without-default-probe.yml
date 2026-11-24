@@ -1,0 +1,40 @@
+openapi: 3.0.3
+info:
+  title: Backends
+  version: 1.0.0
+servers:
+- url: https://backends.example.com
+paths:
+  /ui/backends_order:
+    get:
+      operationId: get_backends_order_value
+      tags:
+      - Config
+      parameters:
+      - name: x-format
+        in: header
+        required: false
+        schema:
+          type: string
+          enum:
+          - application/json
+          - text/plain
+          - '*/*'
+          title: Format
+      responses:
+        '200':
+          description: The order.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /ping:
+    get:
+      operationId: ping
+      responses:
+        '204':
+          description: Pong.
+      tags:
+      - Config

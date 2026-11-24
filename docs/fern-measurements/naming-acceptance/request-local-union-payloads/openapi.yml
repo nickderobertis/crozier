@@ -1,0 +1,93 @@
+openapi: 3.1.0
+info:
+  title: Block Store
+  version: 1.0.0
+servers:
+  - url: https://blocks.example.com
+paths:
+  /models/{model_id}/data:
+    patch:
+      operationId: updateBlockData
+      tags: [Column Operations]
+      parameters:
+        - name: model_id
+          in: path
+          required: true
+          schema: {type: string}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDataLite-Input'
+      responses:
+        '200':
+          description: The update job.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateJob'
+components:
+  schemas:
+    AllInputOptions-Input:
+      anyOf:
+        - $ref: '#/components/schemas/InputOptionsParquet'
+        - $ref: '#/components/schemas/InputOptionsCSV'
+    InputOptionsCSV:
+      type: object
+      additionalProperties: false
+      title: InputOptionsCSV
+      properties:
+        delimiter:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Delimiter
+        file_format:
+          type: string
+          const: csv
+          title: File Format
+          default: csv
+    InputOptionsParquet:
+      type: object
+      additionalProperties: false
+      title: InputOptionsParquet
+      properties:
+        row_group:
+          anyOf:
+            - type: integer
+            - type: 'null'
+          title: Row Group
+        file_format:
+          type: string
+          const: parquet
+          title: File Format
+          default: parquet
+    UpdateDataLite-Input:
+      type: object
+      additionalProperties: false
+      title: UpdateDataLite-Input
+      required: [comment]
+      properties:
+        comment:
+          type: string
+          title: Comment
+        input_options:
+          anyOf:
+            - oneOf:
+                - $ref: '#/components/schemas/AllInputOptions-Input'
+              discriminator:
+                propertyName: file_format
+                mapping:
+                  csv: '#/components/schemas/AllInputOptions-Input'
+                  parquet: '#/components/schemas/AllInputOptions-Input'
+            - type: 'null'
+          title: Input Options
+    UpdateJob:
+      type: object
+      title: UpdateJob
+      required: [job_id]
+      properties:
+        job_id:
+          type: string
+          title: Job Id

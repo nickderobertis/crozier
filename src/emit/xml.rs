@@ -1341,7 +1341,20 @@ impl<'a> XmlModel<'a> {
             .filter(|field| is_element(field))
             .filter_map(|field| list_item(field).map(|item| (field, item)))
             .collect();
-        if lists.is_empty() {
+        // The helper is imported only when a call to it is written: a lone list
+        // gets an `append`, and each child builder of an object item writes one.
+        // weather.gov's `AlertAtomEntry` has two lists of one item class and so
+        // no builder, and the certified pair imports no `append_xml_child` there
+        // (issue #948).
+        let writes_append = lists.len() == 1
+            || lists.iter().any(|(field, _)| {
+                self.builder_names
+                    .iter()
+                    .filter(|(name, _)| *name == field.py_name)
+                    .flat_map(|(_, names)| names)
+                    .any(|(class, _)| self.types.object(class).is_some())
+            });
+        if !writes_append {
             return;
         }
         let append_child = imports.add_core_local("xml_utilities", "append_xml_child");

@@ -1,0 +1,25 @@
+openapi: 3.0.3
+info:
+  title: Shared components
+  version: 1.0.0
+paths: {}
+components:
+  responses:
+    NotFound:
+      description: The resource does not exist.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+  schemas:
+    Problem:
+      type: object
+      required: [title]
+      properties:
+        title: {type: string}
+        detail:
+          $ref: '#/components/schemas/Detail'
+    Detail:
+      type: object
+      properties:
+        reason: {type: string}

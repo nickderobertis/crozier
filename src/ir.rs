@@ -3470,13 +3470,22 @@ fn align_flattened_member_types(types: &mut [TypeDecl], tag_types: &mut [TagType
 /// They are declarations in their own right, so a union that moves into a tag's
 /// `types/` package takes them with it — braintrust's
 /// `PatchProjectAutomationConfigBtqlFilterActionSlack` sits beside its union in
-/// `project_automations/types/`.
+/// `project_automations/types/`. A member flattened from a payload model the
+/// union coined itself (a mapping target that is a union of objects, merged
+/// into `{Union}{Value}`) names that model as its `source`, and it moves the
+/// same way: Seequent's request-local `UpdateDataLiteInputInputOptions` keeps
+/// `UpdateDataLiteInputInputOptionsCsv` beside it in `column_operations/types/`
+/// (issue #919). A `source` naming a component stays where the component is,
+/// which the caller's component check decides.
 fn union_variant_models(union: &DiscriminatedUnion) -> Vec<String> {
     union
         .members
         .iter()
-        .filter(|member| member.source.is_none())
-        .map(|member| format!("{}{}", union.name, naming::class_name(&member.discriminant)))
+        .map(|member| {
+            member.source.clone().unwrap_or_else(|| {
+                format!("{}{}", union.name, naming::class_name(&member.discriminant))
+            })
+        })
         .collect()
 }
 
@@ -4515,6 +4524,9 @@ fn build_endpoint(
                 // A `$ref` to a string-enum component serializes by `.value` as
                 // an inline enum does (the measured `enum-header-params-stringified`
                 // document's `X-Shift`).
+                // So does a nullable wrapper of one, `allOf: [$ref]` beside
+                // `nullable: true`: tonik's `X-Nullable-Enum` over `StatusEnum`
+                // is `nullable_enum.value` at the certified pair (issue #946).
                 enum_value: p.schema.as_ref().is_some_and(|schema| {
                     if let Some(referenced_header_schema) = schema
                         .reference
@@ -4525,7 +4537,14 @@ fn build_endpoint(
                             return true;
                         }
                     }
-                    string_enum_values(schema).is_some()
+                    let wrapped_enum = schema
+                        .all_of
+                        .iter()
+                        .flatten()
+                        .filter_map(|member| member.reference.as_deref())
+                        .filter_map(|reference| resolve_ref(doc, reference))
+                        .any(|target| string_enum_values(target).is_some());
+                    wrapped_enum || string_enum_values(schema).is_some()
                 }),
             }
         })
@@ -12652,10 +12671,19 @@ fn dotted_tag_group_method<'a>(op: &Operation, id: &'a str) -> Option<&'a str> {
 /// `servicebroker.setIamPolicy` is `servicebroker_set_iam_policy`; a *dropped*
 /// group leaves the method lowercased verbatim instead (`App.GetUsage` →
 /// `getusage`), which is the branch above.
+///
+/// A tag whose words lead a longer dotted id is stripped the same way, by
+/// words: lemma's `agent.host.pairing.create` under the tag `agent_host` is
+/// `pairing_create`, and its `agent.host.list` is `list`, as the certified pair
+/// writes them (issue #924). The words left are joined as Fern's location
+/// camelCases them, then snake-cased.
 fn method_from_dotted_id(id: &str, tag: Option<&str>) -> String {
     let (group, method) = id.rsplit_once('.').unwrap_or(("", id));
     if group.is_empty() || tag.is_some_and(|tag| operation_id_matches_tag_spelling(group, tag)) {
         return naming::sanitize_identifier(&method.to_ascii_lowercase());
+    }
+    if let Some(TagLocation::Stripped { method, .. }) = tag.map(|tag| tag_location(tag, id)) {
+        return naming::sanitize_identifier(&naming::to_snake_case(&method));
     }
     naming::sanitize_identifier(&naming::to_snake_case(id))
 }
@@ -13132,7 +13160,14 @@ fn compact_module(tag: &str) -> String {
             naming::sanitize_identifier(&tag.to_ascii_lowercase())
         }
     } else {
+        // Punctuation is a word boundary and nothing more: a run of it leaves
+        // one separator and none at either end, so the tag `Agent Surfaces (Me)`
+        // is `agent_surfaces_me`, as the certified pair names it (issue #924).
         naming::sanitize_identifier(&naming::to_snake_case(tag))
+            .split('_')
+            .filter(|word| !word.is_empty())
+            .collect::<Vec<_>>()
+            .join("_")
     };
     module_identifier(&name)
 }

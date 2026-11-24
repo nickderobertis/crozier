@@ -275,11 +275,12 @@ fn reserved_and_punctuated_names_take_fern_s_suffixes() {
     );
 }
 
-/// `init-import-order` (ruling 7): crozier's own import order stands, and the
-/// catalogued `init-type-checking-import-order` departure is what lets the
-/// root `__init__.py` match.
+/// `init-import-order`: since #920 crozier writes the root `__init__.py`'s
+/// `TYPE_CHECKING` block in the certified pair's own order, so the tree matches
+/// with no `init-type-checking-import-order` departure on it, and a root block
+/// naming another module is a difference.
 #[test]
-fn the_init_import_order_departure_absorbs_the_root_package_order() {
+fn the_root_package_order_is_the_certified_pair_s_without_a_departure() {
     let case = "init-import-order";
     for mode in ["python-enums", "literals"] {
         let (_temp, out) = matching(case, mode);
@@ -293,11 +294,11 @@ fn the_init_import_order_departure_absorbs_the_root_package_order() {
         .expect("real SDK trees can be compared");
         assert!(comparison.differences.is_empty(), "{mode}: {comparison:?}");
         assert!(
-            comparison.departures.iter().any(|departure| {
+            !comparison.departures.iter().any(|departure| {
                 departure.file == "src/fern/__init__.py"
                     && departure.id == "init-type-checking-import-order"
             }),
-            "{mode}: the departure must be what absorbs the order: {comparison:?}"
+            "{mode}: the root block is Fern's own order, no departure: {comparison:?}"
         );
         regression_is_named(
             case,
@@ -346,10 +347,10 @@ fn compare_cli(case: &str, mode: &str, reference: &Path) -> (serde_json::Value, 
     (report, output.status.code().unwrap_or(-1))
 }
 
-/// `init-import-order` (ruling 7) through the real `crozier compare` command:
-/// with every catalogued departure applied, crozier's SDK byte-matches the
-/// committed certified tree in both enum modes, and the departure that makes it
-/// so is `init-type-checking-import-order` on the root `__init__.py`. A
+/// `init-import-order` through the real `crozier compare` command: with every
+/// catalogued departure applied, crozier's SDK byte-matches the committed
+/// certified tree in both enum modes, with no `init-type-checking-import-order`
+/// on the root `__init__.py` (#920 writes it in the certified pair's order). A
 /// certified tree whose root block names another module is a mismatch.
 #[cfg(unix)]
 #[test]
@@ -369,11 +370,11 @@ fn crozier_compare_byte_matches_the_init_import_order_measurement() {
             .as_array()
             .expect("the departures list");
         assert!(
-            departures.iter().any(|departure| {
+            !departures.iter().any(|departure| {
                 departure["id"] == "init-type-checking-import-order"
                     && departure["file"] == "src/fern/__init__.py"
             }),
-            "{mode}: the departure must be what absorbs the order: {report:#}"
+            "{mode}: the root block is Fern's own order, no departure: {report:#}"
         );
 
         let altered = tempfile::tempdir().expect("altered reference tempdir");
