@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.173](https://github.com/nickderobertis/crozier/compare/v0.0.172...v0.0.173) - 2026-11-24
+
+### Fixed
+
+- *(parity)* match the certified pair on request bodies, form and multipart transport, and error and success responses ([#970](https://github.com/nickderobertis/crozier/pull/970))
+
 ## [0.0.172](https://github.com/nickderobertis/crozier/compare/v0.0.171...v0.0.172) - 2026-11-24
 
 ### Fixed
