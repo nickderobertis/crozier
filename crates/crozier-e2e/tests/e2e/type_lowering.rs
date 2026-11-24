@@ -353,6 +353,46 @@ fn sdk_env_escaped_discriminators_and_recursive_aliases_import() {
     let (code, said) = child("killed-by-a-crash", crash);
     assert_eq!(code, Some(0), "{said}");
     assert!(said.contains(reported), "{said}");
+    // A child that never reports within the limit is the import's own failure,
+    // as pydantic 1 expanding a recursive alias without end is: under a one
+    // second limit, an import that sleeps ten is stopped and reported.
+    let sleeper = temp.path().join("never-finishes");
+    std::fs::create_dir_all(sleeper.join("fern")).expect("mkdir");
+    std::fs::write(
+        sleeper.join("fern/__init__.py"),
+        "import time\ntime.sleep(10)\n",
+    )
+    .expect("write");
+    let limited = |limit: &str, expect: &str| {
+        let output = std::process::Command::new(python)
+            .env("PYTHONDONTWRITEBYTECODE", "1")
+            .env("GENERATED_MODEL_IMPORTS_LIMIT_SECONDS", limit)
+            .arg(&script)
+            .arg(&sleeper)
+            .args(["fern.types:Signal", "{}", expect])
+            .output()
+            .expect("run the evidence script");
+        (
+            output.status.code(),
+            String::from_utf8_lossy(&output.stdout).trim().to_string(),
+            String::from_utf8_lossy(&output.stderr).trim().to_string(),
+        )
+    };
+    let (code, said, stderr) = limited("1", "invalid");
+    assert_eq!(code, Some(0), "{said} [stderr: {stderr}]");
+    assert_eq!(said, r#"{"failed": "no result within 1s"}"#, "{stderr}");
+    let (code, said, stderr) = limited("1", "valid");
+    assert_eq!(code, Some(1), "{said} [stderr: {stderr}]");
+    // A limit that is no positive whole number of seconds is a usage error,
+    // refused before any child starts.
+    for limit in ["0", "-1", "1.5", "soon"] {
+        let (code, _said, stderr) = limited(limit, "invalid");
+        assert_eq!(code, Some(2), "{limit}: {stderr}");
+        assert!(
+            stderr.contains("GENERATED_MODEL_IMPORTS_LIMIT_SECONDS"),
+            "{limit}: {stderr}"
+        );
+    }
     let usage = |args: &[&str]| {
         std::process::Command::new(python)
             .arg(&script)

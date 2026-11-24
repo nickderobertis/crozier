@@ -11,7 +11,8 @@ or `{"pydantic": version, "failed": reason}` when the import or the validation
 raises (or `{"failed": "no result within …"}` past the limit, or `{"failed":
 "killed by signal N"}` when the interpreter dies of a signal, or `{"failed":
 "killed by exception 0xC00000FD"}` when, on Windows, it dies of an unhandled
-exception such as a stack overflow). Exits 0 when the
+exception such as a stack overflow). The limit is 30 seconds, or the whole
+seconds GENERATED_MODEL_IMPORTS_LIMIT_SECONDS names. Exits 0 when the
 outcome is the one expected, 1 when it is not, and 2 on a usage error, a ROOT
 holding no generated package, or a child interpreter that ends without
 reporting an outcome (a crash, not an SDK failure).
@@ -28,6 +29,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 LIMIT_SECONDS = 30
+LIMIT_ENV = "GENERATED_MODEL_IMPORTS_LIMIT_SECONDS"
 # The severity bits of an error NTSTATUS, the exit code of a Windows process an
 # unhandled exception ended.
 NTSTATUS_ERROR = 0xC0000000
@@ -87,8 +89,19 @@ def parse_outcome(stdout: str) -> Constructed | Failed:
             raise UsageError(f"the child interpreter reported no outcome: {lines[-1]}")
 
 
+def limit_seconds() -> int:
+    """The child's time limit: LIMIT_SECONDS, or the positive whole seconds LIMIT_ENV names."""
+    raw = os.environ.get(LIMIT_ENV)
+    if raw is None:
+        return LIMIT_SECONDS
+    if not raw.isdigit() or int(raw) == 0:
+        raise UsageError(f"{LIMIT_ENV}={raw!r} is no positive whole number of seconds")
+    return int(raw)
+
+
 def screen(root: Path, target: str, payload: str) -> Constructed | Failed:
     """Import `target` under `root` and validate `payload` in a child interpreter."""
+    limit = limit_seconds()
     try:
         child = subprocess.run(
             [sys.executable, "-c", CHILD, target, payload],
@@ -96,11 +109,11 @@ def screen(root: Path, target: str, payload: str) -> Constructed | Failed:
             env={"PYTHONPATH": str(root), "PYTHONDONTWRITEBYTECODE": "1"},
             capture_output=True,
             text=True,
-            timeout=LIMIT_SECONDS,
+            timeout=limit,
             check=False,
         )
     except subprocess.TimeoutExpired:
-        return Failed(pydantic=None, failed=f"no result within {LIMIT_SECONDS}s")
+        return Failed(pydantic=None, failed=f"no result within {limit}s")
     # Killed by a signal is the import's own failure: an implicit recursive alias
     # overflows the C stack under some pydantic 1.10 releases (SIGSEGV).
     if child.returncode < 0:
