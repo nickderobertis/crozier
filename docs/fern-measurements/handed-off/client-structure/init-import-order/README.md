@@ -18,7 +18,7 @@ shared Fern generation lock. It writes the root `__init__.py` with `.arboretum`,
 `crozier compare` against the tree then reported these files differing:
 [].
 
-**Change.** None. `crozier compare` applies `init-type-checking-import-order` to `src/fern/__init__.py` in both enum modes and the trees then byte-match.
+**Change.** None at the time. Since issue #920, `src/emit.rs::root_init_file` sorts the root block's sourced statements by module, as the certified pair does, and the trees byte-match with no departure on `src/fern/__init__.py`.
 
 **Comparison on the finished tree.** crozier's output for `openapi.yml`
 byte-matches the tree and in literals mode, with the catalogued departures applied, held by
@@ -27,11 +27,15 @@ pre-change form of the deciding line and requires the comparison to name the
 file.
 `crozier_compare_byte_matches_the_init_import_order_measurement` also runs the
 real `crozier compare` command on `openapi.yml` against this tree in both
-modes: it reports `matched` (exit 0) with `init-type-checking-import-order`
-applied to `src/fern/__init__.py`, and `mismatched` once the reference's root
+modes: it reports `matched` (exit 0) with no `init-type-checking-import-order`
+on `src/fern/__init__.py`, and `mismatched` once the reference's root
 block names another module.
 
-**Verdict.** `user-ruling` (departure `init-type-checking-import-order`).
+**Verdict.** `user-ruling` (departure `init-type-checking-import-order`),
+superseded by issue #920: crozier now writes the root block in the certified
+pair's order, the tree matches with no departure on `src/fern/__init__.py`, and
+the narrowed departure covers subpackages' blocks only
+([`../../../naming-acceptance/README.md`](../../../naming-acceptance/README.md)).
 
 **Regenerated at the certified pair.** The trees under this record's
 `fern-expected/` (and `expected-literals/` or `literals/`, where it has them)

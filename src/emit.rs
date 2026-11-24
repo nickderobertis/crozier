@@ -1525,25 +1525,34 @@ fn forward_repair_map(
     // time the module that names it repairs it, so nothing beyond that module is
     // affected — NDW's `Feature` repairs the `FeatureProperties` union and its own
     // referrer `FeatureCollection` needs no repair of its own.
-    // …unless the cycle is made of two or more aliases alone, which no module repairs as a
-    // whole: the `type-lowering/recursive-alias-cycle` measurement's
-    // `RunSummary` reaches the `JsonValueOutput`/`JsonArrayOutput`/
-    // `JsonObjectOutput` cycle through `InferenceReport`, and the certified
-    // module repairs `RunSummary` too.
-    // A single self-recursive alias stays as above: ramu-shogi's and
-    // Supabase's `JsonValue` referrers are not repaired.
+    //
+    // A cycle of two or more aliases and no class is the exception: every
+    // declaration that reaches it, however indirectly, is repaired — nof1's
+    // `FitSummary` names the acyclic `InferenceReport`, whose
+    // `inference_diagnostics` is the `JsonObjectOutput`/`JsonValueOutput`/
+    // `JsonArrayOutput` cycle, and the certified pair gives it
+    // `from __future__ import annotations` and a bare
+    // `update_forward_refs(FitSummary)` (issue #922). A single self-recursive
+    // alias is not: ramu-shogi's `GetAnalysisSnapshotResponse` reaches the
+    // self-recursive `JsonValue` only through `AnalysisSnapshotDetail`, and
+    // Fern repairs nothing beyond that model. The `type-lowering/recursive-alias-cycle`
+    // measurement's `RunSummary` is the same shape (#539).
+    let class_cycles: HashSet<usize> = classes
+        .iter()
+        .filter(|name| cyclic.contains(*name))
+        .filter_map(|name| component.get(*name).copied())
+        .collect();
+    let mut cycle_sizes: HashMap<usize, usize> = HashMap::new();
+    for name in &cyclic {
+        if let Some(id) = component.get(*name) {
+            *cycle_sizes.entry(*id).or_default() += 1;
+        }
+    }
     let alias_only_cycle = |node: &str| {
-        component.get(node).is_some_and(|id| {
-            let members: Vec<&String> = component
-                .iter()
-                .filter(|(_, other)| *other == id)
-                .map(|(member, _)| member)
-                .collect();
-            members.len() > 1
-                && members
-                    .iter()
-                    .all(|member| aliases.contains(member.as_str()))
-        })
+        aliases.contains(node)
+            && component.get(node).is_some_and(|id| {
+                !class_cycles.contains(id) && cycle_sizes.get(id).copied().unwrap_or(0) > 1
+            })
     };
     let reaches_repairable = |starts: &[String]| -> bool {
         if starts.iter().any(|name| cyclic.contains(name.as_str())) {
@@ -2687,42 +2696,55 @@ fn root_init_file(
     tc.push_str(&from_import_block(".types", &type_names, 4));
     tc.push_str(&from_import_block(".errors", &error_names, 4));
     tc.push_str(&from_import_block(".", &module_names, 4));
-    tc.push_str(&from_import_block(
-        "._default_clients",
-        &[
-            "DefaultAioHttpClient".to_string(),
-            "DefaultAsyncHttpxClient".to_string(),
-        ],
-        4,
-    ));
-    tc.push_str(&from_import_block(
-        ".client",
-        &[async_name.clone(), client_name.to_string()],
-        4,
-    ));
+    // Every other statement — the default clients, the root client, the
+    // environment, each tag package's re-exported hoisted types and
+    // `__version__` — follows sorted by its module, as the certified pair writes
+    // them: lemma's `.agent_runtime` sits between `._default_clients` and
+    // `.client`, and Seequent's `.version` precedes its `.versions` tag (issue
+    // #920).
+    let mut sourced: Vec<(String, Vec<String>)> = vec![
+        (
+            "._default_clients".to_string(),
+            vec![
+                "DefaultAioHttpClient".to_string(),
+                "DefaultAsyncHttpxClient".to_string(),
+            ],
+        ),
+        (
+            ".client".to_string(),
+            vec![async_name.clone(), client_name.to_string()],
+        ),
+    ];
     if let Some(e) = environment {
-        tc.push_str(&from_import_block(
-            ".environment",
-            std::slice::from_ref(&e.enum_name),
-            4,
-        ));
+        sourced.push((".environment".to_string(), vec![e.enum_name.clone()]));
     }
     for (tag, names) in &hoisted_by_tag {
-        tc.push_str(&from_import_block(
-            &format!(".{}", module_path(tag)),
-            names,
-            4,
-        ));
+        sourced.push((format!(".{}", module_path(tag)), names.clone()));
     }
     // `__version__` reads the installed distribution's metadata, so only the
     // packaged form exports it; Fern's flat tree has no `version.py`.
     let packaged = ir.layout == Layout::Packaged;
     if packaged {
-        tc.push_str(&from_import_block(
-            ".version",
-            &["__version__".to_string()],
-            4,
-        ));
+        sourced.push((".version".to_string(), vec!["__version__".to_string()]));
+    }
+    sourced.sort_by(|a, b| a.0.cmp(&b.0));
+    // A tag package named like a root module (`client`) shares its statement:
+    // rapidata-identity's root client and its `client` tag's hoisted request
+    // enums are one `from .client import AsyncFernApi, FernApi,
+    // GetClientsRequestLogic, …`, the names sorted.
+    let mut merged: Vec<(String, Vec<String>)> = Vec::new();
+    for (module, names) in sourced {
+        match merged.last_mut() {
+            Some((last, all)) if *last == module => {
+                all.extend(names);
+                all.sort();
+                all.dedup();
+            }
+            _ => merged.push((module, names)),
+        }
+    }
+    for (module, names) in &merged {
+        tc.push_str(&from_import_block(module, names, 4));
     }
 
     // `_dynamic_imports` pairs: every symbol → its source module.
@@ -3453,7 +3475,7 @@ fn reference_entry(
     tag_types: &BTreeMap<String, String>,
 ) -> Result<String> {
     let mut imports = Imports::at(RefLoc::Client(module.to_string()), tag_types);
-    let mp = method_params(ep, &mut imports);
+    let mp = method_params(ep, &mut imports, true);
     let has_args = !mp.path.is_empty()
         || !mp.query.is_empty()
         || !mp.header.is_empty()
@@ -5674,8 +5696,14 @@ struct MethodParams {
 
 /// Compute an endpoint's resolved parameters and response type, registering the
 /// imports the annotations need. Independent of sync/async.
-fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
-    let inner = if ep.binary_response {
+///
+/// The response type's imports are registered only when `response` asks: a
+/// high-level HEAD method returns the response headers and names no response
+/// model, while the raw client still types its `HttpResponse` with it. The
+/// certified pair's Folio client imports no `GetSiteResponse` once
+/// `HEAD /v1/site` replaces its `GET` (issue #921).
+fn method_params(ep: &Endpoint, imports: &mut Imports, response: bool) -> MethodParams {
+    let inner = if ep.binary_response || !response {
         "None".to_string()
     } else {
         ep.response
@@ -5970,7 +5998,7 @@ fn raw_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> String {
     } else {
         imports.core_local("http_response", "HttpResponse")
     };
-    let mp = method_params(ep, imports);
+    let mp = method_params(ep, imports, true);
     let return_type = pager_return_type(ep, &mp.inner, is_async, imports)
         .unwrap_or_else(|| format!("{wrapper}[{}]", mp.inner));
     let signature = signature(ep, &mp, &return_type, is_async);
@@ -7123,7 +7151,7 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
                 "_response.read()",
             )
         };
-    let mp = method_params(ep, imports);
+    let mp = method_params(ep, imports, true);
     let chunk = sse_chunk(ep, imports);
     // A streaming operation still declares error statuses, and Fern raises them
     // from inside the stream body once the response has been read, exactly as the
@@ -7382,7 +7410,7 @@ fn raw_binary_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports
                 "_stream()",
             )
         };
-    let mp = method_params(ep, imports);
+    let mp = method_params(ep, imports, true);
     let data_type = format!("{data_iter}[bytes]");
     let return_type = format!("{iter_t}[{wrapper}[{data_type}]]");
     let sig = signature(ep, &mp, &return_type, is_async);
@@ -8437,7 +8465,7 @@ fn client_method(cx: &ClientCtx, ep: &Endpoint, is_async: bool, imports: &mut Im
     if ep.binary_response {
         return client_binary_stream_method(cx, ep, is_async, imports);
     }
-    let mp = method_params(ep, imports);
+    let mp = method_params(ep, imports, ep.http_method != "HEAD");
     let return_type = if ep.http_method == "HEAD" {
         "typing.Dict[str, str]".to_string()
     } else {
@@ -8485,7 +8513,7 @@ fn client_stream_method(
     is_async: bool,
     imports: &mut Imports,
 ) -> String {
-    let mp = method_params(ep, imports);
+    let mp = method_params(ep, imports, true);
     let iter_t = if is_async {
         "typing.AsyncIterator"
     } else {
@@ -8613,7 +8641,7 @@ fn client_binary_stream_method(
     imports: &mut Imports,
 ) -> String {
     imports.add_plain("typing");
-    let mp = method_params(ep, imports);
+    let mp = method_params(ep, imports, true);
     let iter_t = if is_async {
         "typing.AsyncIterator"
     } else {

@@ -37,7 +37,7 @@ config = (workspace / "fern.config.json").read_text()
 generators = (workspace / "generators.yml").read_text()
 document = (workspace / "openapi" / "openapi.yml").read_text()
 with open(os.environ["FERN_STUB_LOG"], "a") as log:
-    log.write(json.dumps({"argv": sys.argv[1:], "config": json.loads(config), "generators": generators, "token": os.environ.get("FERN_TOKEN")}) + "\n")
+    log.write(json.dumps({"argv": sys.argv[1:], "config": json.loads(config), "generators": generators, "token": os.environ.get("FERN_TOKEN"), "openapi": sorted(p.relative_to(workspace / "openapi").as_posix() for p in (workspace / "openapi").rglob("*") if p.is_file())}) + "\n")
 if sys.argv[1] == "check":
     if "x-stub-refuse" in document:
         print("[sdk] 1 error\n    [error]\n        path: openapi\n        issue: Stub refused the document")
@@ -919,6 +919,38 @@ class FernReferencesTests(unittest.TestCase):
             (self.root / "docs/openapi-surface/handwritten/sigma/fern-expected/src/fern/audience_public.py").is_file()
         )
         self.assertFalse((self.root / "cache/crozier/certified-trees").exists())
+
+    def test_a_measurement_document_naming_a_sibling_file_reaches_fern_with_it(self) -> None:
+        """A relative `$ref` resolves from the document's own directory, so the
+        file it names goes into Fern's workspace beside the document, a nested
+        path keeping its directory; a URL, an absolute path, a parent path, the
+        document itself and an absent file do not, and the run keeps nothing in
+        the store."""
+        self.write(
+            "docs/fern-measurements/clients/echo/openapi.yml",
+            "openapi: 3.0.3\npaths:\n  /n:\n    get:\n      responses:\n"
+            "        '404':\n          $ref: './components.yml#/components/responses/NotFound'\n"
+            "        '405':\n          $ref: 'shared/errors.yml#/components/responses/NotAllowed'\n"
+            "        '406':\n          $ref: 'https://example.com/errors.yml#/components/responses/Refused'\n"
+            "        '407':\n          $ref: '/etc/errors.yml#/components/responses/Proxy'\n"
+            "        '408':\n          $ref: './openapi.yml#/components/responses/Timeout'\n"
+            "        '409':\n          $ref: '../outside.yml#/components/responses/Gone'\n"
+            "        '410':\n          $ref: 'absent.yml#/components/responses/Gone'\n",
+        )
+        self.write("docs/fern-measurements/clients/echo/components.yml", "components: {}\n")
+        self.write("docs/fern-measurements/clients/echo/shared/errors.yml", "components: {}\n")
+        self.write("docs/fern-measurements/clients/outside.yml", "components: {}\n")
+        self.write(
+            "docs/fern-measurements/cases.tsv",
+            "case\tdocument\tenum_type\tlayout\toverlay\n"
+            "clients/echo\tdocs/fern-measurements/clients/echo/openapi.yml\tpython-enums\tpackaged\t-\n",
+        )
+        result = self.run_tool("generate", "measurements", "clients/echo")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        (call,) = self.calls()
+        self.assertEqual(call["openapi"], ["components.yml", "openapi.yml", "shared/errors.yml"])
+        self.assertTrue((self.root / "docs/fern-measurements/clients/echo/fern-expected/src/fern/client.py").is_file())
+        self.assert_store_holds_nothing()
 
     def test_a_flat_measurement_runs_tokenless_into_the_module_tree(self) -> None:
         self.write("docs/fern-measurements/clients/delta/openapi.yml", "openapi: 3.0.3\n")

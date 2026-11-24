@@ -1,0 +1,40 @@
+openapi: 3.0.3
+info:
+  title: Slash Names
+  version: 1.0.0
+servers:
+- url: https://slash.example.com
+paths:
+  /records:
+    post:
+      operationId: createRecords
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                left:
+                  $ref: '#/components/schemas/kiln/glaze-coat'
+                right:
+                  $ref: '#/components/schemas/kiln-glaze/coat'
+      responses:
+        '204':
+          description: Created.
+components:
+  schemas:
+    kiln/glaze-coat:
+      type: object
+      required:
+      - left
+      properties:
+        left:
+          type: string
+    kiln-glaze/coat:
+      type: object
+      required:
+      - right
+      properties:
+        right:
+          type: integer

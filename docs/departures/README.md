@@ -213,7 +213,7 @@ when the two differ.
 
 | Kind | Entries | Meaning |
 | --- | --- | --- |
-| `fern-defect` | 45 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
+| `fern-defect` | 46 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
 | `branding` | 1 | crozier names itself where Fern names itself. |
 | `packaging` | 1 | crozier writes the packaged SDK's publishing details from its own settings. |
 | `provenance` | 1 | crozier writes a fixed record of how the SDK was generated. |
@@ -274,6 +274,15 @@ when the two differ.
 - **crozier writes:** The property's description: the model field declared with pydantic.Field() and a docstring holding it, the docstring entry's description line, and the reference.md row's em-dash description. The type, the field's requiredness and every other line are retained.
 - **Why:** Both outputs type and validate the field identically; crozier's documents the description the specification declares on the property itself, where Fern's documents nothing about it.
 - **Evidence:** [`docs/departures/evidence/collapsed-anyof-property-description.md`](../../docs/departures/evidence/collapsed-anyof-property-description.md)
+
+### `colliding-component-own-class`
+
+- **Kind:** `fern-defect`
+- **Trigger:** Two or more component schemas whose names spell one class (`kiln/glaze-coat` and `kiln-glaze/coat` are both `KilnGlazeCoat`) and whose schemas differ: every file naming the components that are not the last declaration.
+- **Fern writes:** One class for the name, holding the last declaration's fields, so every request field, response or error typed by an earlier colliding component is typed with the last one's model (`left: typing.Optional[KilnGlazeCoat]` holding `right: int`).
+- **crozier writes:** The last declaration keeps Fern's class and module byte for byte; each earlier, non-identical one is a class of its own named Fern's class followed by the first ordinal from 2 no other component's class spells (`KilnGlazeCoat2` in `types/kiln_glaze_coat2.py`), and everything it types names it, with its import, lazy-import entry and `__all__` entry. Components whose schemas are identical stay one class, as Fern writes them.
+- **Why:** Fern's model for the earlier component is another component's: a request built from its documented fields sends the wrong shape, and a response of its declared shape fails the merged model's validation, a runtime failure under the defect rule. Manager rulings a1 and a3 (#944) keep the surviving class Fern's and give every other colliding component its own.
+- **Evidence:** [`docs/departures/evidence/colliding-component-own-class.md`](../../docs/departures/evidence/colliding-component-own-class.md)
 
 ### `constant-header-docs-arguments`
 
@@ -422,9 +431,9 @@ when the two differ.
 ### `init-type-checking-import-order`
 
 - **Kind:** `ordering`
-- **Trigger:** A lazy-loading `__init__.py` whose `if typing.TYPE_CHECKING:` block imports from several sources, including a root package whose tag subpackages re-export their hoisted types.
-- **Fern writes:** The block's imports in the order Fern's generator collected them, the root client's and environment's statements sorted by module among the tag subpackages'.
-- **crozier writes:** The same import statements, in crozier's sorted order, the root client's and environment's statements ahead of every tag subpackage's.
+- **Trigger:** A subpackage's lazy-loading `__init__.py` (never the root package's) whose `if typing.TYPE_CHECKING:` block imports from several modules.
+- **Fern writes:** The block's imports in the order Fern's generator collected them (CloudFormation's `types/__init__.py` imports `ResourcesToImport` and `ResourcesToSkip` ahead of `AcceptTermsAndConditions`).
+- **crozier writes:** The same import statements, sorted by module. The root package's block is written in the certified pair's own order (issue #920), so no departure covers it.
 - **Why:** The block exists only for type checkers and is never executed, and the reordered statements import exactly the same names: sorted with ruff's isort, the two blocks are identical, or, where they differ in another way, the window of statements that moves is one permutation of identical statements and every other difference in the block remains a difference. crozier emits a deterministic sorted order rather than reproducing Fern's collection order.
 - **Evidence:** [`docs/departures/evidence/init-type-checking-import-order.md`](../../docs/departures/evidence/init-type-checking-import-order.md)
 

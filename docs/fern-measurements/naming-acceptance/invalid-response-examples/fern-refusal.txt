@@ -1,0 +1,5 @@
+fern_cli_version: 5.216.0
+fern_python_sdk_version: 5.42.0
+generate_exit: 1
+diagnostic: Expected example to be a string. Example is: 12345
+output_tree: none

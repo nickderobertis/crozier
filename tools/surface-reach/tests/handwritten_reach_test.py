@@ -2847,11 +2847,23 @@ class CooccurrenceOutcomeTest(unittest.TestCase):
     """Each outcome-proven co-occurrence row, run through the instrumented crozier."""
 
     def generate(
-        self, scratch: Path, document: str, reach: ReachMeasurement, crozier: Path, mode: str = "python-enums"
+        self,
+        scratch: Path,
+        document: str | Path,
+        reach: ReachMeasurement,
+        crozier: Path,
+        mode: str = "python-enums",
     ) -> tuple[Path, dict, dict]:
-        """(the generated package, every production region, the executed ones) for one document."""
-        spec = scratch / "openapi.yml"
-        spec.write_text(document, encoding="utf-8")
+        """(the generated package, every production region, the executed ones) for one document.
+
+        `document` is the document's text, or the path of one already staged (whose
+        relative references must keep resolving from where it sits).
+        """
+        if isinstance(document, Path):
+            spec = document
+        else:
+            spec = scratch / "openapi.yml"
+            spec.write_text(document, encoding="utf-8")
         raw = scratch / "profile"
         raw.mkdir()
         run = subprocess.run(
@@ -2914,12 +2926,6 @@ class CooccurrenceOutcomeTest(unittest.TestCase):
     def test_each_interaction_arm_runs_on_the_real_specification_its_audit_names(self) -> None:
         reach = golden_reach()
         handwritten = _module("handwritten_interaction_witnesses", "handwritten-fixtures.py")
-        census = _module("census_interaction_witnesses", "openapi-surface-census.py")
-        fixtures = REPO / "tests" / "fixtures"
-        sources = {
-            source.fixture: source.path
-            for source in census.acquisition_sources(fixtures, fixtures / "corpus-sources", False)
-        }
         audit, failures = reach.read_cooccurrence()
         self.assertEqual([], failures)
         table = reach.read_sites_table()
@@ -2927,7 +2933,20 @@ class CooccurrenceOutcomeTest(unittest.TestCase):
         for key in INTERACTION_ARMS:
             self.assertEqual("interaction", audit[key].proof_class, key)
             with self.subTest(key=key, witness=audit[key].witness), tempfile.TemporaryDirectory() as temporary:
-                document = sources[audit[key].witness].read_text(encoding="utf-8")
+                # Staged as the corpus gates stage it: a witness naming another
+                # document by absolute URL (`helios-verifiable-api`) resolves it
+                # from the committed copy, so no upstream outage can fail this.
+                staged = subprocess.run(
+                    [
+                        *(sys.executable, str(REPO / "tools/corpus/corpus_sources.py"), "prepare"),
+                        *("--fixture", audit[key].witness, "--output", str(Path(temporary) / "source")),
+                    ],
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                )
+                self.assertEqual(0, staged.returncode, staged.stderr)
+                document = Path(staged.stdout.strip())
                 _package, universe, hit = self.generate(Path(temporary), document, reach, crozier)
                 self.assertTrue(self.ran(reach, table[key].sites[0], universe, hit))
 

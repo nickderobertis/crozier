@@ -1,4 +1,5 @@
 finding	kind	check_exit	generate_exit	diagnostic	probe
+boolean-component-schema	generates	0	0	—	docs/openapi-surface/fern-refusals/findings/boolean-component-schema.yml
 description-frontmatter-delimiter	check-only	1	0	Endpoint description for <…> contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.	docs/openapi-surface/fern-refusals/findings/description-frontmatter-delimiter.yml
 enum-member-digit-led	generates	0	0	—	docs/openapi-surface/fern-refusals/findings/enum-member-digit-led.yml
 enum-member-zero-led-run	generates	0	0	—	docs/openapi-surface/fern-refusals/findings/enum-member-zero-led-run.yml

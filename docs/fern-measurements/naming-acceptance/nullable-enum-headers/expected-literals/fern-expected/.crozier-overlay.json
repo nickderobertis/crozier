@@ -1,0 +1,10 @@
+{
+  "fern_python_sdk_version": "5.42.0",
+  "fern_cli_version": "5.216.0",
+  "enum_type": "literals",
+  "base": "fern-expected",
+  "digest": "68551901a9c71119d81a0a6e553c69df235ae29a8ba6910ffc025e4a126ac2cb",
+  "removed": [
+    "src/fern/core/enum.py"
+  ]
+}

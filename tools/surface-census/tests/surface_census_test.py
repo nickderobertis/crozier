@@ -17475,6 +17475,29 @@ class NamingAndExampleBranchDiscriminationTests(unittest.TestCase):
             rows(completed),
         )
 
+    def test_a_dotted_id_led_by_its_tags_words_strips_them(self) -> None:
+        """`agent.host.2fa.create` under `agent_host` strips the tag's words to
+        `2fa_create`, which a digit leads (#924, as lemma's
+        `agent.host.pairing.create` is `pairing_create`); under `widgets`, whose
+        words do not lead it, it keeps its whole id and no digit leads it."""
+        cases = {
+            "stripped": {"operationId": "agent.host.2fa.create", "tags": ["agent_host"]},
+            "whole": {"operationId": "agent.host.2fa.create", "tags": ["widgets"]},
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name, operation in cases.items():
+                write_json_fixture(root, name, _operation_document(operation))
+            completed = run(
+                "--vendored-only",
+                "--fixtures-root",
+                str(root),
+                "--selector",
+                "operation.operationId:digit-leading-method",
+            )
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual({("operation.operationId:digit-leading-method", "stripped"): 1}, rows(completed))
+
     def test_an_untyped_enum_tag_leaves_a_one_of_undiscriminated(self) -> None:
         """A `oneOf` whose members tag `kind` with a bare one-member `enum` is no
         discriminated union, as an `anyOf` written the same way is not; the same

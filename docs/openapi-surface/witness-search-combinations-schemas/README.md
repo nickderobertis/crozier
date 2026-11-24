@@ -25,6 +25,12 @@ holds one row per candidate and mode: its outcome is `byte-match`,
 departure, an `attributed-residual` (a difference outside the key's interaction,
 named in `detail`), or a Fern refusal.
 
+The rows of eight candidates (`012938b1…`, `7cff4ee7…`, `95cd1e1e…`,
+`cc1eaf26…`, `e156a56e…`, `58d3c068…`, `bc9b7f5c…`, `0c046ac2…`) were screened
+again at Fern CLI 5.216.0 / fern-python-sdk 5.42.0 in both enum modes after the
+naming-acceptance repairs (#919–#924, #940, #955, #956); each row's detail ends
+with that screen's result, and the counts below are the original screen's.
+
 ## Keys
 
 Nine keys are settled. Eight are interactions on a registered witness — the

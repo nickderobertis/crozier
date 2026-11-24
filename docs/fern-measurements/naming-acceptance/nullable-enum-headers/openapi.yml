@@ -1,0 +1,61 @@
+openapi: 3.0.3
+info:
+  title: Encoding Desk
+  version: 1.0.0
+servers:
+- url: https://encoding.example.com
+paths:
+  /encode:
+    get:
+      operationId: encodeValue
+      tags:
+      - simple_encoding
+      parameters:
+      - name: X-Nullable-Enum
+        in: header
+        schema:
+          $ref: '#/components/schemas/NullableColor'
+      - name: X-Inline-Nullable-Enum
+        in: header
+        schema:
+          type: string
+          nullable: true
+          enum:
+          - up
+          - down
+      - name: X-Wrapped-Nullable-Enum
+        in: header
+        style: simple
+        schema:
+          allOf:
+          - $ref: '#/components/schemas/Shade'
+          nullable: true
+      - name: X-Plain-Enum
+        in: header
+        schema:
+          $ref: '#/components/schemas/Shade'
+      responses:
+        '204':
+          description: Encoded.
+  /ping:
+    get:
+      operationId: ping
+      responses:
+        '204':
+          description: Pong.
+      tags:
+      - simple_encoding
+components:
+  schemas:
+    NullableColor:
+      type: string
+      nullable: true
+      enum:
+      - red
+      - green
+      - blue
+    Shade:
+      type: string
+      enum:
+      - light
+      - dark

@@ -809,10 +809,10 @@ fn declared_scalar_union_members_stay_inline_and_structured_ones_stay_named() {
 /// The slash-named-component measurement's pointer, spelled every way a document
 /// can reach a component whose name holds a `/`: escaped as JSON Pointer
 /// spells it, as a discriminator mapping's target, and from inside a webhook's
-/// inline payload. Each names the component's class. A slash-named component
-/// whose renaming would coincide with another's, or with a declared name, keeps
-/// its own name, so no declaration displaces another, and its pointer stays
-/// unresolved: the unknown type.
+/// inline payload. Each names the component's class. Components whose names
+/// spell one class (`tags/a/b-c` and `tags/a-b/c`, `drafts/note` and
+/// `drafts-note`) each keep a class of their own, so no declaration displaces
+/// another and each pointer names its own component's.
 #[test]
 fn slash_named_components_resolve_from_every_reference_spelling() {
     let temp = tempfile::tempdir().expect("output tempdir");
@@ -842,24 +842,31 @@ fn slash_named_components_resolve_from_every_reference_spelling() {
         payload.contains("    page: PagesPage"),
         "the webhook payload's pointer: {payload}"
     );
+    // Components whose names spell one class each keep a class of their own
+    // (`colliding-component-own-class`, #944): the last declaration keeps the
+    // shared class, an earlier one its own path's class with an ordinal, and
+    // every pointer names its own component's.
     let tags = read("src/fern/types/get_tags_response.py");
-    for field in ["first", "second", "slashed"] {
+    for (field, class) in [
+        ("first", "TagsABC2"),
+        ("second", "TagsABC"),
+        ("slashed", "DraftsNote2"),
+        ("declared", "DraftsNote"),
+    ] {
         assert!(
-            tags.contains(&format!("    {field}: typing.Optional[typing.Any] = None")),
-            "{field} stays an unresolved pointer: {tags}"
+            tags.contains(&format!("    {field}: typing.Optional[{class}] = None")),
+            "{field} names its own component's class {class}: {tags}"
         );
     }
-    // `drafts/note` would rename onto the declared `drafts-note`, so it keeps its
-    // name: the declared component is still the one its own pointer names.
-    assert!(
-        tags.contains("    declared: typing.Optional[DraftsNote] = None"),
-        "the declared `drafts-note` is still the component its pointer names: {tags}"
-    );
-    let note = read("src/fern/types/drafts_note.py");
-    assert!(
-        note.contains("DraftsNote = int"),
-        "`drafts-note` keeps its own integer declaration: {note}"
-    );
+    for (file, declaration) in [
+        ("drafts_note.py", "DraftsNote = int"),
+        ("drafts_note2.py", "DraftsNote2 = str"),
+        ("tags_abc.py", "TagsABC = int"),
+        ("tags_abc2.py", "TagsABC2 = str"),
+    ] {
+        let text = read(&format!("src/fern/types/{file}"));
+        assert!(text.contains(declaration), "{file}: {text}");
+    }
 }
 
 /// The document [`slash_named_components_resolve_from_every_reference_spelling`] generates.

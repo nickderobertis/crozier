@@ -174,6 +174,13 @@ mod union_inheritance;
 /// against the certified pair's tree in both enum modes.
 #[path = "e2e/type_lowering.rs"]
 mod type_lowering;
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates one small SDK per ticket and compares it whole, on the crozier-e2e edge every other golden comparison shares; its PyPI-installing journeys are `sdk_env_`-ignored into `just test-sdk-env`, and splitting the shared edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+/// The naming, import and document-acceptance tickets (#536, #919–#924,
+/// #941–#944, #946, #948, #955, #956), each settled against a from-scratch
+/// document under `docs/fern-measurements/naming-acceptance/` and held whole
+/// against the certified pair's tree in both enum modes.
+#[path = "e2e/naming_acceptance.rs"]
+mod naming_acceptance;
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These nine local generator journeys and their canonical-header controls generate small SDKs without network access or SDK installation; they exercise the existing real-binary boundary and introduce no promoted-tier setup.
@@ -1083,6 +1090,7 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         (handed_off_type_declarations::DIR, "fern-expected"),
         (union_inheritance::DIR, "fern-expected"),
         (type_lowering::DIR, "fern-expected"),
+        (naming_acceptance::DIR, "fern-expected"),
         (handed_off_example_values::AREA_DIR, "fern-expected"),
         (handed_off_snippet_rendering::AREA_DIR, "fern-expected"),
         (bodies_media::BODIES_MEDIA_DIR, "fern-expected"),
@@ -1131,6 +1139,7 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         remeasure::DIR,
         union_inheritance::DIR,
         type_lowering::DIR,
+        naming_acceptance::DIR,
     ] {
         if let Ok(entries) = std::fs::read_dir(root.join(dir)) {
             for entry in entries.filter_map(Result::ok) {
@@ -4245,10 +4254,13 @@ fn object_union_extension_generates_every_union_base_and_keeps_a_scalar_base_ref
     let class = repo_root()
         .join(FERN_REFUSALS_DIR)
         .join("object-extends-non-object");
+    // And at Fern CLI 5.216.0 / fern-python-sdk 5.42.0, an object holding only
+    // a discriminator mapping is such a union base too (#955).
     for control in [
         "untyped-ref-union-base-control.yml",
         "anyof-ref-union-base-control.yml",
         "scalar-member-union-base-control.yml",
+        "discriminator-only-base-control.yml",
     ] {
         generates_identically_in_both_modes(&class.join(control));
     }

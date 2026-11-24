@@ -1,0 +1,26 @@
+openapi: 3.0.3
+info:
+  title: Slash Names
+  version: 1.0.0
+servers:
+- url: https://slash.example.com
+paths:
+  /left:
+    get:
+      operationId: getLeft
+      responses:
+        '200':
+          description: The left record.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/kiln/glaze-coat'
+components:
+  schemas:
+    kiln/glaze-coat:
+      type: object
+      required:
+      - left
+      properties:
+        left:
+          type: string
