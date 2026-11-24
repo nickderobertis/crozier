@@ -11,7 +11,7 @@
 
 use std::path::{Path, PathBuf};
 
-use super::{departure_ledger, golden_tree_failures, probe_command, repo_root};
+use super::{copy_dir, departure_ledger, golden_tree_failures, probe_command, repo_root};
 
 /// Where the measurements live; each case's `fern-expected/` is a compared golden.
 pub(crate) const DIR: &str = "docs/fern-measurements/bodies-responses";
@@ -430,6 +430,60 @@ fn header_and_body_sharing_a_name_keep_their_own_arguments() {
         unexplained.iter().any(|failure| failure.contains(raw)),
         "any other value must fail the comparison: {unexplained:?}"
     );
+}
+
+/// #926's departure covers the header's variable only where the request maps
+/// that header from it. With the header block rewritten identically in the
+/// certified tree and in crozier's, mapping another variable or no longer
+/// sending headers at all, the header lines still agree, so the comparison
+/// fails only because the departure no longer explains the body line.
+#[test]
+fn header_body_departure_needs_the_header_to_map_that_variable() {
+    let case = "header-body-collision";
+    let (temp, out) = matched(case);
+    let raw = "src/fern/actions/raw_client.py";
+    let golden = format!("{DIR}/{case}/fern-expected");
+    let ledger = departure_ledger()
+        .golden(&golden, &[])
+        .unwrap_or_else(|failures| panic!("{}", failures.join("\n")));
+    let header = "                \"Idempotency-Key\": str(idempotency_key) if idempotency_key is not None else None,\n";
+    let block = format!(
+        "            headers={{\n                \"content-type\": \"application/json\",\n{header}"
+    );
+    let unmapped = header.replace("idempotency_key", "request_options");
+    let absent = block.replacen("headers={", "params={", 1);
+    for (label, from, to) in [
+        ("unchanged", header, header.to_owned()),
+        ("another variable", header, unmapped),
+        ("no headers", block.as_str(), absent),
+    ] {
+        let reference = temp
+            .path()
+            .join(format!("reference-{}", label.replace(' ', "-")));
+        copy_dir(&repo_root().join(&golden), &reference);
+        let sdk = temp.path().join(format!("sdk-{}", label.replace(' ', "-")));
+        copy_dir(&out, &sdk);
+        for tree in [&reference, &sdk] {
+            let text = read(&tree.join(raw));
+            assert_eq!(text.matches(from).count(), 2, "{label}: {}", tree.display());
+            std::fs::write(tree.join(raw), text.replace(from, &to)).expect("rewrite the client");
+        }
+        let unexplained = golden_tree_failures(
+            case,
+            &case_dir(case).join("openapi.yml").display().to_string(),
+            &ledger,
+            &reference,
+            &sdk,
+        );
+        if label == "unchanged" {
+            assert!(unexplained.is_empty(), "{label}: {unexplained:?}");
+        } else {
+            assert!(
+                unexplained.iter().any(|failure| failure.contains(raw)),
+                "{label}: the departure must not explain the body line: {unexplained:?}"
+            );
+        }
+    }
 }
 
 /// #938: a nullable scalar alias body is sent raw, and a map of a union alias

@@ -2999,10 +2999,10 @@ fn body_query_parameter_value(pair: &Pair<'_>) -> Result<Option<Region>, String>
                 .any(|line| {
                     line.strip_prefix("                \"")
                         .and_then(|rest| rest.split_once("\": "))
+                        // The pair writes every header this way; a bare
+                        // `"X": name,` is never measured, so it is not accepted.
                         .is_some_and(|(_, value)| {
-                            value == format!("{query},")
-                                || value
-                                    == format!("str({query}) if {query} is not None else None,")
+                            value == format!("str({query}) if {query} is not None else None,")
                         })
                 })
         };
