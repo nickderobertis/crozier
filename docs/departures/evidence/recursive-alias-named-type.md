@@ -47,7 +47,12 @@ python docs/departures/evidence/generated-model-imports.py \
 Run on 2026-11-23 (Python 3.12, HTTPX 0.28.1), it printed under Pydantic
 1.10.27 `{"failed": "no result within 30s"}` (pydantic expands the alias
 without end) and under Pydantic 2.14.4 `{"pydantic": "2.14.4", "failed":
-"RecursionError"}`, each exiting 0. Run the same way over crozier's generated
+"RecursionError"}`, each exiting 0. That expansion grows by about 0.6 GB a
+second, which exhausted a 16 GB CI runner before the time limit, so the script
+now bounds the child's address space at 4 GiB where the platform enforces it:
+run again on 2026-11-24 (Python 3.14, Linux) the certified tree prints
+`{"pydantic": "1.10.27", "failed": "MemoryError"}` within ten seconds, still
+exiting 0, and 2.14.4 is unchanged. Run the same way over crozier's generated
 tree with `valid`, both construct the nested value:
 `Signal(id='a', payload={'k': [1, 'x', None, {'n': True}]}, history=[[1, 2], 'y'], labels={'l': {'m': [3]}}, tree=['leaf', {'name': 'n', 'children': ['x', ['y']]}])`
 under 1.10.27, and under 2.14.4 the same with the numbers read as floats and
@@ -56,7 +61,8 @@ the tree's node constructed as `Node(name='n', children=['x', ['y']])`.
 Over the cycle (`fern.types:RunSummary`, payload `{"report": {"engine": "e",
 "inference_diagnostics": {"a": [1, "x", null, {"b": [true]}], "c": {"d": 2.5}}},
 "label": "l"}`), the certified tree printed `{"failed": "no result within 30s"}`
-under Pydantic 1.10.26 and 1.10.27, and `{"pydantic": "2.14.4", "failed":
+under Pydantic 1.10.26 and 1.10.27 (`MemoryError` under the bounded 1.10.27 run
+of 2026-11-24), and `{"pydantic": "2.14.4", "failed":
 "RecursionError"}` under 2.14.4; crozier's tree constructs
 `RunSummary(report=InferenceReport(engine='e', inference_diagnostics={...}), label='l')`
 under all three. (The naming-acceptance screen of the same shape saw the

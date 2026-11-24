@@ -353,6 +353,15 @@ fn sdk_env_escaped_discriminators_and_recursive_aliases_import() {
     let (code, said) = child("killed-by-a-crash", crash);
     assert_eq!(code, Some(0), "{said}");
     assert!(said.contains(reported), "{said}");
+    // An import that outgrows the child's 4 GiB address space fails as
+    // `MemoryError`, as pydantic 1 expanding a recursive alias does, rather
+    // than growing until it takes the host down. Linux enforces the bound;
+    // elsewhere this allocation would really happen, so it is asked only here.
+    if cfg!(target_os = "linux") {
+        let (code, said) = child("outgrows-memory", "bytearray(8 * 1024**3)\n");
+        assert_eq!(code, Some(0), "{said}");
+        assert!(said.contains(r#""failed": "MemoryError""#), "{said}");
+    }
     // A child that never reports within the limit is the import's own failure,
     // as pydantic 1 expanding a recursive alias without end is: under a one
     // second limit, an import that sleeps ten is stopped and reported.

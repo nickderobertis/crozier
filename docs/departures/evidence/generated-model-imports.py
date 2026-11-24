@@ -8,14 +8,15 @@ in a child interpreter under a time limit, because an implicit recursive alias
 can make pydantic v1 expand it without end rather than raise. Prints one JSON
 line: `{"pydantic": version, "constructed": repr}` when the payload validates,
 or `{"pydantic": version, "failed": reason}` when the import or the validation
-raises (or `{"failed": "no result within …"}` past the limit, or `{"failed":
-"killed by signal N"}` when the interpreter dies of a signal, or `{"failed":
-"killed by exception 0xC00000FD"}` when, on Windows, it dies of an unhandled
-exception such as a stack overflow). The limit is 30 seconds, or the whole
-seconds GENERATED_MODEL_IMPORTS_LIMIT_SECONDS names. Exits 0 when the
-outcome is the one expected, 1 when it is not, and 2 on a usage error, a ROOT
-holding no generated package, or a child interpreter that ends without
-reporting an outcome (a crash, not an SDK failure).
+raises. `MemoryError` is such a reason: where the platform enforces it, the
+child's address space is bounded at 4 GiB. A child that never reports prints
+`{"failed": "no result within …"}`; one that dies of a signal, `{"failed":
+"killed by signal N"}`; and on Windows one that dies of an unhandled exception
+such as a stack overflow, `{"failed": "killed by exception 0xC00000FD"}`. The
+limit is 30 seconds, or the whole seconds GENERATED_MODEL_IMPORTS_LIMIT_SECONDS
+names. Exits 0 when the outcome is the one expected, 1 when it is not, and 2 on
+a usage error, a ROOT holding no generated package, or a child interpreter that
+ends without reporting an outcome (a crash, not an SDK failure).
 """
 
 from __future__ import annotations
@@ -37,8 +38,24 @@ POSITIVE_SECONDS = re.compile(r"[1-9][0-9]*")
 NTSTATUS_ERROR = 0xC0000000
 TARGET = re.compile(r"[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*:[A-Za-z_][A-Za-z0-9_]*")
 
+# The child's address space, where the platform enforces one: pydantic 1
+# expanding an implicit recursive alias grows by about 0.6 GB a second, which
+# within the time limit exhausts a 16 GB CI runner and kills it rather than
+# the child. Bounded, the expansion fails as `MemoryError`, or dies of a signal.
+MEMORY_LIMIT_BYTES = 4 * 1024**3
+
 CHILD = """
 import json, sys
+try:
+    import resource
+except ImportError:  # Windows: no rlimits, and the overflow there is a quick crash.
+    pass
+else:
+    try:
+        cap = int(sys.argv[3])
+        resource.setrlimit(resource.RLIMIT_AS, (cap, cap))
+    except (ValueError, OSError):  # not lowerable here; macOS accepts it unenforced
+        pass
 import pydantic
 module, name = sys.argv[1].split(":")
 payload = json.loads(sys.argv[2])
@@ -106,7 +123,7 @@ def screen(root: Path, target: str, payload: str) -> Constructed | Failed:
     limit = limit_seconds()
     try:
         child = subprocess.run(
-            [sys.executable, "-c", CHILD, target, payload],
+            [sys.executable, "-c", CHILD, target, payload, str(MEMORY_LIMIT_BYTES)],
             cwd=root,
             env={"PYTHONPATH": str(root), "PYTHONDONTWRITEBYTECODE": "1"},
             capture_output=True,
