@@ -242,10 +242,10 @@ when the two differ.
 ### `body-query-parameter-value`
 
 - **Kind:** `fern-defect`
-- **Trigger:** An inline JSON body property sharing its wire key with a query parameter, where the method signature renames the body argument to avoid the collision.
-- **Fern writes:** The query parameter's variable as the JSON property's value, including inside convert_and_respect_annotation_metadata.
-- **crozier writes:** The renamed body argument as the JSON property's value, retaining the signature, query mapping, converter annotation and every other statement.
-- **Why:** The method accepts a distinct body argument but sends the query argument instead, so the caller's body value never reaches its documented body key.
+- **Trigger:** An inline JSON body property sharing its wire key with a query parameter, or its argument name with a header, where the method signature renames the body argument to avoid the collision.
+- **Fern writes:** The query parameter's or header's variable as the JSON property's value, including inside convert_and_respect_annotation_metadata.
+- **crozier writes:** The renamed body argument as the JSON property's value, retaining the signature, query or header mapping, converter annotation and every other statement.
+- **Why:** The method accepts a distinct body argument but sends the query or header argument instead, so the caller's body value never reaches its documented body key.
 - **Evidence:** [`docs/departures/evidence/body-query-parameter-value.md`](../../docs/departures/evidence/body-query-parameter-value.md)
 
 ### `bracket-query-parameter-call-keyword`

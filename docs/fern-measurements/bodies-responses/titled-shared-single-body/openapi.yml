@@ -1,0 +1,113 @@
+openapi: 3.0.3
+info:
+  title: Pottery Account Desk
+  version: 1.0.0
+  description: Keeps the studio's account record.
+servers:
+  - url: https://accounts.example.com
+paths:
+  /account:
+    put:
+      operationId: replaceAccount
+      tags: [account]
+      summary: Replace the account with a titled, shared map-beside-oneOf body.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountRequest'
+      responses:
+        '204':
+          description: Replaced.
+  /accounts/{accountId}:
+    put:
+      operationId: replaceNamedAccount
+      tags: [account]
+      summary: Replace one account with the same body.
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountRequest'
+      responses:
+        '204':
+          description: Replaced.
+  /ledger:
+    put:
+      operationId: replaceLedger
+      tags: [account]
+      summary: Replace the ledger with an untitled, shared map-beside-oneOf body.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LedgerRequest'
+      responses:
+        '204':
+          description: Replaced.
+  /ledgers/{ledgerId}:
+    put:
+      operationId: replaceNamedLedger
+      tags: [account]
+      summary: Replace one ledger with the same untitled body.
+      parameters:
+        - name: ledgerId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LedgerRequest'
+      responses:
+        '204':
+          description: Replaced.
+components:
+  schemas:
+    AccountRequest:
+      title: AccountRequest
+      additionalProperties: true
+      discriminator:
+        propertyName: type
+        mapping:
+          Studio: '#/components/schemas/StudioRequest'
+          Guild: '#/components/schemas/GuildRequest'
+      oneOf:
+        - $ref: '#/components/schemas/StudioRequest'
+        - $ref: '#/components/schemas/GuildRequest'
+    LedgerRequest:
+      additionalProperties: true
+      discriminator:
+        propertyName: type
+        mapping:
+          Studio: '#/components/schemas/StudioRequest'
+          Guild: '#/components/schemas/GuildRequest'
+      oneOf:
+        - $ref: '#/components/schemas/StudioRequest'
+        - $ref: '#/components/schemas/GuildRequest'
+    StudioRequest:
+      type: object
+      required: [name, type]
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+    GuildRequest:
+      type: object
+      required: [name, type]
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+        members:
+          type: integer

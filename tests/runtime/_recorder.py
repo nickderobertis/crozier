@@ -26,6 +26,7 @@ import json
 import os
 import sys
 from types import SimpleNamespace
+from typing import Any, Protocol, TypeAlias, TypedDict
 
 import httpx
 
@@ -74,7 +75,12 @@ def _canonical_headers(headers):
     return out
 
 
-def _body(request):
+# What a recorded body can hold: a parsed JSON document, or the raw text of a
+# non-JSON body (a `str`), or `None` for an empty one.
+JsonValue: TypeAlias = dict[str, "JsonValue"] | list["JsonValue"] | str | int | float | bool | None
+
+
+def _body(request) -> JsonValue:
     """The request body as JSON when it is JSON, else the raw text, else None."""
     content = request.content
     if not content:
@@ -85,13 +91,22 @@ def _body(request):
         return content.decode("utf-8", "replace")
 
 
-def _request_record(request):
-    return {
-        "method": request.method,
-        "url": str(request.url),
-        "headers": _canonical_headers(request.headers),
-        "body": _body(request),
-    }
+class RequestObservation(TypedDict):
+    """One captured request, as a recording writes it."""
+
+    method: str
+    url: str
+    headers: dict[str, str]
+    body: JsonValue
+
+
+def _request_record(request) -> RequestObservation:
+    return RequestObservation(
+        method=request.method,
+        url=str(request.url),
+        headers=_canonical_headers(request.headers),
+        body=_body(request),
+    )
 
 
 def _dump(model):
@@ -332,10 +347,186 @@ JOURNEYS = [
 JOURNEY_NAMES = [journey.__name__ for journey in JOURNEYS]
 
 
+# The header/body collision SDK: `docs/fern-measurements/bodies-responses/header-body-collision/`,
+# whose operations each send a header and a body property under one wire name
+# (`kilnToken`, `batchLabel`). The method renames the body argument, and each
+# value must still reach its own place: the header's in the header, the body
+# argument's in the JSON body.
+HEADER_VALUE = "header-value"
+BODY_VALUE = "body-value"
+
+
+class CollisionSdk(Protocol):
+    """What the collision journeys use of an SDK, Fern's or crozier's alike.
+
+    Each member is a class of a generated package imported at run time from
+    `WIRE_SDK_SRC`, which no checker can see when this module is checked, and
+    the two SDKs under comparison declare them separately; so their types are
+    `Any` here, and the journeys' own assertions check what each returns."""
+
+    FernApi: Any
+    AsyncFernApi: Any
+    ApiError: Any
+
+
+class CollisionObservation(TypedDict):
+    """Both collision operations' requests and the status each call returned,
+    as the sync and async journeys record them alike."""
+
+    run: RequestObservation
+    run_status: str
+    queue: RequestObservation
+    queue_status: str
+
+
+class ErrorObservation(TypedDict):
+    """The status and body the API error carried."""
+
+    status: int
+    body: JsonValue
+
+
+class RecoveryObservation(TypedDict):
+    """A rejected request, its error, and the request that succeeded after it."""
+
+    failed: ErrorObservation
+    failed_request: RequestObservation
+    recovered: str
+    recovered_request: RequestObservation
+
+
+# One operation's request as the sync and the async client sent it; functional
+# form because `async` is a keyword and the recording's key is `async`.
+PairedObservation = TypedDict("PairedObservation", {"sync": RequestObservation, "async": RequestObservation})
+
+
+def load_collision_sdk(src) -> CollisionSdk:
+    """Import the collision SDK's clients and error base from its `src/`."""
+    sys.path.insert(0, src)
+    from fern import AsyncFernApi, FernApi
+    from fern.core.api_error import ApiError
+
+    return SimpleNamespace(FernApi=FernApi, AsyncFernApi=AsyncFernApi, ApiError=ApiError)
+
+
+def _collision_record(request, header) -> RequestObservation:
+    """The request, after checking each value reached its own wire place."""
+    if request.headers.get(header) != HEADER_VALUE:
+        raise AssertionError(f"{header} header carries {request.headers.get(header)!r}, not {HEADER_VALUE!r}")
+    body = _body(request)
+    if not isinstance(body, dict) or body.get(header) != BODY_VALUE:
+        raise AssertionError(f"the JSON body's {header} is {body!r}, not {BODY_VALUE!r}")
+    return _request_record(request)
+
+
+def header_and_body_keep_their_values(sdk: CollisionSdk) -> CollisionObservation:
+    """An optional header and a component body property sharing `kilnToken`, and
+    a required header and an inline body property sharing `batchLabel`, each send
+    the header argument as the header and the renamed body argument in the body."""
+    transport, box = _capture(200, {"status": "ran"})
+    client = sdk.FernApi(base_url=BASE_URL, httpx_client=httpx.Client(transport=transport))
+    ran = client.actions.run_action(action="fire", kiln_token=HEADER_VALUE, run_action_request_kiln_token=BODY_VALUE)
+    run = _collision_record(box["request"], "kilnToken")
+    queued = client.actions.queue_action(
+        action="cool", batch_label=HEADER_VALUE, queue_action_request_batch_label=BODY_VALUE
+    )
+    queue = _collision_record(box["request"], "batchLabel")
+    return CollisionObservation(run=run, run_status=ran.status, queue=queue, queue_status=queued.status)
+
+
+def async_header_and_body_keep_their_values(sdk: CollisionSdk) -> CollisionObservation:
+    """The async client binds both values the same way."""
+    transport, box = _capture(200, {"status": "ran"})
+    client = sdk.AsyncFernApi(base_url=BASE_URL, httpx_client=httpx.AsyncClient(transport=transport))
+
+    async def go() -> CollisionObservation:
+        ran = await client.actions.run_action(
+            action="fire", kiln_token=HEADER_VALUE, run_action_request_kiln_token=BODY_VALUE
+        )
+        run = _collision_record(box["request"], "kilnToken")
+        queued = await client.actions.queue_action(
+            action="cool", batch_label=HEADER_VALUE, queue_action_request_batch_label=BODY_VALUE
+        )
+        return CollisionObservation(
+            run=run,
+            run_status=ran.status,
+            queue=_collision_record(box["request"], "batchLabel"),
+            queue_status=queued.status,
+        )
+
+    return asyncio.run(go())
+
+
+def collision_error_then_recovery(sdk: CollisionSdk) -> RecoveryObservation:
+    """A 400 raises the API error with the values sent in their places, and the
+    next request on the same client succeeds."""
+    calls = []
+
+    def handler(request):
+        calls.append(request)
+        if len(calls) == 1:
+            return httpx.Response(400, json={"detail": "rejected"})
+        return httpx.Response(200, json={"status": "ran"})
+
+    client = sdk.FernApi(base_url=BASE_URL, httpx_client=httpx.Client(transport=httpx.MockTransport(handler)))
+    try:
+        client.actions.run_action(action="fire", kiln_token=HEADER_VALUE, run_action_request_kiln_token=BODY_VALUE)
+    except sdk.ApiError as error:
+        failed = ErrorObservation(status=error.status_code, body=error.body)
+    else:
+        raise AssertionError("a 400 did not raise")
+    recovered = client.actions.run_action(
+        action="fire", kiln_token=HEADER_VALUE, run_action_request_kiln_token=BODY_VALUE
+    )
+    return RecoveryObservation(
+        failed=failed,
+        failed_request=_collision_record(calls[0], "kilnToken"),
+        recovered=recovered.status,
+        recovered_request=_collision_record(calls[1], "kilnToken"),
+    )
+
+
+def shared_body_header_collision(sdk: CollisionSdk) -> PairedObservation:
+    """A nullable `Idempotency-Key` header beside a shared component body's
+    `idempotency_key`, sync and async. Recorded as sent, without a verdict: the
+    certified pair sends the header's variable as the body value (the
+    `body-query-parameter-value` departure), and the test holds each SDK to what
+    it is known to send."""
+    transport, box = _capture(200, {"status": "ran"})
+    client = sdk.FernApi(base_url=BASE_URL, httpx_client=httpx.Client(transport=transport))
+    client.actions.run_action_batch(
+        actions=["fire"], idempotency_key=HEADER_VALUE, action_batch_request_idempotency_key=BODY_VALUE
+    )
+    sync = _request_record(box["request"])
+    transport, box = _capture(200, {"status": "ran"})
+    async_client = sdk.AsyncFernApi(base_url=BASE_URL, httpx_client=httpx.AsyncClient(transport=transport))
+    asyncio.run(
+        async_client.actions.run_action_batch(
+            actions=["fire"], idempotency_key=HEADER_VALUE, action_batch_request_idempotency_key=BODY_VALUE
+        )
+    )
+    return PairedObservation({"sync": sync, "async": _request_record(box["request"])})
+
+
+COLLISION_JOURNEYS = [
+    header_and_body_keep_their_values,
+    async_header_and_body_keep_their_values,
+    collision_error_then_recovery,
+    shared_body_header_collision,
+]
+COLLISION_JOURNEY_NAMES = [journey.__name__ for journey in COLLISION_JOURNEYS]
+
+
 def record(src):
     """Run every journey against the SDK at `src` and return the recording dict."""
     sdk = load_sdk(src)
     return {journey.__name__: journey(sdk) for journey in JOURNEYS}
+
+
+def record_collision(src):
+    """Run every collision journey against the collision SDK at `src`."""
+    sdk = load_collision_sdk(src)
+    return {journey.__name__: journey(sdk) for journey in COLLISION_JOURNEYS}
 
 
 def main():
@@ -343,7 +534,17 @@ def main():
     if not src:
         print("WIRE_SDK_SRC is not set (path to the generated SDK's src/ dir)", file=sys.stderr)
         sys.exit(2)
-    json.dump(record(src), sys.stdout, indent=2, sort_keys=True, default=str)
+    recorders = {"": record, "header-body-collision": record_collision}
+    selected = os.environ.get("WIRE_JOURNEYS", "")
+    if selected not in recorders:
+        print(
+            f"WIRE_JOURNEYS={selected!r} names no journey set; use one of {sorted(name for name in recorders if name)}"
+            " or leave it unset for the default journeys",
+            file=sys.stderr,
+        )
+        sys.exit(2)
+    recorder = recorders[selected]
+    json.dump(recorder(src), sys.stdout, indent=2, sort_keys=True, default=str)
     sys.stdout.write("\n")
 
 

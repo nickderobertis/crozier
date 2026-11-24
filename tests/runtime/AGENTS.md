@@ -35,6 +35,8 @@ out of the affected tier.
   trivially. `test_wire.py` picks it up via `JOURNEY_NAMES`. Keep to the SDK's own
   runtime deps + pytest. When a new generated shape lands, add a journey that
   *calls* it — the Fern fixture supplies the expected behavior for free.
+- The collision pair's Fern SDK is a committed measurement tree: regenerate it with
+  `just fern-references measurements bodies-responses/header-body-collision`.
 - **No skip.** Missing Python / venv / deps fails the test (see
   `runtime_python_env`): the tier exists to run it, so it never passes unrun.
 

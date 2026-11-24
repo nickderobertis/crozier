@@ -2987,7 +2987,39 @@ fn body_query_parameter_value(pair: &Pair<'_>) -> Result<Option<Region>, String>
             })
         };
         let query_mapping = format!("                \"{wire}\": {query},");
-        if !declared(query) || !declared(body) || !before.contains(&query_mapping.as_str()) {
+        // The parameter the JSON entry takes in Fern's output is a query
+        // parameter mapped above the body, or a header mapped in the request's
+        // own `headers={…}` below it (the header-body-collision measurement).
+        let header_mapped = || {
+            let after = &pair.crozier[crozier.end..];
+            let end = after
+                .iter()
+                .position(|line| line.starts_with("    def ") || line.starts_with("    async def "))
+                .unwrap_or(after.len());
+            let method_rest = &after[..end];
+            let Some(open) = method_rest
+                .iter()
+                .position(|line| *line == "            headers={")
+            else {
+                return false;
+            };
+            method_rest[open + 1..]
+                .iter()
+                .take_while(|line| **line != "            },")
+                .any(|line| {
+                    line.strip_prefix("                \"")
+                        .and_then(|rest| rest.split_once("\": "))
+                        // The pair writes every header this way; a bare
+                        // `"X": name,` is never measured, so it is not accepted.
+                        .is_some_and(|(_, value)| {
+                            value == format!("str({query}) if {query} is not None else None,")
+                        })
+                })
+        };
+        if !declared(query)
+            || !declared(body)
+            || !(before.contains(&query_mapping.as_str()) || header_mapped())
+        {
             return Ok(None);
         }
         let replaced = if converted {
@@ -9819,6 +9851,56 @@ mod tests {
         crozier[2] = "                \"threshold\": level,";
         assert_eq!(
             super::body_query_parameter_value(&pair("src/api/raw_client.py", &fern, &crozier)),
+            Ok(None)
+        );
+    }
+
+    #[test]
+    fn body_query_departure_accepts_a_header_the_request_maps_below_the_body() {
+        let fern = [
+            "    def run(self, *, idempotency_key: str, batch_idempotency_key: str):",
+            "            json={",
+            "                \"idempotency_key\": idempotency_key,",
+            "            },",
+            "            headers={",
+            "                \"Idempotency-Key\": str(idempotency_key) if idempotency_key is not None else None,",
+            "            },",
+        ];
+        let mut crozier = fern;
+        crozier[2] = "                \"idempotency_key\": batch_idempotency_key,";
+        assert_eq!(
+            super::body_query_parameter_value(&pair("src/api/raw_client.py", &fern, &crozier)),
+            Ok(Some(super::Region {
+                fern: 2..3,
+                crozier: 2..3
+            }))
+        );
+        for unmapped in [
+            "                \"Idempotency-Key\": str(other) if other is not None else None,",
+            "                \"content-type\": \"application/json\",",
+        ] {
+            let mut other_fern = fern;
+            other_fern[5] = unmapped;
+            let mut other = other_fern;
+            other[2] = crozier[2];
+            assert_eq!(
+                super::body_query_parameter_value(&pair(
+                    "src/api/raw_client.py",
+                    &other_fern,
+                    &other
+                )),
+                Ok(None),
+                "{unmapped}"
+            );
+        }
+        let headerless = [fern[0], fern[1], fern[2], fern[3]];
+        let generated = [crozier[0], crozier[1], crozier[2], crozier[3]];
+        assert_eq!(
+            super::body_query_parameter_value(&pair(
+                "src/api/raw_client.py",
+                &headerless,
+                &generated
+            )),
             Ok(None)
         );
     }

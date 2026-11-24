@@ -1,0 +1,137 @@
+openapi: 3.1.0
+info:
+  title: Kiln Action Runner
+  version: 1.0.0
+  description: Runs actions on studio kilns.
+servers:
+  - url: https://actions.example.com
+paths:
+  /actions/run:
+    post:
+      operationId: runAction
+      tags: [actions]
+      summary: A body property sharing its wire name with an optional header.
+      parameters:
+        - name: kilnToken
+          in: header
+          required: false
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RunActionRequest'
+      responses:
+        '200':
+          description: Ran.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionResult'
+  /actions/queue:
+    post:
+      operationId: queueAction
+      tags: [actions]
+      summary: A body property sharing its wire name with a required camelCase header.
+      parameters:
+        - name: batchLabel
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [action]
+              properties:
+                action:
+                  type: string
+                batchLabel:
+                  type: string
+      responses:
+        '200':
+          description: Queued.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionResult'
+  /actions/batch:
+    post:
+      operationId: runActionBatch
+      tags: [actions]
+      summary: A nullable Idempotency-Key header beside a shared titled body's nullable idempotency_key.
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Idempotency-Key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActionBatchRequest'
+      responses:
+        '200':
+          description: Ran.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionResult'
+  /actions/batch/preview:
+    post:
+      operationId: previewActionBatch
+      tags: [actions]
+      summary: The same titled body, shared so its model survives.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActionBatchRequest'
+      responses:
+        '200':
+          description: Previewed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionResult'
+components:
+  schemas:
+    ActionBatchRequest:
+      title: ActionBatchRequest
+      type: object
+      additionalProperties: false
+      required: [actions]
+      properties:
+        actions:
+          type: array
+          items:
+            type: string
+        idempotency_key:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Idempotency Key
+    RunActionRequest:
+      type: object
+      required: [action]
+      properties:
+        action:
+          type: string
+        kilnToken:
+          type: string
+    ActionResult:
+      type: object
+      properties:
+        status:
+          type: string

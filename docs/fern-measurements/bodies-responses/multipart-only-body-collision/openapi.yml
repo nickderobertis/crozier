@@ -1,0 +1,67 @@
+openapi: 3.1.0
+info:
+  title: Glaze Photo Store
+  version: 1.0.0
+  description: Stores photographs of glaze tests.
+servers:
+  - url: https://photos.example.com
+paths:
+  /files:
+    post:
+      operationId: upload_file_files_post
+      tags: [files]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_upload_file_files_post'
+      responses:
+        '201':
+          description: Stored.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoredFile'
+  /files/:
+    post:
+      operationId: upload_file_files__post
+      tags: [files]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_upload_file_files__post'
+      responses:
+        '201':
+          description: Stored.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoredFile'
+components:
+  schemas:
+    Body_upload_file_files_post:
+      title: Body_upload_file_files_post
+      type: object
+      required: [file]
+      properties:
+        file:
+          type: string
+          format: binary
+          title: File
+    Body_upload_file_files__post:
+      title: Body_upload_file_files__post
+      type: object
+      required: [file]
+      properties:
+        file:
+          type: string
+          format: binary
+          title: File
+    StoredFile:
+      type: object
+      properties:
+        id:
+          type: string

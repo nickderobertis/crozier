@@ -48,6 +48,13 @@ committed golden.
 
 ## Unrelated residuals and refusals
 
+RealDevSquad's feature-flag backend, once blocked by operations dropped around a
+non-`components` `$ref`, byte-matches in both enum modes at Fern CLI 5.216.0 /
+`fernapi/fern-python-sdk` 5.42.0 since ticket #950's repair
+([measurement](../../fern-measurements/bodies-responses/non-component-ref-body/));
+its `outcomes.tsv` row records that re-measurement.
+
+
 Each one is scoped out in
 [`residuals.tsv`](../../fern-measurements/handed-off/residuals.tsv) (`area`
 `combinations-parameters`), which names its owner and root cause: one row per differing
@@ -55,7 +62,7 @@ file where both generators write an SDK, and one row per document, `file` `-`, w
 either refuses. Each attributed row of `outcomes.tsv` names the same root causes.
 They are the Field-description tab escape (QuickBooks), the Cat/Dog discriminator
 property and referenced urlencoded arguments (three petstore-derived documents),
-operations dropped around a non-`components` `$ref` (RealDevSquad), the NWS, NWS-wrapper
+the NWS, NWS-wrapper
 and tonik example, description and member-modelling residuals that block every
 header-array witness, the OpenAPI 3.1 boolean schema, relative-file `$ref` and null
 security scope list crozier refuses where Fern generates, and the documents Fern

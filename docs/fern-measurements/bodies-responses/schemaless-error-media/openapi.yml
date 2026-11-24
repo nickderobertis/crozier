@@ -1,0 +1,78 @@
+openapi: 3.1.0
+info:
+  title: Studio Login Gate
+  version: 1.0.0
+  description: Signs studio members in.
+servers:
+  - url: https://login.example.com
+paths:
+  /login:
+    get:
+      operationId: showLogin
+      tags: [login]
+      summary: Errors whose first media is a schemaless problem document.
+      responses:
+        '200':
+          description: The login page.
+          content:
+            text/html:
+              schema:
+                type: string
+        '422':
+          description: Unprocessable.
+          content:
+            application/problem+json:
+              example:
+                title: Unprocessable Entity
+                status: 422
+            text/html:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '503':
+          description: Unavailable.
+          content:
+            application/problem+json:
+              example:
+                title: Service Unavailable
+                status: 503
+            text/html:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+  /consent:
+    get:
+      operationId: showConsent
+      tags: [login]
+      summary: A text error declared before a typed JSON one.
+      responses:
+        '200':
+          description: The consent page.
+          content:
+            text/html:
+              schema:
+                type: string
+        '400':
+          description: Bad request.
+          content:
+            text/plain:
+              schema:
+                type: string
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '409':
+          description: Conflict, typed after an unknown schema.
+          content:
+            application/problem+json:
+              schema: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+components:
+  schemas:
+    ProblemDetail:
+      type: object
+      properties:
+        title:
+          type: string
+        status:
+          type: integer

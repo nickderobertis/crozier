@@ -26,6 +26,7 @@
         "{workspaceRoot}/tests/runtime/**/*",
         "{workspaceRoot}/tests/fixtures/airbyte.local-config/**/*",
         "{workspaceRoot}/tests/fixtures/corpus-sources/airbyte.local-config/**/*",
+        "{workspaceRoot}/docs/fern-measurements/bodies-responses/header-body-collision/**/*",
         "generator",
         "default"
       ]

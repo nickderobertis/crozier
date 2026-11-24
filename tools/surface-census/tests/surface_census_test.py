@@ -13908,9 +13908,9 @@ class IndependenceManifestTests(unittest.TestCase):
         self.manifest.write_text(
             'schema_version = 1\n[[combinations]]\nkey = "combo-sample"\nmodes = ["python_enums"]\n'
             '[[combinations.conditions]]\nfeature = "first"\nhandler = "src/ir.rs::error_body_schema"\n'
-            'condition = ".filter_map(|media| media.schema.as_ref())"\n'
+            'condition = ".and_then(|media| media.schema.as_ref())"\n'
             '[[combinations.conditions]]\nfeature = "second"\nhandler = "src/ir.rs::error_body_schema"\n'
-            'condition = ".find(|schema| !is_unknown(schema))"\n'
+            'condition = "if resp.content.len() > 1 {"\n'
             "[combinations.documents]\n"
             + "".join(
                 f'{label} = {{document = "measurements/{label}/openapi.yml", '
@@ -13938,11 +13938,11 @@ class IndependenceManifestTests(unittest.TestCase):
         site = reach.resolve_site(handlers[0], self.root)
         lines = original.splitlines(keepends=True)
         body = "".join(lines[site.start - 1 : site.end])
-        altered = body.replace(".find(|schema| !is_unknown(schema))", ".find(|schema| is_unknown(schema))")
+        altered = body.replace("if resp.content.len() > 1 {", "if resp.content.len() > 2 {")
         self.assertNotEqual(body, altered)
         source.write_text(original.replace(body, altered, 1))
         self.assertEqual(
-            ["combo-sample: `src/ir.rs::error_body_schema` no longer contains `.find(|schema| !is_unknown(schema))`"],
+            ["combo-sample: `src/ir.rs::error_body_schema` no longer contains `if resp.content.len() > 1 {`"],
             self.reader.source_failures(self.root, proof, handlers),
         )
         source.write_text(original.replace("fn error_body_schema(", "fn renamed_error_body_schema(", 1))

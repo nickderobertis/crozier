@@ -1,0 +1,69 @@
+openapi: 3.0.3
+info:
+  title: Ledger Chain Reader
+  version: 1.0.0
+  description: Reads raw transactions from the studio's ledger chain.
+servers:
+  - url: https://chain.example.com
+paths:
+  /tx_cbor:
+    post:
+      operationId: getTxCbor
+      tags: [transactions]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                txHashes:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: The raw transactions.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/tx_cbor'
+  /tx_info:
+    post:
+      operationId: getTxInfo
+      tags: [transactions]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                txHashes:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Typed transactions.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/tx_info'
+components:
+  schemas:
+    tx_cbor:
+      description: Raw transactions in CBOR format.
+      items:
+        properties:
+          tx_hash:
+            type: string
+          cbor:
+            type: string
+    tx_info:
+      type: array
+      items:
+        type: object
+        properties:
+          tx_hash:
+            type: string
