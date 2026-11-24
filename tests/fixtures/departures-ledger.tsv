@@ -232,7 +232,6 @@ docs/fern-measurements/clients-extensions/depot-bin-ledger-literals/fern-expecte
 docs/fern-measurements/clients-extensions/depot-bin-ledger-literals/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/clients-extensions/depot-bin-ledger-literals/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/clients-extensions/dock-yard-bookings-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
-docs/fern-measurements/clients-extensions/dock-yard-bookings-literals/fern-expected	src/fern/__init__.py	12	init-type-checking-import-order
 docs/fern-measurements/clients-extensions/dock-yard-bookings-literals/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/clients-extensions/dock-yard-bookings-literals/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/fern-measurements/clients-extensions/dock-yard-bookings-literals/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -246,7 +245,6 @@ docs/fern-measurements/clients-extensions/ferry-berth-desk-literals/fern-expecte
 docs/fern-measurements/clients-extensions/ferry-berth-desk-literals/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/clients-extensions/ferry-berth-desk-literals/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/clients-extensions/film-shot-planner-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
-docs/fern-measurements/clients-extensions/film-shot-planner-literals/fern-expected	src/fern/__init__.py	24	init-type-checking-import-order
 docs/fern-measurements/clients-extensions/film-shot-planner-literals/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/clients-extensions/film-shot-planner-literals/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/fern-measurements/clients-extensions/film-shot-planner-literals/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -606,13 +604,11 @@ docs/fern-measurements/examples-docs/harbor-map-validation/fern-expected	src/fer
 docs/fern-measurements/examples-docs/harbor-map-validation/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/examples-docs/harbor-map-validation/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/examples-docs/marina-component-examples-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
-docs/fern-measurements/examples-docs/marina-component-examples-literals/fern-expected	src/fern/__init__.py	11	init-type-checking-import-order
 docs/fern-measurements/examples-docs/marina-component-examples-literals/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/examples-docs/marina-component-examples-literals/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/fern-measurements/examples-docs/marina-component-examples-literals/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/examples-docs/marina-component-examples-literals/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/examples-docs/marina-component-examples-literals/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
-docs/fern-measurements/examples-docs/marina-component-examples/fern-expected	src/fern/__init__.py	11	init-type-checking-import-order
 docs/fern-measurements/examples-docs/marina-component-examples/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/examples-docs/marina-component-examples/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/fern-measurements/examples-docs/marina-component-examples/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -770,7 +766,6 @@ docs/fern-measurements/handed-off/bodies-media/multipart-scalar-union-part-encod
 docs/fern-measurements/handed-off/bodies-media/multipart-scalar-union-part-encoding/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/bodies-media/multipart-scalar-union-part-encoding/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/bodies-media/multipart-scalar-union-part-encoding/fern-expected	src/fern/scans/client.py	54	multipart-object-required-file-example
-docs/fern-measurements/handed-off/bodies-media/path-param-serialization/fern-expected	src/fern/__init__.py	11	init-type-checking-import-order
 docs/fern-measurements/handed-off/bodies-media/path-param-serialization/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/bodies-media/path-param-serialization/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/bodies-media/path-param-serialization/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -881,13 +876,11 @@ docs/fern-measurements/handed-off/client-structure/environment-shape/fern-expect
 docs/fern-measurements/handed-off/client-structure/environment-shape/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/client-structure/environment-shape/fern-expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/client-structure/init-import-order/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
-docs/fern-measurements/handed-off/client-structure/init-import-order/expected-literals	src/fern/__init__.py	11	init-type-checking-import-order
 docs/fern-measurements/handed-off/client-structure/init-import-order/expected-literals	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/client-structure/init-import-order/expected-literals	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/client-structure/init-import-order/expected-literals	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/client-structure/init-import-order/expected-literals	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/client-structure/init-import-order/expected-literals	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
-docs/fern-measurements/handed-off/client-structure/init-import-order/fern-expected	src/fern/__init__.py	11	init-type-checking-import-order
 docs/fern-measurements/handed-off/client-structure/init-import-order/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/client-structure/init-import-order/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/client-structure/init-import-order/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -1001,11 +994,47 @@ docs/fern-measurements/handed-off/document-acceptance/never-compared-request-pro
 docs/fern-measurements/handed-off/document-acceptance/never-compared-request-property-name-collision/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/document-acceptance/never-compared-request-property-name-collision/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
+docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/expected-literals	reference.md	39	colliding-component-own-class
+docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/expected-literals	src/fern/client.py	12	colliding-component-own-class
+docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/expected-literals	src/fern/client.py	105	colliding-component-own-class
+docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/expected-literals	src/fern/client.py	112	colliding-component-own-class
+docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/expected-literals	src/fern/client.py	272	colliding-component-own-class
+docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/expected-literals	src/fern/client.py	279	colliding-component-own-class
+docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/fern-expected	README.md	37	colliding-component-own-class
+docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/fern-expected	README.md	44	colliding-component-own-class
+docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/fern-expected	README.md	55	colliding-component-own-class
+docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/fern-expected	README.md	64	colliding-component-own-class
+docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/fern-expected	reference.md	15	colliding-component-own-class
+docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/fern-expected	reference.md	22	colliding-component-own-class
+docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/fern-expected	reference.md	39	colliding-component-own-class
+docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/fern-expected	src/fern/__init__.py	8	colliding-component-own-class
+docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/fern-expected	src/fern/__init__.py	20	colliding-component-own-class
+docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/fern-expected	src/fern/__init__.py	54	colliding-component-own-class
+docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/fern-expected	src/fern/client.py	12	colliding-component-own-class
+docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/fern-expected	src/fern/client.py	105	colliding-component-own-class
+docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/fern-expected	src/fern/client.py	112	colliding-component-own-class
+docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/fern-expected	src/fern/client.py	126	colliding-component-own-class
+docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/fern-expected	src/fern/client.py	132	colliding-component-own-class
+docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/fern-expected	src/fern/client.py	272	colliding-component-own-class
+docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/fern-expected	src/fern/client.py	279	colliding-component-own-class
+docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/fern-expected	src/fern/client.py	295	colliding-component-own-class
+docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/fern-expected	src/fern/client.py	304	colliding-component-own-class
 docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/fern-expected	src/fern/raw_client.py	15	colliding-component-own-class
+docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/fern-expected	src/fern/raw_client.py	29	colliding-component-own-class
+docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/fern-expected	src/fern/raw_client.py	36	colliding-component-own-class
+docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/fern-expected	src/fern/raw_client.py	128	colliding-component-own-class
+docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/fern-expected	src/fern/raw_client.py	135	colliding-component-own-class
+docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/fern-expected	src/fern/types/__init__.py	11	colliding-component-own-class
+docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/fern-expected	src/fern/types/__init__.py	16	colliding-component-own-class
+docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/fern-expected	src/fern/types/__init__.py	41	colliding-component-own-class
+docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/fern-expected	src/fern/types/dispatch.py	7	colliding-component-own-class
+docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/fern-expected	src/fern/types/dispatch.py	12	colliding-component-own-class
+docs/fern-measurements/handed-off/document-acceptance/never-compared-type-name-collision/fern-expected	src/fern/types/transfer_mode2.py	0	colliding-component-own-class
 docs/fern-measurements/handed-off/empty-sdk-documents/crozier-refuses-path-pointer-ref/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/empty-sdk-documents/crozier-refuses-path-pointer-ref/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/empty-sdk-documents/crozier-refuses-path-pointer-ref/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -1074,7 +1103,6 @@ docs/fern-measurements/handed-off/example-values/example-enum-member/expected-li
 docs/fern-measurements/handed-off/example-values/example-enum-member/fern-expected	README.md	45	declared-example-over-placeholder
 docs/fern-measurements/handed-off/example-values/example-enum-member/fern-expected	README.md	68	declared-example-over-placeholder
 docs/fern-measurements/handed-off/example-values/example-enum-member/fern-expected	reference.md	24	declared-example-over-placeholder
-docs/fern-measurements/handed-off/example-values/example-enum-member/fern-expected	src/fern/__init__.py	11	init-type-checking-import-order
 docs/fern-measurements/handed-off/example-values/example-enum-member/fern-expected	src/fern/alerts/client.py	60	declared-example-over-placeholder
 docs/fern-measurements/handed-off/example-values/example-enum-member/fern-expected	src/fern/alerts/client.py	118	declared-example-over-placeholder
 docs/fern-measurements/handed-off/example-values/example-enum-member/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
@@ -1082,7 +1110,6 @@ docs/fern-measurements/handed-off/example-values/example-enum-member/fern-expect
 docs/fern-measurements/handed-off/example-values/example-enum-member/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/example-values/example-enum-member/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/example-values/example-enum-member/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
-docs/fern-measurements/handed-off/example-values/example-float-repr/fern-expected	src/fern/__init__.py	10	init-type-checking-import-order
 docs/fern-measurements/handed-off/example-values/example-float-repr/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/example-values/example-float-repr/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/example-values/example-float-repr/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -1154,7 +1181,6 @@ docs/fern-measurements/handed-off/example-values/example-value-source/fern-expec
 docs/fern-measurements/handed-off/example-values/example-value-source/fern-expected	reference.md	1723	declared-example-over-placeholder
 docs/fern-measurements/handed-off/example-values/example-value-source/fern-expected	reference.md	1772	reference-anchor-follows-corrected-client
 docs/fern-measurements/handed-off/example-values/example-value-source/fern-expected	reference.md	1809	declared-example-over-placeholder
-docs/fern-measurements/handed-off/example-values/example-value-source/fern-expected	src/fern/__init__.py	28	init-type-checking-import-order
 docs/fern-measurements/handed-off/example-values/example-value-source/fern-expected	src/fern/charts/client.py	68	multipart-object-required-file-example
 docs/fern-measurements/handed-off/example-values/example-value-source/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/example-values/example-value-source/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
@@ -1189,7 +1215,6 @@ docs/fern-measurements/handed-off/example-values/falsy-property-example/fern-exp
 docs/fern-measurements/handed-off/example-values/falsy-property-example/fern-expected	reference.md	25	declared-example-over-placeholder
 docs/fern-measurements/handed-off/example-values/falsy-property-example/fern-expected	reference.md	26	declared-example-over-placeholder
 docs/fern-measurements/handed-off/example-values/falsy-property-example/fern-expected	reference.md	107	declared-example-over-placeholder
-docs/fern-measurements/handed-off/example-values/falsy-property-example/fern-expected	src/fern/__init__.py	10	init-type-checking-import-order
 docs/fern-measurements/handed-off/example-values/falsy-property-example/fern-expected	src/fern/buoys/client.py	66	declared-example-over-placeholder
 docs/fern-measurements/handed-off/example-values/falsy-property-example/fern-expected	src/fern/buoys/client.py	67	declared-example-over-placeholder
 docs/fern-measurements/handed-off/example-values/falsy-property-example/fern-expected	src/fern/buoys/client.py	68	declared-example-over-placeholder
@@ -1216,7 +1241,6 @@ docs/fern-measurements/handed-off/example-values/mistyped-scalar-example/fern-ex
 docs/fern-measurements/handed-off/example-values/mistyped-scalar-example/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/example-values/mistyped-scalar-example/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/example-values/param-oneof-ref-and-const-example/expected-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
-docs/fern-measurements/handed-off/example-values/param-oneof-ref-and-const-example/fern-expected	src/fern/__init__.py	12	init-type-checking-import-order
 docs/fern-measurements/handed-off/example-values/param-oneof-ref-and-const-example/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/example-values/param-oneof-ref-and-const-example/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/example-values/param-oneof-ref-and-const-example/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -1378,7 +1402,6 @@ docs/fern-measurements/handed-off/snippet-rendering/example-empty-array-field/fe
 docs/fern-measurements/handed-off/snippet-rendering/example-empty-array-field/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/snippet-rendering/example-empty-array-field/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/snippet-rendering/example-inline-union-member-constructor/expected-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
-docs/fern-measurements/handed-off/snippet-rendering/example-inline-union-member-constructor/fern-expected	src/fern/__init__.py	19	init-type-checking-import-order
 docs/fern-measurements/handed-off/snippet-rendering/example-inline-union-member-constructor/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/snippet-rendering/example-inline-union-member-constructor/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/fern-measurements/handed-off/snippet-rendering/example-inline-union-member-constructor/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -1979,6 +2002,118 @@ docs/fern-measurements/models-refs-remote/library-records/fern-expected	src/fern
 docs/fern-measurements/models-refs-remote/library-records/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/models-refs-remote/library-records/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/models-refs-remote/library-records/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/boolean-component-schemas/expected-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
+docs/fern-measurements/naming-acceptance/boolean-component-schemas/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/boolean-component-schemas/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/boolean-component-schemas/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/boolean-component-schemas/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/boolean-component-schemas/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/discriminator-only-parent/expected-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
+docs/fern-measurements/naming-acceptance/discriminator-only-parent/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/discriminator-only-parent/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/discriminator-only-parent/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/discriminator-only-parent/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/discriminator-only-parent/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/dotted-operation-tag-names/expected-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
+docs/fern-measurements/naming-acceptance/dotted-operation-tag-names/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/dotted-operation-tag-names/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/dotted-operation-tag-names/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/dotted-operation-tag-names/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/dotted-operation-tag-names/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/head-shadowed-get-imports/expected-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
+docs/fern-measurements/naming-acceptance/head-shadowed-get-imports/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/head-shadowed-get-imports/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/head-shadowed-get-imports/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/head-shadowed-get-imports/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/head-shadowed-get-imports/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/ignored-accept-header-enum/expected-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
+docs/fern-measurements/naming-acceptance/ignored-accept-header-enum/fern-expected	reference.md	39	constant-header-docs-arguments
+docs/fern-measurements/naming-acceptance/ignored-accept-header-enum/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/ignored-accept-header-enum/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/ignored-accept-header-enum/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/ignored-accept-header-enum/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/ignored-accept-header-enum/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/model-api-field-names/expected-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
+docs/fern-measurements/naming-acceptance/model-api-field-names/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/model-api-field-names/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/model-api-field-names/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/model-api-field-names/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/model-api-field-names/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/normalized-component-identity-control/expected-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
+docs/fern-measurements/naming-acceptance/normalized-component-identity-control/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/normalized-component-identity-control/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/normalized-component-identity-control/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/normalized-component-identity-control/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/normalized-component-identity-control/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/normalized-component-identity/expected-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
+docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	reference.md	2	reference-anchor-follows-corrected-client
+docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	reference.md	38	colliding-component-own-class
+docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/__init__.py	8	colliding-component-own-class
+docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/__init__.py	20	colliding-component-own-class
+docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/__init__.py	53	colliding-component-own-class
+docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/client.py	12	colliding-component-own-class
+docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/client.py	113	colliding-component-own-class
+docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/client.py	120	colliding-component-own-class
+docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/client.py	253	colliding-component-own-class
+docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/client.py	260	colliding-component-own-class
+docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/raw_client.py	13	colliding-component-own-class
+docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/raw_client.py	27	colliding-component-own-class
+docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/raw_client.py	34	colliding-component-own-class
+docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/raw_client.py	50	colliding-component-own-class
+docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/raw_client.py	82	colliding-component-own-class
+docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/raw_client.py	89	colliding-component-own-class
+docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/raw_client.py	105	colliding-component-own-class
+docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/types/__init__.py	9	colliding-component-own-class
+docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/types/__init__.py	10	colliding-component-own-class
+docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/types/__init__.py	34	colliding-component-own-class
+docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/types/kiln_glaze_coat2.py	0	colliding-component-own-class
+docs/fern-measurements/naming-acceptance/nullable-enum-headers/expected-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
+docs/fern-measurements/naming-acceptance/nullable-enum-headers/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/nullable-enum-headers/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/nullable-enum-headers/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/nullable-enum-headers/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/nullable-enum-headers/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/path-query-same-name/expected-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
+docs/fern-measurements/naming-acceptance/path-query-same-name/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/path-query-same-name/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/path-query-same-name/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/path-query-same-name/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/path-query-same-name/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/recursive-alias-dependents/expected-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
+docs/fern-measurements/naming-acceptance/recursive-alias-dependents/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/recursive-alias-dependents/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/recursive-alias-dependents/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/recursive-alias-dependents/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/recursive-alias-dependents/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/relative-response-ref/expected-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
+docs/fern-measurements/naming-acceptance/relative-response-ref/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/relative-response-ref/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/relative-response-ref/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/relative-response-ref/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/relative-response-ref/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/request-local-union-payloads/expected-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
+docs/fern-measurements/naming-acceptance/request-local-union-payloads/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/request-local-union-payloads/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/request-local-union-payloads/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/request-local-union-payloads/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/request-local-union-payloads/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/root-import-order/expected-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
+docs/fern-measurements/naming-acceptance/root-import-order/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/root-import-order/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/root-import-order/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/root-import-order/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/root-import-order/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/xml-helper-import/expected-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
+docs/fern-measurements/naming-acceptance/xml-helper-import/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/xml-helper-import/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/xml-helper-import/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/xml-helper-import/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/xml-helper-import/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/naming-wire/enum-extension-names-dropped-under-literals/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/naming-wire/enum-extension-names-dropped-under-literals/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/fern-measurements/naming-wire/enum-extension-names-dropped-under-literals/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -2070,7 +2205,6 @@ docs/fern-measurements/parameter-lowering/base-path-string/fern-expected	src/fer
 docs/fern-measurements/parameter-lowering/base-path-string/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/parameter-lowering/base-path-string/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/parameter-lowering/header-default-constants/fern-expected	reference.md	68	constant-header-docs-arguments
-docs/fern-measurements/parameter-lowering/header-default-constants/fern-expected	src/fern/__init__.py	10	init-type-checking-import-order
 docs/fern-measurements/parameter-lowering/header-default-constants/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/parameter-lowering/header-default-constants/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/parameter-lowering/header-default-constants/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -2147,7 +2281,6 @@ docs/fern-measurements/parameter-lowering/query-scalar-or-array/fern-expected	sr
 docs/fern-measurements/parameter-lowering/query-scalar-or-array/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/parameter-lowering/query-scalar-or-array/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/parameter-lowering/query-scalar-or-array/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
-docs/fern-measurements/parameter-lowering/query-union-enum-member/fern-expected	src/fern/__init__.py	11	init-type-checking-import-order
 docs/fern-measurements/parameter-lowering/query-union-enum-member/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/parameter-lowering/query-union-enum-member/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/fern-measurements/parameter-lowering/query-union-enum-member/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -2158,7 +2291,6 @@ docs/fern-measurements/parameter-lowering/query-union-placement/fern-expected	sr
 docs/fern-measurements/parameter-lowering/query-union-placement/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/parameter-lowering/query-union-placement/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/parameter-lowering/query-union-placement/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
-docs/fern-measurements/parameter-lowering/query-union-temporal-member/fern-expected	src/fern/__init__.py	12	init-type-checking-import-order
 docs/fern-measurements/parameter-lowering/query-union-temporal-member/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/parameter-lowering/query-union-temporal-member/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/fern-measurements/parameter-lowering/query-union-temporal-member/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -2260,7 +2392,6 @@ docs/fern-measurements/schema-shapes/kiln-problem-response/fern-expected	src/fer
 docs/fern-measurements/schema-shapes/kiln-problem-response/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/schema-shapes/kiln-problem-response/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/schema-shapes/kiln-problem-response/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
-docs/fern-measurements/schema-shapes/pottery-studio-shapes/fern-expected	src/fern/__init__.py	22	init-type-checking-import-order
 docs/fern-measurements/schema-shapes/pottery-studio-shapes/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/schema-shapes/pottery-studio-shapes/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/fern-measurements/schema-shapes/pottery-studio-shapes/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -2797,7 +2928,6 @@ docs/openapi-surface/handwritten/discriminated-variant-date-value-snippet/fern-e
 docs/openapi-surface/handwritten/discriminated-variant-date-value-snippet/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/discriminated-variant-date-value-snippet/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/discriminated-variant-date-value-snippet/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/dock-yard-bookings/fern-expected	src/fern/__init__.py	12	init-type-checking-import-order
 docs/openapi-surface/handwritten/dock-yard-bookings/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/dock-yard-bookings/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/dock-yard-bookings/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -2860,7 +2990,6 @@ docs/openapi-surface/handwritten/ferry-slot-query/fern-expected	src/fern/core/cl
 docs/openapi-surface/handwritten/ferry-slot-query/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/ferry-slot-query/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/ferry-slot-query/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/film-shot-planner/fern-expected	src/fern/__init__.py	24	init-type-checking-import-order
 docs/openapi-surface/handwritten/film-shot-planner/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/film-shot-planner/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/film-shot-planner/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -4290,7 +4419,6 @@ tests/fixtures/adyen-report-notification/expected	src/fern/core/client_wrapper.p
 tests/fixtures/adyen-report-notification/expected	src/fern/core/client_wrapper.py	42	sdk-identity-header-prefix
 tests/fixtures/agco-ats/expected	reference.md	102	schema-rejected-name-example
 tests/fixtures/agco-ats/expected	reference.md	103	schema-rejected-name-example
-tests/fixtures/agco-ats/expected	src/fern/__init__.py	254	init-type-checking-import-order
 tests/fixtures/agco-ats/expected	src/fern/aftermarketservices/client.py	116	schema-rejected-name-example
 tests/fixtures/agco-ats/expected	src/fern/aftermarketservices/client.py	117	schema-rejected-name-example
 tests/fixtures/agco-ats/expected	src/fern/aftermarketservices/client.py	468	schema-rejected-name-example
@@ -4384,7 +4512,6 @@ tests/fixtures/ahasend-api/expected	reference.md	5961	schema-rejected-name-examp
 tests/fixtures/ahasend-api/expected	reference.md	6055	schema-rejected-name-example
 tests/fixtures/ahasend-api/expected	reference.md	6189	schema-rejected-name-example
 tests/fixtures/ahasend-api/expected	reference.md	6323	schema-rejected-name-example
-tests/fixtures/ahasend-api/expected	src/fern/__init__.py	130	init-type-checking-import-order
 tests/fixtures/ahasend-api/expected	src/fern/accounts/client.py	58	schema-rejected-name-example
 tests/fixtures/ahasend-api/expected	src/fern/accounts/client.py	136	schema-rejected-name-example
 tests/fixtures/ahasend-api/expected	src/fern/accounts/client.py	184	schema-rejected-name-example
@@ -4973,7 +5100,6 @@ tests/fixtures/airbyte.local-config/expected	src/fern/workspace/client.py	761	sc
 tests/fixtures/airbyte.local-config/expected	src/fern/workspace/client.py	814	schema-rejected-name-example
 tests/fixtures/alma-france/expected	README.md	63	readme-environment-constructor-arguments
 tests/fixtures/alma-france/expected	reference.md	475	schema-rejected-name-example
-tests/fixtures/alma-france/expected	src/fern/__init__.py	33	init-type-checking-import-order
 tests/fixtures/alma-france/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/alma-france/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/alma-france/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -5095,7 +5221,6 @@ tests/fixtures/andreychh-coopera/expected	src/fern/teams/client.py	86	schema-rej
 tests/fixtures/andreychh-coopera/expected	src/fern/teams/client.py	202	schema-rejected-name-example
 tests/fixtures/andreychh-coopera/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
 tests/fixtures/apache.org-airflow/expected	README.md	57	readme-environment-constructor-arguments
-tests/fixtures/apache.org-airflow/expected	src/fern/__init__.py	122	init-type-checking-import-order
 tests/fixtures/apache.org-airflow/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/apache.org-airflow/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/apache.org-airflow/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
@@ -5108,7 +5233,6 @@ tests/fixtures/apache.org-qakka/expected	src/fern/core/client_wrapper.py	36	sdk-
 tests/fixtures/apache.org-qakka/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/apache.org-qakka/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/apache.org/expected	README.md	57	readme-environment-constructor-arguments
-tests/fixtures/apache.org/expected	src/fern/__init__.py	122	init-type-checking-import-order
 tests/fixtures/apache.org/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/apache.org/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/apache.org/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
@@ -5136,7 +5260,6 @@ tests/fixtures/api-openverse-org/expected	reference.md	997	schema-rejected-name-
 tests/fixtures/api-openverse-org/expected	reference.md	1079	schema-rejected-name-example
 tests/fixtures/api-openverse-org/expected	reference.md	1152	schema-rejected-name-example
 tests/fixtures/api-openverse-org/expected	reference.md	1291	schema-rejected-name-example
-tests/fixtures/api-openverse-org/expected	src/fern/__init__.py	22	init-type-checking-import-order
 tests/fixtures/api-openverse-org/expected	src/fern/audio/client.py	167	schema-rejected-name-example
 tests/fixtures/api-openverse-org/expected	src/fern/audio/client.py	200	schema-rejected-name-example
 tests/fixtures/api-openverse-org/expected	src/fern/audio/client.py	243	schema-rejected-name-example
@@ -5164,7 +5287,6 @@ tests/fixtures/api-openverse-org/expected	src/fern/images/client.py	557	schema-r
 tests/fixtures/api-openverse-org/expected	src/fern/images/client.py	608	schema-rejected-name-example
 tests/fixtures/api-openverse-org/expected	src/fern/images/client.py	652	schema-rejected-name-example
 tests/fixtures/api-openverse-org/expected	src/fern/images/client.py	694	schema-rejected-name-example
-tests/fixtures/apicurio.local-registry/expected	src/fern/__init__.py	69	init-type-checking-import-order
 tests/fixtures/apicurio.local-registry/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 tests/fixtures/apicurio.local-registry/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 tests/fixtures/apicurio.local-registry/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -5307,7 +5429,6 @@ tests/fixtures/apideck.com-vault/expected	reference.md	203	reference-heading-esc
 tests/fixtures/apideck.com-vault/expected	reference.md	680	reference-heading-escaped-method-name
 tests/fixtures/apideck.com-vault/expected	reference.md	1208	reference-heading-escaped-method-name
 tests/fixtures/apideck.com-vault/expected	reference.md	1685	reference-heading-escaped-method-name
-tests/fixtures/apideck.com-vault/expected	src/fern/__init__.py	90	init-type-checking-import-order
 tests/fixtures/apideck.com-vault/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/apideck.com-vault/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/apideck.com-vault/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
@@ -5315,13 +5436,11 @@ tests/fixtures/apideck.com-vault/expected	src/fern/core/client_wrapper.py	41	sdk
 tests/fixtures/apideck.com-vault/expected	src/fern/core/client_wrapper.py	42	sdk-identity-header-prefix
 tests/fixtures/apideck.com-webhook/expected	README.md	63	readme-environment-constructor-arguments
 tests/fixtures/apideck.com-webhook/expected	reference.md	202	reference-heading-escaped-method-name
-tests/fixtures/apideck.com-webhook/expected	src/fern/__init__.py	66	init-type-checking-import-order
 tests/fixtures/apideck.com-webhook/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/apideck.com-webhook/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/apideck.com-webhook/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/apideck.com-webhook/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/apideck.com-webhook/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
-tests/fixtures/apis.guru/expected	src/fern/__init__.py	11	init-type-checking-import-order
 tests/fixtures/apis.guru/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 tests/fixtures/apis.guru/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 tests/fixtures/apis.guru/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -5378,7 +5497,6 @@ tests/fixtures/audiobookshelf/expected	reference.md	299	schema-rejected-name-exa
 tests/fixtures/audiobookshelf/expected	reference.md	388	schema-rejected-name-example
 tests/fixtures/audiobookshelf/expected	reference.md	389	schema-rejected-placeholder-string-example
 tests/fixtures/audiobookshelf/expected	reference.md	575	schema-rejected-name-example
-tests/fixtures/audiobookshelf/expected	src/fern/__init__.py	107	init-type-checking-import-order
 tests/fixtures/audiobookshelf/expected	src/fern/authors/client.py	109	schema-rejected-name-example
 tests/fixtures/audiobookshelf/expected	src/fern/authors/client.py	203	schema-rejected-name-example
 tests/fixtures/audiobookshelf/expected	src/fern/authors/client.py	250	schema-rejected-name-example
@@ -5495,7 +5613,6 @@ tests/fixtures/blufiles-api/expected-literals	src/fern/client.py	1064	schema-rej
 tests/fixtures/blufiles-api/expected-literals	src/fern/client.py	1362	schema-rejected-name-example
 tests/fixtures/blufiles-api/expected-literals	src/fern/client.py	3231	schema-rejected-name-example
 tests/fixtures/blufiles-api/expected-literals	src/fern/client.py	3593	schema-rejected-name-example
-tests/fixtures/bracketed-property-names/expected	src/fern/__init__.py	11	init-type-checking-import-order
 tests/fixtures/bracketed-property-names/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 tests/fixtures/bracketed-property-names/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 tests/fixtures/bracketed-property-names/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -5613,7 +5730,6 @@ tests/fixtures/braintrust-dev/expected	reference.md	13191	schema-rejected-name-e
 tests/fixtures/braintrust-dev/expected	reference.md	13250	schema-rejected-name-example
 tests/fixtures/braintrust-dev/expected	reference.md	13309	schema-rejected-name-example
 tests/fixtures/braintrust-dev/expected	reference.md	13929	list-path-parameter-example
-tests/fixtures/braintrust-dev/expected	src/fern/__init__.py	605	init-type-checking-import-order
 tests/fixtures/braintrust-dev/expected	src/fern/acls/client.py	125	schema-rejected-name-example
 tests/fixtures/braintrust-dev/expected	src/fern/acls/client.py	198	schema-rejected-name-example
 tests/fixtures/braintrust-dev/expected	src/fern/acls/client.py	267	schema-rejected-name-example
@@ -6021,7 +6137,6 @@ tests/fixtures/braintrust-dev/expected-literals	src/fern/views/client.py	804	sch
 tests/fixtures/braintrust-dev/expected-literals	src/fern/views/client.py	806	schema-rejected-name-example
 tests/fixtures/braintrust-dev/expected-literals	src/fern/views/client.py	877	schema-rejected-name-example
 tests/fixtures/braintrust-dev/expected-literals	src/fern/views/client.py	879	schema-rejected-name-example
-tests/fixtures/breizhsport-catalogue/expected	src/fern/__init__.py	11	init-type-checking-import-order
 tests/fixtures/breizhsport-catalogue/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 tests/fixtures/breizhsport-catalogue/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 tests/fixtures/breizhsport-catalogue/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -6065,7 +6180,6 @@ tests/fixtures/bunq.com/expected	src/fern/core/client_wrapper.py	48	sdk-identity
 tests/fixtures/bunq.com/expected	src/fern/core/client_wrapper.py	49	sdk-identity-header-prefix
 tests/fixtures/bunq.com/expected	src/fern/core/client_wrapper.py	50	sdk-identity-header-prefix
 tests/fixtures/byautomata.io/expected	README.md	58	readme-environment-constructor-arguments
-tests/fixtures/byautomata.io/expected	src/fern/__init__.py	21	init-type-checking-import-order
 tests/fixtures/byautomata.io/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/byautomata.io/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/byautomata.io/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -6143,7 +6257,6 @@ tests/fixtures/color.pizza/expected	src/fern/core/client_wrapper.py	36	sdk-ident
 tests/fixtures/color.pizza/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/color.pizza/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/confluent-kafka-connect/expected	README.md	60	readme-environment-constructor-arguments
-tests/fixtures/confluent-kafka-connect/expected	src/fern/__init__.py	78	init-type-checking-import-order
 tests/fixtures/confluent-kafka-connect/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/confluent-kafka-connect/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/confluent-kafka-connect/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
@@ -6173,7 +6286,6 @@ tests/fixtures/cphos-ai-question/expected	reference.md	1036	reference-anchor-fol
 tests/fixtures/cphos-ai-question/expected	reference.md	1115	reference-anchor-follows-corrected-client
 tests/fixtures/cphos-ai-question/expected	reference.md	1192	reference-anchor-follows-corrected-client
 tests/fixtures/cphos-ai-question/expected	reference.md	1267	stream-reference-return-type
-tests/fixtures/cphos-ai-question/expected	src/fern/__init__.py	54	init-type-checking-import-order
 tests/fixtures/cphos-ai-question/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/cphos-ai-question/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/cphos-ai-question/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -6321,7 +6433,9 @@ tests/fixtures/daniweb-connect/expected	reference.md	6159	list-path-parameter-ex
 tests/fixtures/daniweb-connect/expected	reference.md	6363	bracket-query-parameter-call-keyword
 tests/fixtures/daniweb-connect/expected	reference.md	6419	bracket-query-parameter-call-keyword
 tests/fixtures/daniweb-connect/expected	reference.md	6435	bracket-query-parameter-call-keyword
-tests/fixtures/daniweb-connect/expected	src/fern/__init__.py	201	init-type-checking-import-order
+tests/fixtures/daniweb-connect/expected	src/fern/__init__.py	56	colliding-component-own-class
+tests/fixtures/daniweb-connect/expected	src/fern/__init__.py	305	colliding-component-own-class
+tests/fixtures/daniweb-connect/expected	src/fern/__init__.py	564	colliding-component-own-class
 tests/fixtures/daniweb-connect/expected	src/fern/apps/client.py	89	list-path-parameter-example
 tests/fixtures/daniweb-connect/expected	src/fern/apps/client.py	186	list-path-parameter-example
 tests/fixtures/daniweb-connect/expected	src/fern/audiences/client.py	90	list-path-parameter-example
@@ -6347,6 +6461,10 @@ tests/fixtures/daniweb-connect/expected	src/fern/groups/client.py	1710	list-path
 tests/fixtures/daniweb-connect/expected	src/fern/groups/client.py	2109	list-path-parameter-example
 tests/fixtures/daniweb-connect/expected	src/fern/messages/client.py	126	list-path-parameter-example
 tests/fixtures/daniweb-connect/expected	src/fern/messages/client.py	400	list-path-parameter-example
+tests/fixtures/daniweb-connect/expected	src/fern/types/__init__.py	59	colliding-component-own-class
+tests/fixtures/daniweb-connect/expected	src/fern/types/__init__.py	257	colliding-component-own-class
+tests/fixtures/daniweb-connect/expected	src/fern/types/__init__.py	459	colliding-component-own-class
+tests/fixtures/daniweb-connect/expected	src/fern/types/endpoint_get_users2.py	0	colliding-component-own-class
 tests/fixtures/daniweb-connect/expected	src/fern/users/client.py	470	list-path-parameter-example
 tests/fixtures/daniweb-connect/expected	src/fern/users/client.py	846	list-path-parameter-example
 tests/fixtures/daniweb-connect/expected	src/fern/users/client.py	1464	list-path-parameter-example
@@ -6361,7 +6479,6 @@ tests/fixtures/dashy-route-api/expected-literals	.fern/metadata.json	5	fern-meta
 tests/fixtures/deepsearch-ds-v2/expected	README.md	60	readme-environment-constructor-arguments
 tests/fixtures/deepsearch-ds-v2/expected	reference.md	114	schema-rejected-name-example
 tests/fixtures/deepsearch-ds-v2/expected	reference.md	3858	schema-rejected-name-example
-tests/fixtures/deepsearch-ds-v2/expected	src/fern/__init__.py	155	init-type-checking-import-order
 tests/fixtures/deepsearch-ds-v2/expected	src/fern/content_manager/client.py	110	schema-rejected-name-example
 tests/fixtures/deepsearch-ds-v2/expected	src/fern/content_manager/client.py	792	schema-rejected-name-example
 tests/fixtures/deepsearch-ds-v2/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -6381,7 +6498,6 @@ tests/fixtures/digit-leading-property/expected	src/fern/core/client_wrapper.py	3
 tests/fixtures/digit-leading-property/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/digit-leading-property/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/digit-leading-property/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
-tests/fixtures/dipjyotimetia-friday/expected	src/fern/__init__.py	12	init-type-checking-import-order
 tests/fixtures/dipjyotimetia-friday/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 tests/fixtures/dipjyotimetia-friday/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 tests/fixtures/dipjyotimetia-friday/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -7263,7 +7379,6 @@ tests/fixtures/discord-com/expected	src/fern/core/client_wrapper.py	38	sdk-ident
 tests/fixtures/discord-com/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/discord-com/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
 tests/fixtures/discourse.local/expected	reference.md	2311	schema-rejected-name-example
-tests/fixtures/discourse.local/expected	src/fern/__init__.py	25	init-type-checking-import-order
 tests/fixtures/discourse.local/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 tests/fixtures/discourse.local/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 tests/fixtures/discourse.local/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -7276,7 +7391,6 @@ tests/fixtures/discriminated-unions/expected	src/fern/core/client_wrapper.py	37	
 tests/fixtures/discriminated-unions/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/discriminated-unions/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/discriminated-unions/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
-tests/fixtures/dnd5eapi.co/expected	src/fern/__init__.py	168	init-type-checking-import-order
 tests/fixtures/dnd5eapi.co/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 tests/fixtures/dnd5eapi.co/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 tests/fixtures/dnd5eapi.co/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -7309,7 +7423,6 @@ tests/fixtures/docu-goapiserver/expected	reference.md	6268	schema-rejected-name-
 tests/fixtures/docu-goapiserver/expected	reference.md	6424	schema-rejected-name-example
 tests/fixtures/docu-goapiserver/expected	reference.md	6580	schema-rejected-name-example
 tests/fixtures/docu-goapiserver/expected	reference.md	6958	schema-rejected-name-example
-tests/fixtures/docu-goapiserver/expected	src/fern/__init__.py	177	init-type-checking-import-order
 tests/fixtures/docu-goapiserver/expected	src/fern/billing_plans/client.py	172	schema-rejected-name-example
 tests/fixtures/docu-goapiserver/expected	src/fern/billing_plans/client.py	353	schema-rejected-name-example
 tests/fixtures/docu-goapiserver/expected	src/fern/companies/client.py	54	schema-rejected-name-example
@@ -7418,7 +7531,6 @@ tests/fixtures/dystore-api/expected	reference.md	6377	emoji-tag-reference-identi
 tests/fixtures/dystore-api/expected	reference.md	6384	emoji-tag-reference-identifiers
 tests/fixtures/dystore-api/expected	reference.md	6440	emoji-tag-reference-identifiers
 tests/fixtures/dystore-api/expected	reference.md	6475	emoji-tag-reference-identifiers
-tests/fixtures/dystore-api/expected	src/fern/__init__.py	23	init-type-checking-import-order
 tests/fixtures/dystore-api/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/dystore-api/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/dystore-api/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -7947,7 +8059,6 @@ tests/fixtures/ego-microservices/expected	README.md	78	schema-rejected-name-exam
 tests/fixtures/ego-microservices/expected	reference.md	40	schema-rejected-name-example
 tests/fixtures/ego-microservices/expected	reference.md	765	reference-anchor-follows-corrected-client
 tests/fixtures/ego-microservices/expected	reference.md	846	reference-anchor-follows-corrected-client
-tests/fixtures/ego-microservices/expected	src/fern/__init__.py	78	init-type-checking-import-order
 tests/fixtures/ego-microservices/expected	src/fern/auth/client.py	67	schema-rejected-name-example
 tests/fixtures/ego-microservices/expected	src/fern/auth/client.py	268	schema-rejected-name-example
 tests/fixtures/ego-microservices/expected	src/fern/avatars/client.py	60	multipart-object-required-file-example
@@ -8062,7 +8173,6 @@ tests/fixtures/enum-name-sanitization/expected	src/fern/core/client_wrapper.py	3
 tests/fixtures/enum-name-sanitization/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/enum-name-sanitization/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/enum-name-sanitization/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
-tests/fixtures/enum-query-param/expected	src/fern/__init__.py	11	init-type-checking-import-order
 tests/fixtures/enum-query-param/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 tests/fixtures/enum-query-param/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 tests/fixtures/enum-query-param/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -8150,7 +8260,6 @@ tests/fixtures/esp32-streamline-bridge/expected	src/fern/core/client_wrapper.py	
 tests/fixtures/esp32-streamline-bridge/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
 tests/fixtures/etsi.local-mec010-2_apppkgmgmt/expected	reference.md	1056	schema-rejected-name-example
 tests/fixtures/etsi.local-mec010-2_apppkgmgmt/expected	reference.md	1293	schema-rejected-name-example
-tests/fixtures/etsi.local-mec010-2_apppkgmgmt/expected	src/fern/__init__.py	93	init-type-checking-import-order
 tests/fixtures/etsi.local-mec010-2_apppkgmgmt/expected	src/fern/app_pkgm/client.py	552	schema-rejected-name-example
 tests/fixtures/etsi.local-mec010-2_apppkgmgmt/expected	src/fern/app_pkgm/client.py	1241	schema-rejected-name-example
 tests/fixtures/etsi.local-mec010-2_apppkgmgmt/expected	src/fern/app_pkgm_notifications/client.py	93	schema-rejected-name-example
@@ -8171,7 +8280,6 @@ tests/fixtures/farmvibes-ai/expected	reference.md	508	schema-rejected-name-examp
 tests/fixtures/farmvibes-ai/expected	reference.md	583	schema-rejected-name-example
 tests/fixtures/farmvibes-ai/expected	reference.md	655	schema-rejected-name-example
 tests/fixtures/farmvibes-ai/expected	reference.md	727	schema-rejected-name-example
-tests/fixtures/farmvibes-ai/expected	src/fern/__init__.py	21	init-type-checking-import-order
 tests/fixtures/farmvibes-ai/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 tests/fixtures/farmvibes-ai/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 tests/fixtures/farmvibes-ai/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -8190,7 +8298,6 @@ tests/fixtures/fergus/expected	README.md	60	readme-environment-constructor-argum
 tests/fixtures/fergus/expected	reference.md	1633	schema-rejected-number-example
 tests/fixtures/fergus/expected	reference.md	4257	schema-rejected-name-example
 tests/fixtures/fergus/expected	reference.md	4761	schema-rejected-name-example
-tests/fixtures/fergus/expected	src/fern/__init__.py	323	init-type-checking-import-order
 tests/fixtures/fergus/expected	src/fern/contacts/client.py	178	schema-rejected-name-example
 tests/fixtures/fergus/expected	src/fern/contacts/client.py	489	schema-rejected-name-example
 tests/fixtures/fergus/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -8216,7 +8323,6 @@ tests/fixtures/fletch-mcp/expected	README.md	56	readme-environment-constructor-a
 tests/fixtures/fletch-mcp/expected	reference.md	175	schema-rejected-number-example
 tests/fixtures/fletch-mcp/expected	reference.md	280	schema-rejected-number-example
 tests/fixtures/fletch-mcp/expected	reference.md	441	schema-rejected-number-example
-tests/fixtures/fletch-mcp/expected	src/fern/__init__.py	110	init-type-checking-import-order
 tests/fixtures/fletch-mcp/expected	src/fern/chains/client.py	146	schema-rejected-number-example
 tests/fixtures/fletch-mcp/expected	src/fern/chains/client.py	224	schema-rejected-number-example
 tests/fixtures/fletch-mcp/expected	src/fern/chains/client.py	270	schema-rejected-number-example
@@ -8252,7 +8358,6 @@ tests/fixtures/form-bodies/expected	src/fern/forms/client.py	65	multipart-object
 tests/fixtures/formbricks/expected	README.md	62	readme-environment-constructor-arguments
 tests/fixtures/formbricks/expected	reference.md	2404	schema-rejected-name-example
 tests/fixtures/formbricks/expected	reference.md	2609	schema-rejected-name-example
-tests/fixtures/formbricks/expected	src/fern/__init__.py	243	init-type-checking-import-order
 tests/fixtures/formbricks/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/formbricks/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/formbricks/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -9314,7 +9419,6 @@ tests/fixtures/get-a-room/expected	reference.md	802	schema-rejected-name-example
 tests/fixtures/get-a-room/expected	reference.md	884	schema-rejected-name-example
 tests/fixtures/get-a-room/expected	reference.md	885	schema-rejected-name-example
 tests/fixtures/get-a-room/expected	reference.md	969	schema-rejected-name-example
-tests/fixtures/get-a-room/expected	src/fern/__init__.py	56	init-type-checking-import-order
 tests/fixtures/get-a-room/expected	src/fern/agents/client.py	59	schema-rejected-name-example
 tests/fixtures/get-a-room/expected	src/fern/agents/client.py	116	schema-rejected-name-example
 tests/fixtures/get-a-room/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -9396,7 +9500,6 @@ tests/fixtures/grantly/expected	reference.md	308	schema-rejected-name-example
 tests/fixtures/grantly/expected	reference.md	309	schema-rejected-name-example
 tests/fixtures/grantly/expected	reference.md	449	schema-rejected-name-example
 tests/fixtures/grantly/expected	reference.md	1474	schema-rejected-name-example
-tests/fixtures/grantly/expected	src/fern/__init__.py	12	init-type-checking-import-order
 tests/fixtures/grantly/expected	src/fern/app/client.py	301	schema-rejected-name-example
 tests/fixtures/grantly/expected	src/fern/app/client.py	720	schema-rejected-name-example
 tests/fixtures/grantly/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -9609,7 +9712,6 @@ tests/fixtures/khoainats/expected	src/fern/core/client_wrapper.py	38	sdk-identit
 tests/fixtures/khoainats/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/khoainats/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
 tests/fixtures/komga/expected	README.md	56	readme-environment-constructor-arguments
-tests/fixtures/komga/expected	src/fern/__init__.py	252	init-type-checking-import-order
 tests/fixtures/komga/expected	src/fern/comic_rack/client.py	56	multipart-object-required-file-example
 tests/fixtures/komga/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/komga/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
@@ -9630,7 +9732,6 @@ tests/fixtures/kompaz-web-frontend/expected	reference.md	971	schema-rejected-nam
 tests/fixtures/kompaz-web-frontend/expected	reference.md	1061	schema-rejected-name-example
 tests/fixtures/kompaz-web-frontend/expected	reference.md	1119	schema-rejected-name-example
 tests/fixtures/kompaz-web-frontend/expected	reference.md	1203	schema-rejected-name-example
-tests/fixtures/kompaz-web-frontend/expected	src/fern/__init__.py	23	init-type-checking-import-order
 tests/fixtures/kompaz-web-frontend/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 tests/fixtures/kompaz-web-frontend/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 tests/fixtures/kompaz-web-frontend/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -9689,7 +9790,6 @@ tests/fixtures/kompaz-web-frontend/expected-literals	src/fern/user/client.py	541
 tests/fixtures/kompaz-web-frontend/expected-literals	src/fern/user/client.py	589	schema-rejected-name-example
 tests/fixtures/kompaz-web-frontend/expected-literals	src/fern/user/client.py	627	schema-rejected-name-example
 tests/fixtures/konfig-lucca-organization/expected	README.md	60	readme-environment-constructor-arguments
-tests/fixtures/konfig-lucca-organization/expected	src/fern/__init__.py	22	init-type-checking-import-order
 tests/fixtures/konfig-lucca-organization/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/konfig-lucca-organization/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/konfig-lucca-organization/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -9715,7 +9815,6 @@ tests/fixtures/langchain-agent-protocol/expected	reference.md	1548	schema-reject
 tests/fixtures/langchain-agent-protocol/expected	reference.md	1585	stream-reference-return-type
 tests/fixtures/langchain-agent-protocol/expected	reference.md	1619	schema-rejected-name-example
 tests/fixtures/langchain-agent-protocol/expected	reference.md	1725	schema-rejected-name-example
-tests/fixtures/langchain-agent-protocol/expected	src/fern/__init__.py	53	init-type-checking-import-order
 tests/fixtures/langchain-agent-protocol/expected	src/fern/background_runs/client.py	126	schema-rejected-name-example
 tests/fixtures/langchain-agent-protocol/expected	src/fern/background_runs/client.py	156	schema-rejected-name-example
 tests/fixtures/langchain-agent-protocol/expected	src/fern/background_runs/client.py	187	schema-rejected-name-example
@@ -9814,7 +9913,6 @@ tests/fixtures/langchain-agent-server/expected	reference.md	4545	reference-ancho
 tests/fixtures/langchain-agent-server/expected	reference.md	4616	reference-anchor-follows-corrected-client
 tests/fixtures/langchain-agent-server/expected	reference.md	4687	reference-anchor-follows-corrected-client
 tests/fixtures/langchain-agent-server/expected	reference.md	5243	schema-rejected-name-example
-tests/fixtures/langchain-agent-server/expected	src/fern/__init__.py	100	init-type-checking-import-order
 tests/fixtures/langchain-agent-server/expected	src/fern/a2a/client.py	107	schema-rejected-name-example
 tests/fixtures/langchain-agent-server/expected	src/fern/a2a/client.py	236	schema-rejected-name-example
 tests/fixtures/langchain-agent-server/expected	src/fern/assistants/client.py	257	schema-rejected-name-example
@@ -10016,7 +10114,6 @@ tests/fixtures/langchain-agent-server/expected-literals	reference.md	5243	schema
 tests/fixtures/langchain-agent-server/expected-literals	src/fern/a2a/client.py	104	schema-rejected-name-example
 tests/fixtures/langchain-agent-server/expected-literals	src/fern/a2a/client.py	230	schema-rejected-name-example
 tests/fixtures/laposta/expected	README.md	59	readme-environment-constructor-arguments
-tests/fixtures/laposta/expected	src/fern/__init__.py	57	init-type-checking-import-order
 tests/fixtures/laposta/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/laposta/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/laposta/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
@@ -10086,7 +10183,6 @@ tests/fixtures/letta/expected	reference.md	10735	reference-anchor-follows-correc
 tests/fixtures/letta/expected	reference.md	21616	constant-header-docs-arguments
 tests/fixtures/letta/expected	reference.md	23561	schema-rejected-name-example
 tests/fixtures/letta/expected	reference.md	23893	schema-rejected-name-example
-tests/fixtures/letta/expected	src/fern/__init__.py	681	init-type-checking-import-order
 tests/fixtures/letta/expected	src/fern/agents/client.py	712	multipart-object-required-file-example
 tests/fixtures/letta/expected	src/fern/client_side_access_tokens/client.py	133	schema-rejected-name-example
 tests/fixtures/letta/expected	src/fern/client_side_access_tokens/client.py	304	schema-rejected-name-example
@@ -10100,7 +10196,6 @@ tests/fixtures/letta/expected	src/fern/projects/client.py	137	schema-rejected-na
 tests/fixtures/letta/expected	src/fern/projects/client.py	285	schema-rejected-name-example
 tests/fixtures/letta/expected	src/fern/sources/client.py	398	multipart-object-required-file-example
 tests/fixtures/listennotes/expected	README.md	58	readme-environment-constructor-arguments
-tests/fixtures/listennotes/expected	src/fern/__init__.py	128	init-type-checking-import-order
 tests/fixtures/listennotes/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/listennotes/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/listennotes/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -10136,7 +10231,6 @@ tests/fixtures/loonfs/expected	src/fern/inodes/client.py	1114	schema-rejected-na
 tests/fixtures/loonfs/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
 tests/fixtures/loonfs/expected-literals	reference.md	1893	schema-rejected-name-example
 tests/fixtures/loonfs/expected-literals	reference.md	2262	schema-rejected-name-example
-tests/fixtures/lootlog-battlelog/expected	src/fern/__init__.py	111	init-type-checking-import-order
 tests/fixtures/lootlog-battlelog/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/lootlog-battlelog/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/lootlog-battlelog/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -10149,13 +10243,11 @@ tests/fixtures/loris-dataquery/expected	src/fern/core/client_wrapper.py	38	sdk-i
 tests/fixtures/loris-dataquery/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/loris-dataquery/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
 tests/fixtures/maif.local-otoroshi/expected	README.md	66	readme-environment-constructor-arguments
-tests/fixtures/maif.local-otoroshi/expected	src/fern/__init__.py	140	init-type-checking-import-order
 tests/fixtures/maif.local-otoroshi/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/maif.local-otoroshi/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/maif.local-otoroshi/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
 tests/fixtures/maif.local-otoroshi/expected	src/fern/core/client_wrapper.py	41	sdk-identity-header-prefix
 tests/fixtures/maif.local-otoroshi/expected	src/fern/core/client_wrapper.py	42	sdk-identity-header-prefix
-tests/fixtures/malformed-property-schema/expected	src/fern/__init__.py	11	init-type-checking-import-order
 tests/fixtures/malformed-property-schema/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 tests/fixtures/malformed-property-schema/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 tests/fixtures/malformed-property-schema/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -10163,7 +10255,6 @@ tests/fixtures/malformed-property-schema/expected	src/fern/core/client_wrapper.p
 tests/fixtures/malformed-property-schema/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/marimo-client-class-name/expected	.fern/metadata.json	6	fern-metadata-generator-config
 tests/fixtures/marimo-client-class-name/expected	reference.md	2098	schema-rejected-array-length-example
-tests/fixtures/marimo-client-class-name/expected	src/fern/__init__.py	453	init-type-checking-import-order
 tests/fixtures/marimo-client-class-name/expected	src/fern/client.py	1409	schema-rejected-array-length-example
 tests/fixtures/marimo-client-class-name/expected	src/fern/client.py	5191	schema-rejected-array-length-example
 tests/fixtures/marimo-client-class-name/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
@@ -10207,7 +10298,6 @@ tests/fixtures/marimo-plugins/expected	src/fern/rpc_output/client.py	2252	schema
 tests/fixtures/marimo-plugins/expected	src/fern/rpc_output/client.py	2253	schema-rejected-array-length-example
 tests/fixtures/marimo-plugins/expected	src/fern/rpc_output/client.py	2882	schema-rejected-array-length-example
 tests/fixtures/marimo/expected	reference.md	2098	schema-rejected-array-length-example
-tests/fixtures/marimo/expected	src/fern/__init__.py	453	init-type-checking-import-order
 tests/fixtures/marimo/expected	src/fern/client.py	1409	schema-rejected-array-length-example
 tests/fixtures/marimo/expected	src/fern/client.py	5191	schema-rejected-array-length-example
 tests/fixtures/marimo/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
@@ -10257,7 +10347,6 @@ tests/fixtures/med-anvisa-price/expected	src/fern/core/client_wrapper.py	35	sdk-
 tests/fixtures/med-anvisa-price/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/med-anvisa-price/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/med-anvisa-price/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
-tests/fixtures/mermade-openapi-converter/expected	src/fern/__init__.py	13	init-type-checking-import-order
 tests/fixtures/mermade-openapi-converter/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 tests/fixtures/mermade-openapi-converter/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 tests/fixtures/mermade-openapi-converter/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -10335,7 +10424,6 @@ tests/fixtures/microsoft-adme-seismic/expected	reference.md	938	schema-rejected-
 tests/fixtures/microsoft-adme-seismic/expected	reference.md	976	schema-rejected-declared-example
 tests/fixtures/microsoft-adme-seismic/expected	reference.md	988	schema-rejected-declared-example
 tests/fixtures/microsoft-adme-seismic/expected	reference.md	992	schema-rejected-declared-example
-tests/fixtures/microsoft-adme-seismic/expected	src/fern/__init__.py	82	init-type-checking-import-order
 tests/fixtures/microsoft-adme-seismic/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/microsoft-adme-seismic/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/microsoft-adme-seismic/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -10374,7 +10462,6 @@ tests/fixtures/millenium-falcon-challenge/expected	src/fern/core/client_wrapper.
 tests/fixtures/millenium-falcon-challenge/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/millenium-falcon-challenge/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/millenium-falcon-challenge/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
-tests/fixtures/milvus-restful-v2-3/expected	src/fern/__init__.py	63	init-type-checking-import-order
 tests/fixtures/milvus-restful-v2-3/expected	src/fern/alias_operations_v2/client.py	51	non-string-client-header-example
 tests/fixtures/milvus-restful-v2-3/expected	src/fern/alias_operations_v2/client.py	89	non-string-client-header-example
 tests/fixtures/milvus-restful-v2-3/expected	src/fern/alias_operations_v2/client.py	126	non-string-client-header-example
@@ -10472,7 +10559,6 @@ tests/fixtures/milvus-restful-v2-3/expected	src/fern/vector_operations_v2/client
 tests/fixtures/milvus-restful-v2-3/expected	src/fern/vector_operations_v2/client.py	727	non-string-client-header-example
 tests/fixtures/milvus-restful-v2-3/expected	src/fern/vector_operations_v2/client.py	796	non-string-client-header-example
 tests/fixtures/milvus-restful-v2-3/expected	src/fern/vector_operations_v2/client.py	907	non-string-client-header-example
-tests/fixtures/milvus-restful-v2-4/expected	src/fern/__init__.py	78	init-type-checking-import-order
 tests/fixtures/milvus-restful-v2-4/expected	src/fern/alias_operations_v2/client.py	57	non-string-client-header-example
 tests/fixtures/milvus-restful-v2-4/expected	src/fern/alias_operations_v2/client.py	95	non-string-client-header-example
 tests/fixtures/milvus-restful-v2-4/expected	src/fern/alias_operations_v2/client.py	144	non-string-client-header-example
@@ -10613,7 +10699,6 @@ tests/fixtures/mnahkies-openapi-code-generator-e2e/expected-literals	README.md	7
 tests/fixtures/mnahkies-openapi-code-generator-e2e/expected-literals	reference.md	515	schema-rejected-number-example
 tests/fixtures/mnahkies-openapi-code-generator-e2e/expected-literals	src/fern/validation/client.py	100	schema-rejected-number-example
 tests/fixtures/mnahkies-openapi-code-generator-e2e/expected-literals	src/fern/validation/client.py	327	schema-rejected-number-example
-tests/fixtures/mockserver/expected	src/fern/__init__.py	309	init-type-checking-import-order
 tests/fixtures/mockserver/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 tests/fixtures/mockserver/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 tests/fixtures/mockserver/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -10622,7 +10707,6 @@ tests/fixtures/mockserver/expected	src/fern/core/client_wrapper.py	38	sdk-identi
 tests/fixtures/mockserver/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
 tests/fixtures/mosip-esignet/expected	README.md	93	readme-environment-constructor-arguments
 tests/fixtures/mosip-esignet/expected	reference.md	923	schema-rejected-name-example
-tests/fixtures/mosip-esignet/expected	src/fern/__init__.py	265	init-type-checking-import-order
 tests/fixtures/mosip-esignet/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/mosip-esignet/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/mosip-esignet/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -10635,21 +10719,18 @@ tests/fixtures/ndw-accessibility-map/expected	src/fern/core/client_wrapper.py	35
 tests/fixtures/ndw-accessibility-map/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/ndw-accessibility-map/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/ndw-accessibility-map/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
-tests/fixtures/nested-core-imports/expected	src/fern/__init__.py	11	init-type-checking-import-order
 tests/fixtures/nested-core-imports/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 tests/fixtures/nested-core-imports/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 tests/fixtures/nested-core-imports/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/nested-core-imports/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/nested-core-imports/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/netbox.dev/expected	README.md	59	readme-environment-constructor-arguments
-tests/fixtures/netbox.dev/expected	src/fern/__init__.py	556	init-type-checking-import-order
 tests/fixtures/netbox.dev/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/netbox.dev/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/netbox.dev/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/netbox.dev/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/netbox.dev/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
 tests/fixtures/netgsm-sms/expected	README.md	63	readme-environment-constructor-arguments
-tests/fixtures/netgsm-sms/expected	src/fern/__init__.py	26	init-type-checking-import-order
 tests/fixtures/netgsm-sms/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/netgsm-sms/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/netgsm-sms/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
@@ -10904,13 +10985,11 @@ tests/fixtures/onmyshelf-api/expected	README.md	118	digit-leading-method-referen
 tests/fixtures/onmyshelf-api/expected	README.md	133	digit-leading-method-reference-identifiers
 tests/fixtures/onmyshelf-api/expected	reference.md	50	digit-leading-method-reference-identifiers
 tests/fixtures/onmyshelf-api/expected	reference.md	97	digit-leading-method-reference-identifiers
-tests/fixtures/onmyshelf-api/expected	src/fern/__init__.py	11	init-type-checking-import-order
 tests/fixtures/onmyshelf-api/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 tests/fixtures/onmyshelf-api/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 tests/fixtures/onmyshelf-api/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/onmyshelf-api/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/onmyshelf-api/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
-tests/fixtures/openaire-graph/expected	src/fern/__init__.py	117	init-type-checking-import-order
 tests/fixtures/openaire-graph/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 tests/fixtures/openaire-graph/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 tests/fixtures/openaire-graph/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -10966,12 +11045,37 @@ tests/fixtures/openbanking-brasil-directory/expected	src/fern/software_statement
 tests/fixtures/openbanking-brasil-directory/expected	src/fern/software_statements_for_an_organisation/client.py	509	schema-rejected-name-example
 tests/fixtures/openbanking-brasil-directory/expected	src/fern/software_statements_for_an_organisation/client.py	510	schema-rejected-name-example
 tests/fixtures/openbanking.org.uk-account-info-openapi/expected	README.md	64	readme-environment-constructor-arguments
-tests/fixtures/openbanking.org.uk-account-info-openapi/expected	src/fern/__init__.py	554	init-type-checking-import-order
+tests/fixtures/openbanking.org.uk-account-info-openapi/expected	src/fern/__init__.py	163	colliding-component-own-class
+tests/fixtures/openbanking.org.uk-account-info-openapi/expected	src/fern/__init__.py	165	colliding-component-own-class
+tests/fixtures/openbanking.org.uk-account-info-openapi/expected	src/fern/__init__.py	726	colliding-component-own-class
+tests/fixtures/openbanking.org.uk-account-info-openapi/expected	src/fern/__init__.py	728	colliding-component-own-class
+tests/fixtures/openbanking.org.uk-account-info-openapi/expected	src/fern/__init__.py	1300	colliding-component-own-class
+tests/fixtures/openbanking.org.uk-account-info-openapi/expected	src/fern/__init__.py	1302	colliding-component-own-class
 tests/fixtures/openbanking.org.uk-account-info-openapi/expected	src/fern/core/client_wrapper.py	44	sdk-identity-header-prefix
 tests/fixtures/openbanking.org.uk-account-info-openapi/expected	src/fern/core/client_wrapper.py	45	sdk-identity-header-prefix
 tests/fixtures/openbanking.org.uk-account-info-openapi/expected	src/fern/core/client_wrapper.py	46	sdk-identity-header-prefix
 tests/fixtures/openbanking.org.uk-account-info-openapi/expected	src/fern/core/client_wrapper.py	47	sdk-identity-header-prefix
 tests/fixtures/openbanking.org.uk-account-info-openapi/expected	src/fern/core/client_wrapper.py	48	sdk-identity-header-prefix
+tests/fixtures/openbanking.org.uk-account-info-openapi/expected	src/fern/types/__init__.py	162	colliding-component-own-class
+tests/fixtures/openbanking.org.uk-account-info-openapi/expected	src/fern/types/__init__.py	164	colliding-component-own-class
+tests/fixtures/openbanking.org.uk-account-info-openapi/expected	src/fern/types/__init__.py	1155	colliding-component-own-class
+tests/fixtures/openbanking.org.uk-account-info-openapi/expected	src/fern/types/__init__.py	1157	colliding-component-own-class
+tests/fixtures/openbanking.org.uk-account-info-openapi/expected	src/fern/types/__init__.py	1700	colliding-component-own-class
+tests/fixtures/openbanking.org.uk-account-info-openapi/expected	src/fern/types/__init__.py	1702	colliding-component-own-class
+tests/fixtures/openbanking.org.uk-account-info-openapi/expected	src/fern/types/ob_rate102.py	0	colliding-component-own-class
+tests/fixtures/openbanking.org.uk-account-info-openapi/expected	src/fern/types/ob_rate112.py	0	colliding-component-own-class
+tests/fixtures/openbanking.org.uk-account-info-openapi/expected	src/fern/types/ob_statement2basic_statement_fee_item.py	15	colliding-component-own-class
+tests/fixtures/openbanking.org.uk-account-info-openapi/expected	src/fern/types/ob_statement2basic_statement_fee_item.py	38	colliding-component-own-class
+tests/fixtures/openbanking.org.uk-account-info-openapi/expected	src/fern/types/ob_statement2basic_statement_interest_item.py	15	colliding-component-own-class
+tests/fixtures/openbanking.org.uk-account-info-openapi/expected	src/fern/types/ob_statement2basic_statement_interest_item.py	38	colliding-component-own-class
+tests/fixtures/openbanking.org.uk-account-info-openapi/expected	src/fern/types/ob_statement2detail_statement_fee_item.py	15	colliding-component-own-class
+tests/fixtures/openbanking.org.uk-account-info-openapi/expected	src/fern/types/ob_statement2detail_statement_fee_item.py	38	colliding-component-own-class
+tests/fixtures/openbanking.org.uk-account-info-openapi/expected	src/fern/types/ob_statement2detail_statement_interest_item.py	15	colliding-component-own-class
+tests/fixtures/openbanking.org.uk-account-info-openapi/expected	src/fern/types/ob_statement2detail_statement_interest_item.py	38	colliding-component-own-class
+tests/fixtures/openbanking.org.uk-account-info-openapi/expected	src/fern/types/ob_statement2statement_fee_item.py	15	colliding-component-own-class
+tests/fixtures/openbanking.org.uk-account-info-openapi/expected	src/fern/types/ob_statement2statement_fee_item.py	38	colliding-component-own-class
+tests/fixtures/openbanking.org.uk-account-info-openapi/expected	src/fern/types/ob_statement2statement_interest_item.py	15	colliding-component-own-class
+tests/fixtures/openbanking.org.uk-account-info-openapi/expected	src/fern/types/ob_statement2statement_interest_item.py	38	colliding-component-own-class
 tests/fixtures/openbankingproject-ch-kundenbeziehung/expected	README.md	63	readme-environment-constructor-arguments
 tests/fixtures/openbankingproject-ch-kundenbeziehung/expected	reference.md	43	schema-rejected-name-example
 tests/fixtures/openbankingproject-ch-kundenbeziehung/expected	reference.md	467	schema-rejected-name-example
@@ -10981,7 +11085,6 @@ tests/fixtures/openbankingproject-ch-kundenbeziehung/expected	reference.md	1711	
 tests/fixtures/openbankingproject-ch-kundenbeziehung/expected	reference.md	1820	schema-rejected-name-example
 tests/fixtures/openbankingproject-ch-kundenbeziehung/expected	reference.md	2400	schema-rejected-number-example
 tests/fixtures/openbankingproject-ch-kundenbeziehung/expected	reference.md	3012	schema-rejected-name-example
-tests/fixtures/openbankingproject-ch-kundenbeziehung/expected	src/fern/__init__.py	154	init-type-checking-import-order
 tests/fixtures/openbankingproject-ch-kundenbeziehung/expected	src/fern/age_verification/client.py	83	schema-rejected-number-example
 tests/fixtures/openbankingproject-ch-kundenbeziehung/expected	src/fern/age_verification/client.py	173	schema-rejected-number-example
 tests/fixtures/openbankingproject-ch-kundenbeziehung/expected	src/fern/client_management/client.py	119	schema-rejected-name-example
@@ -11075,7 +11178,6 @@ tests/fixtures/openiap-opencore/expected	src/fern/core/client_wrapper.py	39	sdk-
 tests/fixtures/openiap-opencore/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
 tests/fixtures/openiap-opencore/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
 tests/fixtures/openintegrationhub-secret-service/expected	README.md	72	readme-environment-constructor-arguments
-tests/fixtures/openintegrationhub-secret-service/expected	src/fern/__init__.py	65	init-type-checking-import-order
 tests/fixtures/openintegrationhub-secret-service/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/openintegrationhub-secret-service/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/openintegrationhub-secret-service/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -11133,7 +11235,6 @@ tests/fixtures/opentosca-license-engine/expected	src/fern/core/client_wrapper.py
 tests/fixtures/opentosca-license-engine/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/opentosca-license-engine/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/opentosca-license-engine/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
-tests/fixtures/operation-id-non-identifier/expected	src/fern/__init__.py	11	init-type-checking-import-order
 tests/fixtures/operation-id-non-identifier/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 tests/fixtures/operation-id-non-identifier/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 tests/fixtures/operation-id-non-identifier/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -11379,7 +11480,6 @@ tests/fixtures/osparc-simcore-webserver/expected	reference.md	17922	schema-rejec
 tests/fixtures/osparc-simcore-webserver/expected	reference.md	17923	schema-rejected-name-example
 tests/fixtures/osparc-simcore-webserver/expected	reference.md	19594	schema-rejected-name-example
 tests/fixtures/osparc-simcore-webserver/expected	reference.md	19660	schema-rejected-name-example
-tests/fixtures/osparc-simcore-webserver/expected	src/fern/__init__.py	529	init-type-checking-import-order
 tests/fixtures/osparc-simcore-webserver/expected	src/fern/admin/client.py	433	schema-rejected-name-example
 tests/fixtures/osparc-simcore-webserver/expected	src/fern/admin/client.py	434	schema-rejected-name-example
 tests/fixtures/osparc-simcore-webserver/expected	src/fern/admin/client.py	925	schema-rejected-name-example
@@ -11676,7 +11776,6 @@ tests/fixtures/otoroshi/expected	src/fern/core/client_wrapper.py	40	sdk-identity
 tests/fixtures/otoroshi/expected	src/fern/core/client_wrapper.py	41	sdk-identity-header-prefix
 tests/fixtures/otoroshi/expected	src/fern/core/client_wrapper.py	42	sdk-identity-header-prefix
 tests/fixtures/outreach/expected	README.md	56	readme-environment-constructor-arguments
-tests/fixtures/outreach/expected	src/fern/__init__.py	41	init-type-checking-import-order
 tests/fixtures/outreach/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/outreach/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/outreach/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -11688,7 +11787,6 @@ tests/fixtures/paloalto-code-technologies/expected	src/fern/core/client_wrapper.
 tests/fixtures/paloalto-code-technologies/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/paloalto-code-technologies/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
 tests/fixtures/paloalto-cspm-alerts/expected	README.md	58	readme-environment-constructor-arguments
-tests/fixtures/paloalto-cspm-alerts/expected	src/fern/__init__.py	127	init-type-checking-import-order
 tests/fixtures/paloalto-cspm-alerts/expected	src/fern/alerts/raw_client.py	506	body-query-parameter-value
 tests/fixtures/paloalto-cspm-alerts/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/paloalto-cspm-alerts/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
@@ -11746,7 +11844,6 @@ tests/fixtures/paloalto-remote-networks/expected	src/fern/remote_networks/client
 tests/fixtures/paloalto-remote-networks/expected	src/fern/remote_networks/client.py	237	schema-rejected-name-example
 tests/fixtures/paloalto-remote-networks/expected	src/fern/remote_networks/client.py	332	schema-rejected-name-example
 tests/fixtures/paloalto-remote-networks/expected	src/fern/remote_networks/client.py	542	schema-rejected-name-example
-tests/fixtures/panoptes/expected	src/fern/__init__.py	13	init-type-checking-import-order
 tests/fixtures/panoptes/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 tests/fixtures/panoptes/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 tests/fixtures/panoptes/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -11759,7 +11856,6 @@ tests/fixtures/parcelis-api/expected	reference.md	130	schema-rejected-name-examp
 tests/fixtures/parcelis-api/expected	reference.md	338	schema-rejected-name-example
 tests/fixtures/parcelis-api/expected	reference.md	635	schema-rejected-name-example
 tests/fixtures/parcelis-api/expected	reference.md	1094	schema-rejected-name-example
-tests/fixtures/parcelis-api/expected	src/fern/__init__.py	23	init-type-checking-import-order
 tests/fixtures/parcelis-api/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/parcelis-api/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/parcelis-api/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -11797,7 +11893,6 @@ tests/fixtures/paypal-catalog-products/expected	src/fern/core/client_wrapper.py	
 tests/fixtures/paypal-catalog-products/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/paypal-catalog-products/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
 tests/fixtures/peopledatalabs/expected	README.md	56	readme-environment-constructor-arguments
-tests/fixtures/peopledatalabs/expected	src/fern/__init__.py	94	init-type-checking-import-order
 tests/fixtures/peopledatalabs/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/peopledatalabs/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/peopledatalabs/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -11807,7 +11902,6 @@ tests/fixtures/portfoliooptimizer.io/expected	README.md	68	readme-environment-co
 tests/fixtures/portfoliooptimizer.io/expected	reference.md	5471	schema-rejected-number-example
 tests/fixtures/portfoliooptimizer.io/expected	reference.md	5472	schema-rejected-number-example
 tests/fixtures/portfoliooptimizer.io/expected	reference.md	5473	schema-rejected-number-example
-tests/fixtures/portfoliooptimizer.io/expected	src/fern/__init__.py	28	init-type-checking-import-order
 tests/fixtures/portfoliooptimizer.io/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/portfoliooptimizer.io/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/portfoliooptimizer.io/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -11825,7 +11919,6 @@ tests/fixtures/protoform-conformance/expected	src/fern/core/client_wrapper.py	35
 tests/fixtures/protoform-conformance/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/protoform-conformance/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/protoform-conformance/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
-tests/fixtures/psychic-spec-helpers-testapp/expected	src/fern/__init__.py	31	init-type-checking-import-order
 tests/fixtures/psychic-spec-helpers-testapp/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 tests/fixtures/psychic-spec-helpers-testapp/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 tests/fixtures/psychic-spec-helpers-testapp/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -11935,7 +12028,6 @@ tests/fixtures/rapidata-identity/expected	reference.md	2276	schema-rejected-name
 tests/fixtures/rapidata-identity/expected	reference.md	3223	schema-rejected-name-example
 tests/fixtures/rapidata-identity/expected	reference.md	3631	schema-rejected-name-example
 tests/fixtures/rapidata-identity/expected	reference.md	3713	schema-rejected-name-example
-tests/fixtures/rapidata-identity/expected	src/fern/__init__.py	83	init-type-checking-import-order
 tests/fixtures/rapidata-identity/expected	src/fern/bidder/client.py	108	schema-rejected-name-example
 tests/fixtures/rapidata-identity/expected	src/fern/bidder/client.py	149	schema-rejected-name-example
 tests/fixtures/rapidata-identity/expected	src/fern/bidder/client.py	263	schema-rejected-name-example
@@ -11991,7 +12083,6 @@ tests/fixtures/rapidata-identity/expected-literals	src/fern/platform/client.py	1
 tests/fixtures/rapidata-identity/expected-literals	src/fern/platform/client.py	263	schema-rejected-name-example
 tests/fixtures/rapidata-identity/expected-literals	src/fern/platform/client.py	312	schema-rejected-name-example
 tests/fixtures/raybot/expected	reference.md	881	schema-rejected-declared-example
-tests/fixtures/raybot/expected	src/fern/__init__.py	126	init-type-checking-import-order
 tests/fixtures/raybot/expected	src/fern/config/client.py	421	schema-rejected-declared-example
 tests/fixtures/raybot/expected	src/fern/config/client.py	1104	schema-rejected-declared-example
 tests/fixtures/raybot/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
@@ -12185,7 +12276,6 @@ tests/fixtures/registered-literals-apis-guru-openapi-directory-2f8c36b9/expected
 tests/fixtures/registered-literals-apis-guru-openapi-directory-2f8c36b9/expected	reference.md	5220	reference-anchor-follows-corrected-client
 tests/fixtures/registered-literals-apis-guru-openapi-directory-2f8c36b9/expected	reference.md	5321	reference-anchor-follows-corrected-client
 tests/fixtures/registered-literals-apis-guru-openapi-directory-2f8c36b9/expected	reference.md	5389	reference-anchor-follows-corrected-client
-tests/fixtures/registered-literals-apis-guru-openapi-directory-2f8c36b9/expected	src/fern/__init__.py	100	init-type-checking-import-order
 tests/fixtures/registered-literals-apis-guru-openapi-directory-2f8c36b9/expected	src/fern/api_keys/client.py	109	schema-rejected-name-example
 tests/fixtures/registered-literals-apis-guru-openapi-directory-2f8c36b9/expected	src/fern/api_keys/client.py	620	schema-rejected-name-example
 tests/fixtures/registered-literals-apis-guru-openapi-directory-2f8c36b9/expected	src/fern/collections/client.py	75	schema-rejected-number-example
@@ -12246,7 +12336,6 @@ tests/fixtures/registered-literals-apis-guru-openapi-directory-608e22dc/expected
 tests/fixtures/registered-literals-apis-guru-openapi-directory-608e22dc/expected	src/fern/transfers/client.py	483	unquoted-timestamp-parameter-example
 tests/fixtures/registered-literals-apis-guru-openapi-directory-608e22dc/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
 tests/fixtures/registered-literals-apis-guru-openapi-directory-72fccf73/expected	README.md	60	readme-environment-constructor-arguments
-tests/fixtures/registered-literals-apis-guru-openapi-directory-72fccf73/expected	src/fern/__init__.py	25	init-type-checking-import-order
 tests/fixtures/registered-literals-apis-guru-openapi-directory-72fccf73/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/registered-literals-apis-guru-openapi-directory-72fccf73/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/registered-literals-apis-guru-openapi-directory-72fccf73/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
@@ -12296,7 +12385,6 @@ tests/fixtures/registered-literals-apis-guru-openapi-directory-7edd79be/expected
 tests/fixtures/registered-literals-apis-guru-openapi-directory-7edd79be/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/registered-literals-apis-guru-openapi-directory-7edd79be/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/registered-literals-apis-guru-openapi-directory-7edd79be/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
-tests/fixtures/registered-literals-apis-guru-openapi-directory-9031af6a/expected	src/fern/__init__.py	34	init-type-checking-import-order
 tests/fixtures/registered-literals-apis-guru-openapi-directory-9031af6a/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 tests/fixtures/registered-literals-apis-guru-openapi-directory-9031af6a/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 tests/fixtures/registered-literals-apis-guru-openapi-directory-9031af6a/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -12427,7 +12515,6 @@ tests/fixtures/registered-literals-apis-guru-openapi-directory-a0bd29a9/expected
 tests/fixtures/registered-literals-apis-guru-openapi-directory-a0bd29a9/expected	src/fern/vm/client.py	502	schema-rejected-name-example
 tests/fixtures/registered-literals-apis-guru-openapi-directory-a0bd29a9/expected	src/fern/vm/client.py	547	schema-rejected-name-example
 tests/fixtures/registered-literals-apis-guru-openapi-directory-a0bd29a9/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
-tests/fixtures/registered-literals-apis-guru-openapi-directory-cdcf7865/expected	src/fern/__init__.py	33	init-type-checking-import-order
 tests/fixtures/registered-literals-apis-guru-openapi-directory-cdcf7865/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 tests/fixtures/registered-literals-apis-guru-openapi-directory-cdcf7865/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 tests/fixtures/registered-literals-apis-guru-openapi-directory-cdcf7865/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -12681,7 +12768,6 @@ tests/fixtures/registered-literals-apis-guru-openapi-directory-d8d536ea/expected
 tests/fixtures/registered-literals-apis-guru-openapi-directory-d8d536ea/expected	reference.md	17434	nullable-items-docs
 tests/fixtures/registered-literals-apis-guru-openapi-directory-d8d536ea/expected	reference.md	17482	nullable-items-docs
 tests/fixtures/registered-literals-apis-guru-openapi-directory-d8d536ea/expected	reference.md	17498	nullable-items-docs
-tests/fixtures/registered-literals-apis-guru-openapi-directory-d8d536ea/expected	src/fern/__init__.py	357	init-type-checking-import-order
 tests/fixtures/registered-literals-apis-guru-openapi-directory-d8d536ea/expected	src/fern/attorney_analytics_api/client.py	129	declared-example-over-placeholder
 tests/fixtures/registered-literals-apis-guru-openapi-directory-d8d536ea/expected	src/fern/attorney_analytics_api/client.py	206	declared-example-over-placeholder
 tests/fixtures/registered-literals-apis-guru-openapi-directory-d8d536ea/expected	src/fern/attorney_analytics_api/client.py	284	declared-example-over-placeholder
@@ -13553,7 +13639,6 @@ tests/fixtures/registered-literals-apis-guru-openapi-directory-d8d536ea/expected
 tests/fixtures/registered-literals-apis-guru-openapi-directory-d8d536ea/expected-literals	src/fern/case_tracking_api/client.py	405	unquoted-timestamp-parameter-example
 tests/fixtures/registered-literals-apis-guru-openapi-directory-d8d536ea/expected-literals	src/fern/case_tracking_api/client.py	406	unquoted-timestamp-parameter-example
 tests/fixtures/registered-literals-arpicato-messie-messenger-aa02af8d/expected	README.md	59	readme-environment-constructor-arguments
-tests/fixtures/registered-literals-arpicato-messie-messenger-aa02af8d/expected	src/fern/__init__.py	51	init-type-checking-import-order
 tests/fixtures/registered-literals-arpicato-messie-messenger-aa02af8d/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/registered-literals-arpicato-messie-messenger-aa02af8d/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/registered-literals-arpicato-messie-messenger-aa02af8d/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -13618,7 +13703,6 @@ tests/fixtures/registered-literals-ballerina-platform-openapi-connectors-97a587f
 tests/fixtures/registered-literals-ballerina-platform-openapi-connectors-97a587f5/expected-literals	reference.md	331	reference-heading-escaped-method-name
 tests/fixtures/registered-literals-ballerina-platform-openapi-connectors-97a587f5/expected-literals	src/fern/files/client.py	100	multipart-object-required-file-example
 tests/fixtures/registered-literals-blues-notehub-js-9c5b2b63/expected	README.md	59	readme-environment-constructor-arguments
-tests/fixtures/registered-literals-blues-notehub-js-9c5b2b63/expected	src/fern/__init__.py	169	init-type-checking-import-order
 tests/fixtures/registered-literals-blues-notehub-js-9c5b2b63/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/registered-literals-blues-notehub-js-9c5b2b63/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/registered-literals-blues-notehub-js-9c5b2b63/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -13679,7 +13763,6 @@ tests/fixtures/registered-literals-core-ncsrd-katana-7ddfc420/expected	reference
 tests/fixtures/registered-literals-core-ncsrd-katana-7ddfc420/expected	reference.md	2793	schema-rejected-name-example
 tests/fixtures/registered-literals-core-ncsrd-katana-7ddfc420/expected	reference.md	2851	schema-rejected-name-example
 tests/fixtures/registered-literals-core-ncsrd-katana-7ddfc420/expected	reference.md	2909	schema-rejected-name-example
-tests/fixtures/registered-literals-core-ncsrd-katana-7ddfc420/expected	src/fern/__init__.py	98	init-type-checking-import-order
 tests/fixtures/registered-literals-core-ncsrd-katana-7ddfc420/expected	src/fern/base_slice_descriptors/client.py	101	schema-rejected-name-example
 tests/fixtures/registered-literals-core-ncsrd-katana-7ddfc420/expected	src/fern/base_slice_descriptors/client.py	131	schema-rejected-name-example
 tests/fixtures/registered-literals-core-ncsrd-katana-7ddfc420/expected	src/fern/base_slice_descriptors/client.py	159	schema-rejected-name-example
@@ -13796,7 +13879,6 @@ tests/fixtures/registered-literals-crate-works-ro-crate-api-f2457da3/expected	re
 tests/fixtures/registered-literals-crate-works-ro-crate-api-f2457da3/expected	reference.md	259	reference-anchor-follows-corrected-client
 tests/fixtures/registered-literals-crate-works-ro-crate-api-f2457da3/expected	reference.md	338	reference-anchor-follows-corrected-client
 tests/fixtures/registered-literals-crate-works-ro-crate-api-f2457da3/expected	reference.md	415	reference-anchor-follows-corrected-client
-tests/fixtures/registered-literals-crate-works-ro-crate-api-f2457da3/expected	src/fern/__init__.py	97	init-type-checking-import-order
 tests/fixtures/registered-literals-crate-works-ro-crate-api-f2457da3/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/registered-literals-crate-works-ro-crate-api-f2457da3/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/registered-literals-crate-works-ro-crate-api-f2457da3/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -13825,7 +13907,6 @@ tests/fixtures/registered-literals-crystalshards-monorepo-b29a3a4e/expected	refe
 tests/fixtures/registered-literals-crystalshards-monorepo-b29a3a4e/expected	reference.md	321	declared-example-over-placeholder
 tests/fixtures/registered-literals-crystalshards-monorepo-b29a3a4e/expected	reference.md	422	reference-anchor-follows-corrected-client
 tests/fixtures/registered-literals-crystalshards-monorepo-b29a3a4e/expected	reference.md	501	reference-anchor-follows-corrected-client
-tests/fixtures/registered-literals-crystalshards-monorepo-b29a3a4e/expected	src/fern/__init__.py	38	init-type-checking-import-order
 tests/fixtures/registered-literals-crystalshards-monorepo-b29a3a4e/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/registered-literals-crystalshards-monorepo-b29a3a4e/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/registered-literals-crystalshards-monorepo-b29a3a4e/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -13870,7 +13951,6 @@ tests/fixtures/registered-literals-cyoda-cyoda-go-5ce9d613/expected	reference.md
 tests/fixtures/registered-literals-cyoda-cyoda-go-5ce9d613/expected	reference.md	7601	schema-rejected-name-example
 tests/fixtures/registered-literals-cyoda-cyoda-go-5ce9d613/expected	reference.md	7683	schema-rejected-name-example
 tests/fixtures/registered-literals-cyoda-cyoda-go-5ce9d613/expected	reference.md	7756	schema-rejected-name-example
-tests/fixtures/registered-literals-cyoda-cyoda-go-5ce9d613/expected	src/fern/__init__.py	186	init-type-checking-import-order
 tests/fixtures/registered-literals-cyoda-cyoda-go-5ce9d613/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/registered-literals-cyoda-cyoda-go-5ce9d613/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/registered-literals-cyoda-cyoda-go-5ce9d613/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -14057,7 +14137,6 @@ tests/fixtures/registered-literals-dcp-ai-protocol-dcp-ai-669c2ccb/expected	refe
 tests/fixtures/registered-literals-dcp-ai-protocol-dcp-ai-669c2ccb/expected	reference.md	1765	closed-empty-object-example
 tests/fixtures/registered-literals-dcp-ai-protocol-dcp-ai-669c2ccb/expected	reference.md	1917	schema-rejected-name-example
 tests/fixtures/registered-literals-dcp-ai-protocol-dcp-ai-669c2ccb/expected	reference.md	2082	schema-rejected-declared-example
-tests/fixtures/registered-literals-dcp-ai-protocol-dcp-ai-669c2ccb/expected	src/fern/__init__.py	72	init-type-checking-import-order
 tests/fixtures/registered-literals-dcp-ai-protocol-dcp-ai-669c2ccb/expected	src/fern/audit/client.py	64	closed-empty-object-example
 tests/fixtures/registered-literals-dcp-ai-protocol-dcp-ai-669c2ccb/expected	src/fern/audit/client.py	170	closed-empty-object-example
 tests/fixtures/registered-literals-dcp-ai-protocol-dcp-ai-669c2ccb/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -14090,7 +14169,6 @@ tests/fixtures/registered-literals-dcp-ai-protocol-dcp-ai-669c2ccb/expected-lite
 tests/fixtures/registered-literals-debezium-debezium-platform-043f3a5f/expected	README.md	62	readme-environment-constructor-arguments
 tests/fixtures/registered-literals-debezium-debezium-platform-043f3a5f/expected	reference.md	2052	unquoted-timestamp-parameter-example
 tests/fixtures/registered-literals-debezium-debezium-platform-043f3a5f/expected	reference.md	2054	unquoted-timestamp-parameter-example
-tests/fixtures/registered-literals-debezium-debezium-platform-043f3a5f/expected	src/fern/__init__.py	67	init-type-checking-import-order
 tests/fixtures/registered-literals-debezium-debezium-platform-043f3a5f/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/registered-literals-debezium-debezium-platform-043f3a5f/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/registered-literals-debezium-debezium-platform-043f3a5f/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -14154,7 +14232,6 @@ tests/fixtures/registered-literals-fossology-fossology-rest-dotnet-7da1db69/expe
 tests/fixtures/registered-literals-fossology-fossology-rest-dotnet-7da1db69/expected	reference.md	5990	reference-anchor-follows-corrected-client
 tests/fixtures/registered-literals-fossology-fossology-rest-dotnet-7da1db69/expected	reference.md	6063	reference-anchor-follows-corrected-client
 tests/fixtures/registered-literals-fossology-fossology-rest-dotnet-7da1db69/expected	reference.md	6204	constant-header-docs-arguments
-tests/fixtures/registered-literals-fossology-fossology-rest-dotnet-7da1db69/expected	src/fern/__init__.py	154	init-type-checking-import-order
 tests/fixtures/registered-literals-fossology-fossology-rest-dotnet-7da1db69/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/registered-literals-fossology-fossology-rest-dotnet-7da1db69/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/registered-literals-fossology-fossology-rest-dotnet-7da1db69/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -14200,7 +14277,6 @@ tests/fixtures/registered-literals-francineo-easa-dxcomponents-fc03fd3c/expected
 tests/fixtures/registered-literals-francineo-easa-dxcomponents-fc03fd3c/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/registered-literals-francineo-easa-dxcomponents-fc03fd3c/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
 tests/fixtures/registered-literals-francineo-easa-dxcomponents-fc03fd3c/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
-tests/fixtures/registered-literals-geoserver-geoserver-b34cf587/expected	src/fern/__init__.py	76	init-type-checking-import-order
 tests/fixtures/registered-literals-geoserver-geoserver-b34cf587/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 tests/fixtures/registered-literals-geoserver-geoserver-b34cf587/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 tests/fixtures/registered-literals-geoserver-geoserver-b34cf587/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -14398,7 +14474,6 @@ tests/fixtures/registered-literals-hashgraph-guardian-63ba2735/expected	referenc
 tests/fixtures/registered-literals-hashgraph-guardian-63ba2735/expected	reference.md	20267	request-alias-reference-parameters
 tests/fixtures/registered-literals-hashgraph-guardian-63ba2735/expected	reference.md	20340	request-alias-reference-parameters
 tests/fixtures/registered-literals-hashgraph-guardian-63ba2735/expected	reference.md	20413	request-alias-reference-parameters
-tests/fixtures/registered-literals-hashgraph-guardian-63ba2735/expected	src/fern/__init__.py	174	init-type-checking-import-order
 tests/fixtures/registered-literals-hashgraph-guardian-63ba2735/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/registered-literals-hashgraph-guardian-63ba2735/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/registered-literals-hashgraph-guardian-63ba2735/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -14472,7 +14547,6 @@ tests/fixtures/registered-literals-hey-api-hey-api-30fbd0e5/expected	reference.m
 tests/fixtures/registered-literals-hey-api-hey-api-30fbd0e5/expected	reference.md	4298	schema-rejected-name-example
 tests/fixtures/registered-literals-hey-api-hey-api-30fbd0e5/expected	reference.md	4397	schema-rejected-name-example
 tests/fixtures/registered-literals-hey-api-hey-api-30fbd0e5/expected	reference.md	4496	schema-rejected-name-example
-tests/fixtures/registered-literals-hey-api-hey-api-30fbd0e5/expected	src/fern/__init__.py	84	init-type-checking-import-order
 tests/fixtures/registered-literals-hey-api-hey-api-30fbd0e5/expected	src/fern/blobs/client.py	115	binary-json-body-example
 tests/fixtures/registered-literals-hey-api-hey-api-30fbd0e5/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/registered-literals-hey-api-hey-api-30fbd0e5/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
@@ -14883,7 +14957,6 @@ tests/fixtures/registered-literals-ihulsbus-cookbook-0ac7df49/expected	reference
 tests/fixtures/registered-literals-ihulsbus-cookbook-0ac7df49/expected	reference.md	4364	reference-anchor-follows-corrected-client
 tests/fixtures/registered-literals-ihulsbus-cookbook-0ac7df49/expected	reference.md	4402	schema-rejected-name-example
 tests/fixtures/registered-literals-ihulsbus-cookbook-0ac7df49/expected	reference.md	4403	declared-example-over-placeholder
-tests/fixtures/registered-literals-ihulsbus-cookbook-0ac7df49/expected	src/fern/__init__.py	38	init-type-checking-import-order
 tests/fixtures/registered-literals-ihulsbus-cookbook-0ac7df49/expected	src/fern/amount/client.py	56	schema-rejected-name-example
 tests/fixtures/registered-literals-ihulsbus-cookbook-0ac7df49/expected	src/fern/amount/client.py	97	schema-rejected-name-example
 tests/fixtures/registered-literals-ihulsbus-cookbook-0ac7df49/expected	src/fern/amount/client.py	145	schema-rejected-name-example
@@ -15038,7 +15111,6 @@ tests/fixtures/registered-literals-jentic-jentic-public-apis-a96f8580/expected	r
 tests/fixtures/registered-literals-jentic-jentic-public-apis-a96f8580/expected	reference.md	3027	reference-anchor-follows-corrected-client
 tests/fixtures/registered-literals-jentic-jentic-public-apis-a96f8580/expected	reference.md	3109	reference-anchor-follows-corrected-client
 tests/fixtures/registered-literals-jentic-jentic-public-apis-a96f8580/expected	reference.md	3305	declared-example-over-placeholder
-tests/fixtures/registered-literals-jentic-jentic-public-apis-a96f8580/expected	src/fern/__init__.py	291	init-type-checking-import-order
 tests/fixtures/registered-literals-jentic-jentic-public-apis-a96f8580/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/registered-literals-jentic-jentic-public-apis-a96f8580/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/registered-literals-jentic-jentic-public-apis-a96f8580/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -15121,7 +15193,6 @@ tests/fixtures/registered-literals-konfig-dev-konfig-614a2b05/expected	reference
 tests/fixtures/registered-literals-konfig-dev-konfig-614a2b05/expected	reference.md	3134	reference-anchor-follows-corrected-client
 tests/fixtures/registered-literals-konfig-dev-konfig-614a2b05/expected	reference.md	3216	reference-anchor-follows-corrected-client
 tests/fixtures/registered-literals-konfig-dev-konfig-614a2b05/expected	reference.md	3412	declared-example-over-placeholder
-tests/fixtures/registered-literals-konfig-dev-konfig-614a2b05/expected	src/fern/__init__.py	169	init-type-checking-import-order
 tests/fixtures/registered-literals-konfig-dev-konfig-614a2b05/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/registered-literals-konfig-dev-konfig-614a2b05/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/registered-literals-konfig-dev-konfig-614a2b05/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -15147,7 +15218,6 @@ tests/fixtures/registered-literals-konfig-dev-konfig-614a2b05/expected-literals	
 tests/fixtures/registered-literals-konfig-dev-konfig-614a2b05/expected-literals	src/fern/webhooks/client.py	356	declared-example-over-placeholder
 tests/fixtures/registered-literals-konfig-dev-konfig-75888823/expected	README.md	59	readme-environment-constructor-arguments
 tests/fixtures/registered-literals-konfig-dev-konfig-75888823/expected	reference.md	2850	closed-empty-object-example
-tests/fixtures/registered-literals-konfig-dev-konfig-75888823/expected	src/fern/__init__.py	125	init-type-checking-import-order
 tests/fixtures/registered-literals-konfig-dev-konfig-75888823/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/registered-literals-konfig-dev-konfig-75888823/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/registered-literals-konfig-dev-konfig-75888823/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -15192,7 +15262,6 @@ tests/fixtures/registered-literals-konfig-sdks-openapi-examples-63042193/expecte
 tests/fixtures/registered-literals-konfig-sdks-openapi-examples-63042193/expected	reference.md	5846	schema-rejected-name-example
 tests/fixtures/registered-literals-konfig-sdks-openapi-examples-63042193/expected	reference.md	5936	schema-rejected-name-example
 tests/fixtures/registered-literals-konfig-sdks-openapi-examples-63042193/expected	reference.md	5937	schema-rejected-name-example
-tests/fixtures/registered-literals-konfig-sdks-openapi-examples-63042193/expected	src/fern/__init__.py	360	init-type-checking-import-order
 tests/fixtures/registered-literals-konfig-sdks-openapi-examples-63042193/expected	src/fern/context/client.py	129	schema-rejected-name-example
 tests/fixtures/registered-literals-konfig-sdks-openapi-examples-63042193/expected	src/fern/context/client.py	163	schema-rejected-name-example
 tests/fixtures/registered-literals-konfig-sdks-openapi-examples-63042193/expected	src/fern/context/client.py	194	schema-rejected-name-example
@@ -15312,7 +15381,6 @@ tests/fixtures/registered-literals-kong-developer-konghq-com-d58ac8e1/expected	r
 tests/fixtures/registered-literals-kong-developer-konghq-com-d58ac8e1/expected	reference.md	215	reference-anchor-follows-corrected-client
 tests/fixtures/registered-literals-kong-developer-konghq-com-d58ac8e1/expected	reference.md	288	reference-anchor-follows-corrected-client
 tests/fixtures/registered-literals-kong-developer-konghq-com-d58ac8e1/expected	reference.md	411	reference-anchor-follows-corrected-client
-tests/fixtures/registered-literals-kong-developer-konghq-com-d58ac8e1/expected	src/fern/__init__.py	332	init-type-checking-import-order
 tests/fixtures/registered-literals-kong-developer-konghq-com-d58ac8e1/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/registered-literals-kong-developer-konghq-com-d58ac8e1/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/registered-literals-kong-developer-konghq-com-d58ac8e1/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -15540,7 +15608,6 @@ tests/fixtures/registered-literals-msgbyte-tianji-1843a239/expected	reference.md
 tests/fixtures/registered-literals-msgbyte-tianji-1843a239/expected	reference.md	11127	schema-rejected-name-example
 tests/fixtures/registered-literals-msgbyte-tianji-1843a239/expected	reference.md	11203	schema-rejected-name-example
 tests/fixtures/registered-literals-msgbyte-tianji-1843a239/expected	reference.md	11204	schema-rejected-name-example
-tests/fixtures/registered-literals-msgbyte-tianji-1843a239/expected	src/fern/__init__.py	39	init-type-checking-import-order
 tests/fixtures/registered-literals-msgbyte-tianji-1843a239/expected	src/fern/ai/client.py	93	schema-rejected-name-example
 tests/fixtures/registered-literals-msgbyte-tianji-1843a239/expected	src/fern/ai/client.py	164	schema-rejected-name-example
 tests/fixtures/registered-literals-msgbyte-tianji-1843a239/expected	src/fern/ai/client.py	210	schema-rejected-name-example
@@ -16195,7 +16262,6 @@ tests/fixtures/registered-literals-neilthomas89440-crypto-inferna-next-24442375/
 tests/fixtures/registered-literals-neilthomas89440-crypto-inferna-next-24442375/expected-literals	src/fern/instances/client.py	395	schema-rejected-name-example
 tests/fixtures/registered-literals-neilthomas89440-crypto-inferna-next-24442375/expected-literals	src/fern/instances/client.py	433	schema-rejected-name-example
 tests/fixtures/registered-literals-neo773-macgamingdb-2af442ce/expected	README.md	60	readme-environment-constructor-arguments
-tests/fixtures/registered-literals-neo773-macgamingdb-2af442ce/expected	src/fern/__init__.py	24	init-type-checking-import-order
 tests/fixtures/registered-literals-neo773-macgamingdb-2af442ce/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/registered-literals-neo773-macgamingdb-2af442ce/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/registered-literals-neo773-macgamingdb-2af442ce/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -16457,7 +16523,6 @@ tests/fixtures/registered-literals-nextcloud-client-sdks-adbf3118/expected	src/f
 tests/fixtures/registered-literals-nextcloud-client-sdks-adbf3118/expected	src/fern/weather_status_weather_status/client.py	496	non-string-client-header-example
 tests/fixtures/registered-literals-nextcloud-client-sdks-adbf3118/expected	src/fern/weather_status_weather_status/client.py	535	non-string-client-header-example
 tests/fixtures/registered-literals-nextcloud-client-sdks-adbf3118/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
-tests/fixtures/registered-literals-observation-management-service-ewms-workflow-management-service-2b4dea85/expected	src/fern/__init__.py	45	init-type-checking-import-order
 tests/fixtures/registered-literals-observation-management-service-ewms-workflow-management-service-2b4dea85/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 tests/fixtures/registered-literals-observation-management-service-ewms-workflow-management-service-2b4dea85/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 tests/fixtures/registered-literals-observation-management-service-ewms-workflow-management-service-2b4dea85/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -16522,7 +16587,6 @@ tests/fixtures/registered-literals-pai-os-paios-413656b4/expected	reference.md	1
 tests/fixtures/registered-literals-pai-os-paios-413656b4/expected	reference.md	1344	reference-anchor-follows-corrected-client
 tests/fixtures/registered-literals-pai-os-paios-413656b4/expected	reference.md	1403	reference-anchor-follows-corrected-client
 tests/fixtures/registered-literals-pai-os-paios-413656b4/expected	reference.md	1462	reference-anchor-follows-corrected-client
-tests/fixtures/registered-literals-pai-os-paios-413656b4/expected	src/fern/__init__.py	339	init-type-checking-import-order
 tests/fixtures/registered-literals-pai-os-paios-413656b4/expected	src/fern/audio/client.py	140	multipart-object-required-file-example
 tests/fixtures/registered-literals-pai-os-paios-413656b4/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/registered-literals-pai-os-paios-413656b4/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
@@ -16657,7 +16721,6 @@ tests/fixtures/registered-literals-resemble-ai-resemble-mcp-48c5814b/expected	re
 tests/fixtures/registered-literals-resemble-ai-resemble-mcp-48c5814b/expected	reference.md	9220	reference-anchor-follows-corrected-client
 tests/fixtures/registered-literals-resemble-ai-resemble-mcp-48c5814b/expected	reference.md	9283	reference-anchor-follows-corrected-client
 tests/fixtures/registered-literals-resemble-ai-resemble-mcp-48c5814b/expected	reference.md	9373	reference-anchor-follows-corrected-client
-tests/fixtures/registered-literals-resemble-ai-resemble-mcp-48c5814b/expected	src/fern/__init__.py	52	init-type-checking-import-order
 tests/fixtures/registered-literals-resemble-ai-resemble-mcp-48c5814b/expected	src/fern/account/client.py	105	schema-rejected-name-example
 tests/fixtures/registered-literals-resemble-ai-resemble-mcp-48c5814b/expected	src/fern/account/client.py	252	schema-rejected-name-example
 tests/fixtures/registered-literals-resemble-ai-resemble-mcp-48c5814b/expected	src/fern/agent_knowledge_base/client.py	177	schema-rejected-name-example
@@ -16948,7 +17011,6 @@ tests/fixtures/registered-literals-siafoundation-walletd-f03d7dc2/expected	refer
 tests/fixtures/registered-literals-siafoundation-walletd-f03d7dc2/expected	reference.md	3543	schema-rejected-name-example
 tests/fixtures/registered-literals-siafoundation-walletd-f03d7dc2/expected	reference.md	3624	schema-rejected-name-example
 tests/fixtures/registered-literals-siafoundation-walletd-f03d7dc2/expected	reference.md	3706	schema-rejected-name-example
-tests/fixtures/registered-literals-siafoundation-walletd-f03d7dc2/expected	src/fern/__init__.py	123	init-type-checking-import-order
 tests/fixtures/registered-literals-siafoundation-walletd-f03d7dc2/expected	src/fern/addresses/client.py	51	schema-rejected-name-example
 tests/fixtures/registered-literals-siafoundation-walletd-f03d7dc2/expected	src/fern/addresses/client.py	93	schema-rejected-name-example
 tests/fixtures/registered-literals-siafoundation-walletd-f03d7dc2/expected	src/fern/addresses/client.py	126	schema-rejected-name-example
@@ -17238,7 +17300,6 @@ tests/fixtures/registered-literals-sumup-sumup-openapi-b1d4ab06/expected	referen
 tests/fixtures/registered-literals-sumup-sumup-openapi-b1d4ab06/expected	reference.md	1571	bracket-query-parameter-call-keyword
 tests/fixtures/registered-literals-sumup-sumup-openapi-b1d4ab06/expected	reference.md	1579	bracket-query-parameter-call-keyword
 tests/fixtures/registered-literals-sumup-sumup-openapi-b1d4ab06/expected	reference.md	1587	bracket-query-parameter-call-keyword
-tests/fixtures/registered-literals-sumup-sumup-openapi-b1d4ab06/expected	src/fern/__init__.py	175	init-type-checking-import-order
 tests/fixtures/registered-literals-sumup-sumup-openapi-b1d4ab06/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/registered-literals-sumup-sumup-openapi-b1d4ab06/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/registered-literals-sumup-sumup-openapi-b1d4ab06/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -17301,7 +17362,6 @@ tests/fixtures/registered-literals-tranphita-skyvern-0f3a701b/expected	src/fern/
 tests/fixtures/registered-literals-tranphita-skyvern-0f3a701b/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/registered-literals-tranphita-skyvern-0f3a701b/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
 tests/fixtures/registered-literals-tranphita-skyvern-0f3a701b/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
-tests/fixtures/registered-literals-trueblocks-trueblocks-core-2a176f14/expected	src/fern/__init__.py	70	init-type-checking-import-order
 tests/fixtures/registered-literals-trueblocks-trueblocks-core-2a176f14/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 tests/fixtures/registered-literals-trueblocks-trueblocks-core-2a176f14/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 tests/fixtures/registered-literals-trueblocks-trueblocks-core-2a176f14/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -17482,7 +17542,6 @@ tests/fixtures/registered-literals-webr0m-teldrive-nodejs-bb74a9e2/expected	refe
 tests/fixtures/registered-literals-webr0m-teldrive-nodejs-bb74a9e2/expected	reference.md	8668	schema-rejected-name-example
 tests/fixtures/registered-literals-webr0m-teldrive-nodejs-bb74a9e2/expected	reference.md	8728	schema-rejected-name-example
 tests/fixtures/registered-literals-webr0m-teldrive-nodejs-bb74a9e2/expected	reference.md	8788	schema-rejected-name-example
-tests/fixtures/registered-literals-webr0m-teldrive-nodejs-bb74a9e2/expected	src/fern/__init__.py	152	init-type-checking-import-order
 tests/fixtures/registered-literals-webr0m-teldrive-nodejs-bb74a9e2/expected	src/fern/api_keys/client.py	103	schema-rejected-name-example
 tests/fixtures/registered-literals-webr0m-teldrive-nodejs-bb74a9e2/expected	src/fern/api_keys/client.py	134	schema-rejected-name-example
 tests/fixtures/registered-literals-webr0m-teldrive-nodejs-bb74a9e2/expected	src/fern/api_keys/client.py	239	schema-rejected-name-example
@@ -17797,7 +17856,6 @@ tests/fixtures/registered-literals-webr0m-teldrive-nodejs-bb74a9e2/expected-lite
 tests/fixtures/registered-literals-webr0m-teldrive-nodejs-bb74a9e2/expected-literals	src/fern/uploads/client.py	940	schema-rejected-name-example
 tests/fixtures/registered-literals-whatwatt-ch-whatwatt-go-documentation-29ffa265/expected	README.md	69	readme-environment-constructor-arguments
 tests/fixtures/registered-literals-whatwatt-ch-whatwatt-go-documentation-29ffa265/expected	reference.md	133	stream-reference-return-type
-tests/fixtures/registered-literals-whatwatt-ch-whatwatt-go-documentation-29ffa265/expected	src/fern/__init__.py	32	init-type-checking-import-order
 tests/fixtures/registered-literals-whatwatt-ch-whatwatt-go-documentation-29ffa265/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/registered-literals-whatwatt-ch-whatwatt-go-documentation-29ffa265/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/registered-literals-whatwatt-ch-whatwatt-go-documentation-29ffa265/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
@@ -17806,7 +17864,6 @@ tests/fixtures/registered-literals-whatwatt-ch-whatwatt-go-documentation-29ffa26
 tests/fixtures/registered-literals-whatwatt-ch-whatwatt-go-documentation-29ffa265/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
 tests/fixtures/registered-literals-whatwatt-ch-whatwatt-go-documentation-4cd56f72/expected	README.md	69	readme-environment-constructor-arguments
 tests/fixtures/registered-literals-whatwatt-ch-whatwatt-go-documentation-4cd56f72/expected	reference.md	133	stream-reference-return-type
-tests/fixtures/registered-literals-whatwatt-ch-whatwatt-go-documentation-4cd56f72/expected	src/fern/__init__.py	67	init-type-checking-import-order
 tests/fixtures/registered-literals-whatwatt-ch-whatwatt-go-documentation-4cd56f72/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/registered-literals-whatwatt-ch-whatwatt-go-documentation-4cd56f72/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/registered-literals-whatwatt-ch-whatwatt-go-documentation-4cd56f72/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
@@ -17848,7 +17905,6 @@ tests/fixtures/registered-literals-zalando-incubator-agentic-identity-broker-c7f
 tests/fixtures/registered-literals-zalando-incubator-agentic-identity-broker-c7fb9242/expected	reference.md	2294	schema-rejected-name-example
 tests/fixtures/registered-literals-zalando-incubator-agentic-identity-broker-c7fb9242/expected	reference.md	2379	schema-rejected-name-example
 tests/fixtures/registered-literals-zalando-incubator-agentic-identity-broker-c7fb9242/expected	reference.md	2454	schema-rejected-name-example
-tests/fixtures/registered-literals-zalando-incubator-agentic-identity-broker-c7fb9242/expected	src/fern/__init__.py	104	init-type-checking-import-order
 tests/fixtures/registered-literals-zalando-incubator-agentic-identity-broker-c7fb9242/expected	src/fern/approvals/client.py	248	schema-rejected-name-example
 tests/fixtures/registered-literals-zalando-incubator-agentic-identity-broker-c7fb9242/expected	src/fern/approvals/client.py	294	schema-rejected-name-example
 tests/fixtures/registered-literals-zalando-incubator-agentic-identity-broker-c7fb9242/expected	src/fern/approvals/client.py	335	schema-rejected-name-example
@@ -17926,7 +17982,6 @@ tests/fixtures/remeasured-arawa-workspace-0c8259f6/expected	reference.md	822	bra
 tests/fixtures/remeasured-arawa-workspace-0c8259f6/expected	reference.md	858	readme-constructor-required-header
 tests/fixtures/remeasured-arawa-workspace-0c8259f6/expected	reference.md	918	readme-constructor-required-header
 tests/fixtures/remeasured-arawa-workspace-0c8259f6/expected	reference.md	987	readme-constructor-required-header
-tests/fixtures/remeasured-arawa-workspace-0c8259f6/expected	src/fern/__init__.py	33	init-type-checking-import-order
 tests/fixtures/remeasured-arawa-workspace-0c8259f6/expected	src/fern/client.py	58	non-string-client-header-example
 tests/fixtures/remeasured-arawa-workspace-0c8259f6/expected	src/fern/client.py	188	non-string-client-header-example
 tests/fixtures/remeasured-arawa-workspace-0c8259f6/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
@@ -18000,7 +18055,6 @@ tests/fixtures/remeasured-membrane-api-gateway-8340f5da/expected	src/fern/core/c
 tests/fixtures/remeasured-membrane-api-gateway-8340f5da/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/remeasured-membrane-api-gateway-8340f5da/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
 tests/fixtures/reverb.com/expected	README.md	59	readme-environment-constructor-arguments
-tests/fixtures/reverb.com/expected	src/fern/__init__.py	36	init-type-checking-import-order
 tests/fixtures/reverb.com/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/reverb.com/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/reverb.com/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -18043,7 +18097,6 @@ tests/fixtures/rice-shower/expected	src/fern/core/client_wrapper.py	38	sdk-ident
 tests/fixtures/rice-shower/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
 tests/fixtures/rs-server/expected	reference.md	3816	schema-rejected-array-length-example
 tests/fixtures/rs-server/expected	reference.md	3913	schema-rejected-array-length-example
-tests/fixtures/rs-server/expected	src/fern/__init__.py	190	init-type-checking-import-order
 tests/fixtures/rs-server/expected	src/fern/catalog_transaction_extension/client.py	322	schema-rejected-array-length-example
 tests/fixtures/rs-server/expected	src/fern/catalog_transaction_extension/client.py	438	schema-rejected-array-length-example
 tests/fixtures/rs-server/expected	src/fern/catalog_transaction_extension/client.py	916	schema-rejected-array-length-example
@@ -18098,7 +18151,6 @@ tests/fixtures/servers-webhooks/expected	src/fern/core/client_wrapper.py	38	sdk-
 tests/fixtures/servers-webhooks/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/servers-webhooks/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
 tests/fixtures/sftpgo/expected	README.md	61	readme-environment-constructor-arguments
-tests/fixtures/sftpgo/expected	src/fern/__init__.py	167	init-type-checking-import-order
 tests/fixtures/sftpgo/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
 tests/fixtures/sftpgo/expected	src/fern/core/client_wrapper.py	41	sdk-identity-header-prefix
 tests/fixtures/sftpgo/expected	src/fern/core/client_wrapper.py	42	sdk-identity-header-prefix
@@ -18110,7 +18162,6 @@ tests/fixtures/short-io/expected	reference.md	1538	schema-rejected-name-example
 tests/fixtures/short-io/expected	reference.md	2094	schema-rejected-name-example
 tests/fixtures/short-io/expected	reference.md	3414	schema-rejected-name-example
 tests/fixtures/short-io/expected	reference.md	3622	schema-rejected-name-example
-tests/fixtures/short-io/expected	src/fern/__init__.py	33	init-type-checking-import-order
 tests/fixtures/short-io/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/short-io/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/short-io/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -18195,14 +18246,12 @@ tests/fixtures/sim-tables/expected	src/fern/tables/client.py	801	schema-rejected
 tests/fixtures/sim-tables/expected	src/fern/tables/client.py	3886	schema-rejected-array-length-example
 tests/fixtures/sim-tables/expected	src/fern/tables/client.py	3903	schema-rejected-array-length-example
 tests/fixtures/skool-entry/expected	README.md	59	readme-environment-constructor-arguments
-tests/fixtures/skool-entry/expected	src/fern/__init__.py	22	init-type-checking-import-order
 tests/fixtures/skool-entry/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/skool-entry/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/skool-entry/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/skool-entry/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/skool-entry/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
 tests/fixtures/skool/expected	README.md	59	readme-environment-constructor-arguments
-tests/fixtures/skool/expected	src/fern/__init__.py	22	init-type-checking-import-order
 tests/fixtures/skool/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/skool/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/skool/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -18284,7 +18333,6 @@ tests/fixtures/stellastra-com/expected	src/fern/core/client_wrapper.py	40	sdk-id
 tests/fixtures/stellastra-com/expected	src/fern/core/client_wrapper.py	41	sdk-identity-header-prefix
 tests/fixtures/stellastra-com/expected	src/fern/core/client_wrapper.py	42	sdk-identity-header-prefix
 tests/fixtures/strapi-rest-api/expected	README.md	58	readme-environment-constructor-arguments
-tests/fixtures/strapi-rest-api/expected	src/fern/__init__.py	32	init-type-checking-import-order
 tests/fixtures/strapi-rest-api/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/strapi-rest-api/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/strapi-rest-api/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -18327,7 +18375,6 @@ tests/fixtures/supabase-api-v1/expected	reference.md	14468	reference-anchor-foll
 tests/fixtures/supabase-api-v1/expected	reference.md	14550	reference-anchor-follows-corrected-client
 tests/fixtures/supabase-api-v1/expected	reference.md	14632	reference-anchor-follows-corrected-client
 tests/fixtures/supabase-api-v1/expected	reference.md	14802	reference-anchor-follows-corrected-client
-tests/fixtures/supabase-api-v1/expected	src/fern/__init__.py	439	init-type-checking-import-order
 tests/fixtures/supabase-api-v1/expected	src/fern/analytics/client.py	310	schema-rejected-name-example
 tests/fixtures/supabase-api-v1/expected	src/fern/analytics/client.py	654	schema-rejected-name-example
 tests/fixtures/supabase-api-v1/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -18560,7 +18607,6 @@ tests/fixtures/synthwerk-llm/expected	src/fern/core/client_wrapper.py	38	sdk-ide
 tests/fixtures/synthwerk-llm/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/synthwerk-llm/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
 tests/fixtures/synthwerk-llm/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
-tests/fixtures/tag-based-grouping/expected	src/fern/__init__.py	12	init-type-checking-import-order
 tests/fixtures/tag-based-grouping/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 tests/fixtures/tag-based-grouping/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 tests/fixtures/tag-based-grouping/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -18569,7 +18615,6 @@ tests/fixtures/tag-based-grouping/expected	src/fern/core/client_wrapper.py	38	sd
 tests/fixtures/tally/expected	README.md	62	readme-environment-constructor-arguments
 tests/fixtures/tally/expected	reference.md	128	schema-rejected-name-example
 tests/fixtures/tally/expected	reference.md	129	schema-rejected-name-example
-tests/fixtures/tally/expected	src/fern/__init__.py	307	init-type-checking-import-order
 tests/fixtures/tally/expected	src/fern/client.py	228	schema-rejected-name-example
 tests/fixtures/tally/expected	src/fern/client.py	229	schema-rejected-name-example
 tests/fixtures/tally/expected	src/fern/client.py	802	schema-rejected-name-example
@@ -18644,7 +18689,6 @@ tests/fixtures/tamoss/expected	reference.md	6141	schema-rejected-name-example
 tests/fixtures/tamoss/expected	reference.md	6231	schema-rejected-name-example
 tests/fixtures/tamoss/expected	reference.md	6428	schema-rejected-name-example
 tests/fixtures/tamoss/expected	reference.md	6868	schema-rejected-name-example
-tests/fixtures/tamoss/expected	src/fern/__init__.py	119	init-type-checking-import-order
 tests/fixtures/tamoss/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/tamoss/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/tamoss/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
@@ -18779,21 +18823,18 @@ tests/fixtures/tamoss/expected	src/fern/webhooks/client.py	933	schema-rejected-n
 tests/fixtures/tamoss/expected	src/fern/webhooks/client.py	998	schema-rejected-name-example
 tests/fixtures/tamoss/expected	src/fern/webhooks/client.py	1040	schema-rejected-name-example
 tests/fixtures/thrivecart/expected	README.md	56	readme-environment-constructor-arguments
-tests/fixtures/thrivecart/expected	src/fern/__init__.py	13	init-type-checking-import-order
 tests/fixtures/thrivecart/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/thrivecart/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/thrivecart/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/thrivecart/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/thrivecart/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
 tests/fixtures/timelyapp-entry/expected	README.md	69	readme-environment-constructor-arguments
-tests/fixtures/timelyapp-entry/expected	src/fern/__init__.py	184	init-type-checking-import-order
 tests/fixtures/timelyapp-entry/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/timelyapp-entry/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/timelyapp-entry/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/timelyapp-entry/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/timelyapp-entry/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
 tests/fixtures/timelyapp/expected	README.md	69	readme-environment-constructor-arguments
-tests/fixtures/timelyapp/expected	src/fern/__init__.py	184	init-type-checking-import-order
 tests/fixtures/timelyapp/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/timelyapp/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/timelyapp/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -18849,7 +18890,6 @@ tests/fixtures/tooljet-microsoft-teams/expected	reference.md	3520	schema-rejecte
 tests/fixtures/tooljet-microsoft-teams/expected	reference.md	3653	schema-rejected-name-example
 tests/fixtures/tooljet-microsoft-teams/expected	reference.md	3752	schema-rejected-name-example
 tests/fixtures/tooljet-microsoft-teams/expected	reference.md	3843	schema-rejected-name-example
-tests/fixtures/tooljet-microsoft-teams/expected	src/fern/__init__.py	74	init-type-checking-import-order
 tests/fixtures/tooljet-microsoft-teams/expected	src/fern/channel_members/client.py	78	schema-rejected-name-example
 tests/fixtures/tooljet-microsoft-teams/expected	src/fern/channel_members/client.py	134	schema-rejected-name-example
 tests/fixtures/tooljet-microsoft-teams/expected	src/fern/channel_members/client.py	218	schema-rejected-name-example
@@ -18985,7 +19025,6 @@ tests/fixtures/tooljet-microsoft-teams/expected-literals	src/fern/chats/client.p
 tests/fixtures/torrentarr/expected	README.md	57	readme-environment-constructor-arguments
 tests/fixtures/torrentarr/expected	reference.md	1900	stream-reference-return-type
 tests/fixtures/torrentarr/expected	reference.md	4399	stream-reference-return-type
-tests/fixtures/torrentarr/expected	src/fern/__init__.py	29	init-type-checking-import-order
 tests/fixtures/torrentarr/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/torrentarr/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/torrentarr/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -19397,7 +19436,6 @@ tests/fixtures/vellum-gateway/expected	README.md	76	schema-rejected-name-example
 tests/fixtures/vellum-gateway/expected	reference.md	601	schema-rejected-name-example
 tests/fixtures/vellum-gateway/expected	reference.md	1617	schema-rejected-name-example
 tests/fixtures/vellum-gateway/expected	reference.md	1689	schema-rejected-name-example
-tests/fixtures/vellum-gateway/expected	src/fern/__init__.py	19	init-type-checking-import-order
 tests/fixtures/vellum-gateway/expected	src/fern/channel_ingress/client.py	83	schema-rejected-name-example
 tests/fixtures/vellum-gateway/expected	src/fern/channel_ingress/client.py	201	schema-rejected-name-example
 tests/fixtures/vellum-gateway/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
@@ -19455,7 +19493,6 @@ tests/fixtures/vocode-core/expected	reference.md	2586	schema-rejected-name-examp
 tests/fixtures/vocode-core/expected	reference.md	2789	schema-rejected-name-example
 tests/fixtures/vocode-core/expected	reference.md	2857	schema-rejected-name-example
 tests/fixtures/vocode-core/expected	reference.md	2925	schema-rejected-name-example
-tests/fixtures/vocode-core/expected	src/fern/__init__.py	419	init-type-checking-import-order
 tests/fixtures/vocode-core/expected	src/fern/account_connections/client.py	57	schema-rejected-name-example
 tests/fixtures/vocode-core/expected	src/fern/account_connections/client.py	176	schema-rejected-name-example
 tests/fixtures/vocode-core/expected	src/fern/account_connections/client.py	213	schema-rejected-name-example
@@ -19531,7 +19568,6 @@ tests/fixtures/vocode-core/expected-literals	src/fern/webhooks/client.py	183	sch
 tests/fixtures/vocode-core/expected-literals	src/fern/webhooks/client.py	234	schema-rejected-name-example
 tests/fixtures/vocode-core/expected-literals	src/fern/webhooks/client.py	384	schema-rejected-name-example
 tests/fixtures/volview-backend-contract/expected	reference.md	240	reference-anchor-follows-corrected-client
-tests/fixtures/volview-backend-contract/expected	src/fern/__init__.py	107	init-type-checking-import-order
 tests/fixtures/volview-backend-contract/expected	src/fern/context/client.py	188	multipart-object-required-file-example
 tests/fixtures/volview-backend-contract/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 tests/fixtures/volview-backend-contract/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
@@ -19591,7 +19627,6 @@ tests/fixtures/waylay-queries/expected	src/fern/core/client_wrapper.py	41	sdk-id
 tests/fixtures/waylay-queries/expected	src/fern/core/client_wrapper.py	42	sdk-identity-header-prefix
 tests/fixtures/waylay-queries/expected	src/fern/execute/raw_client.py	177	body-query-parameter-value
 tests/fixtures/webflow-v2/expected	README.md	59	readme-environment-constructor-arguments
-tests/fixtures/webflow-v2/expected	src/fern/__init__.py	227	init-type-checking-import-order
 tests/fixtures/webflow-v2/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/webflow-v2/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/webflow-v2/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
@@ -19599,7 +19634,6 @@ tests/fixtures/webflow-v2/expected	src/fern/core/client_wrapper.py	40	sdk-identi
 tests/fixtures/webflow-v2/expected	src/fern/core/client_wrapper.py	41	sdk-identity-header-prefix
 tests/fixtures/webflow-v2/expected	src/fern/sites/__init__.py	44	init-type-checking-import-order
 tests/fixtures/webflow-v2/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
-tests/fixtures/wiim-httpapi/expected	src/fern/__init__.py	42	init-type-checking-import-order
 tests/fixtures/wiim-httpapi/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 tests/fixtures/wiim-httpapi/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 tests/fixtures/wiim-httpapi/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -19668,7 +19702,6 @@ tests/fixtures/yourbrand-ticketing/expected	src/fern/core/client_wrapper.py	38	s
 tests/fixtures/yourbrand-ticketing/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/yourbrand-ticketing/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
 tests/fixtures/ziptax-node/expected	README.md	84	readme-environment-constructor-arguments
-tests/fixtures/ziptax-node/expected	src/fern/__init__.py	106	init-type-checking-import-order
 tests/fixtures/ziptax-node/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/ziptax-node/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/ziptax-node/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -19708,7 +19741,6 @@ tests/fixtures/zoonk/expected	reference.md	2965	schema-rejected-name-example
 tests/fixtures/zoonk/expected	reference.md	3034	schema-rejected-name-example
 tests/fixtures/zoonk/expected	reference.md	3217	schema-rejected-name-example
 tests/fixtures/zoonk/expected	reference.md	3218	schema-rejected-name-example
-tests/fixtures/zoonk/expected	src/fern/__init__.py	269	init-type-checking-import-order
 tests/fixtures/zoonk/expected	src/fern/chapters/client.py	52	schema-rejected-name-example
 tests/fixtures/zoonk/expected	src/fern/chapters/client.py	83	schema-rejected-name-example
 tests/fixtures/zoonk/expected	src/fern/chapters/client.py	135	schema-rejected-name-example
@@ -19771,14 +19803,12 @@ tests/fixtures/zoonk/expected	src/fern/sessions/client.py	371	schema-rejected-na
 tests/fixtures/zoonk/expected	src/fern/workflows/client.py	57	schema-rejected-name-example
 tests/fixtures/zoonk/expected	src/fern/workflows/client.py	188	schema-rejected-name-example
 tests/fixtures/zulip-jentic-entry/expected	README.md	60	readme-environment-constructor-arguments
-tests/fixtures/zulip-jentic-entry/expected	src/fern/__init__.py	217	init-type-checking-import-order
 tests/fixtures/zulip-jentic-entry/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/zulip-jentic-entry/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/zulip-jentic-entry/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
 tests/fixtures/zulip-jentic-entry/expected	src/fern/core/client_wrapper.py	41	sdk-identity-header-prefix
 tests/fixtures/zulip-jentic-entry/expected	src/fern/core/client_wrapper.py	42	sdk-identity-header-prefix
 tests/fixtures/zulip-jentic/expected	README.md	60	readme-environment-constructor-arguments
-tests/fixtures/zulip-jentic/expected	src/fern/__init__.py	217	init-type-checking-import-order
 tests/fixtures/zulip-jentic/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/zulip-jentic/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/zulip-jentic/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
@@ -19806,7 +19836,6 @@ tests/fixtures/zulip/expected	reference.md	13064	reference-anchor-follows-correc
 tests/fixtures/zulip/expected	reference.md	13170	reference-anchor-follows-corrected-client
 tests/fixtures/zulip/expected	reference.md	13253	reference-anchor-follows-corrected-client
 tests/fixtures/zulip/expected	reference.md	13330	reference-anchor-follows-corrected-client
-tests/fixtures/zulip/expected	src/fern/__init__.py	226	init-type-checking-import-order
 tests/fixtures/zulip/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/zulip/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/zulip/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix

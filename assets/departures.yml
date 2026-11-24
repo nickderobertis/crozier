@@ -131,6 +131,32 @@
     Fern's documents nothing about it.
   evidence: docs/departures/evidence/collapsed-anyof-property-description.md
 
+- id: colliding-component-own-class
+  kind: fern-defect
+  trigger: >-
+    Two or more component schemas whose names spell one class (`kiln/glaze-coat`
+    and `kiln-glaze/coat` are both `KilnGlazeCoat`) and whose schemas differ:
+    every file naming the components that are not the last declaration.
+  fern: >-
+    One class for the name, holding the last declaration's fields, so every
+    request field, response or error typed by an earlier colliding component is
+    typed with the last one's model (`left: typing.Optional[KilnGlazeCoat]`
+    holding `right: int`).
+  crozier: >-
+    The last declaration keeps Fern's class and module byte for byte; each
+    earlier, non-identical one is a class of its own named Fern's class followed
+    by the first ordinal from 2 no other component's class spells
+    (`KilnGlazeCoat2` in `types/kiln_glaze_coat2.py`), and everything it types
+    names it, with its import, lazy-import entry and `__all__` entry. Components
+    whose schemas are identical stay one class, as Fern writes them.
+  reason: >-
+    Fern's model for the earlier component is another component's: a request
+    built from its documented fields sends the wrong shape, and a response of
+    its declared shape fails the merged model's validation, a runtime failure
+    under the defect rule. Manager rulings a1 and a3 (#944) keep the surviving
+    class Fern's and give every other colliding component its own.
+  evidence: docs/departures/evidence/colliding-component-own-class.md
+
 - id: constant-header-docs-arguments
   kind: fern-defect
   trigger: >-
@@ -441,16 +467,16 @@
 - id: init-type-checking-import-order
   kind: ordering
   trigger: >-
-    A lazy-loading `__init__.py` whose `if typing.TYPE_CHECKING:` block imports
-    from several sources, including a root package whose tag subpackages
-    re-export their hoisted types.
+    A subpackage's lazy-loading `__init__.py` (never the root package's) whose
+    `if typing.TYPE_CHECKING:` block imports from several modules.
   fern: >-
-    The block's imports in the order Fern's generator collected them, the root
-    client's and environment's statements sorted by module among the tag
-    subpackages'.
+    The block's imports in the order Fern's generator collected them
+    (CloudFormation's `types/__init__.py` imports `ResourcesToImport` and
+    `ResourcesToSkip` ahead of `AcceptTermsAndConditions`).
   crozier: >-
-    The same import statements, in crozier's sorted order, the root client's
-    and environment's statements ahead of every tag subpackage's.
+    The same import statements, sorted by module. The root package's block is
+    written in the certified pair's own order (issue #920), so no departure
+    covers it.
   reason: >-
     The block exists only for type checkers and is never executed, and the
     reordered statements import exactly the same names: sorted with ruff's

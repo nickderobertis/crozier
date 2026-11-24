@@ -1,0 +1,75 @@
+openapi: 3.0.3
+info:
+  title: Runtime Hub
+  version: 1.0.0
+servers:
+  - url: https://api.runtime.example.com
+    description: Production
+  - url: https://sandbox.runtime.example.com
+    description: Sandbox
+paths:
+  /runtime/profiles:
+    post:
+      operationId: createRuntimeProfile
+      tags: [agent_runtime]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [mode]
+              properties:
+                mode:
+                  type: string
+                  enum: [warm, cold]
+      responses:
+        '200':
+          description: The profile.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+  /versions:
+    get:
+      operationId: listVersions
+      tags: [versions]
+      parameters:
+        - name: channel
+          in: query
+          schema:
+            type: string
+            enum: [stable, beta]
+      responses:
+        '200':
+          description: The versions.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {type: string}
+  /zones:
+    get:
+      operationId: listZones
+      tags: [zones]
+      parameters:
+        - name: kind
+          in: query
+          schema:
+            type: string
+            enum: [land, sea]
+      responses:
+        '200':
+          description: The zones.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {type: string}
+components:
+  schemas:
+    Profile:
+      type: object
+      required: [id]
+      properties:
+        id: {type: string}

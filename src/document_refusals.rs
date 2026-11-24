@@ -764,6 +764,14 @@ fn check_object_extension(
 /// `conditional-base`, `untyped-ref-union-base`, `anyof-ref-union-base`,
 /// `scalar-member-union-base` and `ordered-renamed-union` controls, whatever
 /// its members. A base itself typed scalar or array stays refused.
+///
+/// So is an inheritance base: an object whose only shape is a `discriminator`
+/// naming its property and mapping values to the schemas that extend it.
+/// Benchling's `InstanceProvider` is one, and the certified pair (Fern CLI
+/// 5.216.0 / fern-python-sdk 5.42.0) emits it as the discriminated union of
+/// those schemas and generates every `allOf` that extends it, as measured on
+/// `docs/fern-refusals/object-extends-non-object/discriminator-only-base-control.yml`
+/// (issue #955).
 fn object_union_base(target: &serde_json::Value) -> bool {
     let scalar = matches!(
         schema_type(target)
@@ -771,13 +779,24 @@ fn object_union_base(target: &serde_json::Value) -> bool {
             .and_then(crate::openapi::TypeField::primary),
         Some("string" | "number" | "integer" | "boolean" | "array" | "null")
     );
+    let inheritance_base = target.get("discriminator").is_some_and(|discriminator| {
+        discriminator
+            .get("propertyName")
+            .and_then(serde_json::Value::as_str)
+            .is_some_and(|name| !name.is_empty())
+            && discriminator
+                .get("mapping")
+                .and_then(serde_json::Value::as_object)
+                .is_some_and(|mapping| !mapping.is_empty())
+    });
     !scalar
-        && ["oneOf", "anyOf"].iter().any(|key| {
-            target
-                .get(key)
-                .and_then(serde_json::Value::as_array)
-                .is_some_and(|members| !members.is_empty())
-        })
+        && (inheritance_base
+            || ["oneOf", "anyOf"].iter().any(|key| {
+                target
+                    .get(key)
+                    .and_then(serde_json::Value::as_array)
+                    .is_some_and(|members| !members.is_empty())
+            }))
 }
 
 fn named_default_unsupported(schema: &serde_json::Value, root: &serde_json::Value) -> bool {

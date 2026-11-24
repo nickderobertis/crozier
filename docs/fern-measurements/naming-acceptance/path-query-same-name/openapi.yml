@@ -1,0 +1,28 @@
+openapi: 3.0.3
+info:
+  title: Zone Desk
+  version: 1.0.0
+servers:
+  - url: https://zones.example.com
+paths:
+  /zones/{type}:
+    get:
+      operationId: listZonesOfType
+      parameters:
+        - name: type
+          in: path
+          required: true
+          description: The zone type.
+          schema: {type: string}
+        - name: type
+          in: query
+          description: A product code filter.
+          schema: {type: string}
+      responses:
+        '200':
+          description: The zones.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {type: string}

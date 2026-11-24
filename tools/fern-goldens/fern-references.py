@@ -262,6 +262,28 @@ def fern(argv: list[str], workspace: Path, env: dict[str, str]) -> FernCommand:
     return FernCommand(str(run.returncode), run.stdout + run.stderr)
 
 
+RELATIVE_REF = re.compile(r"""\$ref["']?\s*:\s*["']?([^"'#\s]+)#""")
+
+
+def copy_relative_siblings(document: Path, text: str, destination: Path) -> list[str]:
+    """Copy each file a relative `$ref` in `text` names, beside the document,
+    into Fern's workspace beside its copy, so Fern resolves the reference from
+    the document's own directory as a reader of the committed document would.
+    Returns the copied names; a URL, a parent-directory path or an absent file
+    is left for Fern to report."""
+    copied = []
+    for name in sorted(set(RELATIVE_REF.findall(text))):
+        relative = Path(name)
+        if "://" in name or relative.is_absolute() or ".." in relative.parts:
+            continue
+        source = document.parent / relative
+        if source.is_file() and source.resolve() != document.resolve():
+            (destination / relative).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(source, destination / relative)
+            copied.append(relative.as_posix())
+    return copied
+
+
 @contextlib.contextmanager
 def run_fern(
     document: Path,
@@ -286,6 +308,7 @@ def run_fern(
             (workspace / "openapi" / "openapi.yml").write_text(
                 text.replace(REMOTE_URL, url) if url else text, encoding="utf-8"
             )
+            siblings = copy_relative_siblings(document, text, workspace / "openapi")
             (workspace / "fern.config.json").write_text(
                 json.dumps({"organization": organization, "version": pair.cli}) + "\n", encoding="utf-8"
             )
@@ -334,6 +357,7 @@ def run_fern(
             and client_class_name is None
             and extra_fields is None
             and not url
+            and not siblings
         ):
             publish_untouched(document, produced, enum_type, scrub(generate_log, base))
         yield FernRun(

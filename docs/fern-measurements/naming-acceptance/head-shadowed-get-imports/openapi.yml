@@ -1,0 +1,60 @@
+openapi: 3.0.3
+info:
+  title: Folio
+  version: 1.0.0
+servers:
+- url: https://folio.example.com
+paths:
+  /v1/site:
+    get:
+      operationId: GetSite
+      responses:
+        '200':
+          description: The site.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetSiteResponse'
+      tags:
+      - Folio.Api
+    head:
+      operationId: GetSite
+      responses:
+        '200':
+          description: The site's headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetSiteResponse'
+      tags:
+      - Folio.Api
+  /v1/pages:
+    get:
+      operationId: ListPages
+      responses:
+        '200':
+          description: The pages.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Page'
+      tags:
+      - Folio.Api
+components:
+  schemas:
+    GetSiteResponse:
+      type: object
+      required:
+      - name
+      properties:
+        name:
+          type: string
+    Page:
+      type: object
+      required:
+      - slug
+      properties:
+        slug:
+          type: string

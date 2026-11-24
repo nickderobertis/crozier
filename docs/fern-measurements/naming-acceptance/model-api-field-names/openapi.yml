@@ -1,0 +1,167 @@
+openapi: 3.0.3
+info:
+  title: Escape Desk
+  version: 1.0.0
+servers:
+- url: https://escape.example.com
+paths:
+  /records:
+    post:
+      operationId: createRecord
+      tags:
+      - records
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                kwargs:
+                  type: string
+                self:
+                  type: string
+                args:
+                  type: string
+                json:
+                  type: string
+                data:
+                  type: string
+                files:
+                  type: string
+                headers:
+                  type: string
+                params:
+                  type: string
+                content:
+                  type: string
+                timeout:
+                  type: string
+                cls:
+                  type: string
+                client:
+                  type: string
+                dict:
+                  type: string
+                model_config:
+                  type: string
+                type:
+                  type: string
+                id:
+                  type: string
+                copy:
+                  type: string
+                schema:
+                  type: string
+                validate:
+                  type: string
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Record'
+components:
+  schemas:
+    Record:
+      type: object
+      properties:
+        Config:
+          type: string
+        construct:
+          type: string
+        copy:
+          type: string
+        dict:
+          type: string
+        fields:
+          type: string
+        from_orm:
+          type: string
+        json:
+          type: string
+        parse_obj:
+          type: string
+        parse_raw:
+          type: string
+        parse_file:
+          type: string
+        schema:
+          type: string
+        schema_json:
+          type: string
+        validate:
+          type: string
+        update_forward_refs:
+          type: string
+        model_config:
+          type: string
+        model_fields:
+          type: string
+        model_computed_fields:
+          type: string
+        model_extra:
+          type: string
+        model_fields_set:
+          type: string
+        model_construct:
+          type: string
+        model_copy:
+          type: string
+        model_dump:
+          type: string
+        model_dump_json:
+          type: string
+        model_json_schema:
+          type: string
+        model_parametrized_name:
+          type: string
+        model_post_init:
+          type: string
+        model_rebuild:
+          type: string
+        model_validate:
+          type: string
+        model_validate_json:
+          type: string
+        model_validate_strings:
+          type: string
+        self:
+          type: string
+        kwargs:
+          type: string
+        args:
+          type: string
+        cls:
+          type: string
+        type:
+          type: string
+        id:
+          type: string
+        list:
+          type: string
+        str:
+          type: string
+        validator:
+          type: string
+        root_validator:
+          type: string
+        field:
+          type: string
+        model:
+          type: string
+        settings:
+          type: string
+        register:
+          type: string
+        update:
+          type: string
+        keys:
+          type: string
+        items:
+          type: string
+        values:
+          type: string
+        get:
+          type: string
