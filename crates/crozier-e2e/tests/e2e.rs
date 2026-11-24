@@ -174,6 +174,8 @@ mod union_inheritance;
 /// against the certified pair's tree in both enum modes.
 #[path = "e2e/type_lowering.rs"]
 mod type_lowering;
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
 // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates one small SDK per ticket and compares it whole, on the crozier-e2e edge every other golden comparison shares; its PyPI-installing journeys are `sdk_env_`-ignored into `just test-sdk-env`, and splitting the shared edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 /// The naming, import and document-acceptance tickets (#536, #919–#924,
 /// #941–#944, #946, #948, #955, #956), each settled against a from-scratch
