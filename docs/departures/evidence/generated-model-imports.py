@@ -9,7 +9,9 @@ can make pydantic v1 expand it without end rather than raise. Prints one JSON
 line: `{"pydantic": version, "constructed": repr}` when the payload validates,
 or `{"pydantic": version, "failed": reason}` when the import or the validation
 raises (or `{"failed": "no result within …"}` past the limit, or `{"failed":
-"killed by signal N"}` when the interpreter dies of a signal). Exits 0 when the
+"killed by signal N"}` when the interpreter dies of a signal, or `{"failed":
+"killed by exception 0xC00000FD"}` when, on Windows, it dies of an unhandled
+exception such as a stack overflow). Exits 0 when the
 outcome is the one expected, 1 when it is not, and 2 on a usage error, a ROOT
 holding no generated package, or a child interpreter that ends without
 reporting an outcome (a crash, not an SDK failure).
@@ -18,6 +20,7 @@ reporting an outcome (a crash, not an SDK failure).
 from __future__ import annotations
 
 import json
+import os
 import re
 import subprocess
 import sys
@@ -25,6 +28,9 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 LIMIT_SECONDS = 30
+# The severity bits of an error NTSTATUS, the exit code of a Windows process an
+# unhandled exception ended.
+NTSTATUS_ERROR = 0xC0000000
 TARGET = re.compile(r"[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*:[A-Za-z_][A-Za-z0-9_]*")
 
 CHILD = """
@@ -99,6 +105,11 @@ def screen(root: Path, target: str, payload: str) -> Constructed | Failed:
     # overflows the C stack under some pydantic 1.10 releases (SIGSEGV).
     if child.returncode < 0:
         return Failed(pydantic=None, failed=f"killed by signal {-child.returncode}")
+    # Windows has no signals: a process dying of an unhandled exception (the same
+    # stack overflow, 0xC00000FD) exits with that NTSTATUS, an error-severity code
+    # no interpreter returns on its own, and subprocess reports it unsigned.
+    if os.name == "nt" and child.returncode >= NTSTATUS_ERROR:
+        return Failed(pydantic=None, failed=f"killed by exception 0x{child.returncode:08X}")
     if child.returncode != 0:
         tail = child.stderr.strip().splitlines()[-1:] or ["no output"]
         raise UsageError(f"the child interpreter exited {child.returncode}: {tail[0]}")

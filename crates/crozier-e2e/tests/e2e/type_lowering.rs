@@ -248,9 +248,15 @@ fn sdk_env_escaped_discriminators_and_recursive_aliases_import() {
             .args([target, payload, expect])
             .output()
             .expect("run the evidence script");
+        // stderr rides along in every message: a usage error (exit 2) says why
+        // there and nowhere else.
         (
             output.status.code(),
-            String::from_utf8_lossy(&output.stdout).trim().to_string(),
+            format!(
+                "{} [stderr: {}]",
+                String::from_utf8_lossy(&output.stdout).trim(),
+                String::from_utf8_lossy(&output.stderr).trim()
+            ),
         )
     };
     let temp = tempfile::tempdir().expect("output tempdir");
@@ -331,12 +337,22 @@ fn sdk_env_escaped_discriminators_and_recursive_aliases_import() {
         );
     }
     // Death by a signal is the import's own failure, as a stack overflow is.
-    let (code, said) = child(
-        "killed-by-a-signal",
-        "import os, signal\nos.kill(os.getpid(), signal.SIGSEGV)\n",
-    );
+    // Windows has no signals: an overflow ends the process with the NTSTATUS
+    // 0xC00000FD, which `ExitProcess` reproduces as the parent sees it.
+    let (crash, reported) = if cfg!(windows) {
+        (
+            "import ctypes\nctypes.windll.kernel32.ExitProcess(0xC00000FD)\n",
+            "killed by exception 0xC00000FD",
+        )
+    } else {
+        (
+            "import os, signal\nos.kill(os.getpid(), signal.SIGSEGV)\n",
+            "killed by signal 11",
+        )
+    };
+    let (code, said) = child("killed-by-a-crash", crash);
     assert_eq!(code, Some(0), "{said}");
-    assert!(said.contains("killed by signal 11"), "{said}");
+    assert!(said.contains(reported), "{said}");
     let usage = |args: &[&str]| {
         std::process::Command::new(python)
             .arg(&script)

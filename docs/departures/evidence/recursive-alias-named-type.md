@@ -61,7 +61,9 @@ under Pydantic 1.10.26 and 1.10.27, and `{"pydantic": "2.14.4", "failed":
 `RunSummary(report=InferenceReport(engine='e', inference_diagnostics={...}), label='l')`
 under all three. (The naming-acceptance screen of the same shape saw the
 certified tree crash the interpreter with SIGSEGV under 1.10.26 on its host;
-the script reports such a death as `killed by signal 11`, also a failure.)
+the script reports such a death as `killed by signal 11`, also a failure; on
+Windows, where an overflow ends the process with the NTSTATUS `0xC00000FD`
+instead of a signal, as `killed by exception 0xC00000FD`.)
 
 ## The rule
 
