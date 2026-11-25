@@ -2233,6 +2233,9 @@ corrections the shared comparison engine applies. All other bytes must match.
 | recursive-json-alias | A schema whose type names itself (a recursive JSON value): its alias is named through `typing_extensions.TypeAliasType` under pydantic v2 and bounded at `typing.Any` under v1, so every model holding it imports | Fern defect | `type-lowering` | docs/fern-measurements/type-lowering/recursive-json-alias/fern-expected | `type_lowering::recursive_json_aliases_are_named; type_lowering::sdk_env_escaped_discriminators_and_recursive_aliases_import` | `recursive-alias-named-type` |
 | escaped-discriminator-field-name | A discriminated union tagged by a name `BaseModel` holds (`schema`): the discriminator names the variants' escaped `schema_` field, so the module imports | Fern defect | `type-lowering` | docs/fern-measurements/type-lowering/inferred-discriminator-tags/fern-expected | `type_lowering::inferred_tags_discriminate_and_name_the_variant_field; type_lowering::sdk_env_escaped_discriminators_and_recursive_aliases_import` | `escaped-discriminator-field-name` |
 | colliding-component-classes | Components whose names spell one class | Fern defect | `naming-acceptance` | docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected | `naming_acceptance_documents_generate_as_the_certified_pair_does` | `colliding-component-own-class` |
+| docstring-example-escapes | A worked example holding a string escape, in a client method docstring: every backslash doubled so the example Python evaluates for `help()` is the README's call | Fern defect | `worked-examples` | docs/fern-measurements/worked-examples/docstring-example-escapes/fern-expected | `worked_examples::docstring_examples_keep_their_string_escapes; worked_examples::sdk_env_worked_examples_bind_and_their_repaired_values_validate` | `docstring-example-escapes` |
+| typeless-body-required-arguments | Operations declaring `x-codeSamples` whose typeless body values Fern's calls leave out: every argument the signature requires kept | Fern defect | `worked-examples` | docs/fern-measurements/worked-examples/typeless-body-values/fern-expected | `worked_examples::typeless_body_values_keep_required_arguments; worked_examples::sdk_env_worked_examples_bind_and_their_repaired_values_validate` | `typeless-body-required-arguments` |
+| binary-form-part-example | A required binary multipart part's worked value: `b"file"` for its bytes annotation in README.md, reference.md and the client | Fern defect | `worked-examples` | docs/fern-measurements/bodies-responses/multipart-binary-required-part/fern-expected | `bodies_responses::required_binary_reference_part_is_exampled_as_bytes; worked_examples::sdk_env_worked_examples_bind_and_their_repaired_values_validate` | `binary-form-part-example` |
 
 Additional boundaries of these rows are held by the same gate: the
 `empty-body-guard` row also uses
@@ -2330,7 +2333,7 @@ link and expect the named failure. The counts below are the output of
 shapes: 160
 by kind: handwritten 104, measurement 5, real 46, refusal 5
 by owner: bodies-responses 20, clients-extensions 29, examples-docs 16, models-refs 21, parameters 16, prove-matches 30, streaming 13, unions 15
-by outcome: default=refuse;strict=refuse 5, departure 76, match 79
+by outcome: default=refuse;strict=refuse 5, departure 78, match 77
 closed with no open residual: 160
 closed on their proof with a residual open: 0
 witnesses: registered 6

@@ -201,33 +201,24 @@
         [
           "src/ir.rs::Builder::collect_fields",
           [
-            94,
+            95,
             33,
-            94,
+            95,
             34
           ]
         ],
         [
           "src/ir.rs::Builder::collect_fields",
           [
-            95,
-            25,
             96,
+            25,
+            97,
             39
           ]
         ],
         [
           "src/ir.rs::Builder::collect_fields",
           [
-            97,
-            30,
-            97,
-            38
-          ]
-        ],
-        [
-          "src/ir.rs::Builder::collect_fields",
-          [
             98,
             30,
             98,
@@ -256,50 +247,50 @@
           "src/ir.rs::Builder::collect_fields",
           [
             101,
+            30,
+            101,
+            38
+          ]
+        ],
+        [
+          "src/ir.rs::Builder::collect_fields",
+          [
+            102,
             21,
-            101,
+            102,
             22
           ]
         ],
         [
           "src/ir.rs::Builder::collect_fields",
           [
-            102,
+            103,
             33,
-            102,
+            103,
             34
           ]
         ],
         [
           "src/ir.rs::Builder::collect_fields",
           [
-            103,
+            104,
             25,
-            103,
+            104,
             40
           ]
         ],
         [
           "src/ir.rs::Builder::collect_fields",
           [
-            103,
+            104,
             41,
-            103,
+            104,
             52
           ]
         ],
         [
           "src/ir.rs::Builder::collect_fields",
           [
-            104,
-            30,
-            104,
-            38
-          ]
-        ],
-        [
-          "src/ir.rs::Builder::collect_fields",
-          [
             105,
             30,
             105,
@@ -310,41 +301,41 @@
           "src/ir.rs::Builder::collect_fields",
           [
             106,
+            30,
+            106,
+            38
+          ]
+        ],
+        [
+          "src/ir.rs::Builder::collect_fields",
+          [
+            107,
             21,
-            106,
+            107,
             22
           ]
         ],
         [
           "src/ir.rs::Builder::collect_fields",
           [
-            107,
+            108,
             33,
-            107,
+            108,
             34
           ]
         ],
         [
           "src/ir.rs::Builder::collect_fields",
           [
-            112,
-            36,
             113,
+            36,
+            114,
             35
           ]
         ],
         [
           "src/ir.rs::Builder::collect_fields",
           [
-            114,
-            30,
-            114,
-            38
-          ]
-        ],
-        [
-          "src/ir.rs::Builder::collect_fields",
-          [
             115,
             30,
             115,
@@ -354,9 +345,9 @@
         [
           "src/ir.rs::Builder::collect_fields",
           [
-            121,
+            116,
             30,
-            121,
+            116,
             38
           ]
         ],
@@ -372,18 +363,27 @@
         [
           "src/ir.rs::Builder::collect_fields",
           [
-            122,
+            123,
+            30,
+            123,
+            38
+          ]
+        ],
+        [
+          "src/ir.rs::Builder::collect_fields",
+          [
+            123,
             97,
-            122,
+            123,
             98
           ]
         ],
         [
           "src/ir.rs::Builder::collect_fields",
           [
-            124,
+            125,
             21,
-            124,
+            125,
             22
           ]
         ],
