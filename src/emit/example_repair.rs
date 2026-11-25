@@ -122,7 +122,15 @@ pub(super) fn locate(files: &[GeneratedFile]) -> Vec<ExampleValue> {
         })
         .collect();
     for block in &blocks {
-        let wanted: Vec<&str> = block.lines.iter().map(|line| line.trim()).collect();
+        // A docstring writes its example with every backslash doubled
+        // (`emit::docstring_example_line`), so the block and each value are
+        // found as written there.
+        let written = |text: &str| match block.destination {
+            Destination::Docstring => text.replace('\\', "\\\\"),
+            Destination::Readme | Destination::Reference => text.to_string(),
+        };
+        let escaped: Vec<String> = block.lines.iter().map(|line| written(line.trim())).collect();
+        let wanted: Vec<&str> = escaped.iter().map(String::as_str).collect();
         let Some(first) = wanted.first() else {
             continue;
         };
@@ -154,13 +162,10 @@ pub(super) fn locate(files: &[GeneratedFile]) -> Vec<ExampleValue> {
                             None => break,
                         }
                     }
-                    let needle = format!(
-                        "{}{own}{}",
-                        pending.needles.join("\u{0}"),
-                        pending.value.crozier
-                    );
+                    let crozier = written(&pending.value.crozier);
+                    let needle = format!("{}{own}{crozier}", pending.needles.join("\u{0}"));
                     let from = cursor.get(&needle).copied().unwrap_or(0).max(from);
-                    let find = format!("{own}{}", pending.value.crozier);
+                    let find = format!("{own}{crozier}");
                     // The Markdown writers spell an integral float without its
                     // `.0` where another item follows (`1,` beside a last `1.0`).
                     let integral = pending

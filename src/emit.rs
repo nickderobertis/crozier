@@ -13274,7 +13274,7 @@ fn compact_documentation_values(
                 // A flat dict item is a map the Markdown writers spread one
                 // pair per line, as they do a dict argument: lore-weave's
                 // `messages=[{"key": "value"}]` (#927).
-                match flat_dict_pairs(item).filter(|_| typed) {
+                match flat_dict_pairs(item, false).filter(|_| typed) {
                     Some(pairs) => {
                         compact.push(format!("{}{{", " ".repeat(indent + 4)));
                         push_pair_lines(&mut compact, &pairs, indent + 8);
@@ -13296,7 +13296,7 @@ fn compact_documentation_values(
                 .strip_suffix(',')
                 .and_then(|value| value.split_once('='))
                 .filter(|(head, _)| !untyped_arguments.contains(*head))
-                .and_then(|(head, value)| Some((head, flat_dict_pairs(value)?)))
+                .and_then(|(head, value)| Some((head, flat_dict_pairs(value, true)?)))
             {
                 let indent = line.len() - line.trim_start().len();
                 compact.push(format!("{}{head}={{", " ".repeat(indent)));
@@ -13312,7 +13312,7 @@ fn compact_documentation_values(
             let (item, comma) = trimmed
                 .strip_suffix(',')
                 .map_or((trimmed, ""), |item| (item, ","));
-            if let Some(pairs) = flat_dict_pairs(item) {
+            if let Some(pairs) = flat_dict_pairs(item, false) {
                 let indent = line.len() - line.trim_start().len();
                 compact.push(format!("{}{{", " ".repeat(indent)));
                 push_pair_lines(&mut compact, &pairs, indent + 4);
@@ -13371,13 +13371,15 @@ fn top_level_items(inner: &str) -> Vec<&str> {
 /// for anything else. A value keeps its own flat spelling: only the outer dict
 /// is spread, as aziontech's `{"attributes": {"rate": 8}, "type": "type"}`
 /// item keeps `{"rate": 8}` on its pair's line. A value constructing anything
-/// (a call) is never a flat dict's.
-fn flat_dict_pairs(value: &str) -> Option<Vec<&str>> {
+/// (a call) is a flat dict's only where `calls` admits it: an argument's map
+/// is spread around its constructed values (hashicorp's
+/// `mapnested_prop={"key": MapnestedSchemaValue()}`), a list item's is not.
+fn flat_dict_pairs(value: &str, calls: bool) -> Option<Vec<&str>> {
     let inner = value.strip_prefix('{')?.strip_suffix('}')?;
     let pairs = top_level_items(inner);
     pairs
         .iter()
-        .all(|pair| pair.starts_with('"') && pair.contains("\": ") && !pair.contains('('))
+        .all(|pair| pair.starts_with('"') && pair.contains("\": ") && (calls || !pair.contains('(')))
         .then_some(pairs)
 }
 
