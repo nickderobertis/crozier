@@ -13030,7 +13030,13 @@
      ]
     },
     "du-prop-referenced-type-example-tag": {
-     "form": "the inferred spelling over $ref members whose shared `type` is required and carries a string example, which is the whole of what makes `type` a supported tag for a union that references components",
+     "form": "the inferred spelling over $ref members whose shared `type` is required and carries a string example",
+     "arms": [
+      "prop_type_ref:13"
+     ]
+    },
+    "du-prop-referenced-type-not-required": {
+     "form": "the same with `type` unrequired, which carrying a string example alone makes a supported tag (#912)",
      "arms": [
       "prop_type_ref:13"
      ]
@@ -13042,7 +13048,13 @@
      ]
     },
     "du-prop-referenced-message-type-tag": {
-     "form": "the same over `message_type`, supported unconditionally, on a value outside the set `preserve_const_discriminant` keeps",
+     "form": "the same over `message_type`, supported unconditionally, whatever its value (#910)",
+     "arms": [
+      "prop_type_ref:13"
+     ]
+    },
+    "du-prop-referenced-preserved-message-type": {
+     "form": "the same over `message_type` holding `message`, a value the removed `preserve_const_discriminant` list once refused (#910)",
      "arms": [
       "prop_type_ref:13"
      ]
@@ -13099,20 +13111,6 @@
     },
     "du-prop-plain-oneof": {
      "part": "schema.oneOf:discriminated-union: an ordinary union with no shared tag property",
-     "arms": [],
-     "entered": {
-      "declaration": "Alias(MakeThingRequestPet)"
-     }
-    },
-    "du-prop-referenced-preserved-message-type": {
-     "part": "schema.properties>schema.oneOf:discriminated-union: a `message_type` value `preserve_const_discriminant` keeps, which `src/ir.rs` refuses to read as a tag",
-     "arms": [],
-     "entered": {
-      "declaration": "Alias(MakeThingRequestPet)"
-     }
-    },
-    "du-prop-referenced-type-not-required": {
-     "part": "schema.properties>schema.oneOf:discriminated-union: `type` written with a string example but not required, so the supported test fails on its first half",
      "arms": [],
      "entered": {
       "declaration": "Alias(MakeThingRequestPet)"
@@ -13243,7 +13241,13 @@
      ]
     },
     "du-prop-referenced-type-example-tag": {
-     "form": "the inferred spelling over $ref members whose shared `type` is required and carries a string example, which is the whole of what makes `type` a supported tag for a union that references components",
+     "form": "the inferred spelling over $ref members whose shared `type` is required and carries a string example",
+     "arms": [
+      "prop_type_ref:13"
+     ]
+    },
+    "du-prop-referenced-type-not-required": {
+     "form": "the same with `type` unrequired, which carrying a string example alone makes a supported tag (#912)",
      "arms": [
       "prop_type_ref:13"
      ]
@@ -13255,7 +13259,13 @@
      ]
     },
     "du-prop-referenced-message-type-tag": {
-     "form": "the same over `message_type`, supported unconditionally, on a value outside the set `preserve_const_discriminant` keeps",
+     "form": "the same over `message_type`, supported unconditionally, whatever its value (#910)",
+     "arms": [
+      "prop_type_ref:13"
+     ]
+    },
+    "du-prop-referenced-preserved-message-type": {
+     "form": "the same over `message_type` holding `message`, a value the removed `preserve_const_discriminant` list once refused (#910)",
      "arms": [
       "prop_type_ref:13"
      ]
@@ -13317,20 +13327,6 @@
     },
     "du-prop-plain-oneof": {
      "part": "an ordinary union with no shared tag property",
-     "arms": [],
-     "entered": {
-      "declaration": "Alias(MakeThingRequestPet)"
-     }
-    },
-    "du-prop-referenced-preserved-message-type": {
-     "part": "schema.oneOf:discriminated-union: a `message_type` value `preserve_const_discriminant` keeps, which `src/ir.rs` refuses to read as a tag",
-     "arms": [],
-     "entered": {
-      "declaration": "Alias(MakeThingRequestPet)"
-     }
-    },
-    "du-prop-referenced-type-not-required": {
-     "part": "schema.oneOf:discriminated-union: `type` written with a string example but not required, so the supported test fails on its first half",
      "arms": [],
      "entered": {
       "declaration": "Alias(MakeThingRequestPet)"

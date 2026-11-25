@@ -1,0 +1,97 @@
+openapi: 3.1.0
+info:
+  title: Darkroom Prints
+  version: "1.0"
+paths:
+  /prints:
+    post:
+      operationId: submitPrint
+      tags: [prints]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PrintJob"
+      responses:
+        "200":
+          description: The developed print.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Print"
+components:
+  schemas:
+    PrintJob:
+      type: object
+      required: [instructions]
+      properties:
+        negative:
+          type: string
+          format: binary
+        contacts:
+          type: array
+          items:
+            type: string
+            format: binary
+        layers:
+          type: object
+          additionalProperties:
+            type: string
+            format: binary
+        mask:
+          type: [string, "null"]
+          format: binary
+        instructions:
+          type: string
+    Print:
+      type: object
+      required: [image]
+      properties:
+        image:
+          type: string
+          contentEncoding: base64
+          contentMediaType: image/png
+        thumbnail:
+          anyOf:
+            - type: string
+              contentEncoding: base64
+              contentMediaType: application/octet-stream
+            - type: "null"
+        proofs:
+          type: array
+          items:
+            type: string
+            contentEncoding: base64
+        checksum:
+          type: string
+          contentEncoding: base16
+        caption:
+          type: string
+        sheet:
+          $ref: "#/components/schemas/ContactSheet"
+    ContactSheet:
+      type: object
+      required: [master]
+      properties:
+        master:
+          type: string
+          format: binary
+        frames:
+          type: array
+          items:
+            type: string
+            format: binary
+        layers:
+          type: object
+          additionalProperties:
+            type: string
+            format: binary
+        overlay:
+          type: [string, "null"]
+          format: binary
+        backing:
+          anyOf:
+            - type: string
+              format: binary
+            - type: "null"

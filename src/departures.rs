@@ -2054,7 +2054,7 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 58] = [
+pub const RULE_IDS: [&str; 60] = [
     "anyof-path-param-schema-example",
     "binary-json-body-example",
     "body-query-parameter-value",
@@ -2074,6 +2074,7 @@ pub const RULE_IDS: [&str; 58] = [
     "emoji-tag-reference-identifiers",
     "empty-namespace-package",
     "empty-root-security-optional-credential",
+    "escaped-discriminator-field-name",
     "escaped-field-alias-literal",
     "fern-metadata-generator-config",
     "flat-reference-link-target",
@@ -2094,6 +2095,7 @@ pub const RULE_IDS: [&str; 58] = [
     "readme-constructor-required-header",
     "readme-environment-constructor-arguments",
     "readme-escaped-method-call",
+    "recursive-alias-named-type",
     "reference-anchor-follows-corrected-client",
     "reference-heading-escaped-method-name",
     "repeated-credential-example-keyword",
@@ -2252,6 +2254,14 @@ pub fn rule(id: &str) -> Option<Rule> {
         },
         "escaped-field-alias-literal" => Rule {
             line: Some(escaped_field_alias_literal),
+            ..none
+        },
+        "escaped-discriminator-field-name" => Rule {
+            line: Some(escaped_discriminator_field_name),
+            ..none
+        },
+        "recursive-alias-named-type" => Rule {
+            region: Some(recursive_alias_named_type),
             ..none
         },
         "fern-metadata-generator-config" => Rule {
@@ -5348,6 +5358,34 @@ fn is_root_client_file(rel: &str) -> bool {
     is_client_wrapper(rel) || root_client
 }
 
+/// `escaped-discriminator-field-name`: a discriminated union's
+/// `pydantic.Field(discriminator=…)`, in a generated `.py` file, whose tag
+/// property is a name pydantic's `BaseModel` already holds (`schema`, `json`,
+/// …), so its variant field is escaped (`schema_`) under a wire alias. Fern
+/// writes the wire name, which names no field of the variants; crozier writes
+/// the escaped field name. The literal crozier's line holds is put back as the
+/// declared property name, and the result must be Fern's line.
+fn escaped_discriminator_field_name(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    if !pair.rel.ends_with(".py") || fern == crozier || !crozier.contains("discriminator=") {
+        return false;
+    }
+    let mut names = BTreeSet::new();
+    visit_source_schemas(pair.context.source_document.as_ref(), &mut |schema| {
+        names.extend(
+            schema
+                .properties
+                .keys()
+                .filter(|wire| crate::naming::model_field_name(wire) == format!("{wire}_"))
+                .cloned(),
+        );
+    });
+    names.iter().any(|wire| {
+        let ours = format!("discriminator=\"{wire}_\"");
+        crozier.contains(&ours)
+            && crozier.replace(&ours, &format!("discriminator=\"{wire}\"")) == fern
+    })
+}
+
 /// `escaped-field-alias-literal`: a model field's wire alias, in a generated
 /// `.py` file. Fern writes the declared property name between double quotes
 /// unescaped (`alias="<name>"`, which its `ruff format` may requote), so a
@@ -5378,6 +5416,141 @@ fn escaped_field_alias_literal(pair: &Pair<'_>, fern: &str, crozier: &str) -> bo
                     .any(|theirs| crozier.replace(&ours, &format!("alias={theirs}")) == fern)
         })
     })
+}
+
+/// `recursive-alias-named-type`: a type alias module whose alias names itself,
+/// or closes a cycle of aliases.
+/// A guarded `if typing.TYPE_CHECKING:` import block, written alike on both
+/// sides, is set aside before the comparison.
+/// Fern's whole module after its imports is the implicit alias `NAME = T`;
+/// crozier's imports are Fern's plus `typing_extensions` and the core's
+/// `IS_PYDANTIC_V2`, and its statement is `NAME = T` under
+/// `if typing.TYPE_CHECKING:`, `NAME = typing_extensions.TypeAliasType("NAME",
+/// T)` under `elif IS_PYDANTIC_V2:`, and under `else:` `T` with each
+/// self-reference `"NAME"` read as `typing.Any`. Both are compared with their
+/// layout dropped (whitespace and the trailing commas `ruff format` adds where
+/// it wraps), so the alias's own type and anything after it must be Fern's.
+fn recursive_alias_named_type(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    if !pair.rel.ends_with(".py") || !pair.crozier.contains(&"if typing.TYPE_CHECKING:") {
+        return Ok(None);
+    }
+    let is_import = |line: &str| line.starts_with("import ") || line.starts_with("from ");
+    // An `if typing.TYPE_CHECKING:` block of nothing but imports (a model the
+    // alias names that refers back to it) is set aside with the imports: both
+    // sides must write it alike.
+    let split = |lines: &[&str]| -> (BTreeSet<String>, Vec<String>, String) {
+        let mut imports = BTreeSet::new();
+        let mut guarded = Vec::new();
+        let mut body = String::new();
+        let mut index = 0;
+        while index < lines.len() {
+            let line = lines[index];
+            let guarded_import = |line: &str| {
+                let inner = line.trim_start();
+                line.starts_with("    ") && is_import(inner)
+            };
+            if line == "if typing.TYPE_CHECKING:"
+                && lines
+                    .get(index + 1)
+                    .is_some_and(|next| guarded_import(next))
+            {
+                index += 1;
+                while lines.get(index).is_some_and(|next| guarded_import(next)) {
+                    guarded.push(lines[index].trim_start().to_string());
+                    index += 1;
+                }
+                continue;
+            }
+            if is_import(line) {
+                if line != "from __future__ import annotations" {
+                    imports.insert(line.to_string());
+                }
+            } else {
+                body.push_str(line);
+            }
+            index += 1;
+        }
+        (imports, guarded, unlaid(&body))
+    };
+    let (fern_imports, fern_guarded, fern_body) = split(pair.fern);
+    let (mut crozier_imports, crozier_guarded, crozier_body) = split(pair.crozier);
+    if fern_guarded != crozier_guarded {
+        return Ok(None);
+    }
+    let Some((name, rest)) = fern_body.split_once('=') else {
+        return Ok(None);
+    };
+    let (target, trailer) = rest
+        .find("\"\"\"")
+        .map_or((rest, ""), |at| rest.split_at(at));
+    if name.is_empty() || !name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') {
+        return Ok(None);
+    }
+    let reference = format!("\"{name}\"");
+    // The bounded branch reads as `typing.Any` each quoted reference crozier's
+    // branch no longer names: the alias itself, or the aliases of the cycle it
+    // closes (`"JsonArrayOutput"`, `"JsonObjectOutput"`); at least one must go.
+    let Some(written) = crozier_body
+        .rsplit_once(&format!("else:{name}="))
+        .map(|(_, written)| written)
+    else {
+        return Ok(None);
+    };
+    let mut bounded = target.to_string();
+    for quoted in quoted_identifiers(target) {
+        if !written.contains(&quoted) {
+            bounded = bounded.replace(&quoted, "typing.Any");
+        }
+    }
+    if bounded == target {
+        return Ok(None);
+    }
+    let named = format!(
+        "iftyping.TYPE_CHECKING:{name}={target}elifIS_PYDANTIC_V2:{name}=typing_extensions.TypeAliasType({reference},{target})else:{name}={bounded}{trailer}"
+    );
+    let added = ["import typing_extensions".to_string()];
+    let flag = crozier_imports
+        .iter()
+        .find(|line| {
+            line.starts_with("from ")
+                && line.ends_with("core.pydantic_utilities import IS_PYDANTIC_V2")
+        })
+        .cloned();
+    let Some(flag) = flag else {
+        return Ok(None);
+    };
+    crozier_imports.remove(&flag);
+    if !added.iter().all(|line| crozier_imports.remove(line))
+        || crozier_imports != fern_imports
+        || crozier_body != named
+    {
+        return Ok(None);
+    }
+    Ok(differing_window(pair.fern, pair.crozier))
+}
+
+/// Every distinct `"Identifier"` string literal in a layout-free Python
+/// expression, quotes included, in first-appearance order.
+fn quoted_identifiers(expression: &str) -> Vec<String> {
+    let mut found: Vec<String> = Vec::new();
+    for (index, piece) in expression.split('"').enumerate() {
+        let quoted = format!("\"{piece}\"");
+        if index % 2 == 1
+            && !piece.is_empty()
+            && piece.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
+            && !found.contains(&quoted)
+        {
+            found.push(quoted);
+        }
+    }
+    found
+}
+
+/// Python source with its layout dropped: no whitespace, and no trailing comma
+/// before a closing bracket.
+fn unlaid(source: &str) -> String {
+    let compact: String = source.chars().filter(|c| !c.is_whitespace()).collect();
+    compact.replace(",]", "]").replace(",)", ")")
 }
 
 /// The two literals `ruff format` may write for `value`: double-quoted, and the
@@ -6969,6 +7142,101 @@ mod tests {
             r#"        FieldMetadata(alias="call-sign")"#,
             r#"        FieldMetadata(alias="call_sign")"#
         ));
+    }
+
+    /// `escaped-discriminator-field-name` through the comparison engine: the
+    /// escaped field name of a declared `schema` property holds, and any other
+    /// change, an undeclared name, or a non-Python file still differs.
+    #[test]
+    fn escaped_discriminator_field_names_hold_only_for_a_declared_escaped_property() {
+        let declared = serde_json::json!({"components": {"schemas": {"QueryResult": {
+            "type": "object", "properties": {"schema": {"type": "string", "enum": ["v1"]}}
+        }}}});
+        let fern = "Query = typing_extensions.Annotated[\n    typing.Union[Query_V1, Query_V2], pydantic.Field(discriminator=\"schema\")\n]\n";
+        let crozier = fern.replace("discriminator=\"schema\"", "discriminator=\"schema_\"");
+        let compare = |document: &serde_json::Value, rel: &str, crozier: &str| {
+            let context = Context::default()
+                .with_source_document(serde_json::from_value(document.clone()).expect("a source"));
+            crate::parity::compare_file(&context, rel, crozier, fern).expect("the comparison runs")
+        };
+        let rel = "src/fern/types/query.py";
+        let held = compare(&declared, rel, &crozier);
+        assert!(held.matches(), "{held:?}");
+        assert!(held
+            .departures
+            .iter()
+            .any(|found| found.id == "escaped-discriminator-field-name"));
+        // Another change on the line still differs.
+        assert!(!compare(&declared, rel, &crozier.replace("Query_V2", "Query_V3")).matches());
+        // A name the source does not declare is no departure.
+        let undeclared = serde_json::json!({"components": {"schemas": {"QueryResult": {
+            "type": "object", "properties": {"kind": {"type": "string"}}
+        }}}});
+        assert!(!compare(&undeclared, rel, &crozier).matches());
+        // Nor is the same text outside generated Python.
+        assert!(!compare(&declared, "reference.md", &crozier).matches());
+    }
+
+    /// `recursive-alias-named-type` through the comparison engine: crozier's
+    /// three-branch module built from Fern's own alias holds, and an altered
+    /// target, bounded branch, extra import or trailer still differs.
+    #[test]
+    fn recursive_alias_modules_hold_only_as_the_named_spelling_of_fern_s_alias() {
+        let target = "typing.Union[typing.Optional[JsonValueZero], typing.List[\"JsonValue\"], typing.Dict[str, \"JsonValue\"]]";
+        let bounded = "typing.Union[typing.Optional[JsonValueZero], typing.List[typing.Any], typing.Dict[str, typing.Any]]";
+        let fern = format!(
+            "from __future__ import annotations\n\nimport typing\n\nfrom .json_value_zero import JsonValueZero\n\nJsonValue = {target}\n"
+        );
+        let crozier = |imports: &str, target: &str, bounded: &str, trailer: &str| {
+            format!(
+                "from __future__ import annotations\n\nimport typing\n\nimport typing_extensions\n\
+                 from ..core.pydantic_utilities import IS_PYDANTIC_V2\n{imports}from .json_value_zero import JsonValueZero\n\n\
+                 if typing.TYPE_CHECKING:\n    JsonValue = {target}\nelif IS_PYDANTIC_V2:\n    \
+                 JsonValue = typing_extensions.TypeAliasType(\n        \"JsonValue\",\n        {target},\n    )\n\
+                 else:\n    JsonValue = {bounded}\n{trailer}"
+            )
+        };
+        let compare = |crozier: &str| {
+            crate::parity::compare_file(
+                &Context::default(),
+                "src/fern/types/json_value.py",
+                crozier,
+                &fern,
+            )
+            .expect("the comparison runs")
+        };
+        let held = compare(&crozier("", target, bounded, ""));
+        assert!(held.matches(), "{held:?}");
+        assert!(held
+            .departures
+            .iter()
+            .any(|found| found.id == "recursive-alias-named-type"));
+        let altered = target.replace("typing.Optional[JsonValueZero]", "JsonValueZero");
+        for (case, module) in [
+            (
+                "an altered alias target",
+                crozier(
+                    "",
+                    &altered,
+                    &altered.replace("\"JsonValue\"", "typing.Any"),
+                    "",
+                ),
+            ),
+            (
+                "a bounded branch that keeps a self-reference",
+                crozier("", target, target, ""),
+            ),
+            (
+                "an import Fern does not write",
+                crozier("import pydantic\n", target, bounded, ""),
+            ),
+            (
+                "a trailer after the alias",
+                crozier("", target, bounded, "\nVALUE = 1\n"),
+            ),
+        ] {
+            assert!(!compare(&module).matches(), "{case} must still differ");
+        }
     }
 
     #[test]

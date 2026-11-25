@@ -1,0 +1,97 @@
+openapi: 3.1.0
+info:
+  title: Script Runner
+  version: "1.0"
+paths:
+  /plans/{planId}:
+    get:
+      operationId: getPlan
+      tags: [plans]
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The plan.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Plan"
+  /jobs/{jobId}/results:
+    get:
+      operationId: getJobResults
+      tags: [plans]
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The job's results.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobResults"
+components:
+  schemas:
+    Plan:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: string
+        activities:
+          title: Activities
+          anyOf:
+            - type: object
+              additionalProperties:
+                oneOf:
+                  - $ref: "#/components/schemas/InlineScript"
+                  - $ref: "#/components/schemas/GitScript"
+                discriminator:
+                  propertyName: kind
+                  mapping:
+                    inline: "#/components/schemas/InlineScript"
+                    git: "#/components/schemas/GitScript"
+            - type: "null"
+    InlineScript:
+      type: object
+      required: [kind, body]
+      properties:
+        kind:
+          type: string
+          const: inline
+        body:
+          type: string
+    GitScript:
+      type: object
+      required: [kind, repo]
+      properties:
+        kind:
+          type: string
+          const: git
+        repo:
+          type: string
+    JobResults:
+      title: Job results
+      anyOf:
+        - type: object
+          additionalProperties:
+            $ref: "#/components/schemas/ResultValue"
+        - type: "null"
+    ResultValue:
+      anyOf:
+        - type: string
+        - type: number
+        - $ref: "#/components/schemas/Link"
+    Link:
+      type: object
+      required: [href]
+      properties:
+        href:
+          type: string

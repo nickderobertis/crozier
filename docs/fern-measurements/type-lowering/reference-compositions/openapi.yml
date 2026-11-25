@@ -1,0 +1,181 @@
+openapi: 3.1.0
+info:
+  title: Guard Rails
+  version: "1.0"
+paths:
+  /scans:
+    post:
+      operationId: startScan
+      tags: [scans]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScanRequest"
+      responses:
+        "200":
+          description: The finished scan.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScanResponse"
+        "202":
+          description: The scan was accepted.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AcceptedResponse"
+  /portals/{portalId}:
+    get:
+      operationId: getPortal
+      tags: [scans]
+      parameters:
+        - name: portalId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The portal.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Portal"
+components:
+  schemas:
+    BaseResponse:
+      type: object
+      required: [request_id, status]
+      properties:
+        request_id:
+          type: string
+        status:
+          type: string
+        summary:
+          type: string
+    AcceptedResponse:
+      $ref: "#/components/schemas/BaseResponse"
+      required: [status, result]
+      properties:
+        status:
+          enum: [Accepted]
+        result:
+          type: object
+          required: [location]
+          properties:
+            location:
+              type: string
+          additionalProperties: false
+      additionalProperties: false
+    ScanResponse:
+      $ref: "#/components/schemas/BaseResponse"
+      properties:
+        findings:
+          type: array
+          items:
+            type: string
+    ScanRequest:
+      type: object
+      required: [text]
+      properties:
+        text:
+          type: string
+    Portal:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: string
+        links:
+          description: Links written as a sole allOf of one reference.
+          type: array
+          items:
+            allOf:
+              - $ref: "#/components/schemas/SeamlessLink"
+        primary_link:
+          description: A property written as a sole allOf of one reference.
+          allOf:
+            - $ref: "#/components/schemas/SeamlessLink"
+        votes:
+          description: Items pointing at another array component's items.
+          type: array
+          items:
+            $ref: "#/components/schemas/VoteList/items"
+        tallies:
+          description: Items pointing at a property's items.
+          type: array
+          items:
+            $ref: "#/components/schemas/Ballot/properties/tallies/items"
+        latest_vote:
+          description: A property pointing at another array component's items.
+          $ref: "#/components/schemas/VoteList/items"
+        settings:
+          description: A sole allOf of one reference beside an open map.
+          allOf:
+            - $ref: "#/components/schemas/PortalSettings"
+          additionalProperties: true
+        overrides:
+          allOf:
+            - $ref: "#/components/schemas/PortalSettings"
+          additionalProperties: true
+        sources:
+          description: Inline objects nesting the same compositions.
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              tables:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    configuration:
+                      allOf:
+                        - $ref: "#/components/schemas/PortalSettings"
+                      additionalProperties: true
+                    links:
+                      type: array
+                      items:
+                        allOf:
+                          - $ref: "#/components/schemas/SeamlessLink"
+    SeamlessLink:
+      type: object
+      required: [url]
+      properties:
+        url:
+          type: string
+        label:
+          type: string
+    VoteList:
+      description: Votes cast.
+      type: array
+      items:
+        type: object
+        properties:
+          proposal_id:
+            type: string
+          vote:
+            type: string
+    Ballot:
+      type: object
+      properties:
+        tallies:
+          type: array
+          items:
+            type: object
+            properties:
+              option:
+                type: string
+              count:
+                type: integer
+    PortalSettings:
+      type: object
+      properties:
+        theme:
+          type: string
+        locale:
+          type: string

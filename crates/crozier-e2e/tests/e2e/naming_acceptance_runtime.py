@@ -129,7 +129,10 @@ def recursive_alias_dependents() -> None:
     import fern
 
     for module in pkgutil.walk_packages(fern.__path__, "fern."):
-        importlib.import_module(module.name)
+        # `fern.version` reads the installed distribution's metadata, and this
+        # journey runs the SDK from its source tree, uninstalled.
+        if module.name != "fern.version":
+            importlib.import_module(module.name)
     from fern.types.fit_summary import FitSummary
 
     summary = FitSummary(report={"engine": "nuts", "inference_diagnostics": {"chains": [1, {"ok": True}]}})

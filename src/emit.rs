@@ -1406,6 +1406,38 @@ fn object_deferred_order(
     order
 }
 
+/// The aliases of every cycle made of two or more aliases alone: the
+/// `type-lowering/recursive-alias-cycle` measurement's `JsonValueOutput`,
+/// `JsonArrayOutput` and `JsonObjectOutput`, each naming the next.
+fn alias_cycle_members(
+    types: &[TypeDecl],
+    tag_types: &[crate::ir::TagTypeDecl],
+) -> std::collections::HashSet<String> {
+    let decls: Vec<&TypeDecl> = types
+        .iter()
+        .chain(tag_types.iter().map(|tag| &tag.decl))
+        .collect();
+    let aliases: std::collections::HashSet<&str> = decls
+        .iter()
+        .filter_map(|decl| matches!(decl, TypeDecl::Alias(_)).then_some(decl.name()))
+        .collect();
+    let edges: std::collections::HashMap<String, Vec<String>> = decls
+        .iter()
+        .map(|decl| (decl.name().to_string(), decl_refs(decl)))
+        .collect();
+    let component = cycle_components(&edges);
+    let mut members: std::collections::HashMap<usize, Vec<&str>> = std::collections::HashMap::new();
+    for (name, id) in &component {
+        members.entry(*id).or_default().push(name.as_str());
+    }
+    members
+        .into_values()
+        .filter(|names| names.len() > 1 && names.iter().all(|name| aliases.contains(name)))
+        .flatten()
+        .map(str::to_string)
+        .collect()
+}
+
 fn forward_repair_map(
     types: &[TypeDecl],
     tag_types: &[crate::ir::TagTypeDecl],
@@ -1503,7 +1535,8 @@ fn forward_repair_map(
     // `update_forward_refs(FitSummary)` (issue #922). A single self-recursive
     // alias is not: ramu-shogi's `GetAnalysisSnapshotResponse` reaches the
     // self-recursive `JsonValue` only through `AnalysisSnapshotDetail`, and
-    // Fern repairs nothing beyond that model.
+    // Fern repairs nothing beyond that model. The `type-lowering/recursive-alias-cycle`
+    // measurement's `RunSummary` is the same shape (#539).
     let class_cycles: HashSet<usize> = classes
         .iter()
         .filter(|name| cyclic.contains(*name))
@@ -1764,10 +1797,12 @@ fn generate_files(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         .collect();
 
     // One file per generated type.
+    let alias_cycles = alias_cycle_members(&ir.types, &ir.tag_types);
     let decl_settings = DeclSettings {
         extra: ir.extra_fields,
         enum_type: ir.enum_type,
         xml_types: xml::XmlTypes::new(&ir.types, &ir.tag_types),
+        alias_cycles: Some(&alias_cycles),
     };
     for decl in &ir.types {
         let forward = forward_map.get(decl.name()).unwrap_or(&empty_forward);
@@ -4827,6 +4862,9 @@ struct DeclSettings<'a> {
     /// Every declaration in the SDK, which an XML model reads to type its child
     /// elements (see [`xml::XmlTypes`]).
     xml_types: xml::XmlTypes<'a>,
+    /// The aliases of every cycle made of two or more aliases alone (see
+    /// [`alias_cycle_members`]).
+    alias_cycles: Option<&'a std::collections::HashSet<String>>,
 }
 
 /// Render one type declaration to a file body. `loc` is the file's location
@@ -4850,6 +4888,7 @@ fn render_type_decl(
         extra,
         enum_type,
         xml_types,
+        alias_cycles,
     } = settings;
     match decl {
         TypeDecl::Object(obj) => {
@@ -5002,6 +5041,29 @@ fn render_type_decl(
                     }
                 })
                 .unwrap_or_default();
+            // An alias naming itself, or closing a cycle made of aliases alone
+            // (a forward reference to another alias of that cycle), is named
+            // (see [`render_recursive_alias`]). A cycle through a model is not:
+            // sim-tables' `TablePredicateAllAllItem` and cradl's
+            // `GroundTruthListZeroItemValue` import as Fern writes them.
+            let in_alias_cycle =
+                |name: &str| alias_cycles.is_some_and(|members| members.contains(name));
+            let cyclic: std::collections::HashSet<String> = forward
+                .iter()
+                .filter(|name| {
+                    **name == alias.name || in_alias_cycle(&alias.name) && in_alias_cycle(name)
+                })
+                .cloned()
+                .collect();
+            if !cyclic.is_empty() {
+                return Ok(render_recursive_alias(
+                    alias,
+                    &target.flat(),
+                    &cyclic,
+                    &mut imports,
+                    &docstring,
+                ));
+            }
             if !forward.is_empty() {
                 let mut contents = format!(
                     "{HEADER}\n\nfrom __future__ import annotations\n\n{}\n",
@@ -5145,6 +5207,60 @@ fn render_literal_enum(env: &Environment<'static>, e: &crate::ir::EnumType) -> R
         &e.name,
         context! { header => HEADER, body => body },
     )
+}
+
+/// A type alias that names itself (a recursive JSON value, Supabase's
+/// `JsonValue_Output`), or closes a cycle of aliases (`cyclic` names each alias
+/// it reaches that way): an implicit recursive alias overflows pydantic's model
+/// construction, under v1 and v2 alike, so every model holding it fails to
+/// import. Fern writes the implicit alias; crozier names it through the
+/// backported `typing_extensions.TypeAliasType` under pydantic v2, and under v1,
+/// which cannot validate a recursive alias, reads each of the `cyclic` names as
+/// `typing.Any`. Type checkers read the plain recursive alias (the
+/// `recursive-alias-named-type` departure).
+fn render_recursive_alias(
+    alias: &crate::ir::AliasType,
+    target: &str,
+    cyclic: &std::collections::HashSet<String>,
+    imports: &mut Imports,
+    docstring: &str,
+) -> String {
+    fn unrolled(type_ref: &TypeRef, cyclic: &std::collections::HashSet<String>) -> TypeRef {
+        let boxed = |inner: &TypeRef| Box::new(unrolled(inner, cyclic));
+        match type_ref {
+            TypeRef::Named(n) if cyclic.contains(n) => TypeRef::Primitive(crate::ir::Prim::Any),
+            TypeRef::Optional(inner) => TypeRef::Optional(boxed(inner)),
+            TypeRef::List(inner) => TypeRef::List(boxed(inner)),
+            TypeRef::Set(inner) => TypeRef::Set(boxed(inner)),
+            TypeRef::Dict(key, value) => TypeRef::Dict(boxed(key), boxed(value)),
+            TypeRef::Union(members) => {
+                TypeRef::Union(members.iter().map(|m| unrolled(m, cyclic)).collect())
+            }
+            other => other.clone(),
+        }
+    }
+    let bounded = render_type(&unrolled(&alias.target, cyclic), imports).flat();
+    imports.add_plain("typing_extensions");
+    imports.add_core("pydantic_utilities", "IS_PYDANTIC_V2");
+    let name = &alias.name;
+    let mut contents = format!(
+        "{HEADER}\n\nfrom __future__ import annotations\n\n{}\n",
+        imports.render()
+    );
+    // A model the alias names that refers back to it is imported for type
+    // checkers only, as every forward-reference alias module writes it: the
+    // `type-lowering/recursive-json-alias` measurement's `Tree` names `Node`,
+    // whose `children` is a `Tree`, and the certified module guards that import.
+    if !imports.deferred.is_empty() {
+        contents.push_str("\nif typing.TYPE_CHECKING:\n");
+        for line in &imports.deferred {
+            contents.push_str(&format!("    {line}\n"));
+        }
+    }
+    contents.push_str(&format!(
+        "if typing.TYPE_CHECKING:\n    {name} = {target}\nelif IS_PYDANTIC_V2:\n    {name} = typing_extensions.TypeAliasType(\"{name}\", {target})\nelse:\n    {name} = {bounded}\n{docstring}"
+    ));
+    contents
 }
 
 /// Render a discriminated union to its module: a `{Union}_{Variant}` pydantic

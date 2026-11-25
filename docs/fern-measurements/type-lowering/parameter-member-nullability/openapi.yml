@@ -1,0 +1,33 @@
+openapi: 3.1.0
+info:
+  title: Lighthouse Log
+  version: "1.0"
+paths:
+  /beacons:
+    get:
+      operationId: listBeacons
+      tags: [beacons]
+      parameters:
+        - name: range
+          in: query
+          description: A range label, or a range in metres.
+          schema:
+            anyOf:
+              - type: [string, "null"]
+              - type: integer
+        - name: weight
+          in: query
+          description: A weight label, or a weight in grams.
+          schema:
+            anyOf:
+              - type: string
+              - type: [integer, "null"]
+      responses:
+        "200":
+          description: The beacons.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string

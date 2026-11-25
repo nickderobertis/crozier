@@ -1695,6 +1695,9 @@ pub struct Schema {
     /// Format qualifier (`date-time`, `uuid`, `base64`, ...).
     #[serde(default)]
     pub format: Option<String>,
+    /// 3.1's `contentEncoding` (`base64`, `base16`, ...) of a string's content.
+    #[serde(rename = "contentEncoding", default)]
+    pub content_encoding: Option<String>,
     /// Boolean literal or datetime override; the crozier spelling is canonical.
     #[serde(rename = "x-crozier-type", default)]
     pub(crate) type_crozier: Option<LiteralTypeOverride>,
@@ -3580,6 +3583,22 @@ pub(crate) fn referenced_component_schema(reference: &str) -> Option<&str> {
         .map(|pointer| pointer.split('/').next().unwrap_or(pointer))
 }
 
+/// Whether `member` is only `nullable` beside a composition keyword holding no
+/// member (see [`normalize_empty_compositions`]).
+fn nullable_empty_composition(member: &Schema) -> bool {
+    let empty = [&member.one_of, &member.any_of, &member.all_of]
+        .into_iter()
+        .any(|members| members.as_ref().is_some_and(Vec::is_empty));
+    let bare = Schema {
+        nullable: None,
+        one_of: member.one_of.clone().filter(|members| !members.is_empty()),
+        any_of: member.any_of.clone().filter(|members| !members.is_empty()),
+        all_of: member.all_of.clone().filter(|members| !members.is_empty()),
+        ..member.clone()
+    };
+    empty && bare == Schema::default()
+}
+
 /// Drop an empty `oneOf`/`anyOf`/`allOf` list.
 ///
 /// An empty composition constrains nothing, and every later pass reads
@@ -3602,7 +3621,15 @@ fn normalize_empty_compositions(doc: &mut OpenApi) {
     for_each_root_schema(doc, &mut |schema| {
         for_each_schema_in(schema, &mut |node| {
             if let Some(members) = node.all_of.as_mut() {
-                members.retain(|member| *member != Schema::default());
+                // A member left with only `nullable` once its empty `oneOf: []` or
+                // `anyOf: []` is dropped is empty too: Naurt's `feedback-query` is
+                // `allOf: [{nullable: true, oneOf: []}, {anyOf: [], nullable:
+                // true}, object]`, and the certified pair's references to it are
+                // the required model (#904, the `type-lowering/nullable-components`
+                // measurement's `FeedbackQuery`).
+                members.retain(|member| {
+                    *member != Schema::default() && !nullable_empty_composition(member)
+                });
             }
             for members in [&mut node.one_of, &mut node.any_of, &mut node.all_of] {
                 if members.as_ref().is_some_and(Vec::is_empty) {
@@ -4166,6 +4193,22 @@ fn inline_schema_pointers(
             return;
         }
         if !expanding.contains(&reference) {
+            // A pointer naming no `properties` segment is no copy Fern makes: the
+            // `type-lowering/reference-compositions` measurement's
+            // `#/components/schemas/VoteList/items` (koios' `drep_votes/items`)
+            // is the unknown type in the certified pair, where its
+            // `…/Ballot/properties/tallies/items` and dnd5eapi's
+            // `…/Monster/allOf/3/properties/actions/items` are copied (#906).
+            if schema_pointer_target(components, &reference).is_some()
+                && !reference.contains("properties")
+            {
+                *schema = Schema {
+                    description: schema.description.take(),
+                    unresolved: Some(Unresolved::Pointer),
+                    ..Schema::default()
+                };
+                return;
+            }
             if let Some(target) = schema_pointer_target(components, &reference) {
                 *schema = target.clone();
                 schema.pointer_copy = true;

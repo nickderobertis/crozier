@@ -10598,8 +10598,11 @@ impl InlineHoister<'_> {
             // A scalar member's own `nullable: true` stays on it, as in an inline
             // union (`hoist_union_variant`): the
             // `query-anyof-date-time-or-array-named` measurement's `shipped_at`
-            // alias opens `Union[Optional[datetime], …]`.
-            if is_plain_scalar(member) && member.nullable == Some(true) {
+            // alias opens `Union[Optional[datetime], …]`. 3.1's `type: [T,
+            // "null"]` spells the same nullability: the
+            // `type-lowering/parameter-member-nullability` measurement's `range`
+            // is `Union[Optional[str], int]` (#438).
+            if is_plain_scalar(member) && member.explicitly_nullable() {
                 variants.push(optional_type_ref(base_type_ref(member)));
                 continue;
             }
@@ -13662,11 +13665,17 @@ pub(crate) fn inferred_discriminant_property(
                             // PostToolConfirmation]`, `PostUserMessage` leaving its
                             // `type: {const: user.message}` unrequired, and the
                             // certified pair keeps the plain `Union`.
+                            // A plain string the member exemplifies is one
+                            // required or not: the
+                            // `type-lowering/inferred-discriminator-tags`
+                            // measurement's `StoreItem.wearable` members leave a
+                            // nullable `type` with examples `T-Shirt` and
+                            // `Jacket` unrequired, and the certified pair writes
+                            // `StoreItemWearable_TShirt` | `…_Jacket` (#912).
                             "type" => {
-                                variant.required.contains(property)
-                                    && schema_example(field)
-                                        .and_then(serde_json::Value::as_str)
-                                        .is_some()
+                                schema_example(field)
+                                    .and_then(serde_json::Value::as_str)
+                                    .is_some()
                                     || field
                                         .const_value
                                         .as_ref()
@@ -13699,8 +13708,7 @@ pub(crate) fn inferred_discriminant_property(
                 } else {
                     discriminant_value(field)?
                 };
-                (property != "message_type" || !preserve_const_discriminant(&value))
-                    .then_some(value)
+                Some(value)
             })
             .collect();
         let values = values?;
@@ -13729,6 +13737,24 @@ fn untyped_enum_tag(tag: &Schema) -> bool {
 /// their own rules.
 fn untyped_const_tag(tag: &Schema) -> bool {
     tag.const_value.is_some() && tag.enum_values.is_none() && !is_string_type(tag)
+}
+
+/// Whether every member of a union is a `$ref` whose target tags itself on
+/// `property` with an [`untyped_const_tag`] (see [`Builder::discriminated_union`]).
+fn untyped_const_tagged_references(
+    variants: &[Schema],
+    property: &str,
+    schemas: &IndexMap<String, Schema>,
+) -> bool {
+    !variants.is_empty()
+        && variants.iter().all(|variant| {
+            variant
+                .reference
+                .as_deref()
+                .and_then(|reference| resolve_ref_from_schemas(schemas, reference))
+                .and_then(|target| last_composed_variant(target).properties.get(property))
+                .is_some_and(untyped_const_tag)
+        })
 }
 
 /// The discriminant an unrequired one-member string `tag` of a `$ref`-only
@@ -14012,7 +14038,8 @@ fn strips_members(schema: &Schema, schemas: &IndexMap<String, Schema>) -> bool {
     schema.discriminator.as_ref().is_some_and(|discriminator| {
         !discriminator.property_name.is_empty()
             && (schema.one_of.is_some() || schema.any_of.is_none())
-    }) || inferred_strip_discriminant_property(schema, schemas).is_some()
+    }) || typed_any_of_mapping(schema, schemas)
+        || inferred_strip_discriminant_property(schema, schemas).is_some()
 }
 
 /// Scan every schema for a discriminated `oneOf`/`anyOf` and record, per member
@@ -14122,6 +14149,37 @@ fn propagate_strips_to_bases(
     }
 }
 
+/// Whether an `anyOf`'s explicit discriminator mapping is one Fern honours: a
+/// non-empty mapping to references over `$ref` members, each declaring the tag
+/// property with `type: string` (see [`Builder::discriminated_union`]).
+fn typed_any_of_mapping(schema: &Schema, schemas: &IndexMap<String, Schema>) -> bool {
+    let (Some(members), Some(discriminator)) = (&schema.any_of, &schema.discriminator) else {
+        return false;
+    };
+    // A mapping to bare names is read as no mapping, the members' own tags
+    // deciding: openapi-generator's `ResponseStreamEvent` maps
+    // `response.created` to `ResponseCreatedEvent`, and its members' tags are
+    // consumed as under an unmapped `anyOf`.
+    !discriminator.mapping.is_empty()
+        && discriminator
+            .mapping
+            .values()
+            .all(|target| target.contains('/'))
+        && !discriminator.property_name.is_empty()
+        && members.iter().all(|member| {
+            member
+                .reference
+                .as_deref()
+                .and_then(|reference| resolve_ref_from_schemas(schemas, reference))
+                .and_then(|target| {
+                    last_composed_variant(target)
+                        .properties
+                        .get(&discriminator.property_name)
+                })
+                .is_some_and(is_string_type)
+        })
+}
+
 fn collect_discriminant_strips(
     schema: &Schema,
     schemas: &IndexMap<String, Schema>,
@@ -14131,11 +14189,13 @@ fn collect_discriminant_strips(
     // A `discriminator` beside an `anyOf` with no `oneOf` is read as though none
     // were written, as `discriminated_union` reads it: the members' own tags
     // decide. Fern's member models drop typed tags there exactly as they do
-    // under an `anyOf` that writes no discriminator.
+    // under an `anyOf` that writes no discriminator. A mapping Fern honours
+    // ([`typed_any_of_mapping`]) is read as under a `oneOf`.
+    let honoured = typed_any_of_mapping(schema, schemas);
     let discriminator = schema
         .discriminator
         .as_ref()
-        .filter(|_| schema.one_of.is_some() || schema.any_of.is_none());
+        .filter(|_| schema.one_of.is_some() || schema.any_of.is_none() || honoured);
     // A lone member under a `discriminator` mapping nothing is no union to
     // strip a tag for (see `Builder::discriminated_union`).
     let lone = schema
@@ -14158,9 +14218,18 @@ fn collect_discriminant_strips(
         // every variant's own tag names it: Tally's `Block` declares only
         // `propertyName: type` over 45 `$ref` blocks, each with a one-value
         // `type` enum, and Fern's block models have no `type` field.
+        // Not over bare `const` tags, though, which leave the union plain
+        // (#911): its members keep their tag enums.
         let unmapped_inferred = discriminator.is_some_and(|discriminator| {
             discriminator.mapping.is_empty()
                 && inferred_strip_discriminant_property(schema, schemas).as_ref() == Some(&property)
+                && !schema
+                    .one_of
+                    .as_deref()
+                    .or(schema.any_of.as_deref())
+                    .is_some_and(|variants| {
+                        untyped_const_tagged_references(variants, &property, schemas)
+                    })
         });
         if discriminator.is_none() || unmapped_inferred {
             if let Some(variants) = schema.one_of.as_ref().or(schema.any_of.as_ref()) {
@@ -14206,7 +14275,8 @@ fn collect_discriminant_strips(
                     .values()
                     .all(|target| target.contains('/'))
         });
-        if resolvable && (schema.one_of.is_some() || is_inheritance_union_base(schema)) {
+        if resolvable && (schema.one_of.is_some() || honoured || is_inheritance_union_base(schema))
+        {
             // Only a `oneOf` union or an inheritance base reaches here, so the
             // written discriminator is the one `discriminator` above kept.
             if let Some(discriminator) = &schema.discriminator {
@@ -14228,16 +14298,16 @@ fn collect_discriminant_strips(
                     // the member model it consumed — unless that member is also
                     // referenced somewhere on its own, where the standalone model
                     // still has to carry it (see
-                    // [`standalone_referenced_classes`]), or its `const` tag is one
-                    // of the values Fern is measured to preserve regardless.
+                    // [`standalone_referenced_classes`]). A `const` tag is no
+                    // exception: Letta's `ApprovalRequestMessage` keeps its
+                    // `message_type` because `AgentState.pending_approval` uses it
+                    // on its own, where its `AssistantMessage`, used only as a
+                    // variant, drops the same-shaped tag; and the
+                    // `type-lowering/const-discriminator-tags` measurement's
+                    // variant-only `MessageItem` and `ApprovalEnvelope` drop their
+                    // `const` `kind` and `type` (#910).
                     let class = ref_to_class(reference);
-                    let const_value = resolve_ref_from_schemas(schemas, reference)
-                        .and_then(|target| target.properties.get(&property))
-                        .and_then(|field| field.const_value.as_ref())
-                        .and_then(serde_json::Value::as_str);
-                    let preserve = standalone.contains(&class)
-                        || const_value.is_some_and(preserve_const_discriminant);
-                    if !preserve {
+                    if !standalone.contains(&class) {
                         strips.insert(class, property.clone());
                     }
                 }
@@ -14263,25 +14333,35 @@ fn collect_discriminant_strips(
                 .all_of
                 .iter()
                 .flatten()
-                .filter(|member| !untagged_by_unrequired_tag(member, schemas)),
+                .filter(|member| !untagged_by_unrequired_tag(member, schemas))
+                .filter(|member| !merged_branch_union(member, schemas)),
         )
         .chain(map_value)
     {
         collect_discriminant_strips(child, schemas, standalone, strips);
     }
-}
-
-fn preserve_const_discriminant(value: &str) -> bool {
-    matches!(
-        value,
-        "approval"
-            | "approval_request_message"
-            | "message"
-            | "tool"
-            | "tool_return_message"
-            | "stop_reason"
-            | "usage_statistics"
-    )
+    // A union composed as an `allOf` member whose branches merge into the
+    // composing model (no branch tags itself with a value, see
+    // [`branch_union_properties`]) is no union, so it consumes no member's tag
+    // even under a written discriminator: the
+    // `type-lowering/inherited-discriminator-tags` measurement's `Pet` is
+    // `allOf: [object, oneOf [$ref Cat, $ref Dog] discriminated on species]`,
+    // `species` a plain string, and the certified `Cat` and `Dog` keep it
+    // (#949), where the `union-inheritance/allof-unrequired-tag-branches`
+    // measurement's `Cart`, over one-value enum tags, still strips them. Its
+    // members' own nested content is still walked.
+    for member in schema
+        .all_of
+        .iter()
+        .flatten()
+        .filter(|member| merged_branch_union(member, schemas))
+    {
+        for variant in member.one_of.iter().chain(member.any_of.iter()).flatten() {
+            if variant.reference.is_none() {
+                collect_discriminant_strips(variant, schemas, standalone, strips);
+            }
+        }
+    }
 }
 
 /// Whether a schema is the base of an inheritance-style discriminated union: a
@@ -14981,7 +15061,20 @@ impl Builder<'_> {
         let module = naming::module_name(name);
         let docstring = operation_doc(schema.description.as_deref());
 
-        if let Some(values) = untyped_const_composition_values(schema) {
+        // A `oneOf` of bare `const`s is no enum among the components, where an
+        // operation's inline schema merges one (the
+        // `union-inheritance/list-item-nested-union` measurement's
+        // `…PayloadOperation`): the `type-lowering/union-member-lowering`
+        // measurement's `ExposureUnit` and undescribed `ExposureMode` are the
+        // certified pair's unions of `…Zero` and `…One` (#896's bare-`const`
+        // exception).
+        // A `oneOf` of typed string enums is one enum of their values, in order:
+        // the `type-lowering/union-member-lowering` measurement's `ImageSize`
+        // (two one-value enums) and `Presence` (`[Online]`, `[Idle, Away]`,
+        // `[Busy]`) are the certified pair's `ImageSize` and `Presence` enums
+        // (#896, foopis23's `ImageSize`), where its `FilterBand`, beside
+        // `null`, stays a union of its members.
+        if let Some(values) = merged_string_enum_union_values(schema) {
             self.types
                 .push(TypeDecl::Enum(build_enum(schema, name, values, docstring)));
             return;
@@ -15016,12 +15109,19 @@ impl Builder<'_> {
         // A 3.1 `$ref` written beside a `oneOf`/`anyOf` is that reference: Fern
         // reads no sibling composition, and the
         // `pattern-properties-only-oneof-member` measurement's `CollectorNote`
-        // and `CollectorAny` are both `= CollectorRef`.
-        if let Some(reference) = schema
-            .reference
-            .as_deref()
-            .filter(|_| schema.one_of.is_some() || schema.any_of.is_some())
-        {
+        // and `CollectorAny` are both `= CollectorRef`. Nor does it read sibling
+        // `properties`, `required` or `type`: the
+        // `type-lowering/reference-compositions` measurement's
+        // `AcceptedResponse` (`$ref BaseResponse` beside `properties`) and the
+        // `type-lowering/reference-siblings-legacy` measurement's
+        // `FontAssignments` (`type: object` beside `$ref ThemeFonts`, nginx's
+        // `FontAssignments`) are `= BaseResponse` and `= ThemeFonts` (#905).
+        if let Some(reference) = schema.reference.as_deref().filter(|_| {
+            schema.one_of.is_some()
+                || schema.any_of.is_some()
+                || schema.properties.declared()
+                || is_object_type(schema)
+        }) {
             self.push_alias(
                 name,
                 module,
@@ -15200,8 +15300,28 @@ impl Builder<'_> {
                         .and_then(|member| clean_doc(member.description.as_deref())),
                     _ => None,
                 });
+                // A map beside `null` is a nullable map, whose values are
+                // optional too: the `type-lowering/nullable-map-wrappers`
+                // measurement's `JobResults` is `anyOf: [{additionalProperties:
+                // $ref ResultValue}, null]`, and the certified alias is
+                // `Optional[Dict[str, Optional[ResultValue]]]` (#902, Swoop's
+                // `/jobs/{jobID}/results` body).
+                let nullable_map = sole_non_null_member(schema)
+                    .filter(|member| member.reference.is_none() && is_map(member))
+                    .filter(|_| dropped_null && members.len() == 1)
+                    .and_then(|map| match (map_value(map), &members[0]) {
+                        (Some(value), TypeRef::Dict(key, lowered)) if value.reference.is_some() => {
+                            Some(TypeRef::Dict(
+                                key.clone(),
+                                Box::new(optional_type_ref(*lowered.clone())),
+                            ))
+                        }
+                        _ => None,
+                    });
                 let target = match (dropped_null, members.len()) {
-                    (true, 1) => optional_type_ref(members.remove(0)),
+                    (true, 1) => {
+                        optional_type_ref(nullable_map.unwrap_or_else(|| members.remove(0)))
+                    }
                     (true, _) => TypeRef::Union(members),
                     // A composition the DOCUMENT writes with exactly one member
                     // is an alias to that member, not a one-armed `Union`:
@@ -15583,12 +15703,17 @@ impl Builder<'_> {
                             values,
                             clean_doc(items.description.as_deref()),
                         )));
-                        self.push_alias(
-                            name,
-                            module,
-                            sequence_of(schema, TypeRef::Named(item_name)),
-                            docstring,
-                        );
+                        // A nullable array keeps its `Optional`, as one of
+                        // scalars does: the `type-lowering/nullable-components`
+                        // measurement's `ResponseModalities` is
+                        // `Optional[List[ResponseModalitiesItem]]` (#901).
+                        let sequence = sequence_of(schema, TypeRef::Named(item_name));
+                        let target = if schema_accepts_none(schema, self.schemas) {
+                            TypeRef::Optional(Box::new(sequence))
+                        } else {
+                            sequence
+                        };
+                        self.push_alias(name, module, target, docstring);
                         return;
                     }
                 }
@@ -15790,6 +15915,8 @@ impl Builder<'_> {
         }
         let flattened = flatten_nested_all_of(schema);
         let schema = flattened.as_ref().unwrap_or(schema);
+        let inlined_unions = inline_referenced_union_members(schema, self.schemas);
+        let schema = inlined_unions.as_ref().unwrap_or(schema);
         let promoted = promote_required_parent_properties(self.schemas, schema);
         let (schema, promoted_owners) = match &promoted {
             Some((rewritten, owners)) => (rewritten, Some(owners)),
@@ -16231,7 +16358,15 @@ impl Builder<'_> {
                         // Fern's unknown type carries no docs, so an empty
                         // restatement takes none from the base: Zulip's
                         // `CodedError` restates `CodedErrorBase.code` as `{}`.
+                        // A field an earlier inlined parent lent keeps that
+                        // parent's declaration, docs and all: the
+                        // `type-lowering/inherited-discriminator-tags`
+                        // measurement's `GroomingTask` inlines `Task` and then
+                        // `GroomingTask_allOf`, which restates `Task.action`
+                        // with a description, and the certified field is
+                        // `Task`'s undocumented `action: str` (#909).
                         if existing.docstring.is_none()
+                            && !existing.inherited_from_flattened_parent
                             && !is_unknown_type_ref(&existing.type_ref)
                             && !branch_fields.contains(&existing.wire_name)
                         {
@@ -16658,6 +16793,86 @@ impl Builder<'_> {
         }
     }
 
+    /// A map whose value is a map or array of an inline union: the union is
+    /// hoisted under its container path, `{Owner}{Prop}ValueValue` or
+    /// `{Owner}{Prop}ValueItem`, discriminated where its members tag
+    /// themselves. The `type-lowering/union-member-lowering` measurement's
+    /// `Session.readingsByOwner` (a map of maps of a `reading_type`-mapped
+    /// `oneOf`) and `Session.calibrations` (a map of arrays of `anyOf:
+    /// [string, object]`) are the certified pair's
+    /// `Dict[str, Dict[str, SessionReadingsByOwnerValueValue]]` and
+    /// `Dict[str, List[SessionCalibrationsValueItem]]` (#897, junjo's
+    /// `operations_by_owner_runtime_id`). `None` for any other property.
+    fn nested_map_union(
+        &mut self,
+        owner: &str,
+        prop: &str,
+        prop_schema: &Schema,
+    ) -> Option<TypeRef> {
+        if prop_schema.reference.is_some() || !is_map(prop_schema) || is_optional(prop_schema) {
+            return None;
+        }
+        let container = map_value(prop_schema).filter(|value| value.reference.is_none())?;
+        /// The container a map's value is, which names the union it holds.
+        enum Nested {
+            Map,
+            Array,
+        }
+        let (nested, leaf) = if is_map(container) && !is_optional(container) {
+            (Nested::Map, map_value(container)?)
+        } else if container.ty.as_ref().and_then(TypeField::primary) == Some("array")
+            && !is_optional(container)
+        {
+            (Nested::Array, container.items.as_deref()?)
+        } else {
+            return None;
+        };
+        let suffix = match nested {
+            Nested::Map => "ValueValue",
+            Nested::Array => "ValueItem",
+        };
+        let members = leaf.one_of.as_ref().or(leaf.any_of.as_ref())?;
+        if leaf.reference.is_some()
+            || is_optional(leaf)
+            || members.iter().any(is_null_variant)
+            || simple_nullable_member(leaf).is_some()
+        {
+            return None;
+        }
+        let name = format!("{owner}{}{suffix}", naming::class_name(prop));
+        let module = naming::module_name(&name);
+        let docstring = clean_doc(leaf.description.as_deref());
+        let named =
+            if let Some(decl) = self.discriminated_union(&name, &module, leaf, docstring.clone()) {
+                self.types.push(TypeDecl::DiscriminatedUnion(decl));
+                TypeRef::Named(name)
+            } else {
+                let hoisted = self.types.len();
+                let variants: Vec<TypeRef> = members
+                    .iter()
+                    .enumerate()
+                    .map(|(index, variant)| self.variant_ref(&name, index, variant, members))
+                    .collect();
+                if collapsed_union(members, &dedupe_union_members(variants.clone())).is_some() {
+                    self.types.truncate(hoisted);
+                    return None;
+                }
+                self.push_alias(
+                    &name,
+                    module,
+                    TypeRef::Union(dedupe_union_members(variants)),
+                    docstring,
+                );
+                TypeRef::Named(name)
+            };
+        let string = || Box::new(TypeRef::Primitive(Prim::Str));
+        let inner = match nested {
+            Nested::Map => TypeRef::Dict(string(), Box::new(named)),
+            Nested::Array => sequence_of(container, named),
+        };
+        Some(TypeRef::Dict(string(), Box::new(inner)))
+    }
+
     /// Build a [`DiscriminatedUnion`] from a schema, or `None` if it is not a
     /// discriminated `oneOf`/`anyOf` with an explicit `mapping`. Each mapping
     /// entry `value → $ref` becomes a `{Name}_{Variant}` wrapper carrying the
@@ -16678,7 +16893,17 @@ impl Builder<'_> {
         // whose FastAPI-emitted discriminator sits over untyped `enum` tags, stay
         // ordinary unions, and the hand-written `nested-array-discriminated-unions`
         // fixture's `Pet`, over `type: string` tags, is `Pet_Cat` | `Pet_Dog`.
-        if schema.discriminator.is_some() && schema.one_of.is_none() {
+        // A mapping over `$ref` members whose tags all declare `type: string` is
+        // honoured, though: the `type-lowering/anyof-discriminators`
+        // measurement's `Lock.sensor` maps three values onto two members whose
+        // typed tag one leaves unrequired, and the certified pair writes
+        // `LockSensor_LevelUpstream`, `…_LevelDownstream` and `…_Flow` (#899),
+        // where its `Lock.paddle`, mapped over untyped `enum` tags, stays the
+        // plain `Union`.
+        if schema.discriminator.is_some()
+            && schema.one_of.is_none()
+            && !typed_any_of_mapping(schema, self.schemas)
+        {
             let undiscriminated = Schema {
                 discriminator: None,
                 ..schema.clone()
@@ -16724,6 +16949,18 @@ impl Builder<'_> {
             .as_ref()
             .map(|disc| &disc.mapping)
             .filter(|mapping| !mapping.is_empty());
+        // A written discriminator mapping nothing over `$ref` members tagged by a
+        // bare `const` (no `type: string`) is no discriminated union: the
+        // `type-lowering/const-discriminator-tags` measurement's `Event` is the
+        // certified pair's plain `Union[EventVesselArrived, …]`, each model
+        // keeping its `…Type` enum (#911), where its `Signal`, over typed
+        // one-value enums as Tally's `Block` is, is `Signal_Flag` | `Signal_Lamp`.
+        if mapping.is_none()
+            && schema.discriminator.is_some()
+            && untyped_const_tagged_references(variants, &property_name, self.schemas)
+        {
+            return None;
+        }
         if mapping.is_none() {
             let mut members = Vec::new();
             let mut variant_targets = Vec::new();
@@ -17348,6 +17585,31 @@ impl Builder<'_> {
     /// The type of a property, hoisting an inline string enum to a named
     /// `enum.Enum` class `{Owner}{Prop}` (as Fern does for `typesAnimal`).
     fn field_type_ref(&mut self, owner: &str, prop: &str, prop_schema: &Schema) -> TypeRef {
+        // A component property's `oneOf` of bare `const`s is a union of its
+        // members, as a component's is (see [`Builder::add_named_shape`]): the
+        // `type-lowering/union-member-lowering` measurement's `Session.shutter`
+        // is the certified `SessionShutter = Union[SessionShutterZero,
+        // SessionShutterOne]`.
+        if untyped_const_composition_values(prop_schema).is_some() {
+            if let Some(members) = prop_schema.one_of.as_ref() {
+                let name = format!("{owner}{}", naming::class_name(prop));
+                let variants = members
+                    .iter()
+                    .enumerate()
+                    .map(|(index, member)| self.variant_ref(&name, index, member, members))
+                    .collect();
+                self.push_alias(
+                    &name,
+                    naming::module_name(&name),
+                    TypeRef::Union(dedupe_union_members(variants)),
+                    None,
+                );
+                return TypeRef::Named(name);
+            }
+        }
+        if let Some(nested) = self.nested_map_union(owner, prop, prop_schema) {
+            return nested;
+        }
         // A lone inline string enum alternative is the property's enum itself:
         // Fern names it `{Owner}{Prop}`, not `{Owner}{Prop}Zero`.
         if let Some(member) = lone_inline_string_enum(prop_schema) {
@@ -17669,8 +17931,20 @@ impl Builder<'_> {
                     return self.field_type_ref(owner, prop, member);
                 }
             }
-            let extends_with_own_properties =
-                single_all_of_ref(prop_schema).is_some() && !prop_schema.properties.is_empty();
+            // So is one beside an open map that no description annotates: the
+            // `type-lowering/reference-compositions` measurement's undescribed
+            // `Portal.overrides` (`allOf: [$ref PortalSettings]`,
+            // `additionalProperties: true`) is the certified `PortalOverrides
+            // (PortalSettings)`, where its described `settings` is the
+            // annotated `PortalSettings` itself (#908, nhost's
+            // `…TablesItemConfiguration`).
+            let extends_with_own_properties = single_all_of_ref(prop_schema).is_some()
+                && (!prop_schema.properties.is_empty()
+                    || prop_schema.description.is_none()
+                        && matches!(
+                            prop_schema.additional_properties,
+                            Some(AdditionalProperties::Bool(true))
+                        ));
             if is_inline_struct(prop_schema)
                 && (single_all_of_ref(prop_schema).is_none() || extends_with_own_properties)
                 && prop_schema.one_of.is_none()
@@ -17817,6 +18091,24 @@ impl Builder<'_> {
                                 );
                             }
                             let name = format!("{owner}{}ItemItem", naming::class_name(prop));
+                            // A discriminated leaf stays discriminated: the
+                            // `type-lowering/union-member-lowering` measurement's
+                            // `Session.readingBatches` is the certified
+                            // `List[List[SessionReadingBatchesItemItem]]` over
+                            // `…_Lens` | `…_Sensor` (#897).
+                            let discriminated = self.discriminated_union(
+                                &name,
+                                &naming::module_name(&name),
+                                nested_items,
+                                clean_doc(nested_items.description.as_deref()),
+                            );
+                            if let Some(decl) = discriminated {
+                                self.types.push(TypeDecl::DiscriminatedUnion(decl));
+                                return sequence_of(
+                                    prop_schema,
+                                    sequence_of(items, TypeRef::Named(name)),
+                                );
+                            }
                             let hoisted = self.types.len();
                             let variants: Vec<TypeRef> = members
                                 .iter()
@@ -17961,10 +18253,17 @@ impl Builder<'_> {
                         {
                             only
                         } else {
+                            // Members that lower alike are one, at the last copy's
+                            // place: the `type-lowering/union-member-lowering`
+                            // measurement's `SessionProblem.details` items repeat
+                            // an inline `SESSION_CLOSED` member and `type: string`,
+                            // and the certified alias is `Union[…One,
+                            // …Description, …Three, str]` (#895, PayPal's 422
+                            // `details`).
                             self.push_alias(
                                 &name,
                                 module,
-                                TypeRef::Union(variants),
+                                TypeRef::Union(dedupe_union_members(variants)),
                                 clean_doc(items.description.as_deref()),
                             );
                             TypeRef::Named(name)
@@ -17979,6 +18278,15 @@ impl Builder<'_> {
                     // not an empty inline object: braintrust's `RunEval.scores` is a
                     // list of `allOf: [$ref FunctionId, {description}]` and Fern
                     // declares a `RunEvalScoresItem` of its own.
+                    // An element that is only `allOf: [$ref]`, annotating nothing,
+                    // is that reference: the `type-lowering/reference-compositions`
+                    // measurement's `Portal.links` items are `allOf: [$ref
+                    // SeamlessLink]`, and the certified field is
+                    // `List[SeamlessLink]` (#907, epilot's
+                    // `PortalExtensionConfig.links`).
+                    if let Some(reference) = bare_sole_all_of_ref(items) {
+                        return sequence_of(prop_schema, TypeRef::Named(ref_to_class(reference)));
+                    }
                     if described_all_of_ref(items).is_some() {
                         let name = format!("{owner}{}Item", naming::class_name(prop));
                         if let Some(element) = self.annotated_ref_type(&name, items) {
@@ -18031,9 +18339,16 @@ impl Builder<'_> {
                 // A lone inline member under a written `discriminator` is read as
                 // though none were written: Fern declares the same plain model
                 // for it either way.
+                // So is a lone `$ref` under a discriminator mapping nothing: the
+                // `type-lowering/anyof-discriminators` measurement's
+                // `Lock.warden` is `oneOf: [$ref Lockkeeper]` beside
+                // `propertyName: role`, and the certified field is
+                // `Optional[Lockkeeper]` (#900); a mapped lone member stays a
+                // variant (`Lock.relief`).
                 if prop_schema.discriminator.is_some()
                     && members.len() == 1
-                    && is_inline_object(&members[0])
+                    && (is_inline_object(&members[0])
+                        || lone_unmapped_reference(prop_schema).is_some())
                 {
                     let undiscriminated = Schema {
                         discriminator: None,
@@ -18296,6 +18611,27 @@ impl Builder<'_> {
                                 ) {
                                     let value_name =
                                         format!("{owner}{}Value", naming::class_name(prop));
+                                    // A discriminated value union stays one: the
+                                    // `type-lowering/nullable-map-wrappers`
+                                    // measurement's `Plan.activities` is `anyOf:
+                                    // [map of oneOf InlineScript | GitScript on
+                                    // kind, null]`, and the certified value is
+                                    // `PlanActivitiesValue_Inline` | `…_Git`
+                                    // (#898, ska-oso-ptt's `activities`).
+                                    if let Some(decl) = self.discriminated_union(
+                                        &value_name,
+                                        &naming::module_name(&value_name),
+                                        value,
+                                        clean_doc(value.description.as_deref()),
+                                    ) {
+                                        self.types.push(TypeDecl::DiscriminatedUnion(decl));
+                                        return TypeRef::Dict(
+                                            Box::new(TypeRef::Primitive(Prim::Str)),
+                                            Box::new(TypeRef::Optional(Box::new(TypeRef::Named(
+                                                value_name,
+                                            )))),
+                                        );
+                                    }
                                     let variants = value_members
                                         .iter()
                                         .enumerate()
@@ -18333,6 +18669,18 @@ impl Builder<'_> {
                         }
                     }
                     if let Some(member) = simple_nullable_primitive_member(prop_schema) {
+                        // A base64-encoded string beside `null` is bytes: the
+                        // `type-lowering/json-binary-strings` measurement's
+                        // `Print.thumbnail` is `anyOf: [{type: string,
+                        // contentEncoding: base64}, null]` and the certified field
+                        // is `Optional[bytes]`, where its bare base64 `image` and
+                        // its `proofs` items stay `str` (#894).
+                        if is_string_type(member)
+                            && member.format.is_none()
+                            && member.content_encoding.as_deref() == Some("base64")
+                        {
+                            return TypeRef::Primitive(Prim::Bytes);
+                        }
                         return base_type_ref(member);
                     }
                     let name = format!("{owner}{}", naming::class_name(prop));
@@ -19858,43 +20206,181 @@ enum BranchUnion {
     Merged(Box<Schema>),
 }
 
+/// Whether an `allOf` member is a union whose branches merge into the model it
+/// composes ([`BranchUnion::Merged`]).
+fn merged_branch_union(member: &Schema, schemas: &IndexMap<String, Schema>) -> bool {
+    matches!(
+        branch_union_properties(member, schemas),
+        Some(BranchUnion::Merged(_))
+    )
+}
+
+/// `schema` with the properties and `required` of its inline `allOf` members
+/// merged after its own, each name at its first declaration; `$ref` members
+/// lend nothing (see [`branch_union_properties`]).
+fn inline_all_of_properties(schema: &Schema) -> Schema {
+    let mut merged = schema.clone();
+    merged.all_of = None;
+    for member in schema
+        .all_of
+        .iter()
+        .flatten()
+        .filter(|member| member.reference.is_none())
+    {
+        let member = inline_all_of_properties(member);
+        for (key, property) in member.properties.iter() {
+            if !merged.properties.contains_key(key) {
+                merged.properties.insert(key.clone(), property.clone());
+            }
+        }
+        let mut required: Vec<String> = merged.required.iter().cloned().collect();
+        required.extend(member.required.iter().cloned());
+        merged.required = required.into();
+    }
+    merged
+}
+
+/// `schema` with each `allOf` member that is a `$ref` to an undiscriminated
+/// union component (a `oneOf`/`anyOf` declaring nothing else) written as that
+/// union inline, so it lends its branches' properties as an inline union
+/// member does ([`branch_union_properties`]); `None` where no member is one.
+/// The `type-lowering/union-branch-flattening` measurement's
+/// `paymentInstructions` is `allOf: [$ref PaymentInstruction, {referenceId}]`,
+/// `PaymentInstruction` a `oneOf` of two instructions, and the certified model
+/// carries `iban`, `bic`, `accountNumber`, `routingNumber`, then
+/// `referenceId` (#889, fireblocks' `FiatPaymentInstruction`).
+fn inline_referenced_union_members(
+    schema: &Schema,
+    schemas: &IndexMap<String, Schema>,
+) -> Option<Schema> {
+    // A schema declaring properties of its own already lends a referenced
+    // union's branches after them (the hand-written `union-sample` fixture's
+    // `Sample`, `index` before `Signal`'s `voltage` and `bits`).
+    if schema.properties.declared() {
+        return None;
+    }
+    let members = schema.all_of.as_ref()?;
+    let mut changed = false;
+    let rewritten: Vec<Schema> = members
+        .iter()
+        .map(|member| {
+            let target = member
+                .reference
+                .as_deref()
+                .and_then(|reference| resolve_ref_from_schemas(schemas, reference))
+                .filter(|target| {
+                    (target.one_of.is_some() || target.any_of.is_some())
+                        && target.discriminator.is_none()
+                        && !target.properties.declared()
+                        && target.all_of.is_none()
+                        && target.additional_properties.is_none()
+                });
+            let Some(target) = target else {
+                return member.clone();
+            };
+            // Each branch lends its own and its inline `allOf` members'
+            // properties, all optional, and a property several declare takes
+            // the LAST branch's spelling at the first one's place: fireblocks'
+            // `FiatPaymentInstruction` lends `bankAccountNumber` as SPEI's
+            // `Clabe` and `sortCode` as FPS UK's `FpsUkSortCode` in the
+            // certified `OnRampPaymentInstructions`, where a union written as
+            // the member itself keeps its first branch's (see
+            // [`branch_union_properties`]).
+            let mut merged = Schema {
+                ty: Some(TypeField::Single("object".to_string())),
+                ..Schema::default()
+            };
+            for branch in target.one_of.iter().chain(target.any_of.iter()).flatten() {
+                let branch = branch
+                    .reference
+                    .as_deref()
+                    .and_then(|reference| resolve_ref_from_schemas(schemas, reference))
+                    .unwrap_or(branch);
+                for (key, property) in inline_all_of_properties(branch).properties.iter() {
+                    if !property.negative_only() {
+                        merged.properties.insert(key.clone(), property.clone());
+                    }
+                }
+            }
+            changed = true;
+            merged
+        })
+        .collect();
+    changed.then(|| Schema {
+        all_of: Some(rewritten),
+        ..schema.clone()
+    })
+}
+
 /// The properties an inline `allOf` member that is an undiscriminated union
 /// contributes: Fern flattens braintrust's `TopicMapFunctionAutomation.function`
 /// — `allOf: [$ref SavedFunctionId, anyOf: [function, global]]` — into one
-/// object carrying `type`, `id`, `version`, `name` and `function_type`, where a
-/// property two branches declare keeps the first branch's position and the last
-/// branch's schema. `None` for a member that is no union, or whose branches
-/// declare no property.
+/// object carrying `type`, `id`, `version`, `name` and `function_type`. A
+/// property two branches declare keeps the first branch's position, and the
+/// first branch's schema unless both are inline and require it (see the body).
+/// `None` for a member that is no union, or whose branches declare no
+/// property.
 fn branch_union_properties(
     member: &Schema,
     schemas: &IndexMap<String, Schema>,
 ) -> Option<BranchUnion> {
     let branches = member.one_of.as_ref().or(member.any_of.as_ref())?;
+    // Inline branches leaving their tag unrequired merge as `$ref` ones do: the
+    // `type-lowering/union-branch-flattening` measurement's `RampMethod` is
+    // `allOf: [{id}, oneOf: [two objects tagging an unrequired `direction`]]`,
+    // and the certified model carries every branch's fields (#889), where
+    // Zoonk's lesson steps, requiring `kind`, are tagged.
+    let inline_untagged = inferred_discriminant_property(member, schemas).is_some_and(|tag| {
+        branches
+            .iter()
+            .any(|branch| branch.reference.is_none() && !branch.required.contains(&tag))
+    });
     if member.one_of.is_some()
         && !untagged_by_unrequired_tag(member, schemas)
+        && !inline_untagged
         && inferred_discriminant_property(member, schemas).is_some()
     {
         return Some(BranchUnion::Tagged);
     }
-    // Branches merged past an unrequired tag keep the first branch's spelling
-    // of a property several declare: intellifi's `SpotSet` types `type` with
-    // `SpotSetTypeAny`'s one-value enum.
-    let first_wins = untagged_by_unrequired_tag(member, schemas);
+    // A property several branches declare keeps the first branch's spelling
+    // (#889): the same measurement's `Ramp` and `RampRequest` type `direction`
+    // and `source` as their first `$ref` branch does, and its inline `Ticket`
+    // its unrequired `fare` and `price`, as intellifi's `SpotSet` types `type`
+    // with `SpotSetTypeAny`'s one-value enum. Only a property two inline
+    // branches both require takes the last one's: braintrust's
+    // `TopicMapFunctionAutomation.function` types its required `type` with
+    // the `global` branch's enum.
     let mut merged = Schema::default();
-    for branch in branches {
+    let mut required_inline = std::collections::HashSet::new();
+    for written in branches {
         // A `$ref` branch lends its component's properties the same way:
         // pushboy's `LiveActivityEndJobRequest` composes `oneOf: [$ref
         // LiveActivityActivityIdScope, $ref LiveActivityScopedLookup]` and Fern
         // writes `activityId`, `userId`, `topicId`, then `activityType`.
-        let branch = branch
+        let branch = written
             .reference
             .as_deref()
             .and_then(|reference| resolve_ref_from_schemas(schemas, reference))
-            .unwrap_or(branch);
+            .unwrap_or(written);
+        // …and a branch composed with `allOf` lends its inline members' too,
+        // though not what a `$ref` parent lends: the measurement's
+        // `InstructedOffRampProperties` (`allOf: [{paymentInstructions}, $ref
+        // OffRampProperties]`) lends `paymentInstructions`, not `payout`.
+        let branch = inline_all_of_properties(branch);
+        let inline = written.reference.is_none();
         for (prop, prop_schema) in &branch.properties {
-            if !(prop_schema.negative_only() || first_wins && merged.properties.contains_key(prop))
-            {
+            if prop_schema.negative_only() {
+                continue;
+            }
+            let requires = branch.required.contains(prop);
+            let replaces = inline && requires && required_inline.contains(prop);
+            if !merged.properties.contains_key(prop) || replaces {
                 merged.properties.insert(prop.clone(), prop_schema.clone());
+            }
+            if inline && requires {
+                required_inline.insert(prop.clone());
+            } else {
+                required_inline.remove(prop);
             }
         }
     }
@@ -20520,6 +21006,14 @@ fn optional_type_ref(base: TypeRef) -> TypeRef {
     }
 }
 
+/// A map's value schema, where `additionalProperties` is one.
+fn map_value(schema: &Schema) -> Option<&Schema> {
+    match &schema.additional_properties {
+        Some(AdditionalProperties::Schema(value)) => Some(value),
+        _ => None,
+    }
+}
+
 fn nullable_map_value_type_ref(schema: &Schema) -> TypeRef {
     match (&schema.additional_properties, base_type_ref(schema)) {
         (Some(AdditionalProperties::Schema(value_schema)), TypeRef::Dict(key, value)) => {
@@ -20619,6 +21113,18 @@ fn prefer_map_to_union(schema: &Schema) -> bool {
     false
 }
 
+/// A JSON `format: binary` string held by a container is the `str` it is
+/// declared as: the `type-lowering/json-binary-strings` measurement's
+/// `ContactSheet.frames` (array items) and `.layers` (map values) are
+/// `List[str]` and `Dict[str, str]` in the certified pair, where its scalar
+/// `master`, `overlay` and `backing` are `bytes` (#893).
+fn contained_binary_as_str(type_ref: TypeRef) -> TypeRef {
+    match type_ref {
+        TypeRef::Primitive(Prim::Bytes) => TypeRef::Primitive(Prim::Str),
+        other => other,
+    }
+}
+
 /// Map a schema to its base type expression, never adding a top-level
 /// `Optional` (the caller decides optionality for fields).
 fn base_type_ref(schema: &Schema) -> TypeRef {
@@ -20688,7 +21194,7 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
                 {
                     TypeRef::Primitive(Prim::Any)
                 } else {
-                    base_type_ref(value)
+                    contained_binary_as_str(base_type_ref(value))
                 };
                 // Fern makes a nullable map's value type optional too, and a
                 // `$ref` to a nullable component carries that nullability into
@@ -20770,7 +21276,7 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
                             TypeRef::Primitive(Prim::Any)
                         }
                     } else {
-                        array_item_type_ref(i)
+                        contained_binary_as_str(array_item_type_ref(i))
                     }
                 });
             if array_uses_set(schema) {
@@ -20889,6 +21395,16 @@ fn annotated_sole_all_of_ref(schema: &Schema) -> Option<&str> {
         && schema.nullable != Some(true))
     .then(|| sole_all_of_ref(schema))
     .flatten()
+}
+
+/// The reference of an `allOf` holding one `$ref` beside nothing at all.
+fn bare_sole_all_of_ref(schema: &Schema) -> Option<&str> {
+    let reference = sole_all_of_ref(schema)?;
+    (Schema {
+        all_of: None,
+        ..schema.clone()
+    } == Schema::default())
+    .then_some(reference)
 }
 
 fn sole_all_of_ref(schema: &Schema) -> Option<&str> {
@@ -21992,6 +22508,41 @@ fn is_unknown(schema: &Schema) -> bool {
         && schema.items.is_none()
 }
 
+/// The values of a component `oneOf` whose two or more members are each an
+/// inline `type: string` enum and nothing else, deduplicated in document
+/// order; `None` for any other schema (see [`Builder::add_named_shape`]).
+fn merged_string_enum_union_values(schema: &Schema) -> Option<Vec<String>> {
+    if schema.reference.is_some()
+        || schema.all_of.is_some()
+        || schema.any_of.is_some()
+        || schema.discriminator.is_some()
+        || schema.properties.declared()
+        || schema.additional_properties.is_some()
+        || schema.enum_values.is_some()
+    {
+        return None;
+    }
+    let members = schema.one_of.as_ref().filter(|members| members.len() > 1)?;
+    let mut values: Vec<String> = Vec::new();
+    for member in members {
+        let typed = is_string_type(member)
+            && member.reference.is_none()
+            && member.one_of.is_none()
+            && member.any_of.is_none()
+            && member.all_of.is_none()
+            && !member.properties.declared()
+            && member.const_value.is_none();
+        let member_values = member.enum_values.as_ref().filter(|_| typed)?;
+        for value in member_values {
+            let value = value.as_str()?.to_string();
+            if !values.contains(&value) {
+                values.push(value);
+            }
+        }
+    }
+    Some(values)
+}
+
 /// Untyped string constants without titles or descriptions form one enum.
 /// Typed or annotated members keep their individual union declarations.
 fn untyped_const_composition_values(schema: &Schema) -> Option<Vec<String>> {
@@ -22976,8 +23527,11 @@ mod tests {
         );
     }
 
+    /// A `const` tag's value preserves nothing (#910): a variant-only member
+    /// drops it whatever it says, as the `type-lowering/const-discriminator-tags`
+    /// measurement's `ApprovalEnvelope` drops `approval`.
     #[test]
-    fn explicit_message_unions_preserve_selected_optional_const_discriminants() {
+    fn explicit_message_unions_strip_every_variant_only_const_discriminant() {
         let doc: OpenApi = serde_json::from_value(serde_json::json!({
             "components": { "schemas": {
                 "Approval": { "type": "object", "properties": {
@@ -23010,7 +23564,10 @@ mod tests {
         }))
         .expect("message schemas deserialize");
         let strips = document_discriminant_strips(&doc);
-        assert!(!strips.contains_key("Approval"));
+        assert_eq!(
+            strips.get("Approval").map(String::as_str),
+            Some("message_type")
+        );
         assert_eq!(
             strips.get("Assistant").map(String::as_str),
             Some("message_type")
@@ -27171,8 +27728,12 @@ mod tests {
             TypeDecl::DiscriminatedUnion(union) if union.name == "OperandHiddenField" && union.members.len() == 3)));
     }
 
+    /// Among the components a `oneOf` of bare `const`s is a union of its
+    /// members, as the `type-lowering/union-member-lowering` measurement's
+    /// `ExposureMode` is at the certified pair (an operation's inline schema
+    /// still merges one).
     #[test]
-    fn untyped_const_compositions_form_one_enum_but_typed_members_stay_distinct() {
+    fn untyped_const_component_compositions_and_typed_members_stay_distinct() {
         let ir = build_document(serde_json::json!({
             "openapi": "3.0.3", "info": {"title": "Api", "version": "1"}, "paths": {},
             "components": {"schemas": {
@@ -27185,9 +27746,7 @@ mod tests {
             .iter()
             .find(|decl| decl.name() == "Operation")
             .expect("operation");
-        assert!(
-            matches!(operation, TypeDecl::Enum(decl) if decl.members.iter().map(|member| member.value.as_str()).collect::<Vec<_>>() == ["create", "update"])
-        );
+        assert!(matches!(operation, TypeDecl::Alias(alias) if alias.name == "Operation"));
         assert!(ir
             .types
             .iter()
@@ -33934,24 +34493,49 @@ components:
             merged.properties.keys().collect::<Vec<_>>(),
             ["a", "b", "c"]
         );
+        // An unrequired conflict keeps the first branch's spelling (#889)…
         assert_eq!(
             merged.properties["b"]
                 .ty
                 .as_ref()
                 .and_then(TypeField::primary),
-            Some("integer")
+            Some("string")
         );
         assert!(merged.required.is_empty());
-        assert!(matches!(
+        // …and one two inline branches both require takes the last one's.
+        let Some(BranchUnion::Merged(required)) = branch_union_properties(
+            &member(serde_json::json!({"anyOf": [
+                {"required": ["b"], "properties": {"b": {"type": "string"}}},
+                {"required": ["b"], "properties": {"b": {"type": "integer"}}}
+            ]})),
+            &schemas,
+        ) else {
+            panic!("an undiscriminated union lends its branches");
+        };
+        assert_eq!(
+            required.properties["b"]
+                .ty
+                .as_ref()
+                .and_then(TypeField::primary),
+            Some("integer")
+        );
+        let tagged = |required: bool| {
+            let required = if required {
+                serde_json::json!(["kind"])
+            } else {
+                serde_json::json!([])
+            };
             branch_union_properties(
                 &member(serde_json::json!({"oneOf": [
-                    {"properties": {"kind": {"type": "string", "enum": ["x"]}, "x": {"type": "string"}}},
-                    {"properties": {"kind": {"type": "string", "enum": ["y"]}, "y": {"type": "string"}}}
+                    {"required": required, "properties": {"kind": {"type": "string", "enum": ["x"]}, "x": {"type": "string"}}},
+                    {"required": required, "properties": {"kind": {"type": "string", "enum": ["y"]}, "y": {"type": "string"}}}
                 ]})),
                 &schemas,
-            ),
-            Some(BranchUnion::Tagged)
-        ));
+            )
+        };
+        assert!(matches!(tagged(true), Some(BranchUnion::Tagged)));
+        // Inline branches leaving the tag unrequired merge.
+        assert!(matches!(tagged(false), Some(BranchUnion::Merged(_))));
         assert!(branch_union_properties(
             &member(serde_json::json!({"properties": {"a": {"type": "string"}}})),
             &schemas

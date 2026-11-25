@@ -456,9 +456,17 @@ fn composed_models_keep_flat_fields_aliases_and_eager_superclasses() {
                 changed, spec,
                 "the positive redeclaration control must change the schema"
             );
+            // Redeclared as a string in the second branch, `rate` keeps the
+            // first branch's integer: inline union branches flatten with
+            // first-branch precedence (#889), as Fern CLI 5.216.0 /
+            // fern-python-sdk 5.42.0 types this document and the certified
+            // `type-lowering/union-branch-flattening` measurement's RampMethod.
             let changed_files = render(&changed);
+            let reading = &changed_files["src/acme/types/reading.py"];
             assert!(
-                changed_files["src/acme/types/reading.py"].contains("rate: typing.Optional[str]")
+                reading.contains("rate: typing.Optional[int] = pydantic.Field(default=None)")
+                    && reading.contains("unit: typing.Optional[str]"),
+                "{reading}"
             );
         }
     }

@@ -1,0 +1,153 @@
+openapi: 3.0.3
+info:
+  title: Lock Keeper
+  version: "1.0"
+paths:
+  /locks/{lockId}:
+    get:
+      operationId: getLock
+      tags: [locks]
+      parameters:
+        - name: lockId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The lock.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Lock"
+components:
+  schemas:
+    Lock:
+      type: object
+      required: [id, gate]
+      properties:
+        id:
+          type: string
+        gate:
+          description: A typed, required tag under an anyOf mapping.
+          anyOf:
+            - $ref: "#/components/schemas/SwingGate"
+            - $ref: "#/components/schemas/SlideGate"
+          discriminator:
+            propertyName: gate_type
+            mapping:
+              swing: "#/components/schemas/SwingGate"
+              slide: "#/components/schemas/SlideGate"
+        paddle:
+          description: Typeless enum tags under an anyOf mapping.
+          anyOf:
+            - $ref: "#/components/schemas/ManualPaddle"
+            - $ref: "#/components/schemas/PoweredPaddle"
+          discriminator:
+            propertyName: drive
+            mapping:
+              manual: "#/components/schemas/ManualPaddle"
+              powered: "#/components/schemas/PoweredPaddle"
+        sensor:
+          description: A mapping naming one member twice, whose tag is unrequired.
+          type: object
+          nullable: true
+          anyOf:
+            - $ref: "#/components/schemas/LevelSensor"
+            - $ref: "#/components/schemas/FlowSensor"
+          discriminator:
+            propertyName: sensor_id
+            mapping:
+              level_upstream: "#/components/schemas/LevelSensor"
+              level_downstream: "#/components/schemas/LevelSensor"
+              flow: "#/components/schemas/FlowSensor"
+        crew:
+          description: A typed, required tag under an anyOf without a mapping.
+          anyOf:
+            - $ref: "#/components/schemas/Lockkeeper"
+            - $ref: "#/components/schemas/Volunteer"
+          discriminator:
+            propertyName: role
+        warden:
+          description: One referenced member under an unmapped discriminator.
+          oneOf:
+            - $ref: "#/components/schemas/Lockkeeper"
+          discriminator:
+            propertyName: role
+        relief:
+          description: One referenced member under a mapped discriminator.
+          oneOf:
+            - $ref: "#/components/schemas/Volunteer"
+          discriminator:
+            propertyName: role
+            mapping:
+              volunteer: "#/components/schemas/Volunteer"
+    SwingGate:
+      type: object
+      required: [gate_type, leaves]
+      properties:
+        gate_type:
+          type: string
+          enum: [swing]
+        leaves:
+          type: integer
+    SlideGate:
+      type: object
+      required: [gate_type, track]
+      properties:
+        gate_type:
+          type: string
+          enum: [slide]
+        track:
+          type: string
+    ManualPaddle:
+      type: object
+      required: [drive, turns]
+      properties:
+        drive:
+          enum: [manual]
+        turns:
+          type: integer
+    PoweredPaddle:
+      type: object
+      required: [drive, motor]
+      properties:
+        drive:
+          enum: [powered]
+        motor:
+          type: string
+    LevelSensor:
+      type: object
+      properties:
+        sensor_id:
+          type: string
+          enum: [level_upstream, level_downstream]
+        depth:
+          type: number
+    FlowSensor:
+      type: object
+      required: [sensor_id, rate]
+      properties:
+        sensor_id:
+          type: string
+          enum: [flow]
+        rate:
+          type: number
+    Lockkeeper:
+      type: object
+      required: [role, name]
+      properties:
+        role:
+          type: string
+          enum: [lockkeeper]
+        name:
+          type: string
+    Volunteer:
+      type: object
+      required: [role, hours]
+      properties:
+        role:
+          type: string
+          enum: [volunteer]
+        hours:
+          type: integer

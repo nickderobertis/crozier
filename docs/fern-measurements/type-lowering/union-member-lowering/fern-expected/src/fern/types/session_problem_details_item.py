@@ -1,0 +1,11 @@
+
+
+import typing
+
+from .session_problem_details_item_description import SessionProblemDetailsItemDescription
+from .session_problem_details_item_one import SessionProblemDetailsItemOne
+from .session_problem_details_item_three import SessionProblemDetailsItemThree
+
+SessionProblemDetailsItem = typing.Union[
+    SessionProblemDetailsItemOne, SessionProblemDetailsItemDescription, SessionProblemDetailsItemThree, str
+]

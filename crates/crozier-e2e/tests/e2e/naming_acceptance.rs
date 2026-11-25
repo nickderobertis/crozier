@@ -492,20 +492,14 @@ fn sdk_env_colliding_components_send_and_parse_their_own_shapes() {
 /// `InferenceReport`, constructs a value holding a recursive JSON object.
 ///
 /// The cycle itself is `JsonValueOutput`/`JsonObjectOutput`/`JsonArrayOutput`,
-/// three aliases, which neither the certified pair's tree nor crozier's imports
-/// today: `InferenceReport`'s `update_forward_refs` raises `RecursionError`
-/// under Pydantic 2.14.1 and the process segfaults under 1.10.26. An
-/// unimportable SDK is a Fern defect crozier does not keep, so the cycle must
-/// import, but its alias emission is #539's, owned by the type-lowering node,
-/// whose self-recursive repair does not yet reach a cycle of several aliases
-/// (manager ruling `a5`). This journey waits on that multi-alias extension;
-/// #922's own change (the dependent's forward-reference support) is held by
-/// [`naming_acceptance_repairs_match_the_certified_pair`]. Until then it has no
-/// `sdk_env_` prefix, because the `sdk-env` project runs every ignored journey
-/// that has one.
+/// three aliases, which the certified pair's tree does not import:
+/// `InferenceReport`'s `update_forward_refs` raises `RecursionError` under
+/// Pydantic 2.14.1 and the process segfaults under 1.10.26. An unimportable SDK
+/// is a Fern defect crozier does not keep, so crozier names the alias closing
+/// the cycle (#539's `recursive-alias-named-type` departure) and the SDK imports.
 #[test]
-#[ignore = "waits on #539's multi-alias recursive alias repair (type-lowering; a cycle of several aliases imports in no tree yet); that repair restores the `sdk_env_` prefix, which enrols it in `just test-sdk-env`"]
-fn recursive_alias_dependents_import_and_construct() {
+#[ignore = "SDK Python-environment tier (builds Pydantic 1 and 2 environments from PyPI with uv); run via `just test-sdk-env`"]
+fn sdk_env_recursive_alias_dependents_import_and_construct() {
     runtime_journey(
         "recursive-alias-dependents",
         "python-enums",

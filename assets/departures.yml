@@ -406,6 +406,27 @@
     unauthenticated operations without inventing a key.
   evidence: docs/departures/evidence/empty-root-security-optional-credential.md
 
+- id: escaped-discriminator-field-name
+  kind: fern-defect
+  trigger: >-
+    A discriminated union whose tag property is a name pydantic's BaseModel
+    already holds (schema, json, dict, ...), so each variant declares the tag
+    as an escaped field (schema_) aliased to the wire name: the union's
+    pydantic.Field(discriminator=...) in its type module.
+  fern: >-
+    discriminator="schema", the wire name, which no variant declares as a
+    field: the module raises on import under pydantic v1 (ConfigError) and v2
+    (PydanticUserError), "needs a discriminator field for key 'schema'", and so
+    does every module importing it.
+  crozier: >-
+    discriminator="schema_", the escaped field name every variant declares,
+    every other byte of the line unchanged.
+  reason: >-
+    A generated module that cannot be imported is a defect. The escaped field
+    name imports under pydantic v1 and v2, and validates each variant by its
+    wire tag under v2.
+  evidence: docs/departures/evidence/escaped-discriminator-field-name.md
+
 - id: escaped-field-alias-literal
   kind: fern-defect
   trigger: >-
@@ -796,6 +817,32 @@
     The documented call raises `AttributeError`: the client has no `all`.
     The usage snippet in the same README already calls `all_`.
   evidence: docs/departures/evidence/readme-escaped-method-call.md
+
+- id: recursive-alias-named-type
+  kind: fern-defect
+  trigger: >-
+    A schema whose own type names itself, as a recursive JSON value does
+    (`anyOf` of scalars, an array of itself and a map of itself), or that
+    closes a cycle made only of aliases (a union of an array alias and a map
+    alias, each holding it): the type alias module of that schema.
+  fern: >-
+    The implicit recursive alias `NAME = typing.Union[..., typing.List["NAME"],
+    ...]`, its other cycle members as quoted forward references. pydantic
+    expands it without end, so every model reaching it hangs, crashes or raises
+    RecursionError on import, under pydantic v1 and v2.
+  crozier: >-
+    The same alias under `if typing.TYPE_CHECKING:`, the alias named through
+    `typing_extensions.TypeAliasType("NAME", ...)` under pydantic v2, and under
+    v1, which cannot validate a recursive alias, the alias with each quoted
+    reference to itself or to an alias of its cycle read as `typing.Any`. It
+    imports `typing_extensions` and the core's `IS_PYDANTIC_V2`; every other
+    byte of the module is retained.
+  reason: >-
+    A generated package whose modules cannot be imported is a defect. The named
+    alias imports and validates nested values under every pydantic version the
+    SDK declares, needs no Python 3.12 syntax, and type checkers read the same
+    recursive alias Fern writes.
+  evidence: docs/departures/evidence/recursive-alias-named-type.md
 
 - id: reference-anchor-follows-corrected-client
   kind: fern-defect

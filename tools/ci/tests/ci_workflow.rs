@@ -266,7 +266,7 @@ fn a_pull_request_push_runs_exactly_the_governed_lanes() {
         let ceiling = match id.as_str() {
             "lint" => 60,
             "test-linux" => 240,
-            "test-windows" => 150,
+            "test-windows" => 240,
             "test-macos" => 240,
             other => panic!("{other} is not a lane"),
         };
@@ -1221,10 +1221,13 @@ fn the_tool_proof_names_a_tool_its_installer_left_off_path() {
 /// ~2.5 minutes each; test-linux already runs longer, so the critical path is unchanged.
 /// `test-macos` rose 150 to 240, test-linux's limit, by the manager's ruling (c33.0) on the
 /// same move: run 43716165831's first stage took 2h04m there and 150 cancelled its sdk-env stage.
+/// `test-windows` rose 150 to 240, the same limit, by the user's ruling: run 45434125778's
+/// "Test the affected projects" took 2h18m and 150 cancelled the job in "Install crozier"
+/// after every test step passed.
 const LANE_LIMITS: [(&str, u64); 4] = [
     ("lint", 60),
     ("test-linux", 240),
-    ("test-windows", 150),
+    ("test-windows", 240),
     ("test-macos", 240),
 ];
 

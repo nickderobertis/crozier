@@ -1,0 +1,115 @@
+openapi: 3.0.3
+info:
+  title: Kennel Tasks
+  version: "1.0"
+paths:
+  /pets:
+    post:
+      operationId: addPet
+      tags: [kennel]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Pet"
+      responses:
+        "201":
+          description: Added.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pet"
+  /tasks:
+    get:
+      operationId: listTasks
+      tags: [kennel]
+      responses:
+        "200":
+          description: The tasks.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  anyOf:
+                    - $ref: "#/components/schemas/GroomingTask"
+                    - $ref: "#/components/schemas/WalkingTask"
+                  discriminator:
+                    propertyName: action
+                    mapping:
+                      grooming: "#/components/schemas/GroomingTask"
+                      walking: "#/components/schemas/WalkingTask"
+components:
+  schemas:
+    Pet:
+      allOf:
+        - type: object
+          properties:
+            name:
+              type: string
+            age:
+              type: integer
+        - oneOf:
+            - $ref: "#/components/schemas/Cat"
+            - $ref: "#/components/schemas/Dog"
+          discriminator:
+            propertyName: species
+            mapping:
+              Cat: "#/components/schemas/Cat"
+              Dog: "#/components/schemas/Dog"
+    Cat:
+      type: object
+      required: [species]
+      properties:
+        species:
+          type: string
+        breed:
+          type: string
+    Dog:
+      type: object
+      required: [species]
+      properties:
+        species:
+          type: string
+        breed:
+          type: string
+        size:
+          type: string
+    Task:
+      type: object
+      required: [action, id]
+      properties:
+        action:
+          type: string
+        id:
+          type: string
+        state:
+          type: string
+          description: The task's state.
+    GroomingTask:
+      allOf:
+        - $ref: "#/components/schemas/Task"
+        - $ref: "#/components/schemas/GroomingTask_allOf"
+    GroomingTask_allOf:
+      type: object
+      properties:
+        action:
+          type: string
+          description: Groom a pet.
+          enum: [grooming]
+        brush:
+          type: string
+    WalkingTask:
+      allOf:
+        - $ref: "#/components/schemas/Task"
+        - $ref: "#/components/schemas/WalkingTask_allOf"
+    WalkingTask_allOf:
+      type: object
+      properties:
+        action:
+          type: string
+          description: Walk a pet.
+          enum: [walking]
+        distance:
+          type: number

@@ -1,0 +1,72 @@
+openapi: 3.0.3
+info:
+  title: Signal Archive
+  version: "1.0"
+paths:
+  /signals/{signalId}:
+    get:
+      operationId: getSignal
+      tags: [signals]
+      parameters:
+        - name: signalId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The signal.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Signal"
+components:
+  schemas:
+    Signal:
+      type: object
+      required: [id, payload, history]
+      properties:
+        id:
+          type: string
+        payload:
+          $ref: "#/components/schemas/JsonValue"
+        history:
+          type: array
+          items:
+            $ref: "#/components/schemas/JsonValue"
+        labels:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/JsonValue"
+        tree:
+          $ref: "#/components/schemas/Tree"
+    JsonValue:
+      description: Any JSON-serializable value.
+      anyOf:
+        - anyOf:
+            - type: string
+            - type: number
+            - type: boolean
+          nullable: true
+        - type: array
+          items:
+            $ref: "#/components/schemas/JsonValue"
+        - type: object
+          additionalProperties:
+            $ref: "#/components/schemas/JsonValue"
+    Tree:
+      description: A label, a list of trees, or a node holding a tree.
+      anyOf:
+        - type: string
+        - type: array
+          items:
+            $ref: "#/components/schemas/Tree"
+        - $ref: "#/components/schemas/Node"
+    Node:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        children:
+          $ref: "#/components/schemas/Tree"

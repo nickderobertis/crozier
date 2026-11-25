@@ -745,6 +745,90 @@
     "docs/fern-measurements/superseded-fixtures/request-example-nulls/fern-expected": {},
     "docs/fern-measurements/superseded-fixtures/reservoir-ledger/fern-expected": {},
     "docs/fern-measurements/superseded-fixtures/undiscriminated-ref-oneof-sibling-properties-dropped/fern-expected": {},
+    "docs/fern-measurements/type-lowering/anyof-discriminators/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/type-lowering/anyof-discriminators/fern-expected": {},
+    "docs/fern-measurements/type-lowering/const-discriminator-tags/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/type-lowering/const-discriminator-tags/fern-expected": {},
+    "docs/fern-measurements/type-lowering/inferred-discriminator-tags/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/type-lowering/inferred-discriminator-tags/fern-expected": {},
+    "docs/fern-measurements/type-lowering/inherited-discriminator-tags/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/type-lowering/inherited-discriminator-tags/fern-expected": {},
+    "docs/fern-measurements/type-lowering/json-binary-strings/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/type-lowering/json-binary-strings/fern-expected": {},
+    "docs/fern-measurements/type-lowering/nullable-components/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/type-lowering/nullable-components/fern-expected": {},
+    "docs/fern-measurements/type-lowering/nullable-map-wrappers/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/type-lowering/nullable-map-wrappers/fern-expected": {},
+    "docs/fern-measurements/type-lowering/parameter-member-nullability/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/type-lowering/parameter-member-nullability/fern-expected": {},
+    "docs/fern-measurements/type-lowering/recursive-alias-cycle/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/type-lowering/recursive-alias-cycle/fern-expected": {},
+    "docs/fern-measurements/type-lowering/recursive-json-alias/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/type-lowering/recursive-json-alias/fern-expected": {},
+    "docs/fern-measurements/type-lowering/reference-compositions/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/type-lowering/reference-compositions/fern-expected": {},
+    "docs/fern-measurements/type-lowering/reference-siblings-legacy/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/type-lowering/reference-siblings-legacy/fern-expected": {},
+    "docs/fern-measurements/type-lowering/union-branch-flattening/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/type-lowering/union-branch-flattening/fern-expected": {},
+    "docs/fern-measurements/type-lowering/union-member-lowering/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/type-lowering/union-member-lowering/fern-expected": {},
     "docs/fern-measurements/union-inheritance/allof-unrequired-tag-branches/expected-literals/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"

@@ -1,0 +1,182 @@
+openapi: 3.1.0
+info:
+  title: Observatory Desk
+  version: "1.0"
+paths:
+  /sessions/{sessionId}:
+    get:
+      operationId: getSession
+      tags: [sessions]
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The session.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+        "422":
+          description: The session cannot be read.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionProblem"
+components:
+  schemas:
+    Session:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: string
+        size:
+          $ref: "#/components/schemas/ImageSize"
+        presence:
+          $ref: "#/components/schemas/Presence"
+        unit:
+          $ref: "#/components/schemas/ExposureUnit"
+        filter:
+          $ref: "#/components/schemas/FilterBand"
+        mode:
+          $ref: "#/components/schemas/ExposureMode"
+        shutter:
+          description: A described inline union of bare constants.
+          oneOf:
+            - const: leaf
+            - const: focal-plane
+        readingsByOwner:
+          description: Readings keyed by owner, then by instrument.
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              oneOf:
+                - $ref: "#/components/schemas/LensReading"
+                - $ref: "#/components/schemas/SensorReading"
+              discriminator:
+                propertyName: reading_type
+                mapping:
+                  lens: "#/components/schemas/LensReading"
+                  sensor: "#/components/schemas/SensorReading"
+        readingBatches:
+          description: Readings in batches of batches.
+          type: array
+          items:
+            type: array
+            items:
+              oneOf:
+                - $ref: "#/components/schemas/LensReading"
+                - $ref: "#/components/schemas/SensorReading"
+              discriminator:
+                propertyName: reading_type
+                mapping:
+                  lens: "#/components/schemas/LensReading"
+                  sensor: "#/components/schemas/SensorReading"
+        calibrations:
+          description: Calibration values, grouped.
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              anyOf:
+                - type: string
+                - type: object
+                  properties:
+                    offset:
+                      type: number
+    ImageSize:
+      description: Image positioning and size
+      oneOf:
+        - description: Show a large preview at the bottom
+          type: string
+          enum: [Large]
+        - description: Show a small preview to the side
+          type: string
+          enum: [Preview]
+    Presence:
+      description: Presence status
+      oneOf:
+        - type: string
+          enum: [Online]
+        - type: string
+          enum: [Idle, Away]
+        - type: string
+          enum: [Busy]
+    ExposureUnit:
+      description: Bare constant members stay their own members.
+      oneOf:
+        - const: seconds
+        - const: milliseconds
+    ExposureMode:
+      oneOf:
+        - const: manual
+        - const: automatic
+    FilterBand:
+      description: A nullable union of one-value enums.
+      oneOf:
+        - type: string
+          enum: [red]
+        - type: string
+          enum: [green]
+        - type: "null"
+    LensReading:
+      type: object
+      required: [reading_type, focal]
+      properties:
+        reading_type:
+          type: string
+          enum: [lens]
+        focal:
+          type: number
+    SensorReading:
+      type: object
+      required: [reading_type, gain]
+      properties:
+        reading_type:
+          type: string
+          enum: [sensor]
+        gain:
+          type: number
+    SessionProblem:
+      type: object
+      properties:
+        details:
+          type: array
+          items:
+            anyOf:
+              - title: SESSION_CLOSED
+                properties:
+                  issue:
+                    type: string
+                    enum: [SESSION_CLOSED]
+                  description:
+                    type: string
+                    enum: [The session is closed.]
+              - title: DOME_SHUT
+                properties:
+                  issue:
+                    type: string
+                    enum: [DOME_SHUT]
+                  description:
+                    type: string
+                    enum: [The dome is shut.]
+              - title: SESSION_CLOSED
+                properties:
+                  issue:
+                    type: string
+                    enum: [SESSION_CLOSED]
+                  description:
+                    type: string
+                    enum: [The session is closed.]
+              - title: CLOUD_COVER
+                properties:
+                  issue:
+                    type: string
+                    enum: [CLOUD_COVER]
+              - type: string
+              - type: string

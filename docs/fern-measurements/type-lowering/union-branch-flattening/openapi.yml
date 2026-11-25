@@ -1,0 +1,209 @@
+openapi: 3.0.3
+info:
+  title: Ferry Ramps
+  version: "1.0"
+paths:
+  /ramps:
+    post:
+      operationId: createRamp
+      tags: [ramps]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RampRequest"
+      responses:
+        "201":
+          description: The ramp.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ramp"
+  /methods:
+    get:
+      operationId: listMethods
+      tags: [ramps]
+      responses:
+        "200":
+          description: The methods.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RampMethod"
+  /tickets:
+    get:
+      operationId: listTickets
+      tags: [ramps]
+      responses:
+        "200":
+          description: The tickets.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Ticket"
+components:
+  schemas:
+    CommonRampProperties:
+      type: object
+      required: [amount]
+      properties:
+        amount:
+          type: string
+    RampRequest:
+      description: Referenced oneOf branches, the second inheriting its fields through allOf.
+      allOf:
+        - $ref: "#/components/schemas/CommonRampProperties"
+        - oneOf:
+            - $ref: "#/components/schemas/OnRampProperties"
+            - $ref: "#/components/schemas/InstructedOffRampProperties"
+            - $ref: "#/components/schemas/BridgeProperties"
+        - type: object
+          properties:
+            note:
+              type: string
+    Ramp:
+      description: Referenced anyOf branches.
+      allOf:
+        - $ref: "#/components/schemas/CommonRampProperties"
+        - anyOf:
+            - $ref: "#/components/schemas/OnRampProperties"
+            - $ref: "#/components/schemas/OffRampProperties"
+    RampMethod:
+      description: Inline oneOf branches.
+      allOf:
+        - type: object
+          required: [id]
+          properties:
+            id:
+              type: string
+        - oneOf:
+            - type: object
+              properties:
+                direction:
+                  type: string
+                  enum: [inbound]
+                limit:
+                  type: string
+                fiat:
+                  type: string
+            - type: object
+              properties:
+                direction:
+                  type: string
+                  enum: [outbound]
+                limit:
+                  type: integer
+                chain:
+                  type: string
+    Ticket:
+      description: Inline anyOf branches.
+      allOf:
+        - type: object
+          properties:
+            code:
+              type: string
+        - anyOf:
+            - type: object
+              properties:
+                fare:
+                  type: string
+                  enum: [adult]
+                price:
+                  type: string
+                seat:
+                  type: string
+            - type: object
+              properties:
+                fare:
+                  type: string
+                  enum: [child]
+                price:
+                  type: integer
+                guardian:
+                  type: string
+    OnRampProperties:
+      type: object
+      required: [direction, source]
+      properties:
+        direction:
+          type: string
+          enum: [OnRamp]
+        source:
+          $ref: "#/components/schemas/FiatSource"
+        destination:
+          type: string
+    OffRampProperties:
+      type: object
+      required: [direction, source]
+      properties:
+        direction:
+          type: string
+          enum: [OffRamp]
+        source:
+          $ref: "#/components/schemas/ChainSource"
+        payout:
+          type: string
+    InstructedOffRampProperties:
+      allOf:
+        - type: object
+          required: [paymentInstructions]
+          properties:
+            paymentInstructions:
+              allOf:
+                - $ref: "#/components/schemas/PaymentInstruction"
+                - type: object
+                  properties:
+                    referenceId:
+                      type: string
+        - $ref: "#/components/schemas/OffRampProperties"
+    BridgeProperties:
+      type: object
+      required: [direction]
+      properties:
+        direction:
+          type: string
+          enum: [Bridge]
+        hops:
+          type: integer
+    PaymentInstruction:
+      description: Where to send the fiat.
+      oneOf:
+        - $ref: "#/components/schemas/IbanInstruction"
+        - $ref: "#/components/schemas/AchInstruction"
+    IbanInstruction:
+      type: object
+      required: [iban]
+      properties:
+        iban:
+          type: string
+        bic:
+          type: string
+        holder:
+          type: string
+    AchInstruction:
+      type: object
+      required: [accountNumber]
+      properties:
+        accountNumber:
+          type: string
+        routingNumber:
+          type: string
+        holder:
+          type: integer
+    FiatSource:
+      type: object
+      required: [currency]
+      properties:
+        currency:
+          type: string
+    ChainSource:
+      type: object
+      required: [network]
+      properties:
+        network:
+          type: string

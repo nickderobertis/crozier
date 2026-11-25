@@ -162,12 +162,12 @@ these totals: each names its root cause and owner, under manager ruling a13
 ([record](openapi-surface/witness-search-combinations-schemas/README.md#what-the-attributed-rows-are-and-who-owns-them)).
 
 `golden` is still not `golden`-exhausted, so the handling sites are split the
-same way. The 628 `golden` rows declare 1128 handling sites in
+same way. The 628 `golden` rows declare 1127 handling sites in
 [the site table](openapi-surface/golden-reach-sites.tsv). The
 [ledger](openapi-surface/golden-reach.tsv) retains the base measurement's
 provenance and records scoped updates beside their rows.
 
-- **1044 are reached by a registered real specification.** Its scoped
+- **1043 are reached by a registered real specification.** Its scoped
   golden test executes the site; file-level residuals remain recorded separately.
 - **81 are reached only by a hand-written fixture.** Each arm-level
   cover executes the site and byte-matches the certified tree. Thus each of the 81 is still one of the 84 [unreached arms](#every-unreached-arm-and-its-search-verdict).
@@ -180,7 +180,7 @@ provenance and records scoped updates beside their rows.
   before/after trees in both generators recorded in [the shared table](openapi-surface/output-insensitive.tsv).
 - **0 are named gaps**, whose outstanding evidence is in [Unproven arms, named](#unproven-arms-named).
 
-1044 + 81 + 3 + 0 + 0 = 1128. `combo-allof-with-required` replaced `co-occurrence` with its promotion arm `promote_parent_property`, which `groupe-psa` reaches, and `combo-property-anyof-composed-sibling` and the two `combo-unrequired-tag-*-reference` rows became `golden` on the dedicated arms their registered declarers reach ([their record](openapi-surface/witness-search-combinations-schemas/README.md#keys)). Nine sites replaced `co-occurrence` with the body and response
+1043 + 81 + 3 + 0 + 0 = 1127. `combo-allof-with-required` replaced `co-occurrence` with its promotion arm `promote_parent_property`, which `groupe-psa` reaches, and `combo-property-anyof-composed-sibling` and the two `combo-unrequired-tag-*-reference` rows became `golden` on the dedicated arms their registered declarers reach ([their record](openapi-surface/witness-search-combinations-schemas/README.md#keys)). Nine sites replaced `co-occurrence` with the body and response
 interaction arms [their search record](openapi-surface/witness-search-combinations-bodies-responses/README.md#dedicated-regions)
 names, `combo-allof-schema-example` replaced it with its interaction branch in `Builder::add_object`, and the two `combo-oas31-*` rows left `golden` once decided output-insensitive. Twelve more
 replaced `co-occurrence` with the parameter, security and name-collision arms
@@ -2147,7 +2147,7 @@ table, with this header and this column order:
 
 ## Parity repair proof index
 
-These 61 rows are the 27 generator categories and the 34 scenarios later
+These 63 rows are the 27 generator categories and the 36 scenarios later
 parity repairs closed: the base-path and string-map example gaps, the
 parameter fix's additional scenarios, and every scenario whose correction is a
 Fern defect. Other
@@ -2230,6 +2230,8 @@ corrections the shared comparison engine applies. All other bytes must match.
 | reference-anchor-follows-corrected-client | Reference line anchors following the client lines crozier corrects | Fern defect | `certify-new-pair` | tests/fixtures/letta/expected | `letta_matches_fern_output` | `reference-anchor-follows-corrected-client` |
 | flat-reference-link-target | Flat-layout reference links to the client file the SDK writes | Fern defect | `certify-new-pair` | tests/fixtures/swagger-petstore/expected-flat | `compare::compare_holds_each_reference_link_departure_to_its_own_shape` | `flat-reference-link-target` |
 | list-item-nested-union-required-field | List of union items whose member requires a field typed by a null-bearing nested union: the README and reference.md item list written empty as Fern writes it; the docstring constructions' omitted required field corrected | Fern behaviour + Fern defect | `union-member-nullability` | docs/fern-measurements/union-inheritance/list-item-nested-union/fern-expected | `list_item_nested_union_markdown_lists_match_the_certified_pair; sdk_env_required_null_union_field_examples_construct_where_fern_s_fail` | `required-null-union-field-example` |
+| recursive-json-alias | A schema whose type names itself (a recursive JSON value): its alias is named through `typing_extensions.TypeAliasType` under pydantic v2 and bounded at `typing.Any` under v1, so every model holding it imports | Fern defect | `type-lowering` | docs/fern-measurements/type-lowering/recursive-json-alias/fern-expected | `type_lowering::recursive_json_aliases_are_named; type_lowering::sdk_env_escaped_discriminators_and_recursive_aliases_import` | `recursive-alias-named-type` |
+| escaped-discriminator-field-name | A discriminated union tagged by a name `BaseModel` holds (`schema`): the discriminator names the variants' escaped `schema_` field, so the module imports | Fern defect | `type-lowering` | docs/fern-measurements/type-lowering/inferred-discriminator-tags/fern-expected | `type_lowering::inferred_tags_discriminate_and_name_the_variant_field; type_lowering::sdk_env_escaped_discriminators_and_recursive_aliases_import` | `escaped-discriminator-field-name` |
 | colliding-component-classes | Components whose names spell one class | Fern defect | `naming-acceptance` | docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected | `naming_acceptance_documents_generate_as_the_certified_pair_does` | `colliding-component-own-class` |
 
 Additional boundaries of these rows are held by the same gate: the
@@ -2328,7 +2330,7 @@ link and expect the named failure. The counts below are the output of
 shapes: 160
 by kind: handwritten 104, measurement 5, real 46, refusal 5
 by owner: bodies-responses 20, clients-extensions 29, examples-docs 16, models-refs 21, parameters 16, prove-matches 30, streaming 13, unions 15
-by outcome: default=refuse;strict=refuse 5, departure 75, match 80
+by outcome: default=refuse;strict=refuse 5, departure 76, match 79
 closed with no open residual: 160
 closed on their proof with a residual open: 0
 witnesses: registered 6
@@ -3016,18 +3018,18 @@ unreached by any Fern-accepted document.
 | 2 | `request-body-content` | `bodies-media` | **4** | **35** | **370** | open — real-specification witness search remains open |
 | 3 | `oneof-anyof-variant` | `schemas` | **3** | **111** | **8** | open — real-specification witness search remains open |
 | 4 | `allof` | `schemas` | **3** | **27** | **162** | open — real-specification witness search remains open |
-| 5 | `discriminator-mapping` | `schemas` | **2** | **175** | **60** | open — real-specification witness search remains open |
-| 6 | `oneof` | `schemas` | **2** | **119** | **187** | open — real-specification witness search remains open |
+| 5 | `discriminator-mapping` | `schemas` | **2** | **176** | **60** | open — real-specification witness search remains open |
+| 6 | `oneof` | `schemas` | **2** | **138** | **187** | open — real-specification witness search remains open |
 | 7 | `fern-streaming-extension` | `oas31-extensions` | **2** | **57** | **7** | open — real-specification witness search remains open |
 | 8 | `ref-pointer-undeclared-component-head` | `schemas` | **2** | **29** | **17** | open — real-specification witness search remains open |
 | 9 | `parameter-schema` | `parameters` | **2** | **26** | **356** | open — real-specification witness search remains open |
 | 10 | `parameter-in-path` | `parameters` | **2** | **19** | **313** | open — real-specification witness search remains open |
 | 11 | `media-type-multipart` | `bodies-media` | **2** | **14** | **29** | open — real-specification witness search remains open |
 | 12 | `ref-pointer-nested-items` | `schemas` | **2** | **6** | **4** | open — real-specification witness search remains open |
-| 13 | `anyof-discriminated-union` | `schemas` | **1** | **205** | **30** | owned — first-pass search record below |
-| 14 | `array-item-anyof-discriminated-union` | `schemas` | **1** | **199** | **19** | open — real-specification witness search remains open |
-| 15 | `array-item-oneof-discriminated-union` | `schemas` | **1** | **165** | **32** | open — real-specification witness search remains open |
-| 16 | `oneof-discriminated-union` | `schemas` | **1** | **111** | **89** | owned — first-pass search record below |
+| 13 | `anyof-discriminated-union` | `schemas` | **1** | **206** | **30** | owned — first-pass search record below |
+| 14 | `array-item-anyof-discriminated-union` | `schemas` | **1** | **202** | **19** | open — real-specification witness search remains open |
+| 15 | `array-item-oneof-discriminated-union` | `schemas` | **1** | **168** | **32** | open — real-specification witness search remains open |
+| 16 | `oneof-discriminated-union` | `schemas` | **1** | **112** | **89** | owned — first-pass search record below |
 | 17 | `anyof-oneof-variant` | `schemas` | **1** | **97** | **17** | owned — first-pass search record below |
 | 18 | `oneof-array-variant-anyof-item` | `schemas` | **1** | **55** | **1** | open — real-specification witness search remains open |
 | 19 | `additional-properties-schema` | `schemas` | **1** | **51** | **265** | open — real-specification witness search remains open |
