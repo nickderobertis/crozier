@@ -2676,9 +2676,10 @@ pub struct Field {
     /// The blank lines the property's description ends on: its trailing line
     /// breaks less the one that closes its last line (a YAML keep-chomped `|+`
     /// block ending on a blank line ends `\n\n`, one). Fern trims a model
-    /// field's docstring whole but keeps these where the field is a method
-    /// parameter, in its docstring and `reference.md` entry (SeequentEvo block
-    /// models' `QueryCriteria.bbox`).
+    /// field's docstring whole but keeps these where the field is the argument
+    /// of a body schema used only as that body, in its docstring and
+    /// `reference.md` entry (SeequentEvo block models' `QueryCriteria.bbox`;
+    /// docs/fern-measurements/worked-examples/kept-blank-descriptions/).
     pub doc_tail_blank_lines: usize,
     /// The property's `example` as a Python literal, shown in a worked snippet
     /// instead of a synthesized placeholder (`example_literal`).
@@ -3315,6 +3316,16 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
                 .is_some_and(|name| replaced_body_sources.contains(&name))
         {
             endpoint.reference_body_type = None;
+        }
+        // A body schema kept as a model documents each argument by the model
+        // field's docstring, trimmed whole; only one used solely as this body
+        // keeps a description's trailing blank lines (`Field::doc_tail_blank_lines`).
+        if !endpoint.body_schema_dropped {
+            if let Some(RequestBody::Inline(fields)) = &mut endpoint.request_body {
+                for doc in fields.iter_mut().filter_map(|field| field.docstring.as_mut()) {
+                    doc.truncate(doc.trim_end_matches('\n').len());
+                }
+            }
         }
         if endpoint.body_schema_dropped {
             let source = body_schema
@@ -4402,6 +4413,27 @@ fn build_endpoint(
                 }
                 string_enum_values(schema).is_some()
             });
+            // So is an optional array of them, its items inline or a `$ref`
+            // (#932): epilot's `token_type`, an array of `$ref AccessTokenType`
+            // whose enum declares the example `api`, is left out of the certified
+            // pair's `list_access_tokens` call. An array of plain strings keeps
+            // its item example (svix's `event_types=["user.signup"]`).
+            let optional_enum_array = !required
+                && p.schema.as_ref().is_some_and(|schema| {
+                    let schema = schema
+                        .reference
+                        .as_deref()
+                        .and_then(|reference| resolve_ref(doc, reference))
+                        .unwrap_or(schema);
+                    schema.items.as_deref().is_some_and(|items| {
+                        let items = items
+                            .reference
+                            .as_deref()
+                            .and_then(|reference| resolve_ref(doc, reference))
+                            .unwrap_or(items);
+                        string_enum_values(items).is_some()
+                    })
+                });
             // An optional parameter whose declared example Fern discards (a
             // numeric example on a `type: string` parameter) leaves the call
             // rather than taking a synthesized sample: OpenAIRE's `size`, exampled
@@ -4424,6 +4456,7 @@ fn build_endpoint(
                 !required && referenced_examples_entry_is_unquoted_timestamp(doc, p);
             let example = if omit_synthesized_example
                 || string_enum
+                || optional_enum_array
                 || discarded_optional_example
                 || optional_array_example
                 || unquoted_timestamp_schema_example
@@ -9980,7 +10013,7 @@ impl InlineHoister<'_> {
                     })
                     .flatten(),
                 ),
-                doc_tail_blank_lines: doc_tail_blank_lines(prop_schema.description.as_deref()),
+                doc_tail_blank_lines: doc_tail_blank_lines(prop_schema),
                 example: resolved_schema_example_literal(prop_schema, self.schemas).or_else(|| {
                     let reference = prop_schema.reference.as_deref().or_else(|| {
                         described_all_of_ref(prop_schema).map(|(reference, _)| reference)
@@ -16891,7 +16924,7 @@ impl Builder<'_> {
                         })
                         .flatten(),
                 ),
-                doc_tail_blank_lines: doc_tail_blank_lines(prop_schema.description.as_deref()),
+                doc_tail_blank_lines: doc_tail_blank_lines(prop_schema),
                 example: first_union_member_example(prop_schema)
                     .or_else(|| resolved_schema_example_literal(prop_schema, Some(self.schemas)))
                     .or_else(|| {
@@ -23133,8 +23166,8 @@ fn parameter_doc(p: &crate::openapi::Parameter) -> Option<String> {
 }
 
 /// The blank lines a description ends on: see [`Field::doc_tail_blank_lines`].
-fn doc_tail_blank_lines(desc: Option<&str>) -> usize {
-    desc.map_or(0, |text| {
+fn doc_tail_blank_lines(schema: &Schema) -> usize {
+    schema.description.as_deref().map_or(0, |text| {
         let breaks = text.len() - text.trim_end_matches(['\r', '\n']).len();
         text[text.len() - breaks..]
             .matches('\n')

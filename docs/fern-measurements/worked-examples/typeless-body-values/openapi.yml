@@ -1,0 +1,94 @@
+openapi: 3.1.0
+info:
+  title: Signal Locker
+  version: 1.0.0
+servers:
+  - url: https://locker.example.com
+paths:
+  /state:
+    post:
+      operationId: saveState
+      tags: [locker]
+      summary: An inline body requiring one typeless property.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data]
+              properties:
+                data: {}
+      responses:
+        '200':
+          description: Saved.
+          content:
+            application/json:
+              schema:
+                type: boolean
+  /annotations:
+    post:
+      operationId: updateAnnotations
+      tags: [locker]
+      summary: An inline body requiring a string beside a typeless property.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [lockerId, data]
+              properties:
+                lockerId:
+                  type: string
+                data: {}
+      responses:
+        '200':
+          description: Updated.
+          content:
+            application/json:
+              schema:
+                type: boolean
+  /control:
+    post:
+      operationId: answerControl
+      tags: [locker]
+      summary: A whole typeless body.
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+      responses:
+        '200':
+          description: Answered.
+          content:
+            application/json:
+              schema:
+                type: boolean
+  /workspaces:
+    post:
+      operationId: createWorkspace
+      tags: [locker]
+      summary: Required nullable fields, one typeless, beside a required string.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [kind, branch, extra]
+              properties:
+                kind:
+                  type: string
+                branch:
+                  anyOf:
+                    - type: string
+                    - type: 'null'
+                extra:
+                  anyOf:
+                    - {}
+                    - type: 'null'
+      responses:
+        '200':
+          description: Created.
+          content:
+            application/json:
+              schema:
+                type: boolean

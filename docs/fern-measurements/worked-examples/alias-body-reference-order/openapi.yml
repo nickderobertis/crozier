@@ -1,0 +1,118 @@
+openapi: 3.0.3
+info:
+  title: Dock Board
+  version: 1.0.0
+servers:
+  - url: https://dock.example.com
+paths:
+  /boards/{boardId}:
+    put:
+      operationId: updateBoard
+      tags: [boards]
+      summary: A shared open body beside a path parameter and optional queries.
+      parameters:
+        - name: boardId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: visibility
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: crewIds
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BoardPayload'
+      responses:
+        '200':
+          description: The board.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+  /boards:
+    post:
+      operationId: createBoard
+      tags: [boards]
+      summary: The same body beside optional queries only.
+      parameters:
+        - name: visibility
+          in: query
+          required: false
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BoardPayload'
+      responses:
+        '200':
+          description: The board.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+  /boards/db/:
+    post:
+      operationId: save_board_boards_db__post
+      tags: [boards]
+      summary: Save Board
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BoardPayload'
+      responses:
+        '200':
+          description: Saved
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+  /boards/db:
+    post:
+      operationId: save_board_boards_db_post
+      tags: [boards]
+      summary: Save Board
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BoardPayload'
+      responses:
+        '200':
+          description: Saved
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+components:
+  schemas:
+    BoardPayload:
+      type: object
+      title: BoardPayload
+      additionalProperties: true
+      properties:
+        title:
+          type: string
+        overwrite:
+          type: boolean

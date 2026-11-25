@@ -1,0 +1,73 @@
+openapi: 3.0.3
+info:
+  title: Chandlery
+  version: 1.0.0
+servers:
+  - url: https://chandlery.example.com
+paths:
+  /orders:
+    post:
+      operationId: placeOrder
+      tags: [orders]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Order"
+      responses:
+        "200":
+          description: Placed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Receipt"
+components:
+  schemas:
+    Order:
+      type: object
+      required: [buyer, terms]
+      properties:
+        buyer:
+          $ref: "#/components/schemas/Buyer"
+        terms:
+          $ref: "#/components/schemas/Terms"
+    Buyer:
+      allOf:
+        - $ref: "#/components/schemas/Contact"
+        - $ref: "#/components/schemas/Berth"
+    Terms:
+      allOf:
+        - $ref: "#/components/schemas/Schedule"
+        - type: object
+          required: [due_on]
+          properties:
+            due_on:
+              type: string
+    Contact:
+      type: object
+      required: [name, phone]
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+    Berth:
+      type: object
+      required: [pier, slip]
+      properties:
+        pier:
+          type: string
+        slip:
+          type: integer
+    Schedule:
+      type: object
+      required: [kind]
+      properties:
+        kind:
+          type: string
+    Receipt:
+      type: object
+      properties:
+        id:
+          type: string

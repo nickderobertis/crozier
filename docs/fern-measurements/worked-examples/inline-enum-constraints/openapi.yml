@@ -1,0 +1,65 @@
+openapi: 3.0.3
+info:
+  title: Canal Locks
+  version: 1.0.0
+paths:
+  /passages:
+    post:
+      operationId: book_passage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Passage'
+      responses:
+        '204':
+          description: Booked
+  /moorings:
+    post:
+      operationId: book_mooring
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - berth
+              - tide
+              properties:
+                berth:
+                  type: string
+                tide:
+                  type: string
+                  enum:
+                  - slack
+                  - flood
+                  - ebb
+                  - neap
+                  pattern: ^(?!slack$).*$
+                  maxLength: 4
+      responses:
+        '204':
+          description: Moored
+components:
+  schemas:
+    Passage:
+      type: object
+      required:
+      - vessel
+      - window
+      properties:
+        vessel:
+          type: string
+        window:
+          type: string
+          description: Locks never open at slack water.
+          enum:
+          - slack
+          - flood
+          - ebb
+          - neap
+          pattern: ^(?!slack$).*$
+          minLength: 3
+          maxLength: 4

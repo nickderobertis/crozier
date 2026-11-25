@@ -1,0 +1,50 @@
+openapi: 3.0.3
+info:
+  title: Marina Notices
+  version: 1.0.0
+paths:
+  /notices:
+    get:
+      operationId: listNotices
+      description: |
+        List the posted notices.
+
+        ## Reading a notice
+        ```python
+        notice = client.list_notices()
+
+        print(notice)
+        ```
+
+        Notices expire at dusk.
+      responses:
+        '200':
+          description: Notices
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /notices/archive:
+    get:
+      operationId: listArchivedNotices
+      description: |
+        List the archived notices.
+
+        ## Fetching the archive
+        ```sh
+        curl -G https://marina.example/notices/archive \
+          --data-urlencode 'since=2020-01-01'
+
+        echo done
+        ```
+      responses:
+        '200':
+          description: Archived notices
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string

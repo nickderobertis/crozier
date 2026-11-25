@@ -1,0 +1,90 @@
+openapi: 3.1.0
+info:
+  title: Marina Survey
+  version: 1.0.0
+paths:
+  /surveys:
+    post:
+      operationId: requestSurvey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurveyRequest'
+      responses:
+        '204':
+          description: Requested
+  /surveys/latest:
+    get:
+      operationId: getLatestSurvey
+      responses:
+        '200':
+          description: The latest request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurveyRequest'
+  /soundings:
+    post:
+      operationId: takeSounding
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SoundingRequest'
+      responses:
+        '204':
+          description: Taken
+components:
+  schemas:
+    SurveyRequest:
+      type: object
+      properties:
+        area:
+          type: string
+          description: |+
+
+            The surveyed area.
+                Give it as a basin name or a pontoon range.
+
+        depth:
+          type: integer
+          description: |
+
+            The deepest sounding wanted.
+            Metres below chart datum.
+    SoundingRequest:
+      type: object
+      required: [berth]
+      properties:
+        berth:
+          type: string
+          description: The berth sounded.
+        zone:
+          anyOf:
+            - $ref: '#/components/schemas/BasinZone'
+            - type: 'null'
+          description: |+
+
+            The zone sounded, if one.
+                Name its basin.
+
+        remark:
+          type: string
+          description: |+
+
+            A free remark.
+
+        tide:
+          type: number
+          description: |
+
+            The tide height.
+    BasinZone:
+      type: object
+      required: [basin]
+      properties:
+        basin:
+          type: string

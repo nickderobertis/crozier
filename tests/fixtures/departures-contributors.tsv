@@ -13,7 +13,7 @@ docs/fern-measurements/bodies-responses/json-binary-path-literals/fern-expected	
 docs/fern-measurements/bodies-responses/json-request-shapes-literals/fern-expected	crozier-e2e::e2e	json_request_shapes_match_certified_output_in_both_enum_modes
 docs/fern-measurements/bodies-responses/multipart-alias-object-literals/fern-expected	crozier-e2e::e2e	multipart_object_encoding_matches_certified_output_in_both_enum_modes
 docs/fern-measurements/bodies-responses/multipart-binary-reference/fern-expected	crozier-e2e::e2e	bodies_responses::multipart_binary_references_are_sent_as_their_value
-docs/fern-measurements/bodies-responses/multipart-binary-required-part/fern-expected	crozier-e2e::e2e	bodies_responses::required_binary_reference_part_differs_only_in_its_worked_example
+docs/fern-measurements/bodies-responses/multipart-binary-required-part/fern-expected	crozier-e2e::e2e	bodies_responses::required_binary_reference_part_is_exampled_as_bytes
 docs/fern-measurements/bodies-responses/multipart-json-module-literals/fern-expected	crozier-e2e::e2e	multipart_object_encoding_matches_certified_output_in_both_enum_modes
 docs/fern-measurements/bodies-responses/multipart-nullable-array-literals/fern-expected	crozier-e2e::e2e	multipart_nullable_and_array_body_shapes_match_certified_output_in_both_enum_modes
 docs/fern-measurements/bodies-responses/multipart-only-body-collision/fern-expected	crozier-e2e::e2e	bodies_responses::multipart_only_body_collisions_declare_no_model

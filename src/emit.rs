@@ -2902,6 +2902,28 @@ fn readme_endpoint_eligible(ep: &Endpoint, types: &[TypeDecl], tag_decls: &[TagT
         && !root_binary_download_undocumented(ep)
         && path_object_documented(ep, types, tag_decls)
         && !raw_body_without_worked_example(ep)
+        && !ep
+            .path_params
+            .iter()
+            .any(|pp| path_union(&pp.type_ref, types, tag_decls))
+}
+
+/// Whether a path parameter's type is a union, through its aliases. The
+/// certified pair writes such an operation no worked call, so its README anchors
+/// on the next eligible operation, while crozier's own docstring and
+/// `reference.md` call stand (the `list-path-parameter-example` departure;
+/// docs/fern-measurements/worked-examples/composite-path-parameters/).
+fn path_union(t: &TypeRef, types: &[TypeDecl], tag_decls: &[TagTypeDecl]) -> bool {
+    match t {
+        TypeRef::Optional(inner) => path_union(inner, types, tag_decls),
+        TypeRef::Union(_) => true,
+        TypeRef::Named(name) => match lookup_decl(types, tag_decls, name) {
+            Some(TypeDecl::Alias(alias)) => path_union(&alias.target, types, tag_decls),
+            Some(TypeDecl::DiscriminatedUnion(_)) => true,
+            _ => false,
+        },
+        _ => false,
+    }
 }
 
 /// Whether the endpoint's request is a raw byte body `required: true` makes
@@ -10682,14 +10704,18 @@ impl<'a> ExampleCtx<'a> {
                 };
                 Example::Atom(format!("\"{s}\""))
             }
-            TypeRef::Primitive(Prim::Bytes) => Example::Atom(
-                if self.reference {
-                    "\"string\""
-                } else {
-                    "b\"string\""
-                }
-                .to_string(),
-            ),
+            // Fern samples a `bytes` value as it samples a string, named by its
+            // slot (`file="file"`), which the `bytes` annotation rejects; crozier
+            // passes the same sample as bytes in every writer (`file=b"file"`,
+            // the `bytes-string-example` departure).
+            TypeRef::Primitive(Prim::Bytes) => {
+                let s = match slot {
+                    Slot::Named(name) | Slot::Path(name) => name,
+                    Slot::Map => "value",
+                    Slot::Plain => "string",
+                };
+                Example::Atom(format!("b\"{s}\""))
+            }
             TypeRef::Primitive(Prim::Int) => Example::Atom("1".to_string()),
             TypeRef::Primitive(Prim::Long) => Example::Atom("1000000".to_string()),
             TypeRef::Primitive(Prim::Float) => Example::Atom("1.1".to_string()),
@@ -12347,10 +12373,21 @@ fn build_example_inner(
             // `request=`. Nor does one naming an alias of it: marimo-plugins'
             // `write_marimo_chatbot_cancel_prompt_output` takes a `type: "null"`
             // component and is documented with no argument.
-            if s.required
-                || body_example.is_some()
-                || s.example.is_some()
-                || !(is_any_type(&s.type_ref) || ctx.resolves_to_any(&s.type_ref))
+            // Without an importer example, Fern's IR fallback works only the
+            // required arguments, so an optional body is left out: torii's
+            // `node_query_projection_checkpoint_plan` posts a nullable
+            // `JsonValue` and answers an unresolved nested pointer, and the
+            // certified pair documents a bare call where its resolved siblings
+            // pass `request={"key": "value"}` (#891).
+            let fallback_omits = ep.importer_example_missing
+                && !s.required
+                && body_example.is_none()
+                && s.example.is_none();
+            if !fallback_omits
+                && (s.required
+                    || body_example.is_some()
+                    || s.example.is_some()
+                    || !(is_any_type(&s.type_ref) || ctx.resolves_to_any(&s.type_ref)))
             {
                 args.push((Some("request".to_string()), v));
             }
@@ -12376,8 +12413,14 @@ fn build_example_inner(
             // out, or synthesizes it where the signature requires it; its
             // Markdown writers do the same but write a required nullable
             // field's `null` as `None`.
-            let required_nullable =
-                |f: &BodyField| f.spec_required && f.optional && !is_any_type(&f.type_ref);
+            // A typeless field the schema makes nullable (`anyOf: [{}, null]`) is
+            // one too (#936): Aether's `experimental.workspace.create` requires
+            // `extra`, and the certified pair's docstring leaves it out while its
+            // Markdown writes `extra=None`. A typeless field without `null` is
+            // `Optional[Any]` only by Fern's typing and keeps its placeholder.
+            let required_nullable = |f: &BodyField| {
+                f.spec_required && f.optional && (!is_any_type(&f.type_ref) || f.nullable)
+            };
             let example_null = |f: &BodyField| match reference_fields {
                 Some(values) => values
                     .get(&f.wire_name)
@@ -12407,7 +12450,9 @@ fn build_example_inner(
             let selected = |f: &&BodyField| {
                 if example_null(f) {
                     return f.spec_required
-                        && (!f.optional || is_any_type(&f.type_ref) || documentation);
+                        && (!f.optional
+                            || is_any_type(&f.type_ref) && !f.nullable
+                            || documentation);
                 }
                 f.spec_required
                     && !(required_nullable(f) && (fallback || reference_fields.is_some()))
@@ -12544,7 +12589,7 @@ fn build_example_inner(
                     .unwrap_or_else(|| {
                         if documentation
                             && f.optional
-                            && !is_any_type(&f.type_ref)
+                            && (!is_any_type(&f.type_ref) || f.nullable)
                             && example_null(f)
                         {
                             Example::Atom("None".to_string())
@@ -12587,6 +12632,12 @@ fn build_example_inner(
                 if !f.spec_required && matches!(&v, Example::Call(_, args) if args.is_empty()) {
                     ctx.restore_recorded(recorded);
                     continue;
+                }
+                // A typeless body argument's placeholder stays on its line in the
+                // README, as a typeless model field's does (`position=` in
+                // docs/fern-measurements/worked-examples/restated-reference-descriptions/).
+                if is_any_type(&f.type_ref) {
+                    ctx.untyped_arguments.insert(example_name.clone());
                 }
                 args.push((Some(example_name), v));
             }

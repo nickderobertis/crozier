@@ -1,0 +1,96 @@
+openapi: 3.0.3
+info:
+  title: Mooring Registry
+  version: 1.0.0
+servers:
+  - url: https://moorings.example.com
+paths:
+  /berths/{berth}:
+    get:
+      operationId: getBerth
+      tags: [berths]
+      summary: A path parameter that is an anyOf of two objects.
+      parameters:
+        - name: berth
+          in: path
+          required: true
+          style: simple
+          schema:
+            $ref: '#/components/schemas/BerthKey'
+      responses:
+        '204':
+          description: Found.
+  /hulls/{hullIds}:
+    get:
+      operationId: getHulls
+      tags: [berths]
+      summary: A path parameter referencing a list of strings.
+      parameters:
+        - name: hullIds
+          in: path
+          required: true
+          style: simple
+          schema:
+            $ref: '#/components/schemas/HullIds'
+      responses:
+        '204':
+          description: Found.
+  /tides/{marks}:
+    get:
+      operationId: getTides
+      tags: [berths]
+      summary: A path parameter that is a map of strings.
+      parameters:
+        - name: marks
+          in: path
+          required: true
+          style: simple
+          explode: true
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      responses:
+        '204':
+          description: Found.
+  /logs/{stamps}:
+    get:
+      operationId: getLogs
+      tags: [berths]
+      summary: A path parameter that is a map of date-times.
+      parameters:
+        - name: stamps
+          in: path
+          required: true
+          style: simple
+          explode: true
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+              format: date-time
+      responses:
+        '204':
+          description: Found.
+components:
+  schemas:
+    HullIds:
+      type: array
+      items:
+        type: string
+    BerthKey:
+      anyOf:
+        - $ref: '#/components/schemas/SlipKey'
+        - $ref: '#/components/schemas/BuoyKey'
+    SlipKey:
+      type: object
+      required: [slip]
+      properties:
+        slip:
+          type: string
+    BuoyKey:
+      type: object
+      required: [buoy]
+      properties:
+        buoy:
+          type: integer

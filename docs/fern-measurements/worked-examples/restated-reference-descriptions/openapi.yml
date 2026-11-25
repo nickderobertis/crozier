@@ -1,0 +1,64 @@
+openapi: 3.0.3
+info:
+  title: Marina Charts
+  version: 1.0.0
+paths:
+  /berths/{berthId}:
+    get:
+      operationId: getBerth
+      parameters:
+        - name: berthId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The berth as linked data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BerthLinked'
+  /fenders:
+    post:
+      operationId: hangFender
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [position, size]
+              properties:
+                position:
+                  description: Where the fender hangs
+                size:
+                  type: string
+                colour:
+                  description: Its colour, if painted
+      responses:
+        '204':
+          description: Hung
+components:
+  schemas:
+    Outline:
+      description: A berth outline as well-known text.
+      type: string
+      nullable: true
+    Berth:
+      type: object
+      properties:
+        name:
+          type: string
+        outline:
+          description: A berth outline as well-known text.
+          type: string
+          nullable: true
+    BerthLinked:
+      allOf:
+        - $ref: '#/components/schemas/Berth'
+        - type: object
+          properties:
+            outline:
+              $ref: '#/components/schemas/Outline'
+          required: [outline]

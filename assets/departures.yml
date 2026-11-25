@@ -32,6 +32,23 @@
     invalid declared union examples and abstains on unsupported assertions.
   evidence: docs/departures/evidence/anyof-path-param-schema-example.md
 
+- id: binary-form-part-example
+  kind: fern-defect
+  trigger: >-
+    A multipart form part the method annotates bytes (a part referencing a
+    binary string component, `file: FormFile` with `FormFile = bytes`), in the
+    worked examples of README.md, reference.md and each client.py docstring.
+  fern: >-
+    The part's string sample (file="file"), a str for the bytes parameter.
+  crozier: >-
+    The same sample as bytes (file=b"file"); the annotation, the form encoding
+    and every other byte of the call remain matched.
+  reason: >-
+    Type-checking the documented call against the generated signature rejects
+    the str for the bytes parameter, so the example does not match the code;
+    the bytes literal is a value the annotation admits.
+  evidence: docs/departures/evidence/binary-form-part-example.md
+
 - id: binary-json-body-example
   kind: fern-defect
   trigger: >-
@@ -579,20 +596,26 @@
 - id: list-path-parameter-example
   kind: fern-defect
   trigger: >-
-    A path parameter whose schema is an array: the worked calls of the
-    operation in `README.md` and `reference.md`, and, where the array's items
-    are not strings, its client docstring examples.
+    A path parameter whose schema is an array or a map, inline or through a
+    component alias, or a union of object components: the worked calls of the
+    operation in `README.md` and `reference.md`, and, where the value is no
+    `typing.Sequence[str]`, its client docstring examples.
   fern: >-
-    The Markdown calls leave the required argument out (`client.probe()`), and
-    the docstring passes the parameter's string placeholder (`id="ID"`) for a
-    `typing.Sequence[int]`.
+    The Markdown calls leave the required argument out (`client.probe()`), or,
+    for a union, write no call at all (`client.probe(...)`); the docstring
+    passes the parameter's string placeholder (`id="ID"`, `values="values"`)
+    for a list of non-strings, a `typing.List[str]` alias or a map, and has no
+    `Examples` section for a union.
   crozier: >-
-    Every call passes the argument: the string placeholder where the items are
-    strings (a `str` is a `typing.Sequence[str]`), else a one-item list of the
-    item's example (`id=[1]`). Every other byte of the call is retained.
+    Every call passes the argument: the string placeholder where the parameter
+    is a `typing.Sequence[str]` (a `str` is one), else a one-item list or map of
+    the item's example (`id=[1]`, `values={"key": "value"}`), or the union's
+    first member constructed, with the `import datetime` only that value
+    uses; every other byte of the call is retained.
   reason: >-
-    The Markdown calls do not bind, the required argument missing (`TypeError`),
-    and the docstring's string is not a value a list of non-strings admits.
+    The Markdown calls do not bind, the required argument missing (`TypeError`)
+    or passed as an `Ellipsis`, and the docstring's string is not a value a list
+    of non-strings, a `typing.List` or a map admits.
   evidence: docs/departures/evidence/list-path-parameter-example.md
 
 - id: minimal-worked-call-optional-parameter
@@ -1218,6 +1241,27 @@
     for the operation's optional parameters, each valid for its schema, where
     Fern's drops them only because the success body is text.
   evidence: docs/departures/evidence/text-response-optional-query-examples.md
+
+- id: typeless-body-required-arguments
+  kind: fern-defect
+  trigger: >-
+    A JSON operation whose body requires a typeless (`{}`) value — a whole
+    `{}` body, or a required `{}` property of an inline object body — and so
+    takes no importer example: the worked calls of README.md, reference.md and
+    each client.py docstring.
+  fern: >-
+    The bare call (`client.knowledge_state_post()`), although the generated
+    method requires the body's arguments (`data: typing.Any`, `request:
+    typing.Any`, `session_id: str`).
+  crozier: >-
+    The call passing exactly those required arguments, the typeless ones as
+    `{"key": "value"}` and the rest their placeholders; the signature, imports
+    and every other line remain matched.
+  reason: >-
+    Binding the documented call to the generated method raises TypeError for
+    the missing required keyword arguments, so the example does not match the
+    code; crozier's call binds, and passes a value each annotation admits.
+  evidence: docs/departures/evidence/typeless-body-required-arguments.md
 
 - id: unquoted-timestamp-parameter-example
   kind: usefulness

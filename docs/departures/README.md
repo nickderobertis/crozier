@@ -213,7 +213,7 @@ when the two differ.
 
 | Kind | Entries | Meaning |
 | --- | --- | --- |
-| `fern-defect` | 47 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
+| `fern-defect` | 49 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
 | `branding` | 1 | crozier names itself where Fern names itself. |
 | `packaging` | 1 | crozier writes the packaged SDK's publishing details from its own settings. |
 | `provenance` | 1 | crozier writes a fixed record of how the SDK was generated. |
@@ -229,6 +229,15 @@ when the two differ.
 - **crozier writes:** The specification's declared example (branch_id_or_ref="abcdefghijklmnopqrst"). Every other argument and line is retained.
 - **Why:** Both calls bind and are valid strings for the parameter's str annotation; crozier's passes the value the specification itself declares, where Fern's passes a placeholder or an arbitrary first alternative. The rule rejects invalid declared union examples and abstains on unsupported assertions.
 - **Evidence:** [`docs/departures/evidence/anyof-path-param-schema-example.md`](../../docs/departures/evidence/anyof-path-param-schema-example.md)
+
+### `binary-form-part-example`
+
+- **Kind:** `fern-defect`
+- **Trigger:** A multipart form part the method annotates bytes (a part referencing a binary string component, `file: FormFile` with `FormFile = bytes`), in the worked examples of README.md, reference.md and each client.py docstring.
+- **Fern writes:** The part's string sample (file="file"), a str for the bytes parameter.
+- **crozier writes:** The same sample as bytes (file=b"file"); the annotation, the form encoding and every other byte of the call remain matched.
+- **Why:** Type-checking the documented call against the generated signature rejects the str for the bytes parameter, so the example does not match the code; the bytes literal is a value the annotation admits.
+- **Evidence:** [`docs/departures/evidence/binary-form-part-example.md`](../../docs/departures/evidence/binary-form-part-example.md)
 
 ### `binary-json-body-example`
 
@@ -467,10 +476,10 @@ when the two differ.
 ### `list-path-parameter-example`
 
 - **Kind:** `fern-defect`
-- **Trigger:** A path parameter whose schema is an array: the worked calls of the operation in `README.md` and `reference.md`, and, where the array's items are not strings, its client docstring examples.
-- **Fern writes:** The Markdown calls leave the required argument out (`client.probe()`), and the docstring passes the parameter's string placeholder (`id="ID"`) for a `typing.Sequence[int]`.
-- **crozier writes:** Every call passes the argument: the string placeholder where the items are strings (a `str` is a `typing.Sequence[str]`), else a one-item list of the item's example (`id=[1]`). Every other byte of the call is retained.
-- **Why:** The Markdown calls do not bind, the required argument missing (`TypeError`), and the docstring's string is not a value a list of non-strings admits.
+- **Trigger:** A path parameter whose schema is an array or a map, inline or through a component alias, or a union of object components: the worked calls of the operation in `README.md` and `reference.md`, and, where the value is no `typing.Sequence[str]`, its client docstring examples.
+- **Fern writes:** The Markdown calls leave the required argument out (`client.probe()`), or, for a union, write no call at all (`client.probe(...)`); the docstring passes the parameter's string placeholder (`id="ID"`, `values="values"`) for a list of non-strings, a `typing.List[str]` alias or a map, and has no `Examples` section for a union.
+- **crozier writes:** Every call passes the argument: the string placeholder where the parameter is a `typing.Sequence[str]` (a `str` is one), else a one-item list or map of the item's example (`id=[1]`, `values={"key": "value"}`), or the union's first member constructed, with the `import datetime` only that value uses; every other byte of the call is retained.
+- **Why:** The Markdown calls do not bind, the required argument missing (`TypeError`) or passed as an `Ellipsis`, and the docstring's string is not a value a list of non-strings, a `typing.List` or a map admits.
 - **Evidence:** [`docs/departures/evidence/list-path-parameter-example.md`](../../docs/departures/evidence/list-path-parameter-example.md)
 
 ### `minimal-worked-call-optional-parameter`
@@ -751,6 +760,15 @@ when the two differ.
 - **crozier writes:** The same call also passing each such optional parameter's declared example (included_schemas="public,auth", pgdelta="true"), as it and Fern both do for a JSON success body.
 - **Why:** Both calls bind; crozier's documents the values the specification declares for the operation's optional parameters, each valid for its schema, where Fern's drops them only because the success body is text.
 - **Evidence:** [`docs/departures/evidence/text-response-optional-query-examples.md`](../../docs/departures/evidence/text-response-optional-query-examples.md)
+
+### `typeless-body-required-arguments`
+
+- **Kind:** `fern-defect`
+- **Trigger:** A JSON operation whose body requires a typeless (`{}`) value — a whole `{}` body, or a required `{}` property of an inline object body — and so takes no importer example: the worked calls of README.md, reference.md and each client.py docstring.
+- **Fern writes:** The bare call (`client.knowledge_state_post()`), although the generated method requires the body's arguments (`data: typing.Any`, `request: typing.Any`, `session_id: str`).
+- **crozier writes:** The call passing exactly those required arguments, the typeless ones as `{"key": "value"}` and the rest their placeholders; the signature, imports and every other line remain matched.
+- **Why:** Binding the documented call to the generated method raises TypeError for the missing required keyword arguments, so the example does not match the code; crozier's call binds, and passes a value each annotation admits.
+- **Evidence:** [`docs/departures/evidence/typeless-body-required-arguments.md`](../../docs/departures/evidence/typeless-body-required-arguments.md)
 
 ### `unquoted-timestamp-parameter-example`
 

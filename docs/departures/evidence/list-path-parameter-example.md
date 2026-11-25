@@ -56,3 +56,45 @@ README's Retries section and `.fern/metadata.json`, and the departure's rows in
 `tests/fixtures/departures-ledger.tsv` recur on the same lines of Fern's output
 (a README row after the Retries section ten lines earlier), so the defective
 lines the record shows failing are Fern's at that pair too.
+
+## Aliased lists, maps and unions (#945, #947)
+
+The same defect reaches three more path-parameter shapes, measured on the
+registered witness candidate tonik
+(`t-unit/tonik/integration_test/simple_encoding/openapi.yaml`, sha256
+`30d1f6be…`) and the from-scratch
+[`composite-path-parameters`](../../fern-measurements/worked-examples/composite-path-parameters/openapi.yml)
+document (tonik measured at Fern CLI 5.200.0 / fern-python-sdk 5.41.25;
+re-measure both at the certified pair before landing):
+
+- a `$ref` to an array (`string_list: StringList`, `StringList =
+  typing.List[str]`) and an inline map (`values: typing.Dict[str, str]`,
+  `Dict[str, int]`, `Dict[str, datetime]`): Fern's Markdown calls leave the
+  argument out (`client.simple_encoding.test_list_in_path()`), and its
+  docstrings pass the string placeholder (`string_list="stringList"`,
+  `values="values"`), which neither a `typing.List` nor a map admits;
+- a union of object components (`dynamic_value: DynamicCompositeValue`, an
+  `anyOf` of three `$ref`s): Fern writes no docstring `Examples` section and
+  the Markdown placeholder `client.simple_encoding.test_any_of_composite_in_path(...)`,
+  which passes an `Ellipsis` for the required argument.
+
+pyright 1.1.408 (basic mode) over every worked example of Fern's tree,
+each against the tree's own `src/`:
+
+```text
+s0041_reference.py:8:1 - error: Argument missing for parameter "string_list" (reportCallIssue)
+s0045_reference.py:8:1 - error: Argument missing for parameter "values" (reportCallIssue)
+s0088_doc.py:5:17 - error: Argument of type "Literal['stringList']" cannot be assigned to parameter "string_list" of type "StringList" in function "test_list_in_path"
+s0092_doc.py:5:12 - error: Argument of type "Literal['values']" cannot be assigned to parameter "values" of type "Dict[str, str]" in function "test_map_string_in_path"
+s0094_doc.py:5:12 - error: Argument of type "Literal['values']" cannot be assigned to parameter "values" of type "Dict[str, datetime]" in function "test_map_date_time_in_path"
+```
+
+crozier passes `string_list=["stringList"]`, `values={"key": "value"}` (with
+`import datetime` for the date-time map) and
+`dynamic_value=EntityType_Person(first_name="first_name")`, none of which the
+same check reports. The region rule admits a docstring's multi-line container
+argument only where Fern passes its one-line placeholder at that place, and an
+`import datetime` only where the removed value was its snippet's one use; it
+admits a union example only where Fern's Markdown snippet is the bare
+`client.<path>.<method>(...)` and its docstring for the same method ends at
+`Returns`. Unit tests in `src/departures.rs` hold each.

@@ -74,4 +74,301 @@ fn readme_list_map_items_spread_as_the_reference_does() {
         )],
     );
 }
+/// #928: a fenced root docstring with no line ending in a backslash leaves its
+/// blank lines empty; one with such a line keeps them indented, as ruff leaves
+/// a docstring it cannot reflow.
+#[test]
+fn fenced_docstrings_leave_blank_lines_empty_unless_a_line_continues() {
+    holds(
+        "fenced-docstring-blanks",
+        &[
+            (
+                "#928",
+                "src/fern/client.py",
+                "        notice = client.list_notices()\n\n        print(notice)\n",
+            ),
+            (
+                "#928",
+                "src/fern/client.py",
+                "          --data-urlencode 'since=2020-01-01'\n        \n        echo done\n",
+            ),
+        ],
+    );
+}
+
+/// #929: a tab in a property description is a `\t` escape inside its
+/// `pydantic.Field(description=…)` literal, while the docstring beside it keeps
+/// the four spaces Fern's writer puts for a tab.
+#[test]
+fn field_description_literals_escape_their_tabs() {
+    holds(
+        "field-description-tabs",
+        &[
+            (
+                "#929",
+                "src/fern/types/permit.py",
+                "description=\"Exemption codes - Code\\tReason 1.\\tResident 2.\\tVisitor\")",
+            ),
+            (
+                "#929",
+                "src/fern/types/permit.py",
+                "    Exemption codes - Code    Reason 1.    Resident 2.    Visitor\n",
+            ),
+        ],
+    );
+}
+
+/// #930: a keep-chomped (`|+`) description keeps its trailing blank line where
+/// it documents the argument of a body schema used only as that body, and is
+/// trimmed where the schema is also a model.
+#[test]
+fn kept_description_blank_lines_follow_the_body_schema() {
+    holds(
+        "kept-blank-descriptions",
+        &[
+            (
+                "#930",
+                "src/fern/client.py",
+                "            A free remark.\n\n\n        tide : typing.Optional[float]",
+            ),
+            (
+                "#930",
+                "src/fern/client.py",
+                "                Give it as a basin name or a pontoon range.\n\n        depth : typing.Optional[int]",
+            ),
+        ],
+    );
+}
+
+/// #931: a property restating a described parent field by a bare `$ref` is
+/// documented by its own (absent) description, and a required typeless inline
+/// body property documents nothing; the optional typeless control keeps its own.
+#[test]
+fn restated_and_typeless_fields_use_their_own_descriptions() {
+    holds(
+        "restated-reference-descriptions",
+        &[
+            (
+                "#931",
+                "src/fern/types/berth_linked.py",
+                "    outline: typing.Optional[Outline] = None\n",
+            ),
+            (
+                "#931",
+                "src/fern/client.py",
+                "        position : typing.Any\n\n        size : str",
+            ),
+            (
+                "#931",
+                "src/fern/client.py",
+                "        colour : typing.Optional[typing.Any]\n            Its colour, if painted",
+            ),
+        ],
+    );
+}
+
+/// #864: a worked example's string escapes are doubled in the docstring, so the
+/// call Python's `help()` shows is the call the README writes (the
+/// `docstring-example-escapes` departure).
+#[test]
+fn docstring_examples_keep_their_string_escapes() {
+    holds(
+        "docstring-example-escapes",
+        &[(
+            "#864",
+            "src/fern/client.py",
+            "            entry='Moored at dawn.\\\\nWind\\\\tNE 12 kn, \"steady\"',",
+        )],
+    );
+}
+
+/// #541: an enum example narrowed by a dropped `allOf` member's constraints
+/// takes the first member they admit; #960: so does an enum whose own pattern
+/// and length reject its first member (the `pattern-narrowed-enum-example`
+/// departure).
+#[test]
+fn narrowed_enum_examples_take_a_member_the_constraints_admit() {
+    holds(
+        "composed-enum-constraints",
+        &[("#541", "src/fern/client.py", "            state=ParcelState.STAMPED,")],
+    );
+    holds(
+        "inline-enum-constraints",
+        &[
+            ("#960", "src/fern/client.py", "            window=PassageWindow.EBB,"),
+            ("#960", "src/fern/client.py", "            tide=BookMooringRequestTide.EBB,"),
+        ],
+    );
+}
+
+/// #937: a `format: date` property's declared unquoted YAML date is its worked
+/// value, the `2000-01-23` sentinel included (the
+/// `declared-timestamp-property-example` departure), and a quoted `date`
+/// component example is the path argument's value, as the certified pair
+/// writes it.
+#[test]
+fn declared_dates_are_the_worked_values() {
+    holds(
+        "declared-date-examples",
+        &[
+            (
+                "#937",
+                "src/fern/client.py",
+                "            sailed_on=datetime.date.fromisoformat(\n                \"2031-04-02\",\n            ),",
+            ),
+            (
+                "#937",
+                "src/fern/client.py",
+                "            checked_on=datetime.date.fromisoformat(\n                \"2000-01-23\",\n            ),",
+            ),
+            (
+                "#937",
+                "src/fern/client.py",
+                "            day=datetime.date.fromisoformat(\n                \"2031-06-21\",\n            ),",
+            ),
+        ],
+    );
+}
+
+/// #933: a docstring constructor for an `allOf` of two `$ref`s lists the later
+/// member's fields first; an `allOf` of a `$ref` and an inline member keeps
+/// declaration order.
+#[test]
+fn reference_compositions_list_the_later_member_first() {
+    holds(
+        "composed-reference-order",
+        &[
+            (
+                "#933",
+                "src/fern/orders/client.py",
+                "            buyer=Buyer(\n                pier=\"pier\",\n                slip=1,\n                name=\"name\",\n                phone=\"phone\",\n            ),",
+            ),
+            (
+                "#933",
+                "src/fern/orders/client.py",
+                "            terms=Terms(\n                kind=\"kind\",\n                due_on=\"due_on\",\n            ),",
+            ),
+        ],
+    );
+}
+
+/// #935: an undiscriminated union whose first member declares no example is
+/// worked from the first member that does.
+#[test]
+fn union_examples_take_the_member_declaring_one() {
+    holds(
+        "union-example-member",
+        &[(
+            "#935",
+            "src/fern/watches/client.py",
+            "            trigger=TideTrigger(\n                station=\"harbour-mouth\",\n                height_m=2.5,\n            ),",
+        )],
+    );
+}
+
+/// #891: an operation whose importer builds no example passes no optional body,
+/// while a required body and one beside a resolved response keep theirs.
+#[test]
+fn unexampled_operations_omit_their_optional_bodies() {
+    holds(
+        "unresolved-response-optional-body",
+        &[
+            ("#891", "src/fern/firings/client.py", "        client.firings.plan_firing()\n"),
+            (
+                "#891",
+                "src/fern/firings/client.py",
+                "        client.firings.record_firing(\n            request={\"key\": \"value\"},\n        )",
+            ),
+        ],
+    );
+}
+
+/// #932: an optional query array of enum items is left out of the worked call,
+/// a plain string array keeps its item example, and a required enum array is
+/// passed.
+#[test]
+fn optional_enum_query_arrays_are_left_out_of_worked_calls() {
+    holds(
+        "optional-enum-query-arrays",
+        &[
+            (
+                "#932",
+                "src/fern/glazes/client.py",
+                "        client.glazes.list_glazes(\n            palette=[\"celadon\"],\n        )",
+            ),
+            (
+                "#932",
+                "src/fern/glazes/client.py",
+                "        client.glazes.list_required_glazes(\n            finish=[Finish.SATIN],\n        )",
+            ),
+        ],
+    );
+}
+
+/// #934: where a shared `$ref` body's duplicate operation collapses, crozier's
+/// `reference.md` lists the flattened arguments its methods take, in signature
+/// order, where the certified pair lists a `request` it puts ahead of the query
+/// parameters (the `request-alias-reference-parameters` departure).
+#[test]
+fn reference_lists_the_flattened_body_after_the_queries() {
+    holds(
+        "alias-body-reference-order",
+        &[(
+            "#934",
+            "reference.md",
+            "**crew_ids:** `typing.Optional[typing.Union[str, typing.Sequence[str]]]` \n    \n</dd>\n</dl>\n\n<dl>\n<dd>\n\n**title:** `typing.Optional[str]` ",
+        )],
+    );
+}
+
+/// #936: typeless body values keep every argument the signature requires (the
+/// `typeless-body-required-arguments` departure), and a required nullable
+/// typeless field is left out of the docstring's call.
+#[test]
+fn typeless_body_values_keep_required_arguments() {
+    holds(
+        "typeless-body-values",
+        &[
+            (
+                "#936",
+                "src/fern/locker/client.py",
+                "        client.locker.update_annotations(\n            locker_id=\"lockerId\",\n            data={\"key\": \"value\"},\n        )",
+            ),
+            (
+                "#936",
+                "src/fern/locker/client.py",
+                "        client.locker.create_workspace(\n            kind=\"kind\",\n        )",
+            ),
+        ],
+    );
+}
+
+/// #945 and #947: list, map and union path parameters keep crozier's worked
+/// values that bind to the signature (the `list-path-parameter-example`
+/// departure), and the README anchors on the first operation the certified pair
+/// can work.
+#[test]
+fn composite_path_parameters_keep_valid_worked_values() {
+    holds(
+        "composite-path-parameters",
+        &[
+            (
+                "#947",
+                "src/fern/berths/client.py",
+                "        client.berths.get_berth(\n            berth=SlipKey(\n                slip=\"slip\",\n            ),\n        )",
+            ),
+            (
+                "#945",
+                "src/fern/berths/client.py",
+                "        client.berths.get_hulls(\n            hull_ids=[\"hullIds\"],\n        )",
+            ),
+            (
+                "#945",
+                "src/fern/berths/client.py",
+                "        client.berths.get_tides(\n            marks={\"key\": \"value\"},\n        )",
+            ),
+            ("#947", "README.md", "client.berths.get_hulls(\n"),
+        ],
+    );
+}
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]

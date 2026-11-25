@@ -94,11 +94,16 @@ docs/fern-measurements/bodies-responses/multipart-binary-reference/fern-expected
 docs/fern-measurements/bodies-responses/multipart-binary-reference/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/bodies-responses/multipart-binary-reference/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/bodies-responses/multipart-binary-reference/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/bodies-responses/multipart-binary-required-part/fern-expected	README.md	43	binary-form-part-example
+docs/fern-measurements/bodies-responses/multipart-binary-required-part/fern-expected	README.md	74	binary-form-part-example
+docs/fern-measurements/bodies-responses/multipart-binary-required-part/fern-expected	reference.md	24	binary-form-part-example
 docs/fern-measurements/bodies-responses/multipart-binary-required-part/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/bodies-responses/multipart-binary-required-part/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/fern-measurements/bodies-responses/multipart-binary-required-part/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/bodies-responses/multipart-binary-required-part/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/bodies-responses/multipart-binary-required-part/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/bodies-responses/multipart-binary-required-part/fern-expected	src/fern/uploads/client.py	56	binary-form-part-example
+docs/fern-measurements/bodies-responses/multipart-binary-required-part/fern-expected	src/fern/uploads/client.py	148	binary-form-part-example
 docs/fern-measurements/bodies-responses/multipart-json-module-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
 docs/fern-measurements/bodies-responses/multipart-json-module-literals/fern-expected	reference.md	2	reference-anchor-follows-corrected-client
 docs/fern-measurements/bodies-responses/multipart-json-module-literals/fern-expected	reference.md	71	reference-anchor-follows-corrected-client

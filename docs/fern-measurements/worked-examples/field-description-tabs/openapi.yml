@@ -1,0 +1,26 @@
+openapi: 3.0.3
+info:
+  title: Marina Harbourmaster
+  version: 1.0.0
+paths:
+  /permits:
+    get:
+      operationId: getPermit
+      responses:
+        '200':
+          description: The permit
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Permit'
+components:
+  schemas:
+    Permit:
+      type: object
+      properties:
+        exemptionCode:
+          type: string
+          description: "Exemption codes - Code\tReason 1.\tResident 2.\tVisitor"
+        berth:
+          type: string
+          description: "Berth\tletter and number"

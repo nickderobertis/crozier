@@ -1,0 +1,74 @@
+openapi: 3.0.3
+info:
+  title: Glaze Catalog
+  version: 1.0.0
+servers:
+  - url: https://glaze.example.com
+paths:
+  /glazes:
+    get:
+      operationId: listGlazes
+      tags: [glazes]
+      summary: Optional enum arrays, by reference and inline, beside a string array.
+      parameters:
+        - name: finish
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Finish'
+        - name: firing
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [bisque, glaze, raku]
+              example: raku
+        - name: palette
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+              example: celadon
+      responses:
+        '200':
+          description: The glazes.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /glazes/required:
+    get:
+      operationId: listRequiredGlazes
+      tags: [glazes]
+      summary: A required enum array, by reference.
+      parameters:
+        - name: finish
+          in: query
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Finish'
+      responses:
+        '200':
+          description: The glazes.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+components:
+  schemas:
+    Finish:
+      type: string
+      enum: [matte, satin, gloss]
+      example: satin
