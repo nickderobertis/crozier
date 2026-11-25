@@ -396,8 +396,9 @@ fn composite_path_parameters_keep_valid_worked_values() {
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This `sdk_env_*` journey runs only in the `sdk-env` project, which AGENTS.md promotes out of the affected tier into its own required CI leg, so no unrelated edit newly triggers it; `#[ignore]` is the one mechanism crates/crozier-e2e/AGENTS.md gives for routing a journey there.
-/// Every worked call each measurement's crozier SDK documents, in both enum
-/// modes, binds to that SDK's signatures under pyright, where the certified
+/// Every worked call each measurement's crozier SDK documents (its docstrings,
+/// `reference.md` and README), in both enum modes, binds to that SDK's
+/// signatures under pyright, where the certified
 /// trees' calls the departures correct do not (a missing required argument, a
 /// list or map passed a string, a string passed to bytes, an escape evaluated
 /// into a broken literal); and each repaired value validates against its source
@@ -444,10 +445,33 @@ fn sdk_env_worked_examples_bind_and_their_repaired_values_validate() {
             );
         }
     }
+    // The required binary part's calls bind in both modes: two docstring
+    // calls, the reference usage and the README's sync and async calls all pass
+    // `file=b"file"` to its `FormFile` (bytes) annotation.
     let multipart = "docs/fern-measurements/bodies-responses";
-    let out = temp.path().join("multipart-binary-required-part");
-    generate_in(multipart, "multipart-binary-required-part", "python-enums", &out);
-    assert!(check(&out).status.success(), "the required binary part's calls bind");
+    for mode in ["python-enums", "literals"] {
+        let out = temp.path().join(format!("multipart-binary-required-part-{mode}"));
+        generate_in(multipart, "multipart-binary-required-part", mode, &out);
+        let readme = std::fs::read_to_string(out.join("README.md")).expect("the README");
+        assert_eq!(readme.matches("file=b\"file\",").count(), 2, "{mode}: {readme}");
+        let run = check(&out);
+        let stdout = String::from_utf8_lossy(&run.stdout);
+        assert!(run.status.success(), "{mode}: {}", String::from_utf8_lossy(&run.stderr));
+        assert!(stdout.contains("8 worked examples type-check"), "{mode}: {stdout}");
+    }
+    // A README call passing the str Fern writes for the bytes part fails as a
+    // README example, and the corrected call passes again.
+    let out = temp.path().join("multipart-binary-required-part-python-enums");
+    let readme = out.join("README.md");
+    let corrected = std::fs::read_to_string(&readme).expect("the README");
+    std::fs::write(&readme, corrected.replacen("file=b\"file\",", "file=\"file\",", 1)).expect("break the call");
+    let run = check(&out);
+    let report = String::from_utf8_lossy(&run.stderr);
+    assert_eq!(run.status.code(), Some(1), "{report}");
+    assert!(report.contains("readme_") && report.contains("\"FormFile\""), "{report}");
+    assert!(!report.contains("docstring_") && !report.contains("reference_"), "{report}");
+    std::fs::write(&readme, &corrected).expect("restore the call");
+    assert!(check(&out).status.success(), "the corrected README call binds");
     for (dir, case, says) in [
         (DIR, "composite-path-parameters", "error"),
         (DIR, "docstring-example-escapes", "error"),
@@ -459,6 +483,9 @@ fn sdk_env_worked_examples_bind_and_their_repaired_values_validate() {
         assert_eq!(run.status.code(), Some(1), "{case}: {report}");
         assert!(report.contains(says), "{case}: {report}");
     }
+    // Fern's README calls of the bytes part are checked, and fail, too.
+    let run = check(&root.join(multipart).join("multipart-binary-required-part/fern-expected"));
+    assert!(String::from_utf8_lossy(&run.stderr).contains("readme_"), "Fern's README calls are checked");
     // A root without a generated package documents nothing to check.
     assert_eq!(check(&root.join(DIR)).status.code(), Some(2));
 

@@ -3,8 +3,10 @@
 Usage: worked_examples_typecheck.py SDK_ROOT
 
 SDK_ROOT is a generated packaged tree (its package under `src/`). Each client
-method docstring's `Examples` block (sync and async) and each `reference.md`
-usage block becomes its own module, and pyright checks them with `src/` on its
+method docstring's `Examples` block (sync and async), each `reference.md` usage
+block, and each `README.md` block that calls the client with its worked
+arguments becomes its own module, named for where it came from
+(`readme_0.py`), and pyright checks them with `src/` on its
 path, inferring the client's unannotated sub-client properties from their
 bodies (mypy reads those as `Any` and checks nothing): an argument the method
 does not take, a missing required one, or a value whose type its annotation
@@ -27,6 +29,35 @@ from pathlib import Path
 
 EXAMPLES = "Examples\n        --------\n"
 USAGE = re.compile(r"#### 🔌 Usage\n\n<dl>\n<dd>\n\n<dl>\n<dd>\n\n```python\n(.*?)```", re.S)
+README_BLOCK = re.compile(r"^```python\n(.*?)^```$", re.S | re.M)
+
+
+def readme_calls(text: str) -> list[str]:
+    """The README blocks that construct the client and call it with worked
+    arguments: the usage, async and environment sections. A fragment using a
+    client constructed elsewhere (the exception and retry sections) or
+    abbreviating its arguments as `...` (raw responses, timeouts, a custom
+    client) documents no call to bind, and a streaming block's module-level
+    `yield` is the certified pair's matched simplification, not a call either."""
+    found = []
+    for block in README_BLOCK.findall(text):
+        try:
+            tree = ast.parse(block)
+        except SyntaxError:
+            found.append(block)
+            continue
+        abbreviated = any(isinstance(node, ast.Constant) and node.value is Ellipsis for node in ast.walk(tree))
+        streaming = any(isinstance(node, (ast.Yield, ast.YieldFrom)) for node in ast.walk(tree))
+        constructs_client = any(
+            isinstance(node, ast.Assign) and any(ast.unparse(target) == "client" for target in node.targets)
+            for node in tree.body
+        )
+        calls_client = any(
+            isinstance(node, ast.Call) and ast.unparse(node.func).startswith("client.") for node in ast.walk(tree)
+        )
+        if constructs_client and calls_client and not abbreviated and not streaming:
+            found.append(block)
+    return found
 
 
 def docstring_examples(source: str) -> list[str]:
@@ -42,13 +73,18 @@ def docstring_examples(source: str) -> list[str]:
     return found
 
 
-def examples(root: Path) -> list[str]:
+def examples(root: Path) -> list[tuple[str, str]]:
+    """Each documented worked example as `(source, code)`, the source one of
+    `docstring`, `reference` and `readme`."""
     found = []
     for client in sorted((root / "src").rglob("client.py")):
-        found.extend(docstring_examples(client.read_text(encoding="utf-8")))
+        found.extend(("docstring", code) for code in docstring_examples(client.read_text(encoding="utf-8")))
     reference = root / "reference.md"
     if reference.is_file():
-        found.extend(USAGE.findall(reference.read_text(encoding="utf-8")))
+        found.extend(("reference", code) for code in USAGE.findall(reference.read_text(encoding="utf-8")))
+    readme = root / "README.md"
+    if readme.is_file():
+        found.extend(("readme", code) for code in readme_calls(readme.read_text(encoding="utf-8")))
     return found
 
 
@@ -63,8 +99,8 @@ def main(argv: list[str]) -> int:
         return 2
     with tempfile.TemporaryDirectory() as work:
         files = []
-        for number, snippet in enumerate(snippets):
-            path = Path(work) / f"example_{number}.py"
+        for number, (source, snippet) in enumerate(snippets):
+            path = Path(work) / f"{source}_{number}.py"
             path.write_text(snippet, encoding="utf-8")
             files.append(path.name)
         config = {"include": files, "extraPaths": [str(root / "src")], "typeCheckingMode": "basic"}
