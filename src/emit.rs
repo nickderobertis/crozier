@@ -946,7 +946,13 @@ fn render_field(field: &Field, imports: &mut Imports) -> RenderedField {
                     "pydantic.Field(",
                     vec![
                         Doc::atom(format!("alias=\"{alias}\"")),
-                        Doc::atom(format!("description=\"{}\"", escape_py_str(description))),
+                        // Fern writes a tab in the description literal as its
+                        // `\t` escape; only a raw tab its writer emits becomes
+                        // four spaces (quickbooks' `TaxExemptionReasonId`).
+                        Doc::atom(format!(
+                            "description=\"{}\"",
+                            escape_py_str(description).replace('\t', "\\t")
+                        )),
                     ],
                     ")",
                 )
@@ -3440,9 +3446,11 @@ pub(crate) fn reference_param_suffix(description: Option<&str>) -> String {
         // with a blank line, and loses only its trailing ones: measured at
         // fern-python-sdk 5.41.3 (`docs/fern-measurements/handed-off/
         // type-declarations/R6`), agentstack's `metadata` and OpenAQ's
-        // `country_id`.
+        // `country_id`. A line break it still ends on is a blank line its
+        // description kept (`ir::Field::doc_tail_blank_lines`): SeequentEvo's
+        // keep-chomped `QueryCriteria.bbox` ends its paragraph on one.
         Some(d) if d.trim_end_matches(['\r', '\n']).trim_start().contains('\n') => {
-            format!(" \n\n{}", d.trim_end_matches(['\r', '\n']))
+            format!(" \n\n{}", d.trim_end_matches('\r'))
         }
         Some(d) => format!(" — {d}"),
         None => " ".to_string(),
@@ -5377,6 +5385,7 @@ fn render_discriminated_union(
                 nullable: false,
                 spec_required: true,
                 docstring: None,
+                doc_tail_blank_lines: 0,
                 example: None,
                 declared_name: None,
                 read_only: false,
@@ -6215,6 +6224,21 @@ fn raw_docstring(
     lines.push("        \"\"\"".to_string());
     pad_docstring_blank_lines(&mut lines);
     lines.join("\n")
+}
+
+/// One line of a method docstring's worked example. Every backslash is
+/// doubled, because the docstring is an ordinary string literal that Python
+/// evaluates before `help()` or an IDE shows it: the example's own `\n` would
+/// otherwise reach the reader as a line break inside its string argument, and
+/// `\"` as a bare quote that ends it. Fern writes the example's bytes as they
+/// are, so the docstring source carries one backslash per escape where
+/// crozier's carries two (the `docstring-example-escapes` departure).
+fn docstring_example_line(line: &str) -> String {
+    if line.is_empty() {
+        String::new()
+    } else {
+        format!("        {}", line.replace('\\', "\\\\"))
+    }
 }
 
 /// Give a method docstring's blank lines the 8-space body indent, as Fern writes
@@ -8631,13 +8655,7 @@ fn client_stream_docstring(
         lines.push(String::new());
         lines.push("        Examples".to_string());
         lines.push("        --------".to_string());
-        for l in ex_lines {
-            if l.is_empty() {
-                lines.push(String::new());
-            } else {
-                lines.push(format!("        {l}"));
-            }
-        }
+        lines.extend(ex_lines.iter().map(|l| docstring_example_line(l)));
     }
     lines.push("        \"\"\"".to_string());
     pad_docstring_blank_lines(&mut lines);
@@ -8753,13 +8771,7 @@ fn client_binary_stream_docstring(
         lines.push(String::new());
         lines.push("        Examples".to_string());
         lines.push("        --------".to_string());
-        for l in ex_lines {
-            if l.is_empty() {
-                lines.push(String::new());
-            } else {
-                lines.push(format!("        {l}"));
-            }
-        }
+        lines.extend(ex_lines.iter().map(|l| docstring_example_line(l)));
     }
     lines.push("        \"\"\"".to_string());
     pad_docstring_blank_lines(&mut lines);
@@ -8846,13 +8858,7 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
         lines.push(String::new());
         lines.push("        Examples".to_string());
         lines.push("        --------".to_string());
-        for l in ex_lines {
-            if l.is_empty() {
-                lines.push(String::new());
-            } else {
-                lines.push(format!("        {l}"));
-            }
-        }
+        lines.extend(ex_lines.iter().map(|l| docstring_example_line(l)));
     }
     lines.push("        \"\"\"".to_string());
     pad_docstring_blank_lines(&mut lines);
@@ -10856,6 +10862,29 @@ impl<'a> ExampleCtx<'a> {
         {
             return Example::Atom(format!("{value:?}"));
         }
+        // Of component models, the first whose schema declares an example is
+        // the one worked, where the first declares none (#935: epilot's
+        // `AnyTrigger` is worked as `EventCatalogTrigger`, its tenth member and
+        // the only one with an `example`).
+        let declares_example = |variant: &TypeRef| match variant {
+            TypeRef::Named(name) => matches!(
+                self.find(name),
+                Some(TypeDecl::Object(object)) if !object.example_fields.is_empty()
+            ),
+            _ => false,
+        };
+        let models = |variant: &TypeRef| match variant {
+            TypeRef::Named(name) => matches!(self.find(name), Some(TypeDecl::Object(_))),
+            _ => false,
+        };
+        if !self.field_examples_ignored
+            && variants.first().is_some_and(|first| models(first) && !declares_example(first))
+        {
+            if let Some(chosen) = variants.iter().find(|variant| declares_example(variant)) {
+                let chosen = chosen.clone();
+                return self.value(&chosen, slot);
+            }
+        }
         match variants.first() {
             Some(first) => {
                 let first = first.clone();
@@ -11377,6 +11406,41 @@ impl<'a> ExampleCtx<'a> {
     /// An object's fields including those inherited from its base classes (bases
     /// first, in declaration order).
     fn object_fields(&self, obj: &ObjectType) -> Vec<ExampleField> {
+        let mut out = self.declared_object_fields(obj);
+        // The model's own example sets what it inherits as well (#935).
+        for field in &mut out {
+            if let Some(value) = obj.inherited_examples.get(&field.wire_name) {
+                if !obj.fields.iter().any(|own| own.wire_name == field.wire_name) {
+                    field.parent_example = true;
+                    field.example = Some(value.clone());
+                }
+            }
+        }
+        out
+    }
+
+    /// [`Self::object_fields`] before the model's own example is laid over its
+    /// inherited fields.
+    fn declared_object_fields(&self, obj: &ObjectType) -> Vec<ExampleField> {
+        // A docstring lists an `allOf` of `$ref`s from its last member back:
+        // the model's own fields (a member it inlines) ahead of its bases, and
+        // a later base ahead of an earlier one (#933, paypal's `Configuration`
+        // and `PhoneDetail`). The Markdown writers keep declaration order.
+        if !self.documentation && obj.reference_composition {
+            let own = ObjectType {
+                bases: Vec::new(),
+                reference_composition: false,
+                inherited_examples: std::collections::BTreeMap::new(),
+                ..obj.clone()
+            };
+            let mut out = self.object_fields(&own);
+            for base in obj.bases.iter().rev() {
+                if let Some(TypeDecl::Object(b)) = self.find(base) {
+                    out.extend(self.object_fields(b));
+                }
+            }
+            return out;
+        }
         let mut out = Vec::new();
         for base in &obj.bases {
             if let Some(TypeDecl::Object(b)) = self.find(base) {
@@ -11946,7 +12010,12 @@ fn build_example_inner(
                 // `id="id"`.
                 .filter(|_| !ep.binary_response && !ep.text_response)
                 .and_then(|example| {
-                    if ctx.example_is_scalar(&pp.type_ref) {
+                    // A date takes its declared value too: NWS's `Date`
+                    // component example (`"2025-02-23"`) is every `date`
+                    // path argument's in the certified pair's examples.
+                    if ctx.example_is_scalar(&pp.type_ref)
+                        || pp.quoted_date_example && ctx.example_is_temporal(&pp.type_ref)
+                    {
                         ctx.value_from_example(&pp.type_ref, example)
                     } else {
                         ctx.union_parameter_string_example(&pp.type_ref, example)
@@ -13144,34 +13213,56 @@ fn compact_documentation_values(
         {
             let indent = line.len() - line.trim_start().len();
             compact.push(format!("{}{head}=[", " ".repeat(indent)));
-            let items: Vec<&str> = items.split(", ").collect();
-            compact.extend(items.iter().enumerate().map(|(index, item)| {
-                let comma = if index + 1 == items.len() { "" } else { "," };
-                format!("{}{item}{comma}", " ".repeat(indent + 4))
-            }));
+            let items = top_level_items(items);
+            let typed = !untyped_arguments.contains(head.trim());
+            for (position, item) in items.iter().enumerate() {
+                let comma = if position + 1 == items.len() { "" } else { "," };
+                // A flat dict item is a map the Markdown writers spread one
+                // pair per line, as they do a dict argument: lore-weave's
+                // `messages=[{"key": "value"}]` (#927).
+                match flat_dict_pairs(item).filter(|_| typed) {
+                    Some(pairs) => {
+                        compact.push(format!("{}{{", " ".repeat(indent + 4)));
+                        push_pair_lines(&mut compact, &pairs, indent + 8);
+                        compact.push(format!("{}}}{comma}", " ".repeat(indent + 4)));
+                    }
+                    None => compact.push(format!("{}{item}{comma}", " ".repeat(indent + 4))),
+                }
+            }
             compact.push(format!("{}],", " ".repeat(indent)));
             index += 1;
             continue;
         }
-        // The Markdown writers wrap a one-pair dict argument onto its own lines:
-        // bunq's `{"key": "value"}` placeholder and the Auto Agent Protocol's
-        // `data={"type": "dealer.information.request"}` alike.
+        // The Markdown writers spread a dict argument one pair per line: bunq's
+        // `{"key": "value"}` placeholder, the Auto Agent Protocol's
+        // `data={"type": "dealer.information.request"}`, and every pair of a
+        // multi-pair dict whatever its values (#540), the last pair bare.
         if !reference {
-            if let Some((head, item)) = trimmed
-                .strip_suffix("},")
-                .and_then(|value| value.split_once("={"))
-                .filter(|(_, item)| {
-                    item.starts_with('"')
-                        && item.contains("\": ")
-                        && !item.contains(['{', '[', '}', ']'])
-                        && item.matches("\", \"").count() == 0
-                })
+            if let Some((head, pairs)) = trimmed
+                .strip_suffix(',')
+                .and_then(|value| value.split_once('='))
                 .filter(|(head, _)| !untyped_arguments.contains(*head))
+                .and_then(|(head, value)| Some((head, flat_dict_pairs(value)?)))
             {
                 let indent = line.len() - line.trim_start().len();
                 compact.push(format!("{}{head}={{", " ".repeat(indent)));
-                compact.push(format!("{}{item}", " ".repeat(indent + 4)));
+                push_pair_lines(&mut compact, &pairs, indent + 4);
                 compact.push(format!("{}}},", " ".repeat(indent)));
+                index += 1;
+                continue;
+            }
+        }
+        // A flat dict item of a wrapped list is spread the same way: lore-weave's
+        // `messages=[{"key": "value"}]` writes its item over three lines (#927).
+        if !reference {
+            let (item, comma) = trimmed
+                .strip_suffix(',')
+                .map_or((trimmed, ""), |item| (item, ","));
+            if let Some(pairs) = flat_dict_pairs(item) {
+                let indent = line.len() - line.trim_start().len();
+                compact.push(format!("{}{{", " ".repeat(indent)));
+                push_pair_lines(&mut compact, &pairs, indent + 4);
+                compact.push(format!("{}}}{comma}", " ".repeat(indent)));
                 index += 1;
                 continue;
             }
@@ -13189,6 +13280,59 @@ fn compact_documentation_values(
         }
     }
     compact
+}
+
+/// The top-level items of a flat Python collection's inner text: commas inside
+/// a string or a nested bracket do not separate items.
+fn top_level_items(inner: &str) -> Vec<&str> {
+    let mut items = Vec::new();
+    let (mut depth, mut quoted, mut escaped, mut start) = (0usize, false, false, 0usize);
+    let bytes = inner.as_bytes();
+    for (position, &byte) in bytes.iter().enumerate() {
+        if quoted {
+            match byte {
+                _ if escaped => escaped = false,
+                b'\\' => escaped = true,
+                b'"' => quoted = false,
+                _ => {}
+            }
+            continue;
+        }
+        match byte {
+            b'"' => quoted = true,
+            b'[' | b'{' | b'(' => depth += 1,
+            b']' | b'}' | b')' => depth = depth.saturating_sub(1),
+            b',' if depth == 0 && bytes.get(position + 1) == Some(&b' ') => {
+                items.push(&inner[start..position]);
+                start = position + 2;
+            }
+            _ => {}
+        }
+    }
+    items.push(&inner[start..]);
+    items
+}
+
+/// The pairs of a flat dict literal `{"k": v, …}` with string keys, or `None`
+/// for anything else. A value keeps its own flat spelling: only the outer dict
+/// is spread, as aziontech's `{"attributes": {"rate": 8}, "type": "type"}`
+/// item keeps `{"rate": 8}` on its pair's line. A value constructing anything
+/// (a call) is never a flat dict's.
+fn flat_dict_pairs(value: &str) -> Option<Vec<&str>> {
+    let inner = value.strip_prefix('{')?.strip_suffix('}')?;
+    let pairs = top_level_items(inner);
+    pairs
+        .iter()
+        .all(|pair| pair.starts_with('"') && pair.contains("\": ") && !pair.contains('('))
+        .then_some(pairs)
+}
+
+/// One line per pair at `indent`, every pair but the last ending in a comma.
+fn push_pair_lines(lines: &mut Vec<String>, pairs: &[&str], indent: usize) {
+    lines.extend(pairs.iter().enumerate().map(|(position, pair)| {
+        let comma = if position + 1 == pairs.len() { "" } else { "," };
+        format!("{}{pair}{comma}", " ".repeat(indent))
+    }));
 }
 
 /// A root binary-schema operation without an error response has no worked
@@ -13489,8 +13633,6 @@ pub fn clean_flat_tree(root: &std::path::Path) -> Result<()> {
 /// so the byte match is preserved.
 fn format_python_files(pkg: &str, files: &mut [GeneratedFile]) -> Result<()> {
     let core_root = PathBuf::from(format!("src/{pkg}/core"));
-    let root_client = PathBuf::from(format!("src/{pkg}/client.py"));
-    let root_raw_client = PathBuf::from(format!("src/{pkg}/raw_client.py"));
     let default_clients = PathBuf::from(format!("src/{pkg}/_default_clients.py"));
     let generated_aiohttp_test = PathBuf::from("tests/test_aiohttp_autodetect.py");
     let generated_conftest = PathBuf::from("tests/conftest.py");
@@ -13519,46 +13661,9 @@ fn format_python_files(pkg: &str, files: &mut [GeneratedFile]) -> Result<()> {
             let name = file.path.to_string_lossy();
             file.contents =
                 crate::pyfmt::format_source(&name, &file.contents, crate::pyfmt::LINE_LENGTH)?;
-            if file.path == root_client || file.path == root_raw_client {
-                preserve_fenced_docstring_blank_indent(&mut file.contents);
-            }
         }
     }
     Ok(())
-}
-
-fn preserve_fenced_docstring_blank_indent(source: &mut String) {
-    let had_final_newline = source.ends_with('\n');
-    let mut lines: Vec<String> = source.lines().map(String::from).collect();
-    let mut start = 0;
-    while start < lines.len() {
-        if lines[start] != "        \"\"\"" {
-            start += 1;
-            continue;
-        }
-        let Some(relative_end) = lines[start + 1..]
-            .iter()
-            .position(|line| line == "        \"\"\"")
-        else {
-            break;
-        };
-        let end = start + 1 + relative_end;
-        if lines[start + 1..end]
-            .iter()
-            .any(|line| line.trim_start().starts_with("```"))
-        {
-            for line in &mut lines[start + 1..end] {
-                if line.is_empty() {
-                    *line = "        ".to_string();
-                }
-            }
-        }
-        start = end + 1;
-    }
-    *source = lines.join("\n");
-    if had_final_newline {
-        source.push('\n');
-    }
 }
 
 /// Write each generated file under `root`, creating parent directories as needed.
@@ -13595,8 +13700,12 @@ mod tests {
             " \n\n\n        The boat's name.\n        "
         );
         assert_eq!(
-            super::reference_param_suffix(Some("\nSet of pairs.\n\nKeys are short.\n")),
+            super::reference_param_suffix(Some("\nSet of pairs.\n\nKeys are short.")),
             " \n\n\nSet of pairs.\n\nKeys are short."
+        );
+        assert_eq!(
+            super::reference_param_suffix(Some("\nSet of pairs.\n\nKeys are short.\n")),
+            " \n\n\nSet of pairs.\n\nKeys are short.\n"
         );
         assert_eq!(
             super::reference_param_suffix(Some("\nUpstream or downstream.")),
@@ -16153,6 +16262,7 @@ mod tests {
                 docstring: None,
                 example: None,
                 pattern_constrained: false,
+                quoted_date_example: false,
                 convert: false,
             }],
             None,
@@ -16424,6 +16534,7 @@ mod tests {
                 docstring: None,
                 example: None,
                 pattern_constrained: false,
+                quoted_date_example: false,
                 convert: false,
             }],
             Some(TypeRef::Primitive(Prim::Str)),
@@ -16446,6 +16557,7 @@ mod tests {
                 docstring: None,
                 example: None,
                 pattern_constrained: false,
+                quoted_date_example: false,
                 convert: true,
             }],
             Some(TypeRef::Primitive(Prim::Str)),
@@ -16803,6 +16915,7 @@ mod tests {
                 docstring: None,
                 example: None,
                 pattern_constrained: false,
+                quoted_date_example: false,
                 convert: false,
             }],
             Some(TypeRef::Named("Resp".to_string())),
@@ -16999,6 +17112,7 @@ mod tests {
             nullable: false,
             spec_required: required,
             docstring: None,
+            doc_tail_blank_lines: 0,
             example: None,
             declared_name: None,
             read_only: false,
@@ -17026,6 +17140,8 @@ mod tests {
             example_fields: Default::default(),
             docstring: None,
             xml: None,
+            reference_composition: false,
+            inherited_examples: std::collections::BTreeMap::new(),
         })
     }
 
@@ -17606,6 +17722,8 @@ mod tests {
             example_fields: Default::default(),
             docstring: None,
             xml: None,
+            reference_composition: false,
+            inherited_examples: std::collections::BTreeMap::new(),
         });
         let types = vec![
             payload,
@@ -17621,6 +17739,8 @@ mod tests {
                 example_fields: Default::default(),
                 docstring: None,
                 xml: None,
+                reference_composition: false,
+                inherited_examples: std::collections::BTreeMap::new(),
             }),
             TypeDecl::Alias(AliasType {
                 constraints: None,
@@ -17944,6 +18064,8 @@ mod tests {
             example_fields: Default::default(),
             docstring: None,
             xml: None,
+            reference_composition: false,
+            inherited_examples: std::collections::BTreeMap::new(),
         });
         let kind = TypeDecl::Enum(EnumType {
             name: "Kind".to_string(),
@@ -17976,6 +18098,8 @@ mod tests {
             example_fields: Default::default(),
             docstring: None,
             xml: None,
+            reference_composition: false,
+            inherited_examples: std::collections::BTreeMap::new(),
         });
         let probe = TypeDecl::Object(ObjectType {
             reach_refs: Vec::new(),
@@ -18005,6 +18129,8 @@ mod tests {
             example_fields: Default::default(),
             docstring: None,
             xml: None,
+            reference_composition: false,
+            inherited_examples: std::collections::BTreeMap::new(),
         });
         let types = vec![inner, kind, alias, base, probe];
         let auth = Auth::None;
@@ -18035,6 +18161,8 @@ mod tests {
             example_fields: Default::default(),
             docstring: None,
             xml: None,
+            reference_composition: false,
+            inherited_examples: std::collections::BTreeMap::new(),
         });
         let mut with_nested = types.clone();
         with_nested.push(nested);
@@ -18071,6 +18199,8 @@ mod tests {
             example_fields: Default::default(),
             docstring: None,
             xml: None,
+            reference_composition: false,
+            inherited_examples: std::collections::BTreeMap::new(),
         });
         let renderable = TypeDecl::Object(ObjectType {
             reach_refs: Vec::new(),
@@ -18081,6 +18211,8 @@ mod tests {
             example_fields: Default::default(),
             docstring: None,
             xml: None,
+            reference_composition: false,
+            inherited_examples: std::collections::BTreeMap::new(),
         });
         let unrenderable = TypeDecl::Object(ObjectType {
             reach_refs: Vec::new(),
@@ -18095,6 +18227,8 @@ mod tests {
             example_fields: Default::default(),
             docstring: None,
             xml: None,
+            reference_composition: false,
+            inherited_examples: std::collections::BTreeMap::new(),
         });
         let types = vec![inner, renderable, unrenderable];
         let path_param = |type_ref: TypeRef| PathParam {
@@ -18105,6 +18239,7 @@ mod tests {
             docstring: None,
             example: None,
             pattern_constrained: false,
+            quoted_date_example: false,
             convert: false,
         };
         let scalar = endpoint(
@@ -18144,6 +18279,8 @@ mod tests {
             example_fields: Default::default(),
             docstring: None,
             xml: None,
+            reference_composition: false,
+            inherited_examples: std::collections::BTreeMap::new(),
         });
         let types = vec![probe];
         let auth = Auth::None;
@@ -18177,6 +18314,8 @@ mod tests {
             example_fields: Default::default(),
             docstring: None,
             xml: None,
+            reference_composition: false,
+            inherited_examples: std::collections::BTreeMap::new(),
         })];
         let item = TypeRef::Named("Parcel".to_string());
         let list = TypeRef::List(Box::new(item));
@@ -18244,6 +18383,8 @@ mod tests {
             example_fields: Default::default(),
             docstring: None,
             xml: None,
+            reference_composition: false,
+            inherited_examples: std::collections::BTreeMap::new(),
         });
         let mut metadata = model_field("metadata", TypeRef::Primitive(Prim::Any), true);
         metadata.example = Some(r#"{"active":true}"#.to_string());
@@ -18264,6 +18405,8 @@ mod tests {
             example_fields: Default::default(),
             docstring: None,
             xml: None,
+            reference_composition: false,
+            inherited_examples: std::collections::BTreeMap::new(),
         });
         let empty_enum = TypeDecl::Enum(EnumType {
             name: "EmptyEnum".to_string(),
@@ -18367,6 +18510,7 @@ mod tests {
                 docstring: Some("Widget identifier.".to_string()),
                 example: None,
                 pattern_constrained: false,
+                quoted_date_example: false,
                 convert: false,
             }],
             Some(TypeRef::Primitive(Prim::Str)),
@@ -18555,6 +18699,7 @@ mod tests {
                     docstring: None,
                     example: None,
                     pattern_constrained: false,
+                    quoted_date_example: false,
                     convert: false,
                 }],
                 Some(TypeRef::Primitive(Prim::Str)),
@@ -18937,6 +19082,7 @@ mod tests {
                 docstring: Some("Event identifier.\nSecond line.".to_string()),
                 example: None,
                 pattern_constrained: false,
+                quoted_date_example: false,
                 convert: false,
             }],
             Some(TypeRef::Primitive(Prim::Str)),
@@ -19143,10 +19289,6 @@ mod tests {
         .expect_err("missing template is reported");
         assert!(error.to_string().contains("broken.py"), "{error}");
 
-        let mut source = "        \"\"\"\n        ```python\n\n        pass\n        ```\n        \"\"\"\n\n        \"\"\"\n        plain\n\n".to_string();
-        super::preserve_fenced_docstring_blank_indent(&mut source);
-        assert!(source.contains("        ```python\n        \n        pass"));
-        assert!(source.ends_with("        plain\n\n"));
     }
     #[test]
     fn colliding_query_and_body_arguments_use_their_own_values() {
@@ -21873,6 +22015,46 @@ mod snippet_rendering_tests {
         assert_contains(&reference, "SensorReadingAlertsItem_Vent(");
         assert_contains(&reference, "operator=AlertOperator.ABOVE,");
         assert_contains(&reference, "operator=AlertOperator.BELOW,");
+    }
+
+    #[test]
+    fn readme_dicts_spread_every_pair_and_list_items_alike() {
+        let lines = |text: &str| text.lines().map(String::from).collect::<Vec<_>>();
+        let untyped = std::collections::BTreeSet::from(["meta".to_string()]);
+        let compacted = crate::emit::compact_documentation_values(
+            lines(concat!(
+                "client.place(\n",
+                "    position={\"lat\": 41.5, \"lon\": -70.25},\n",
+                "    offset={\"dx\": 3},\n",
+                "    meta={\"key\": \"value\"},\n",
+                "    stops=[{\"cargo\": {\"crates\": 8}, \"dock\": \"east\"}, {\"key\": \"a, b\"}],\n",
+                "    notes=[\n",
+                "        {\"key\": \"value\"},\n",
+                "        {\"key\": \"value\"}\n",
+                "    ],\n",
+                ")",
+            )),
+            false,
+            &untyped,
+        );
+        assert_eq!(
+            compacted.join("\n"),
+            concat!(
+                "client.place(\n",
+                "    position={\n        \"lat\": 41.5,\n        \"lon\": -70.25\n    },\n",
+                "    offset={\n        \"dx\": 3\n    },\n",
+                "    meta={\"key\": \"value\"},\n",
+                "    stops=[\n",
+                "        {\n            \"cargo\": {\"crates\": 8},\n            \"dock\": \"east\"\n        },\n",
+                "        {\n            \"key\": \"a, b\"\n        }\n",
+                "    ],\n",
+                "    notes=[\n",
+                "        {\n            \"key\": \"value\"\n        },\n",
+                "        {\n            \"key\": \"value\"\n        }\n",
+                "    ],\n",
+                ")",
+            )
+        );
     }
 
     #[test]

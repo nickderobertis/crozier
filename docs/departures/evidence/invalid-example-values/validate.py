@@ -77,6 +77,26 @@ def schema_at(document: dict[str, Any], pointer: str) -> object:
     return node
 
 
+TEMPORAL_CALLS = ("datetime.date.fromisoformat", "datetime.datetime.fromisoformat")
+
+
+def temporal_literal(node: ast.expr) -> str | None:
+    """The wire string a `datetime.date.fromisoformat("…")` or
+    `datetime.datetime.fromisoformat("…")` argument stands for, or `None` for
+    any other expression: a date as written, a date-time in its RFC 3339 `T` form."""
+    if not (
+        isinstance(node, ast.Call)
+        and ast.unparse(node.func) in TEMPORAL_CALLS
+        and len(node.args) == 1
+        and not node.keywords
+        and isinstance(node.args[0], ast.Constant)
+        and isinstance(node.args[0].value, str)
+    ):
+        return None
+    text = node.args[0].value
+    return text.replace(" ", "T", 1) if ast.unparse(node.func).endswith("datetime.fromisoformat") else text
+
+
 def line_value(place: str, argument: str) -> object:
     """The value `argument=` takes on the 1-based line `FILE:LINE`."""
     file, _, number = place.rpartition(":")
@@ -94,6 +114,8 @@ def line_value(place: str, argument: str) -> object:
     if isinstance(call, ast.Call):
         for keyword in call.keywords:
             if keyword.arg == argument:
+                if (temporal := temporal_literal(keyword.value)) is not None:
+                    return temporal
                 try:
                     return ast.literal_eval(keyword.value)
                 except (ValueError, SyntaxError) as error:

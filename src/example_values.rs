@@ -1249,7 +1249,7 @@ fn digits(text: &str, count: usize) -> Option<u32> {
 }
 
 /// RFC 3339 `full-date`.
-fn full_date(text: &str) -> bool {
+pub(crate) fn full_date(text: &str) -> bool {
     let mut parts = text.split('-');
     let (Some(year), Some(month), Some(day), None) =
         (parts.next(), parts.next(), parts.next(), parts.next())

@@ -269,22 +269,25 @@
   kind: usefulness
   trigger: >-
     A worked example constructing a body field or model field whose schema is a
-    date-time string and whose enclosing schema-level object example gives it
-    an ISO date-time the YAML document writes unquoted, which YAML reads as a
-    timestamp (the 2000-01-23T04:56:07 sentinel excepted).
+    date-time or date string and whose enclosing schema-level object example
+    gives it an ISO value the YAML document writes unquoted, which YAML reads as
+    a timestamp or date (the 2000-01-23T04:56:07 date-time sentinel excepted).
   fern: >-
     Its date-time placeholder
-    (datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00")).
+    (datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00")), or its date
+    placeholder (datetime.date.fromisoformat("2023-01-15")).
   crozier: >-
     The declared timestamp
-    (high_water_at=datetime.datetime.fromisoformat("2031-04-02T08:15:00+00:00")),
-    and in a wrapped docstring call its string line. Every other argument and
+    (high_water_at=datetime.datetime.fromisoformat("2031-04-02T08:15:00+00:00"))
+    or date (date_of_birth=datetime.date.fromisoformat("1977-03-15")), and in a
+    wrapped docstring call its string line. Every other argument and
     line is retained.
   reason: >-
     Design-review ruling 3 (yaml-timestamp-parameter-example, 2026-11-01)
     keeps the unquoted ISO timestamp the API's author declared rather than the
     certified pair's placeholder; its principle extends from a parameter's
-    example to a date-time property's value in a schema-level object example.
+    example to a date-time property's value in a schema-level object example,
+    and (manager ruling a0) to a format: date property's.
   evidence: docs/departures/evidence/declared-timestamp-property-example.md
 
 - id: digit-leading-method-reference-identifiers
@@ -318,6 +321,30 @@
     The documented call does not bind: the method takes no `f_5g_mm_cause_value`
     or `f_value`, so Python raises `TypeError` for the unexpected keyword.
   evidence: docs/departures/evidence/digit-leading-property-example-keyword.md
+
+- id: docstring-example-escapes
+  kind: fern-defect
+  trigger: >-
+    A worked example in a client method docstring whose code holds a
+    backslash: a string literal escaping a line break, a tab, a quote or a
+    backslash, such as a declared multi-line request value.
+  fern: >-
+    The example's bytes as its README and reference.md write them, one
+    backslash per escape (`code="a\nb"`), inside an ordinary triple-quoted
+    docstring, which Python evaluates: help() and an IDE show the escape as the
+    character it names, a real line break inside the string argument.
+  crozier: >-
+    The same example with every backslash doubled (`code="a\\nb"`), so the
+    evaluated docstring shows the example exactly as the Markdown writers do.
+    Every other byte of the line is unchanged.
+  reason: >-
+    The documentation a reader sees through help() or an IDE is the evaluated
+    docstring, and Fern's evaluates to code that does not parse: the line break
+    ends the string literal, so the copied call is a SyntaxError (a `\"`
+    becomes a bare quote that closes it). The doubled backslash evaluates to
+    the example crozier and Fern both write in README.md and reference.md,
+    which parses and binds to the method.
+  evidence: docs/departures/evidence/docstring-example-escapes.md
 
 - id: docstring-literal-dollar-escape
   kind: fern-defect
@@ -709,9 +736,12 @@
 - id: pattern-narrowed-enum-example
   kind: fern-defect
   trigger: >-
-    A string enum reference intersected with a scalar string pattern, whose first
-    declared enum value is rejected by that pattern, in a generated default
-    usage example. The comparison has the parsed source document.
+    A string enum whose first declared value is rejected by the string
+    constraints at its use site, in a generated default usage example: an enum
+    reference intersected with a scalar string pattern (constraints inside an
+    `allOf` load normalization discards included), or an inline enum declaring
+    `pattern`, `minLength`, `maxLength` or `not` beside its `enum`. The
+    comparison has the parsed source document.
   fern: >-
     The first enum member, or its literal string, as the example argument.
   crozier: >-

@@ -2054,7 +2054,7 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 60] = [
+pub const RULE_IDS: [&str; 61] = [
     "anyof-path-param-schema-example",
     "binary-json-body-example",
     "body-query-parameter-value",
@@ -2070,6 +2070,7 @@ pub const RULE_IDS: [&str; 60] = [
     "declared-timestamp-property-example",
     "digit-leading-method-reference-identifiers",
     "digit-leading-property-example-keyword",
+    "docstring-example-escapes",
     "docstring-literal-dollar-escape",
     "emoji-tag-reference-identifiers",
     "empty-namespace-package",
@@ -2231,6 +2232,10 @@ pub fn rule(id: &str) -> Option<Rule> {
         },
         "date-header-constructor-example" => Rule {
             region: Some(date_header_constructor_example),
+            ..none
+        },
+        "docstring-example-escapes" => Rule {
+            line: Some(docstring_example_escapes),
             ..none
         },
         "docstring-literal-dollar-escape" => Rule {
@@ -3396,6 +3401,17 @@ fn differing_integer<'a>(fern: &'a str, crozier: &'a str) -> Option<(&'a str, &'
                 .map(|prefix| (prefix, fern_digits, crozier_digits))
         })
         .flatten()
+}
+
+/// `docstring-example-escapes`: a client docstring's worked-example line where
+/// crozier writes Fern's line with every backslash doubled, and nothing else
+/// changed.
+fn docstring_example_escapes(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    high_level_client(pair.rel)
+        && fern.contains('\\')
+        && crozier == fern.replace('\\', "\\\\")
+        && documented_example_line(pair.rel, pair.fern, fern)
+        && documented_example_line(pair.rel, pair.crozier, crozier)
 }
 
 /// `docstring-literal-dollar-escape`: a client docstring example line passing a

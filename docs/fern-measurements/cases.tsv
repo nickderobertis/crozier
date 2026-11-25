@@ -528,3 +528,7 @@ handed-off/follow-up-tickets/696	docs/fern-measurements/handed-off/follow-up-tic
 handed-off/literals-registration/tilecast	docs/fern-measurements/handed-off/literals-registration/tilecast/openapi.yaml	python-enums	packaged	-
 handed-off/literals-registration/tilecast/expected-literals	docs/fern-measurements/handed-off/literals-registration/tilecast/openapi.yaml	literals	packaged	expected:docs/fern-measurements/handed-off/literals-registration/tilecast/fern-expected
 superseded-fixtures/closed-empty-inline-objects	docs/fern-measurements/superseded-fixtures/closed-empty-inline-objects/openapi.yml	python-enums	packaged	-
+worked-examples/numeric-dict-pairs	docs/fern-measurements/worked-examples/numeric-dict-pairs/openapi.yml	python-enums	packaged	-
+worked-examples/numeric-dict-pairs/expected-literals	docs/fern-measurements/worked-examples/numeric-dict-pairs/openapi.yml	literals	packaged	fern-expected:docs/fern-measurements/worked-examples/numeric-dict-pairs/fern-expected
+worked-examples/readme-list-map-items	docs/fern-measurements/worked-examples/readme-list-map-items/openapi.yml	python-enums	packaged	-
+worked-examples/readme-list-map-items/expected-literals	docs/fern-measurements/worked-examples/readme-list-map-items/openapi.yml	literals	packaged	fern-expected:docs/fern-measurements/worked-examples/readme-list-map-items/fern-expected

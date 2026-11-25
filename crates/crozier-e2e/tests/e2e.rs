@@ -176,6 +176,15 @@ mod union_inheritance;
 mod type_lowering;
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates one small SDK per case and compares it whole, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+/// The worked-example, example-validity and documentation-rendering tickets
+/// of #966, each settled against a from-scratch document under
+/// `docs/fern-measurements/worked-examples/` and held whole against the
+/// certified pair's tree in both enum modes.
+#[path = "e2e/worked_examples.rs"]
+mod worked_examples;
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
 // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates one small SDK per ticket and compares it whole, on the crozier-e2e edge every other golden comparison shares; its PyPI-installing journeys are `sdk_env_`-ignored into `just test-sdk-env`, and splitting the shared edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 /// The naming, import and document-acceptance tickets (#536, #919–#924,
 /// #941–#944, #946, #948, #955, #956), each settled against a from-scratch
@@ -1097,6 +1106,7 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         (handed_off_type_declarations::DIR, "fern-expected"),
         (union_inheritance::DIR, "fern-expected"),
         (type_lowering::DIR, "fern-expected"),
+        (worked_examples::DIR, "fern-expected"),
         (naming_acceptance::DIR, "fern-expected"),
         (handed_off_example_values::AREA_DIR, "fern-expected"),
         (handed_off_snippet_rendering::AREA_DIR, "fern-expected"),
@@ -1146,6 +1156,7 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         remeasure::DIR,
         union_inheritance::DIR,
         type_lowering::DIR,
+        worked_examples::DIR,
         bodies_responses::DIR,
         naming_acceptance::DIR,
     ] {
@@ -18867,8 +18878,11 @@ fn operation_id_equal_to_tag_generates_on_root_client() {
         "a root client with no request body should not declare OMIT: {client}"
     );
     assert!(
-        client.contains("```sh\n        echo search\n        ```\n        \n"),
-        "fenced root method docstrings should preserve Fern's blank indentation: {client}"
+        // A fence alone keeps no blank-line indent: ruff strips it from a
+        // docstring with no line ending in a backslash, as the certified pair
+        // leaves infinity's fenced root docstrings.
+        client.contains("```sh\n        echo search\n        ```\n\n        Parameters"),
+        "fenced root method docstrings should leave blank lines empty: {client}"
     );
     assert!(out.join("src/acme/raw_client.py").is_file());
     assert!(out.join("src/acme/types/search_response.py").is_file());

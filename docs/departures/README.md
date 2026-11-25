@@ -213,7 +213,7 @@ when the two differ.
 
 | Kind | Entries | Meaning |
 | --- | --- | --- |
-| `fern-defect` | 46 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
+| `fern-defect` | 47 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
 | `branding` | 1 | crozier names itself where Fern names itself. |
 | `packaging` | 1 | crozier writes the packaged SDK's publishing details from its own settings. |
 | `provenance` | 1 | crozier writes a fixed record of how the SDK was generated. |
@@ -332,10 +332,10 @@ when the two differ.
 ### `declared-timestamp-property-example`
 
 - **Kind:** `usefulness`
-- **Trigger:** A worked example constructing a body field or model field whose schema is a date-time string and whose enclosing schema-level object example gives it an ISO date-time the YAML document writes unquoted, which YAML reads as a timestamp (the 2000-01-23T04:56:07 sentinel excepted).
-- **Fern writes:** Its date-time placeholder (datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00")).
-- **crozier writes:** The declared timestamp (high_water_at=datetime.datetime.fromisoformat("2031-04-02T08:15:00+00:00")), and in a wrapped docstring call its string line. Every other argument and line is retained.
-- **Why:** Design-review ruling 3 (yaml-timestamp-parameter-example, 2026-11-01) keeps the unquoted ISO timestamp the API's author declared rather than the certified pair's placeholder; its principle extends from a parameter's example to a date-time property's value in a schema-level object example.
+- **Trigger:** A worked example constructing a body field or model field whose schema is a date-time or date string and whose enclosing schema-level object example gives it an ISO value the YAML document writes unquoted, which YAML reads as a timestamp or date (the 2000-01-23T04:56:07 date-time sentinel excepted).
+- **Fern writes:** Its date-time placeholder (datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00")), or its date placeholder (datetime.date.fromisoformat("2023-01-15")).
+- **crozier writes:** The declared timestamp (high_water_at=datetime.datetime.fromisoformat("2031-04-02T08:15:00+00:00")) or date (date_of_birth=datetime.date.fromisoformat("1977-03-15")), and in a wrapped docstring call its string line. Every other argument and line is retained.
+- **Why:** Design-review ruling 3 (yaml-timestamp-parameter-example, 2026-11-01) keeps the unquoted ISO timestamp the API's author declared rather than the certified pair's placeholder; its principle extends from a parameter's example to a date-time property's value in a schema-level object example, and (manager ruling a0) to a format: date property's.
 - **Evidence:** [`docs/departures/evidence/declared-timestamp-property-example.md`](../../docs/departures/evidence/declared-timestamp-property-example.md)
 
 ### `digit-leading-method-reference-identifiers`
@@ -355,6 +355,15 @@ when the two differ.
 - **crozier writes:** `_5g_mm_cause_value=0`, the parameter the method declares, with the same value. Every other byte of the line is retained.
 - **Why:** The documented call does not bind: the method takes no `f_5g_mm_cause_value` or `f_value`, so Python raises `TypeError` for the unexpected keyword.
 - **Evidence:** [`docs/departures/evidence/digit-leading-property-example-keyword.md`](../../docs/departures/evidence/digit-leading-property-example-keyword.md)
+
+### `docstring-example-escapes`
+
+- **Kind:** `fern-defect`
+- **Trigger:** A worked example in a client method docstring whose code holds a backslash: a string literal escaping a line break, a tab, a quote or a backslash, such as a declared multi-line request value.
+- **Fern writes:** The example's bytes as its README and reference.md write them, one backslash per escape (`code="a\nb"`), inside an ordinary triple-quoted docstring, which Python evaluates: help() and an IDE show the escape as the character it names, a real line break inside the string argument.
+- **crozier writes:** The same example with every backslash doubled (`code="a\\nb"`), so the evaluated docstring shows the example exactly as the Markdown writers do. Every other byte of the line is unchanged.
+- **Why:** The documentation a reader sees through help() or an IDE is the evaluated docstring, and Fern's evaluates to code that does not parse: the line break ends the string literal, so the copied call is a SyntaxError (a `\"` becomes a bare quote that closes it). The doubled backslash evaluates to the example crozier and Fern both write in README.md and reference.md, which parses and binds to the method.
+- **Evidence:** [`docs/departures/evidence/docstring-example-escapes.md`](../../docs/departures/evidence/docstring-example-escapes.md)
 
 ### `docstring-literal-dollar-escape`
 
@@ -530,7 +539,7 @@ when the two differ.
 ### `pattern-narrowed-enum-example`
 
 - **Kind:** `fern-defect`
-- **Trigger:** A string enum reference intersected with a scalar string pattern, whose first declared enum value is rejected by that pattern, in a generated default usage example. The comparison has the parsed source document.
+- **Trigger:** A string enum whose first declared value is rejected by the string constraints at its use site, in a generated default usage example: an enum reference intersected with a scalar string pattern (constraints inside an `allOf` load normalization discards included), or an inline enum declaring `pattern`, `minLength`, `maxLength` or `not` beside its `enum`. The comparison has the parsed source document.
 - **Fern writes:** The first enum member, or its literal string, as the example argument.
 - **crozier writes:** The first declared enum value valid against the complete schema it documents: the enum, the scalar member and the enclosing schema's own constraints. Where no value is valid, or a constraint cannot be decided, Fern's example stands. The enum alias, annotation, description and all other output are retained.
 - **Why:** Validating Fern's generated example value against the property's allOf schema rejects it; the replacement satisfies every constraint of it.
