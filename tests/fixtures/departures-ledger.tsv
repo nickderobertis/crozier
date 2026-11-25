@@ -2063,8 +2063,11 @@ docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expe
 docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/client.py	12	colliding-component-own-class
 docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/client.py	113	colliding-component-own-class
 docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/client.py	120	colliding-component-own-class
+docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/client.py	121	colliding-component-own-class
 docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/client.py	253	colliding-component-own-class
+docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/client.py	254	colliding-component-own-class
 docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/client.py	260	colliding-component-own-class
+docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/client.py	261	colliding-component-own-class
 docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -3408,6 +3411,14 @@ docs/openapi-surface/handwritten/invoice-renderer/fern-expected	src/fern/core/cl
 docs/openapi-surface/handwritten/invoice-renderer/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/invoice-renderer/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/invoice-renderer/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/json-binary-path/fern-expected	README.md	45	binary-json-body-example
+docs/openapi-surface/handwritten/json-binary-path/fern-expected	reference.md	24	binary-json-body-example
+docs/openapi-surface/handwritten/json-binary-path/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/json-binary-path/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/json-binary-path/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/json-binary-path/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/json-binary-path/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/json-binary-path/fern-expected	src/fern/vault/client.py	54	binary-json-body-example
 docs/openapi-surface/handwritten/json-request-shapes/fern-expected	reference.md	490	binary-json-body-example
 docs/openapi-surface/handwritten/json-request-shapes/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/json-request-shapes/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix

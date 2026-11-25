@@ -5,6 +5,7 @@ docs/fern-measurements/bodies-responses/byte-text-response-literals/fern-expecte
 docs/fern-measurements/bodies-responses/composed-form-body/fern-expected	crozier-e2e::e2e	bodies_responses::composed_form_bodies_send_every_field
 docs/fern-measurements/bodies-responses/error-body-shapes-literals/fern-expected	crozier-e2e::e2e	error_body_shapes_match_certified_output_in_both_enum_modes
 docs/fern-measurements/bodies-responses/header-body-collision/fern-expected	crozier-e2e::e2e	bodies_responses::header_and_body_sharing_a_name_keep_their_own_arguments
+docs/fern-measurements/bodies-responses/header-body-collision/fern-expected	crozier-e2e::e2e	bodies_responses::header_body_departure_needs_the_header_to_map_that_variable
 docs/fern-measurements/bodies-responses/inline-body-readonly-own-overlap-literals/fern-expected	crozier-e2e::e2e	inline_body_read_only_own_overlap_matches_certified_output_and_refuses_a_required_parent
 docs/fern-measurements/bodies-responses/inline-error-component-name/fern-expected	crozier-e2e::e2e	bodies_responses::inline_error_models_leave_component_models_alone
 docs/fern-measurements/bodies-responses/inline-union-body-content-type/expected-literals/fern-expected	crozier-e2e::e2e	bodies_responses::inline_union_body_keeps_its_content_type_only_when_described
@@ -392,6 +393,7 @@ docs/fern-measurements/naming-acceptance/normalized-component-identity-control/e
 docs/fern-measurements/naming-acceptance/normalized-component-identity-control/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_documents_generate_as_the_certified_pair_does
 docs/fern-measurements/naming-acceptance/normalized-component-identity/expected-literals/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_documents_generate_as_the_certified_pair_does
 docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_documents_generate_as_the_certified_pair_does
+docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	crozier-e2e::e2e	naming_acceptance::the_colliding_component_departure_explains_only_the_renamed_class
 docs/fern-measurements/naming-acceptance/nullable-enum-headers/expected-literals/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_repairs_match_the_certified_pair
 docs/fern-measurements/naming-acceptance/nullable-enum-headers/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_repairs_match_the_certified_pair
 docs/fern-measurements/naming-acceptance/path-query-same-name/expected-literals/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_documents_generate_as_the_certified_pair_does
@@ -719,6 +721,7 @@ docs/openapi-surface/handwritten/inline-oneof-variants/fern-expected	crozier-e2e
 docs/openapi-surface/handwritten/inline-property-unions/fern-expected	crozier-e2e::e2e	handwritten_fixtures_match_fern_goldens
 docs/openapi-surface/handwritten/invoice-renderer/fern-expected	crozier-e2e::e2e	handwritten_fixtures_match_fern_goldens
 docs/openapi-surface/handwritten/invoice-renderer/fern-expected	crozier-e2e::e2e	literals_mode::literals_mode_measurements_match_fern
+docs/openapi-surface/handwritten/json-binary-path/fern-expected	crozier-e2e::e2e	handwritten_fixtures_match_fern_goldens
 docs/openapi-surface/handwritten/json-request-shapes/fern-expected	crozier-e2e::e2e	handwritten_fixtures_match_fern_goldens
 docs/openapi-surface/handwritten/json-request-shapes/fern-expected	crozier-e2e::e2e	json_request_shapes_match_certified_output_in_both_enum_modes
 docs/openapi-surface/handwritten/kiln-array-mode/fern-expected	crozier-e2e::e2e	handwritten_fixtures_match_fern_goldens
