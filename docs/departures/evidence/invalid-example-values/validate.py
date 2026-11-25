@@ -37,7 +37,7 @@ import sys
 import uuid
 import warnings
 from pathlib import Path
-from typing import Any
+from typing import Any, NamedTuple
 
 import jsonschema
 import referencing
@@ -125,9 +125,17 @@ def wire_value(node: ast.expr) -> object:
     return value.decode("latin-1") if isinstance(value, bytes) else value
 
 
-def docstring_spans(text: str) -> list[tuple[int, int, bool]]:
-    """The 0-based first and last line of each docstring in the Python source
-    `text`, and whether it is raw; none where `text` is no Python."""
+class Span(NamedTuple):
+    """A docstring's 0-based first and last source line, and whether it is raw."""
+
+    first: int
+    last: int
+    raw: bool
+
+
+def docstring_spans(text: str) -> list[Span]:
+    """The span of each docstring in the Python source `text`; none where
+    `text` is no Python."""
     try:
         tree = ast.parse(text)
     except SyntaxError:
@@ -142,7 +150,7 @@ def docstring_spans(text: str) -> list[tuple[int, int, bool]]:
             and node.end_lineno is not None
         ):
             prefix = lines[node.lineno - 1][node.col_offset :].split('"', 1)[0].split("'", 1)[0]
-            spans.append((node.lineno - 1, node.end_lineno - 1, "r" in prefix.lower()))
+            spans.append(Span(node.lineno - 1, node.end_lineno - 1, "r" in prefix.lower()))
     return spans
 
 
@@ -164,7 +172,7 @@ def rendered(lines: list[str], text: str) -> list[str]:
     spans = docstring_spans(text)
     return [
         render_line(line)
-        if "\\" in line and any(first < index < last and not raw for first, last, raw in spans)
+        if "\\" in line and any(span.first < index < span.last and not span.raw for span in spans)
         else line
         for index, line in enumerate(lines)
     ]
