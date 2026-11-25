@@ -1185,6 +1185,7 @@
     "docs/openapi-surface/handwritten/inline-oneof-variants/fern-expected": {},
     "docs/openapi-surface/handwritten/inline-property-unions/fern-expected": {},
     "docs/openapi-surface/handwritten/invoice-renderer/fern-expected": {},
+    "docs/openapi-surface/handwritten/json-binary-path/fern-expected": {},
     "docs/openapi-surface/handwritten/json-request-shapes/fern-expected": {},
     "docs/openapi-surface/handwritten/kiln-array-mode/fern-expected": {},
     "docs/openapi-surface/handwritten/kiln-array-variants/fern-expected": {},
