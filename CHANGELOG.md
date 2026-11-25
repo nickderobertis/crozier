@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.174](https://github.com/nickderobertis/crozier/compare/v0.0.173...v0.0.174) - 2026-11-25
+
+### Fixed
+
+- *(parity)* match the certified pair on union, discriminator, nullable, map and allOf type lowering ([#973](https://github.com/nickderobertis/crozier/pull/973))
+
 ## [0.0.173](https://github.com/nickderobertis/crozier/compare/v0.0.172...v0.0.173) - 2026-11-24
 
 ### Fixed
