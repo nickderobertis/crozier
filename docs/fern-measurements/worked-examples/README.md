@@ -32,10 +32,10 @@ witness is the specification its issue names.
 | `restated-reference-descriptions` | #931 | a bare `$ref` restating a described parent field, and a required typeless body property, document no description; an optional typeless one keeps its own |
 | `docstring-example-escapes` | #864 | the `docstring-example-escapes` departure: a worked example's escapes doubled in the docstring |
 | `composed-enum-constraints` | #541 | the `pattern-narrowed-enum-example` departure over a dropped `allOf` member's `maxLength` |
-| `inline-enum-constraints` | #960 | the same departure over an inline enum's own `pattern` and `maxLength` |
+| `inline-enum-constraints` | #960 | the same departure over an inline enum's own `pattern` and `maxLength`, and its own `not`; a first member already admitted, a member set none is admitted from, and an undecidable `format` keep the pair's first member |
 | `declared-date-examples` | #937 | the `declared-timestamp-property-example` departure over unquoted YAML `format: date` values, the `2000-01-23` sentinel included; a quoted `date` component example as the path argument, as the pair writes it |
-| `composed-reference-order` | #933 | a docstring constructor of an `allOf` of two `$ref`s lists the later member's fields first; one of a `$ref` and an inline member keeps declaration order |
-| `union-example-member` | #935 | an undiscriminated union worked from the first member declaring an example |
+| `composed-reference-order` | #933 | a docstring constructor of an `allOf` of two `$ref`s lists the later member's fields first, an inline member restating their fields or adding its own beside them, the added field last; one of a `$ref` and an inline member keeps declaration order |
+| `union-example-member` | #935 | an undiscriminated union worked from the first member declaring an example, a field that member inherits passed from it |
 | `unresolved-response-optional-body` | #891 | an operation whose importer builds no example passes no optional body; a required one, and one beside a resolved response, keep theirs |
 | `optional-enum-query-arrays` | #932 | an optional query array of enum items is left out of the worked call; a plain string array keeps its item example |
 | `alias-body-reference-order` | #934 | the `request-alias-reference-parameters` departure where a shared body's duplicate operation collapses: `reference.md` lists the flattened arguments in signature order where the pair lists `request` ahead of the queries |

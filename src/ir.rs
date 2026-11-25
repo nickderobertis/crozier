@@ -21029,9 +21029,12 @@ fn flattened_example_orders(
 
 /// The properties only the inline members of `schema` declare, in order, where
 /// it is an `allOf` of two or more `$ref`s with no properties beside it
-/// ([`ObjectType::reference_composition`]); an inline member may restate the
-/// referenced members' properties (paypal's `PhoneDetail` requiring
-/// `phone_type`) or add its own (`Lessee`'s `deck`).
+/// ([`ObjectType::reference_composition`]). Its inline members are the measured
+/// kinds: one restating the referenced members' own properties (paypal's
+/// `PhoneDetail` requiring `phone_type`), or a last one adding properties none
+/// of them declares (`Lessee`'s `deck`). Any other inline member leaves
+/// declaration order, as the certified pair keeps it for nexmo's
+/// `allOf: [$ref Text, {text}, $ref channelOptionsSms]`.
 fn reference_composition(schema: &Schema, schemas: &IndexMap<String, Schema>) -> Option<Vec<String>> {
     let members = schema.all_of.as_deref()?;
     let referenced: Vec<&Schema> = members
@@ -21039,14 +21042,20 @@ fn reference_composition(schema: &Schema, schemas: &IndexMap<String, Schema>) ->
         .filter_map(|member| member.reference.as_deref())
         .filter_map(|reference| resolve_ref_from_schemas(schemas, reference))
         .collect();
-    let plain = |member: &Schema| {
+    let declared = |name: &String| referenced.iter().any(|target| target.properties.contains_key(name));
+    let measured = |(at, member): (usize, &Schema)| {
         member.reference.is_some()
             || member.all_of.is_none()
                 && member.one_of.is_none()
                 && member.any_of.is_none()
                 && member.additional_properties.is_none()
+                && (member.properties.keys().all(declared)
+                    || at + 1 == members.len() && !member.properties.keys().any(declared))
     };
-    if !schema.properties.is_empty() || referenced.len() < 2 || !members.iter().all(plain) {
+    if !schema.properties.is_empty()
+        || referenced.len() < 2
+        || !members.iter().enumerate().all(measured)
+    {
         return None;
     }
     Some(
@@ -21054,7 +21063,7 @@ fn reference_composition(schema: &Schema, schemas: &IndexMap<String, Schema>) ->
             .iter()
             .filter(|member| member.reference.is_none())
             .flat_map(|member| member.properties.keys())
-            .filter(|name| !referenced.iter().any(|target| target.properties.contains_key(*name)))
+            .filter(|name| !declared(name))
             .cloned()
             .collect(),
     )
