@@ -2908,15 +2908,18 @@ fn readme_endpoint_eligible(ep: &Endpoint, types: &[TypeDecl], tag_decls: &[TagT
             .any(|pp| path_union(&pp.type_ref, types, tag_decls))
 }
 
-/// Whether a path parameter's type is a union, through its aliases. The
-/// certified pair writes such an operation no worked call, so its README anchors
-/// on the next eligible operation, while crozier's own docstring and
-/// `reference.md` call stand (the `list-path-parameter-example` departure;
-/// docs/fern-measurements/worked-examples/composite-path-parameters/).
+/// Whether a path parameter's type is a union with a model member, through its
+/// aliases. The certified pair writes such an operation no worked call, so its
+/// README anchors on the next eligible operation, while crozier's own docstring
+/// and `reference.md` call stand (the `list-path-parameter-example` departure;
+/// docs/fern-measurements/worked-examples/composite-path-parameters/). A union
+/// of scalars is worked as usual (`id="id"` in
+/// docs/fern-measurements/handed-off/bodies-media/path-param-serialization/).
 fn path_union(t: &TypeRef, types: &[TypeDecl], tag_decls: &[TagTypeDecl]) -> bool {
+    let is_model = |member: &TypeRef| path_object_decl(member, types, tag_decls).is_some();
     match t {
         TypeRef::Optional(inner) => path_union(inner, types, tag_decls),
-        TypeRef::Union(_) => true,
+        TypeRef::Union(members) => members.iter().any(is_model),
         TypeRef::Named(name) => match lookup_decl(types, tag_decls, name) {
             Some(TypeDecl::Alias(alias)) => path_union(&alias.target, types, tag_decls),
             Some(TypeDecl::DiscriminatedUnion(_)) => true,
