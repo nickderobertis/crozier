@@ -42,6 +42,10 @@ client = FernApi(
 
 client.book_passage(
     vessel="vessel",
+    gate="upper",
+    lane="east",
+    side="port",
+    pilot="harbour",
     window="slack",
 )
 ```
@@ -63,6 +67,10 @@ client = AsyncFernApi(
 async def main() -> None:
     await client.book_passage(
         vessel="vessel",
+        gate="upper",
+        lane="east",
+        side="port",
+        pilot="harbour",
         window="slack",
     )
 

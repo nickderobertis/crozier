@@ -10,6 +10,7 @@ from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
+from ..types.alarm import Alarm
 from ..types.receipt import Receipt
 from ..types.trigger import Trigger
 from pydantic import ValidationError
@@ -23,7 +24,7 @@ class RawWatchesClient:
         self._client_wrapper = client_wrapper
 
     def create_watch(
-        self, *, name: str, trigger: Trigger, request_options: typing.Optional[RequestOptions] = None
+        self, *, name: str, trigger: Trigger, alarm: Alarm, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[Receipt]:
         """
         Parameters
@@ -31,6 +32,8 @@ class RawWatchesClient:
         name : str
 
         trigger : Trigger
+
+        alarm : Alarm
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -48,6 +51,7 @@ class RawWatchesClient:
                 "trigger": convert_and_respect_annotation_metadata(
                     object_=trigger, annotation=Trigger, direction="write"
                 ),
+                "alarm": convert_and_respect_annotation_metadata(object_=alarm, annotation=Alarm, direction="write"),
             },
             headers={
                 "content-type": "application/json",
@@ -80,7 +84,7 @@ class AsyncRawWatchesClient:
         self._client_wrapper = client_wrapper
 
     async def create_watch(
-        self, *, name: str, trigger: Trigger, request_options: typing.Optional[RequestOptions] = None
+        self, *, name: str, trigger: Trigger, alarm: Alarm, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[Receipt]:
         """
         Parameters
@@ -88,6 +92,8 @@ class AsyncRawWatchesClient:
         name : str
 
         trigger : Trigger
+
+        alarm : Alarm
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -105,6 +111,7 @@ class AsyncRawWatchesClient:
                 "trigger": convert_and_respect_annotation_metadata(
                     object_=trigger, annotation=Trigger, direction="write"
                 ),
+                "alarm": convert_and_respect_annotation_metadata(object_=alarm, annotation=Alarm, direction="write"),
             },
             headers={
                 "content-type": "application/json",

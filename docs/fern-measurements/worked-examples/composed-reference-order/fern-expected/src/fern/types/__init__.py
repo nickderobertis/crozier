@@ -8,14 +8,18 @@ from importlib import import_module
 if typing.TYPE_CHECKING:
     from .berth import Berth
     from .buyer import Buyer
+    from .charterer import Charterer
     from .contact import Contact
+    from .lessee import Lessee
     from .receipt import Receipt
     from .schedule import Schedule
     from .terms import Terms
 _dynamic_imports: typing.Dict[str, str] = {
     "Berth": ".berth",
     "Buyer": ".buyer",
+    "Charterer": ".charterer",
     "Contact": ".contact",
+    "Lessee": ".lessee",
     "Receipt": ".receipt",
     "Schedule": ".schedule",
     "Terms": ".terms",
@@ -43,4 +47,4 @@ def __dir__():
     return sorted(lazy_attrs)
 
 
-__all__ = ["Berth", "Buyer", "Contact", "Receipt", "Schedule", "Terms"]
+__all__ = ["Berth", "Buyer", "Charterer", "Contact", "Lessee", "Receipt", "Schedule", "Terms"]

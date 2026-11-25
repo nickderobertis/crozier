@@ -35,7 +35,7 @@ A full reference for this library is available [here](./reference.md).
 Instantiate and use the client with the following:
 
 ```python
-from fern import FernApi, TideTrigger
+from fern import FernApi, TideTrigger, SurgeAlarm
 
 client = FernApi()
 
@@ -44,6 +44,10 @@ client.watches.create_watch(
     trigger=TideTrigger(
         station="harbour-mouth",
         height_m=2.5,
+    ),
+    alarm=SurgeAlarm(
+        id="alarm-7",
+        surge_m=1.2,
     ),
 )
 ```
@@ -68,7 +72,7 @@ The SDK also exports an `async` client so that you can make non-blocking calls t
 ```python
 import asyncio
 
-from fern import AsyncFernApi, TideTrigger
+from fern import AsyncFernApi, TideTrigger, SurgeAlarm
 
 client = AsyncFernApi()
 
@@ -79,6 +83,10 @@ async def main() -> None:
         trigger=TideTrigger(
             station="harbour-mouth",
             height_m=2.5,
+        ),
+        alarm=SurgeAlarm(
+            id="alarm-7",
+            surge_m=1.2,
         ),
     )
 

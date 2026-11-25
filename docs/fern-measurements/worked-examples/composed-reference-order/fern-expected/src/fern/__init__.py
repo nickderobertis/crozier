@@ -6,7 +6,7 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
-    from .types import Berth, Buyer, Contact, Receipt, Schedule, Terms
+    from .types import Berth, Buyer, Charterer, Contact, Lessee, Receipt, Schedule, Terms
     from . import orders
     from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
@@ -16,11 +16,13 @@ _dynamic_imports: typing.Dict[str, str] = {
     "AsyncFernApi": ".client",
     "Berth": ".types",
     "Buyer": ".types",
+    "Charterer": ".types",
     "Contact": ".types",
     "DefaultAioHttpClient": "._default_clients",
     "DefaultAsyncHttpxClient": "._default_clients",
     "FernApi": ".client",
     "FernApiEnvironment": ".environment",
+    "Lessee": ".types",
     "Receipt": ".types",
     "Schedule": ".types",
     "Terms": ".types",
@@ -54,11 +56,13 @@ __all__ = [
     "AsyncFernApi",
     "Berth",
     "Buyer",
+    "Charterer",
     "Contact",
     "DefaultAioHttpClient",
     "DefaultAsyncHttpxClient",
     "FernApi",
     "FernApiEnvironment",
+    "Lessee",
     "Receipt",
     "Schedule",
     "Terms",

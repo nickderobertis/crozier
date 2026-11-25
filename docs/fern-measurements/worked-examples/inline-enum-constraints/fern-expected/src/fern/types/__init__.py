@@ -7,9 +7,17 @@ from importlib import import_module
 
 if typing.TYPE_CHECKING:
     from .book_mooring_request_tide import BookMooringRequestTide
+    from .passage_gate import PassageGate
+    from .passage_lane import PassageLane
+    from .passage_pilot import PassagePilot
+    from .passage_side import PassageSide
     from .passage_window import PassageWindow
 _dynamic_imports: typing.Dict[str, str] = {
     "BookMooringRequestTide": ".book_mooring_request_tide",
+    "PassageGate": ".passage_gate",
+    "PassageLane": ".passage_lane",
+    "PassagePilot": ".passage_pilot",
+    "PassageSide": ".passage_side",
     "PassageWindow": ".passage_window",
 }
 
@@ -35,4 +43,4 @@ def __dir__():
     return sorted(lazy_attrs)
 
 
-__all__ = ["BookMooringRequestTide", "PassageWindow"]
+__all__ = ["BookMooringRequestTide", "PassageGate", "PassageLane", "PassagePilot", "PassageSide", "PassageWindow"]

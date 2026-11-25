@@ -6,13 +6,15 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
-    from .types import ManualTrigger, Receipt, TideTrigger, Trigger, WindTrigger
+    from .types import Alarm, AlarmBase, ManualTrigger, Receipt, SurgeAlarm, TideTrigger, Trigger, WindTrigger
     from . import watches
     from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
     from .environment import FernApiEnvironment
     from .version import __version__
 _dynamic_imports: typing.Dict[str, str] = {
+    "Alarm": ".types",
+    "AlarmBase": ".types",
     "AsyncFernApi": ".client",
     "DefaultAioHttpClient": "._default_clients",
     "DefaultAsyncHttpxClient": "._default_clients",
@@ -20,6 +22,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "FernApiEnvironment": ".environment",
     "ManualTrigger": ".types",
     "Receipt": ".types",
+    "SurgeAlarm": ".types",
     "TideTrigger": ".types",
     "Trigger": ".types",
     "WindTrigger": ".types",
@@ -50,6 +53,8 @@ def __dir__():
 
 
 __all__ = [
+    "Alarm",
+    "AlarmBase",
     "AsyncFernApi",
     "DefaultAioHttpClient",
     "DefaultAsyncHttpxClient",
@@ -57,6 +62,7 @@ __all__ = [
     "FernApiEnvironment",
     "ManualTrigger",
     "Receipt",
+    "SurgeAlarm",
     "TideTrigger",
     "Trigger",
     "WindTrigger",

@@ -43,9 +43,9 @@ fn holds(case: &str, checks: &[Check]) {
     assert!(failures.is_empty(), "{}", failures.join("\n\n"));
 }
 
-/// #540: a README or `reference.md` worked argument that is a map of two or
-/// more pairs puts each pair on its own line whatever its value type, while a
-/// one-pair map stays on the argument's line.
+/// #540: a README worked argument that is a map puts each pair on its own line
+/// whatever its value type, as `reference.md` does: two numeric, string or
+/// boolean pairs alike, and a one-pair map too.
 #[test]
 fn documentation_maps_spread_every_pair() {
     holds(
@@ -189,8 +189,10 @@ fn docstring_examples_keep_their_string_escapes() {
 
 /// #541: an enum example narrowed by a dropped `allOf` member's constraints
 /// takes the first member they admit; #960: so does an enum whose own pattern
-/// and length reject its first member (the `pattern-narrowed-enum-example`
-/// departure).
+/// and length, or own `not`, reject its first member (the
+/// `pattern-narrowed-enum-example` departure), while a first member they admit,
+/// a member set none of which they admit, and an undecidable `format` keep the
+/// first member, as the certified pair writes it.
 #[test]
 fn narrowed_enum_examples_take_a_member_the_constraints_admit() {
     holds(
@@ -202,6 +204,10 @@ fn narrowed_enum_examples_take_a_member_the_constraints_admit() {
         &[
             ("#960", "src/fern/client.py", "            window=PassageWindow.EBB,"),
             ("#960", "src/fern/client.py", "            tide=BookMooringRequestTide.EBB,"),
+            ("#960", "src/fern/client.py", "            gate=PassageGate.LOWER,"),
+            ("#960", "src/fern/client.py", "            lane=PassageLane.EAST,"),
+            ("#960", "src/fern/client.py", "            side=PassageSide.PORT,"),
+            ("#960", "src/fern/client.py", "            pilot=PassagePilot.HARBOUR,"),
         ],
     );
 }
@@ -236,8 +242,9 @@ fn declared_dates_are_the_worked_values() {
 }
 
 /// #933: a docstring constructor for an `allOf` of two `$ref`s lists the later
-/// member's fields first; an `allOf` of a `$ref` and an inline member keeps
-/// declaration order.
+/// member's fields first, whether an inline member restates their fields or
+/// adds its own, which follows them; an `allOf` of a `$ref` and an inline member
+/// keeps declaration order.
 #[test]
 fn reference_compositions_list_the_later_member_first() {
     holds(
@@ -251,6 +258,11 @@ fn reference_compositions_list_the_later_member_first() {
             (
                 "#933",
                 "src/fern/orders/client.py",
+                "            lessee=Lessee(\n                pier=\"pier\",\n                slip=1,\n                name=\"name\",\n                phone=\"phone\",\n                deck=\"deck\",\n            ),",
+            ),
+            (
+                "#933",
+                "src/fern/orders/client.py",
                 "            terms=Terms(\n                kind=\"kind\",\n                due_on=\"due_on\",\n            ),",
             ),
         ],
@@ -258,7 +270,8 @@ fn reference_compositions_list_the_later_member_first() {
 }
 
 /// #935: an undiscriminated union whose first member declares no example is
-/// worked from the first member that does.
+/// worked from the first member that does, a field that member inherits from
+/// its base passed from that example too.
 #[test]
 fn union_examples_take_the_member_declaring_one() {
     holds(
@@ -267,6 +280,10 @@ fn union_examples_take_the_member_declaring_one() {
             "#935",
             "src/fern/watches/client.py",
             "            trigger=TideTrigger(\n                station=\"harbour-mouth\",\n                height_m=2.5,\n            ),",
+        ), (
+            "#935",
+            "src/fern/watches/client.py",
+            "            alarm=SurgeAlarm(\n                id=\"alarm-7\",\n                surge_m=1.2,\n            ),",
         )],
     );
 }
@@ -438,9 +455,9 @@ fn sdk_env_worked_examples_bind_and_their_repaired_values_validate() {
         (multipart, "multipart-binary-required-part", "FormFile"),
     ] {
         let run = check(&root.join(dir).join(case).join("fern-expected"));
-        let stdout = String::from_utf8_lossy(&run.stdout);
-        assert_eq!(run.status.code(), Some(1), "{case}: {stdout}");
-        assert!(stdout.contains(says), "{case}: {stdout}");
+        let report = String::from_utf8_lossy(&run.stderr);
+        assert_eq!(run.status.code(), Some(1), "{case}: {report}");
+        assert!(report.contains(says), "{case}: {report}");
     }
     // A root without a generated package documents nothing to check.
     assert_eq!(check(&root.join(DIR)).status.code(), Some(2));
@@ -481,6 +498,61 @@ fn sdk_env_worked_examples_bind_and_their_repaired_values_validate() {
         let stdout = String::from_utf8_lossy(&run.stdout);
         assert_eq!(run.status.code(), Some(code), "{case} {argument}: {stdout}{}", String::from_utf8_lossy(&run.stderr));
         assert!(stdout.contains(says), "{case} {argument}: {stdout}");
+    }
+
+    // The validator over authored lines: a `datetime.datetime.fromisoformat`
+    // value is read in its RFC 3339 `T` form, across the lines its call spans;
+    // any other call (a second argument, a keyword, a non-string argument,
+    // another function) is no literal and exits 2, and recovers once corrected.
+    let work = tempfile::tempdir().expect("validator inputs");
+    let document = work.path().join("openapi.json");
+    std::fs::write(
+        &document,
+        serde_json::json!({"openapi": "3.1.0", "info": {"title": "t", "version": "1"}, "paths": {},
+            "components": {"schemas": {"At": {"type": "string", "format": "date-time"}}}})
+        .to_string(),
+    )
+    .expect("write the document");
+    let lines = |name: &str, text: &str| {
+        let path = work.path().join(name);
+        std::fs::write(&path, text).expect("write a client line");
+        format!("{}:1", path.display())
+    };
+    let fern = lines("fern.py", "    at=datetime.datetime.fromisoformat(\"2024-01-15 09:30\"),\n");
+    let crozier = lines(
+        "crozier.py",
+        "    at=datetime.datetime.fromisoformat(\n        \"2024-01-15 09:30:00+00:00\",\n    ),\n",
+    );
+    let validate = |left: &str, right: &str| {
+        std::process::Command::new(&python)
+            .arg(&validator)
+            .arg(&document)
+            .arg("/components/schemas/At")
+            .arg(left)
+            .arg(right)
+            .arg("at")
+            .env("PYTHONDONTWRITEBYTECODE", "1")
+            .output()
+            .expect("run the example validator")
+    };
+    let run = validate(&fern, &crozier);
+    let stdout = String::from_utf8_lossy(&run.stdout);
+    assert_eq!(run.status.code(), Some(0), "{stdout}{}", String::from_utf8_lossy(&run.stderr));
+    assert!(stdout.contains("crozier at='2024-01-15T09:30:00+00:00': accepted"), "{stdout}");
+    assert!(stdout.contains("fern at='2024-01-15T09:30': rejected"), "{stdout}");
+    for (name, text) in [
+        ("two.py", "    at=datetime.datetime.fromisoformat(\"2024-01-15 09:30:00+00:00\", 1),\n"),
+        ("keyword.py", "    at=datetime.date.fromisoformat(date_string=\"2024-01-15\"),\n"),
+        ("name.py", "    at=datetime.date.fromisoformat(stamp),\n"),
+        ("other.py", "    at=calendar.fromisoformat(\"2024-01-15\"),\n"),
+    ] {
+        let refused = lines(name, text);
+        let run = validate(&fern, &refused);
+        let stderr = String::from_utf8_lossy(&run.stderr);
+        assert_eq!(run.status.code(), Some(2), "{name}: {stderr}");
+        assert!(stderr.contains("passes at= no literal value"), "{name}: {stderr}");
+        let corrected = lines(name, "    at=datetime.datetime.fromisoformat(\"2024-01-15 09:30:00+00:00\"),\n");
+        assert_eq!(validate(&fern, &corrected).status.code(), Some(0), "{name} corrected");
     }
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]

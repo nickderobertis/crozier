@@ -9,6 +9,10 @@ from .core.http_response import AsyncHttpResponse, HttpResponse
 from .core.parse_error import ParsingError
 from .core.request_options import RequestOptions
 from .types.book_mooring_request_tide import BookMooringRequestTide
+from .types.passage_gate import PassageGate
+from .types.passage_lane import PassageLane
+from .types.passage_pilot import PassagePilot
+from .types.passage_side import PassageSide
 from .types.passage_window import PassageWindow
 from pydantic import ValidationError
 
@@ -21,12 +25,32 @@ class RawFernApi:
         self._client_wrapper = client_wrapper
 
     def book_passage(
-        self, *, vessel: str, window: PassageWindow, request_options: typing.Optional[RequestOptions] = None
+        self,
+        *,
+        vessel: str,
+        gate: PassageGate,
+        lane: PassageLane,
+        side: PassageSide,
+        pilot: PassagePilot,
+        window: PassageWindow,
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[None]:
         """
         Parameters
         ----------
         vessel : str
+
+        gate : PassageGate
+            Its own `not` rejects the first member.
+
+        lane : PassageLane
+            The first member already satisfies the pattern.
+
+        side : PassageSide
+            No member satisfies the pattern, so the first stands.
+
+        pilot : PassagePilot
+            A format no member is decided against, so the first stands.
 
         window : PassageWindow
             Locks never open at slack water.
@@ -43,6 +67,10 @@ class RawFernApi:
             method="POST",
             json={
                 "vessel": vessel,
+                "gate": gate,
+                "lane": lane,
+                "side": side,
+                "pilot": pilot,
                 "window": window,
             },
             headers={
@@ -111,12 +139,32 @@ class AsyncRawFernApi:
         self._client_wrapper = client_wrapper
 
     async def book_passage(
-        self, *, vessel: str, window: PassageWindow, request_options: typing.Optional[RequestOptions] = None
+        self,
+        *,
+        vessel: str,
+        gate: PassageGate,
+        lane: PassageLane,
+        side: PassageSide,
+        pilot: PassagePilot,
+        window: PassageWindow,
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[None]:
         """
         Parameters
         ----------
         vessel : str
+
+        gate : PassageGate
+            Its own `not` rejects the first member.
+
+        lane : PassageLane
+            The first member already satisfies the pattern.
+
+        side : PassageSide
+            No member satisfies the pattern, so the first stands.
+
+        pilot : PassagePilot
+            A format no member is decided against, so the first stands.
 
         window : PassageWindow
             Locks never open at slack water.
@@ -133,6 +181,10 @@ class AsyncRawFernApi:
             method="POST",
             json={
                 "vessel": vessel,
+                "gate": gate,
+                "lane": lane,
+                "side": side,
+                "pilot": pilot,
                 "window": window,
             },
             headers={

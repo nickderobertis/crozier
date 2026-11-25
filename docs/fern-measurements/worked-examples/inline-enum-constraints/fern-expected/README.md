@@ -34,7 +34,7 @@ A full reference for this library is available [here](./reference.md).
 Instantiate and use the client with the following:
 
 ```python
-from fern import FernApi, PassageWindow
+from fern import FernApi, PassageGate, PassageLane, PassageSide, PassagePilot, PassageWindow
 
 client = FernApi(
     base_url="https://yourhost.com/path/to/api",
@@ -42,6 +42,10 @@ client = FernApi(
 
 client.book_passage(
     vessel="vessel",
+    gate=PassageGate.UPPER,
+    lane=PassageLane.EAST,
+    side=PassageSide.PORT,
+    pilot=PassagePilot.HARBOUR,
     window=PassageWindow.SLACK,
 )
 ```
@@ -53,7 +57,7 @@ The SDK also exports an `async` client so that you can make non-blocking calls t
 ```python
 import asyncio
 
-from fern import AsyncFernApi, PassageWindow
+from fern import AsyncFernApi, PassageGate, PassageLane, PassageSide, PassagePilot, PassageWindow
 
 client = AsyncFernApi(
     base_url="https://yourhost.com/path/to/api",
@@ -63,6 +67,10 @@ client = AsyncFernApi(
 async def main() -> None:
     await client.book_passage(
         vessel="vessel",
+        gate=PassageGate.UPPER,
+        lane=PassageLane.EAST,
+        side=PassageSide.PORT,
+        pilot=PassagePilot.HARBOUR,
         window=PassageWindow.SLACK,
     )
 

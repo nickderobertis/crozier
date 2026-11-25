@@ -2602,12 +2602,14 @@ pub struct ObjectType {
     /// The schema's OpenAPI XML Object, when it declares one: the model then
     /// also reads and writes itself as an XML element (`to_xml`/`from_xml`).
     pub xml: Option<XmlEncoding>,
-    /// Whether the schema is an `allOf` of two or more `$ref`s and nothing
-    /// else. The certified pair's docstring examples then list the later
+    /// Where the schema is an `allOf` of two or more `$ref`s, the properties
+    /// only its inline members declare, in their order; `None` for any other
+    /// schema. The certified pair's docstring examples then list the later
     /// members' fields first (paypal's `Configuration`, `allOf: [$ref
     /// TemplateConfiguration, $ref ConfigurationAllOf2]`, opens with the second
-    /// member's `template_id`); its Markdown writers keep declaration order.
-    pub reference_composition: bool,
+    /// member's `template_id`) and these inline properties last; its Markdown
+    /// writers keep declaration order.
+    pub reference_composition: Option<Vec<String>>,
     /// The literal this schema's own example gives each field it inherits from
     /// a base class, by wire name: a model worked from that example passes its
     /// inherited fields' values too (#935, epilot's `EventCatalogTrigger`
@@ -4273,11 +4275,11 @@ fn build_endpoint(
                 } else {
                     parameter_example(doc, p)
                 },
+                quoted_date_example: quoted_date_example(doc, p),
                 // Only a *named* type's pattern is checked against the
                 // placeholder: discord's `guild_id: SnowflakeType` loses the
                 // example, while CloudPDF's inline `pageKey` pattern
                 // `^obj:[1-9][0-9]*$` keeps `page_key="pageKey"`.
-                quoted_date_example: quoted_date_example(doc, p),
                 pattern_constrained: p.schema.as_ref().is_some_and(|schema| {
                     schema
                         .reference
@@ -9563,7 +9565,7 @@ impl InlineHoister<'_> {
                 .unwrap_or_default(),
             docstring,
             xml,
-            reference_composition: false,
+            reference_composition: None,
             inherited_examples: std::collections::BTreeMap::new(),
         }));
     }
@@ -16664,7 +16666,7 @@ impl Builder<'_> {
                 .unwrap_or_default(),
             docstring,
             xml,
-            reference_composition: is_reference_composition(schema, schemas),
+            reference_composition: reference_composition(schema, schemas),
             inherited_examples,
         }));
         self.building_types.remove(name);
@@ -19846,11 +19848,6 @@ fn is_map(schema: &Schema) -> bool {
         )
 }
 
-/// `member` with each undescribed `enum` property a base describes given that
-/// base's description, or `None` when no property needs one. Only a redeclared
-/// enum is measured to take it — the description documents the enum type it
-/// hoists — so a plain restatement keeps deciding override-versus-restatement on
-/// what it declares itself.
 /// Whether `schema` restates `property` as a bare `$ref` — in its own
 /// `properties` or an inline `allOf` member's — rather than inline.
 fn restated_by_reference(schema: &Schema, property: &str) -> bool {
@@ -19866,6 +19863,11 @@ fn restated_by_reference(schema: &Schema, property: &str) -> bool {
         .any(|declared| declared.reference.is_some() && declared.description.is_none())
 }
 
+/// `member` with each undescribed `enum` property a base describes given that
+/// base's description, or `None` when no property needs one. Only a redeclared
+/// enum is measured to take it — the description documents the enum type it
+/// hoists — so a plain restatement keeps deciding override-versus-restatement on
+/// what it declares itself.
 fn described_from_bases(member: &Schema, bases: &[(String, Schema)]) -> Option<Schema> {
     let mut described = member.clone();
     let mut changed = false;
@@ -21025,33 +21027,37 @@ fn flattened_example_orders(
     }
 }
 
-/// Whether `schema` is an `allOf` of two or more `$ref`s and declares no
-/// properties of its own ([`ObjectType::reference_composition`]).
-fn is_reference_composition(schema: &Schema, schemas: &IndexMap<String, Schema>) -> bool {
-    let Some(members) = schema.all_of.as_deref() else {
-        return false;
-    };
+/// The properties only the inline members of `schema` declare, in order, where
+/// it is an `allOf` of two or more `$ref`s with no properties beside it
+/// ([`ObjectType::reference_composition`]); an inline member may restate the
+/// referenced members' properties (paypal's `PhoneDetail` requiring
+/// `phone_type`) or add its own (`Lessee`'s `deck`).
+fn reference_composition(schema: &Schema, schemas: &IndexMap<String, Schema>) -> Option<Vec<String>> {
+    let members = schema.all_of.as_deref()?;
     let referenced: Vec<&Schema> = members
         .iter()
         .filter_map(|member| member.reference.as_deref())
         .filter_map(|reference| resolve_ref_from_schemas(schemas, reference))
         .collect();
-    // A member that only restates a referenced member's properties adds no
-    // field: paypal's `PhoneDetail` requires `phone_type` beside its two
-    // `$ref`s, and load normalization writes that restatement as a member.
-    let restates = |member: &Schema| {
-        member.all_of.is_none()
-            && member.one_of.is_none()
-            && member.any_of.is_none()
-            && member.additional_properties.is_none()
-            && member
-                .properties
-                .keys()
-                .all(|name| referenced.iter().any(|target| target.properties.contains_key(name)))
+    let plain = |member: &Schema| {
+        member.reference.is_some()
+            || member.all_of.is_none()
+                && member.one_of.is_none()
+                && member.any_of.is_none()
+                && member.additional_properties.is_none()
     };
-    schema.properties.is_empty()
-        && referenced.len() >= 2
-        && members.iter().all(|member| member.reference.is_some() || restates(member))
+    if !schema.properties.is_empty() || referenced.len() < 2 || !members.iter().all(plain) {
+        return None;
+    }
+    Some(
+        members
+            .iter()
+            .filter(|member| member.reference.is_none())
+            .flat_map(|member| member.properties.keys())
+            .filter(|name| !referenced.iter().any(|target| target.properties.contains_key(*name)))
+            .cloned()
+            .collect(),
+    )
 }
 
 /// An inline `type: object` that declares `properties: {}` and nothing else. A
@@ -23564,7 +23570,7 @@ mod tests {
                 example_fields: std::collections::HashSet::new(),
                 docstring: None,
                 xml: None,
-                reference_composition: false,
+                reference_composition: None,
                 inherited_examples: std::collections::BTreeMap::new(),
             }),
             TypeDecl::Object(ObjectType {
@@ -23579,7 +23585,7 @@ mod tests {
                 example_fields: std::collections::HashSet::new(),
                 docstring: None,
                 xml: None,
-                reference_composition: false,
+                reference_composition: None,
                 inherited_examples: std::collections::BTreeMap::new(),
             }),
             TypeDecl::Object(ObjectType {
@@ -23591,7 +23597,7 @@ mod tests {
                 example_fields: std::collections::HashSet::new(),
                 docstring: None,
                 xml: None,
-                reference_composition: false,
+                reference_composition: None,
                 inherited_examples: std::collections::BTreeMap::new(),
             }),
         ];

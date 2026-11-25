@@ -1,6 +1,6 @@
 # Reference
 ## Watches
-<details><summary><code>client.watches.<a href="src/fern/watches/client.py#L30-L62">create_watch</a>(...) -> Receipt</code></summary>
+<details><summary><code>client.watches.<a href="src/fern/watches/client.py#L31-L71">create_watch</a>(...) -> Receipt</code></summary>
 <dl>
 <dd>
 
@@ -13,7 +13,7 @@
 <dd>
 
 ```python
-from fern import FernApi, TideTrigger
+from fern import FernApi, TideTrigger, SurgeAlarm
 from fern.environment import FernApiEnvironment
 
 client = FernApi(
@@ -25,6 +25,10 @@ client.watches.create_watch(
     trigger=TideTrigger(
         station="harbour-mouth",
         height_m=2.5,
+    ),
+    alarm=SurgeAlarm(
+        id="alarm-7",
+        surge_m=1.2,
     ),
 )
 
@@ -51,6 +55,14 @@ client.watches.create_watch(
 <dd>
 
 **trigger:** `Trigger` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**alarm:** `Alarm` 
     
 </dd>
 </dl>

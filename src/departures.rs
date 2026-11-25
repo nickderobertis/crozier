@@ -2413,8 +2413,8 @@ pub fn rule(id: &str) -> Option<Rule> {
             ..none
         },
         "list-path-parameter-example" => Rule {
-            region: Some(list_path_parameter_region),
-            line: Some(list_path_parameter_docstring_value),
+            region: Some(composite_path_parameter_region),
+            line: Some(container_path_parameter_docstring_value),
             ..none
         },
         "readme-abbreviated-call-arguments" => Rule {
@@ -4347,7 +4347,7 @@ const CONTAINER_ANNOTATIONS: [&str; 5] = [
 /// that are typed as containers (`id: typing.Sequence[int]`, `values:
 /// typing.Dict[str, str]`, or an alias of one): its container-typed path
 /// parameters, each with its resolved annotation.
-fn list_path_parameters(context: &Context) -> BTreeMap<String, String> {
+fn container_path_parameters(context: &Context) -> BTreeMap<String, String> {
     positional_parameters(context, |annotation| {
         CONTAINER_ANNOTATIONS
             .iter()
@@ -4411,7 +4411,7 @@ fn positional_parameters(context: &Context, kind: fn(&str) -> bool) -> BTreeMap<
 /// `list-path-parameter-example` in a client docstring: the line passing a
 /// list-typed path parameter whose items are not strings, where Fern passes
 /// its string placeholder (`id="ID",`) and crozier a list (`id=[1],`).
-fn list_path_parameter_docstring_value(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+fn container_path_parameter_docstring_value(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
     if !pair.rel.ends_with("client.py") || fern == crozier {
         return false;
     }
@@ -4437,7 +4437,7 @@ fn list_path_parameter_docstring_value(pair: &Pair<'_>, fern: &str, crozier: &st
     container
         && fern_value.starts_with('"')
         && fern_value.ends_with('"')
-        && list_path_parameters(pair.context)
+        && container_path_parameters(pair.context)
             .get(name)
             .is_some_and(|annotation| annotation != "typing.Sequence[str]")
 }
@@ -4450,12 +4450,12 @@ fn list_path_parameter_docstring_value(pair: &Pair<'_>, fern: &str, crozier: &st
 /// (`values={` … `},`) stands where Fern passes its one-line string placeholder
 /// (`values="values",`). Either way, an `import datetime` only the argument
 /// used goes with it.
-fn list_path_parameter_call(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+fn container_path_parameter_call(pair: &Pair<'_>) -> Result<Option<Region>, String> {
     let markdown = DOCS_FILES.contains(&pair.rel);
     if !markdown && !pair.rel.ends_with("client.py") {
         return Ok(None);
     }
-    let names = list_path_parameters(pair.context);
+    let names = container_path_parameters(pair.context);
     if names.is_empty() {
         return Ok(None);
     }
@@ -4566,9 +4566,10 @@ fn list_path_parameter_call(pair: &Pair<'_>) -> Result<Option<Region>, String> {
 }
 
 /// Each client method's parameters that take no default (`data: typing.Any`,
-/// `session_id: str`), by method name: one set per module declaring it.
-fn required_method_parameters(context: &Context) -> BTreeMap<String, Vec<BTreeSet<String>>> {
-    let mut found: BTreeMap<String, Vec<BTreeSet<String>>> = BTreeMap::new();
+/// `session_id: str`), by method name, each mapped to whether it is typeless
+/// (`typing.Any`): one map per module declaring the method.
+fn required_method_parameters(context: &Context) -> BTreeMap<String, Vec<BTreeMap<String, bool>>> {
+    let mut found: BTreeMap<String, Vec<BTreeMap<String, bool>>> = BTreeMap::new();
     for text in context.client_modules().crozier.values() {
         let mut rest = text.as_str();
         while let Some(start) = rest.find("def ") {
@@ -4582,7 +4583,7 @@ fn required_method_parameters(context: &Context) -> BTreeMap<String, Vec<BTreeSe
             let name = rest[..open].trim();
             let mut depth = 0usize;
             let mut parameter = String::new();
-            let mut required = BTreeSet::new();
+            let mut required = BTreeMap::new();
             for character in rest[open + 1..close].chars().chain([',']) {
                 match character {
                     '[' | '(' => depth += 1,
@@ -4592,7 +4593,7 @@ fn required_method_parameters(context: &Context) -> BTreeMap<String, Vec<BTreeSe
                 if character == ',' && depth == 0 {
                     if let Some((name, annotation)) = parameter.trim().split_once(": ") {
                         if !annotation.contains(" = ") && python_identifier(name) {
-                            required.insert(name.to_string());
+                            required.insert(name.to_string(), annotation.trim() == "typing.Any");
                         }
                     }
                     parameter.clear();
@@ -4609,7 +4610,8 @@ fn required_method_parameters(context: &Context) -> BTreeMap<String, Vec<BTreeSe
 }
 
 /// `typeless-body-required-arguments`: a worked call passing only arguments
-/// its method requires, where Fern writes the bare call (Aether's
+/// its method requires, one of them a typeless (`typing.Any`) body value, where
+/// Fern writes the bare call (Aether's
 /// `client.knowledge_state_post()` for `def knowledge_state_post(self, *,
 /// data: typing.Any, ...)`), in a docstring or the Markdown.
 fn typeless_body_required_arguments(pair: &Pair<'_>) -> Result<Option<Region>, String> {
@@ -4648,9 +4650,12 @@ fn typeless_body_required_arguments(pair: &Pair<'_>) -> Result<Option<Region>, S
             continue;
         };
         let required = required.get_or_insert_with(|| required_method_parameters(pair.context));
+        // Only a call passing a typeless body value is one Fern writes bare.
         if !required.get(method).is_some_and(|sets| {
-            sets.iter()
-                .any(|set| arguments.iter().all(|argument| set.contains(*argument)))
+            sets.iter().any(|set| {
+                arguments.iter().all(|argument| set.contains_key(*argument))
+                    && arguments.iter().any(|argument| set.get(*argument) == Some(&true))
+            })
         }) {
             continue;
         }
@@ -4675,8 +4680,8 @@ fn typeless_body_required_arguments(pair: &Pair<'_>) -> Result<Option<Region>, S
 
 /// `list-path-parameter-example`'s regions: a container argument Fern leaves
 /// out or passes as a string, then a union argument it writes no example for.
-fn list_path_parameter_region(pair: &Pair<'_>) -> Result<Option<Region>, String> {
-    if let Some(region) = list_path_parameter_call(pair)? {
+fn composite_path_parameter_region(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    if let Some(region) = container_path_parameter_call(pair)? {
         return Ok(Some(region));
     }
     Ok(union_path_parameter_example(pair))
@@ -9692,6 +9697,17 @@ mod tests {
             ..pair
         };
         assert_eq!(typeless_body_required_arguments(&pair).unwrap(), None);
+        // And a bare call beside a method whose required arguments are all
+        // typed: no typeless body, so Fern's call omits a real argument.
+        let typed = client.replace("data: typing.Any,", "data: str,");
+        let context = Context::from_sources([], [("src/fern/locker/client.py", typed.as_str())]);
+        let pair = Pair {
+            fern: &fern,
+            crozier: &crozier,
+            context: &context,
+            ..pair
+        };
+        assert_eq!(typeless_body_required_arguments(&pair).unwrap(), None);
     }
 
     #[test]
@@ -9705,7 +9721,7 @@ mod tests {
                 ("src/fern/types/aliases.py", aliases),
             ],
         );
-        let lists = list_path_parameters(&context);
+        let lists = container_path_parameters(&context);
         assert_eq!(lists.get("string_list").map(String::as_str), Some("typing.List[str]"));
         assert_eq!(lists.get("values").map(String::as_str), Some("typing.Dict[str, str]"));
         assert!(!lists.contains_key("key"));
@@ -9713,7 +9729,7 @@ mod tests {
         assert_eq!(unions.keys().collect::<Vec<_>>(), ["key"]);
         let docstring = |fern: &str, crozier: &str| {
             let (left, right) = ([fern], [crozier]);
-            list_path_parameter_docstring_value(
+            container_path_parameter_docstring_value(
                 &Pair {
                     rel: "src/fern/things/client.py",
                     fern: &left,
@@ -9845,7 +9861,7 @@ mod tests {
             context: &context,
         };
         assert_eq!(
-            list_path_parameter_call(&pair).unwrap(),
+            container_path_parameter_call(&pair).unwrap(),
             Some(Region {
                 fern: 1..7,
                 crozier: 1..13,
@@ -11858,7 +11874,7 @@ mod tests {
     fn a_list_path_parameter_departs_only_where_crozier_passes_that_parameter() {
         let client = "class UsersClient:\n    def get_users_id(\n        self, id: typing.Sequence[int], *, request_options: typing.Optional[RequestOptions] = None\n    ) -> None:\n        pass\n    def probe(\n        self, probe_param: typing.Sequence[str], *, request_options: typing.Optional[RequestOptions] = None\n    ) -> None:\n        pass\n";
         let context = Context::from_sources([], [("src/fern/users/client.py", client)]);
-        let call: RegionRule = list_path_parameter_call;
+        let call: RegionRule = container_path_parameter_call;
         let fern = "# Reference\nclient.users.get_users_id()\nafter";
         let crozier =
             "# Reference\nclient.users.get_users_id(\n    id=[\n        1\n    ],\n)\nafter";
@@ -11894,7 +11910,7 @@ mod tests {
         )
         .is_none());
 
-        let line: LineRule = list_path_parameter_docstring_value;
+        let line: LineRule = container_path_parameter_docstring_value;
         let rel = "src/fern/users/client.py";
         assert!(line_holds(
             line,

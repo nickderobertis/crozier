@@ -11,6 +11,8 @@ from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
 from ..types.buyer import Buyer
+from ..types.charterer import Charterer
+from ..types.lessee import Lessee
 from ..types.receipt import Receipt
 from ..types.terms import Terms
 from pydantic import ValidationError
@@ -24,12 +26,22 @@ class RawOrdersClient:
         self._client_wrapper = client_wrapper
 
     def place_order(
-        self, *, buyer: Buyer, terms: Terms, request_options: typing.Optional[RequestOptions] = None
+        self,
+        *,
+        buyer: Buyer,
+        charterer: Charterer,
+        lessee: Lessee,
+        terms: Terms,
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[Receipt]:
         """
         Parameters
         ----------
         buyer : Buyer
+
+        charterer : Charterer
+
+        lessee : Lessee
 
         terms : Terms
 
@@ -46,6 +58,10 @@ class RawOrdersClient:
             method="POST",
             json={
                 "buyer": convert_and_respect_annotation_metadata(object_=buyer, annotation=Buyer, direction="write"),
+                "charterer": convert_and_respect_annotation_metadata(
+                    object_=charterer, annotation=Charterer, direction="write"
+                ),
+                "lessee": convert_and_respect_annotation_metadata(object_=lessee, annotation=Lessee, direction="write"),
                 "terms": convert_and_respect_annotation_metadata(object_=terms, annotation=Terms, direction="write"),
             },
             headers={
@@ -79,12 +95,22 @@ class AsyncRawOrdersClient:
         self._client_wrapper = client_wrapper
 
     async def place_order(
-        self, *, buyer: Buyer, terms: Terms, request_options: typing.Optional[RequestOptions] = None
+        self,
+        *,
+        buyer: Buyer,
+        charterer: Charterer,
+        lessee: Lessee,
+        terms: Terms,
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[Receipt]:
         """
         Parameters
         ----------
         buyer : Buyer
+
+        charterer : Charterer
+
+        lessee : Lessee
 
         terms : Terms
 
@@ -101,6 +127,10 @@ class AsyncRawOrdersClient:
             method="POST",
             json={
                 "buyer": convert_and_respect_annotation_metadata(object_=buyer, annotation=Buyer, direction="write"),
+                "charterer": convert_and_respect_annotation_metadata(
+                    object_=charterer, annotation=Charterer, direction="write"
+                ),
+                "lessee": convert_and_respect_annotation_metadata(object_=lessee, annotation=Lessee, direction="write"),
                 "terms": convert_and_respect_annotation_metadata(object_=terms, annotation=Terms, direction="write"),
             },
             headers={

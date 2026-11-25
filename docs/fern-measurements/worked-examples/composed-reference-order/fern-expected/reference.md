@@ -1,6 +1,6 @@
 # Reference
 ## Orders
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py#L31-L68">place_order</a>(...) -> Receipt</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py#L33-L95">place_order</a>(...) -> Receipt</code></summary>
 <dl>
 <dd>
 
@@ -13,7 +13,7 @@
 <dd>
 
 ```python
-from fern import FernApi, Buyer, Terms
+from fern import FernApi, Buyer, Charterer, Lessee, Terms
 from fern.environment import FernApiEnvironment
 
 client = FernApi(
@@ -26,6 +26,19 @@ client.orders.place_order(
         phone="phone",
         pier="pier",
         slip=1,
+    ),
+    charterer=Charterer(
+        name="name",
+        phone="phone",
+        pier="pier",
+        slip=1,
+    ),
+    lessee=Lessee(
+        name="name",
+        phone="phone",
+        pier="pier",
+        slip=1,
+        deck="deck",
     ),
     terms=Terms(
         kind="kind",
@@ -48,6 +61,22 @@ client.orders.place_order(
 <dd>
 
 **buyer:** `Buyer` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**charterer:** `Charterer` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**lessee:** `Lessee` 
     
 </dd>
 </dl>

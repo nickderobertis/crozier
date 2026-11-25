@@ -26,12 +26,14 @@ components:
   schemas:
     Watch:
       type: object
-      required: [name, trigger]
+      required: [name, trigger, alarm]
       properties:
         name:
           type: string
         trigger:
           $ref: "#/components/schemas/Trigger"
+        alarm:
+          $ref: "#/components/schemas/Alarm"
     Trigger:
       oneOf:
         - $ref: "#/components/schemas/ManualTrigger"
@@ -62,6 +64,27 @@ components:
           type: integer
       example:
         knots: 30
+    Alarm:
+      oneOf:
+        - $ref: "#/components/schemas/ManualTrigger"
+        - $ref: "#/components/schemas/SurgeAlarm"
+    AlarmBase:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: string
+    SurgeAlarm:
+      allOf:
+        - $ref: "#/components/schemas/AlarmBase"
+        - type: object
+          required: [surge_m]
+          properties:
+            surge_m:
+              type: number
+      example:
+        id: alarm-7
+        surge_m: 1.2
     Receipt:
       type: object
       properties:

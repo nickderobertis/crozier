@@ -2905,7 +2905,7 @@ fn readme_endpoint_eligible(ep: &Endpoint, types: &[TypeDecl], tag_decls: &[TagT
         && !ep
             .path_params
             .iter()
-            .any(|pp| path_union(&pp.type_ref, types, tag_decls))
+            .any(|pp| path_model_union(&pp.type_ref, types, tag_decls))
 }
 
 /// Whether a path parameter's type is a union with a model member, through its
@@ -2915,13 +2915,13 @@ fn readme_endpoint_eligible(ep: &Endpoint, types: &[TypeDecl], tag_decls: &[TagT
 /// docs/fern-measurements/worked-examples/composite-path-parameters/). A union
 /// of scalars is worked as usual (`id="id"` in
 /// docs/fern-measurements/handed-off/bodies-media/path-param-serialization/).
-fn path_union(t: &TypeRef, types: &[TypeDecl], tag_decls: &[TagTypeDecl]) -> bool {
+fn path_model_union(t: &TypeRef, types: &[TypeDecl], tag_decls: &[TagTypeDecl]) -> bool {
     let is_model = |member: &TypeRef| path_object_decl(member, types, tag_decls).is_some();
     match t {
-        TypeRef::Optional(inner) => path_union(inner, types, tag_decls),
+        TypeRef::Optional(inner) => path_model_union(inner, types, tag_decls),
         TypeRef::Union(members) => members.iter().any(is_model),
         TypeRef::Named(name) => match lookup_decl(types, tag_decls, name) {
-            Some(TypeDecl::Alias(alias)) => path_union(&alias.target, types, tag_decls),
+            Some(TypeDecl::Alias(alias)) => path_model_union(&alias.target, types, tag_decls),
             Some(TypeDecl::DiscriminatedUnion(_)) => true,
             _ => false,
         },
@@ -11451,23 +11451,30 @@ impl<'a> ExampleCtx<'a> {
     /// [`Self::object_fields`] before the model's own example is laid over its
     /// inherited fields.
     fn declared_object_fields(&self, obj: &ObjectType) -> Vec<ExampleField> {
-        // A docstring lists an `allOf` of `$ref`s from its last member back:
-        // the model's own fields (a member it inlines) ahead of its bases, and
-        // a later base ahead of an earlier one (#933, paypal's `Configuration`
-        // and `PhoneDetail`). The Markdown writers keep declaration order.
-        if !self.documentation && obj.reference_composition {
+        // A docstring lists an `allOf` of two or more `$ref`s from its last
+        // referenced member back: a field the model takes from a member it
+        // inlines ahead of its bases, a later base ahead of an earlier one
+        // (#933: paypal's `Configuration` and `PhoneDetail`), and a property
+        // only an inline member declares after them all (`Lessee`'s `deck` in
+        // docs/fern-measurements/worked-examples/composed-reference-order/).
+        // The Markdown writers keep declaration order.
+        if let Some(trailing) = obj.reference_composition.as_ref().filter(|_| !self.documentation) {
             let own = ObjectType {
                 bases: Vec::new(),
-                reference_composition: false,
+                reference_composition: None,
                 inherited_examples: std::collections::BTreeMap::new(),
                 ..obj.clone()
             };
-            let mut out = self.object_fields(&own);
+            let (last, mut out): (Vec<ExampleField>, Vec<ExampleField>) = self
+                .object_fields(&own)
+                .into_iter()
+                .partition(|field| trailing.contains(&field.wire_name));
             for base in obj.bases.iter().rev() {
                 if let Some(TypeDecl::Object(b)) = self.find(base) {
                     out.extend(self.object_fields(b));
                 }
             }
+            out.extend(last);
             return out;
         }
         let mut out = Vec::new();
@@ -17196,7 +17203,7 @@ mod tests {
             example_fields: Default::default(),
             docstring: None,
             xml: None,
-            reference_composition: false,
+            reference_composition: None,
             inherited_examples: std::collections::BTreeMap::new(),
         })
     }
@@ -17778,7 +17785,7 @@ mod tests {
             example_fields: Default::default(),
             docstring: None,
             xml: None,
-            reference_composition: false,
+            reference_composition: None,
             inherited_examples: std::collections::BTreeMap::new(),
         });
         let types = vec![
@@ -17795,7 +17802,7 @@ mod tests {
                 example_fields: Default::default(),
                 docstring: None,
                 xml: None,
-                reference_composition: false,
+                reference_composition: None,
                 inherited_examples: std::collections::BTreeMap::new(),
             }),
             TypeDecl::Alias(AliasType {
@@ -18120,7 +18127,7 @@ mod tests {
             example_fields: Default::default(),
             docstring: None,
             xml: None,
-            reference_composition: false,
+            reference_composition: None,
             inherited_examples: std::collections::BTreeMap::new(),
         });
         let kind = TypeDecl::Enum(EnumType {
@@ -18154,7 +18161,7 @@ mod tests {
             example_fields: Default::default(),
             docstring: None,
             xml: None,
-            reference_composition: false,
+            reference_composition: None,
             inherited_examples: std::collections::BTreeMap::new(),
         });
         let probe = TypeDecl::Object(ObjectType {
@@ -18185,7 +18192,7 @@ mod tests {
             example_fields: Default::default(),
             docstring: None,
             xml: None,
-            reference_composition: false,
+            reference_composition: None,
             inherited_examples: std::collections::BTreeMap::new(),
         });
         let types = vec![inner, kind, alias, base, probe];
@@ -18217,7 +18224,7 @@ mod tests {
             example_fields: Default::default(),
             docstring: None,
             xml: None,
-            reference_composition: false,
+            reference_composition: None,
             inherited_examples: std::collections::BTreeMap::new(),
         });
         let mut with_nested = types.clone();
@@ -18255,7 +18262,7 @@ mod tests {
             example_fields: Default::default(),
             docstring: None,
             xml: None,
-            reference_composition: false,
+            reference_composition: None,
             inherited_examples: std::collections::BTreeMap::new(),
         });
         let renderable = TypeDecl::Object(ObjectType {
@@ -18267,7 +18274,7 @@ mod tests {
             example_fields: Default::default(),
             docstring: None,
             xml: None,
-            reference_composition: false,
+            reference_composition: None,
             inherited_examples: std::collections::BTreeMap::new(),
         });
         let unrenderable = TypeDecl::Object(ObjectType {
@@ -18283,7 +18290,7 @@ mod tests {
             example_fields: Default::default(),
             docstring: None,
             xml: None,
-            reference_composition: false,
+            reference_composition: None,
             inherited_examples: std::collections::BTreeMap::new(),
         });
         let types = vec![inner, renderable, unrenderable];
@@ -18335,7 +18342,7 @@ mod tests {
             example_fields: Default::default(),
             docstring: None,
             xml: None,
-            reference_composition: false,
+            reference_composition: None,
             inherited_examples: std::collections::BTreeMap::new(),
         });
         let types = vec![probe];
@@ -18370,7 +18377,7 @@ mod tests {
             example_fields: Default::default(),
             docstring: None,
             xml: None,
-            reference_composition: false,
+            reference_composition: None,
             inherited_examples: std::collections::BTreeMap::new(),
         })];
         let item = TypeRef::Named("Parcel".to_string());
@@ -18439,7 +18446,7 @@ mod tests {
             example_fields: Default::default(),
             docstring: None,
             xml: None,
-            reference_composition: false,
+            reference_composition: None,
             inherited_examples: std::collections::BTreeMap::new(),
         });
         let mut metadata = model_field("metadata", TypeRef::Primitive(Prim::Any), true);
@@ -18461,7 +18468,7 @@ mod tests {
             example_fields: Default::default(),
             docstring: None,
             xml: None,
-            reference_composition: false,
+            reference_composition: None,
             inherited_examples: std::collections::BTreeMap::new(),
         });
         let empty_enum = TypeDecl::Enum(EnumType {

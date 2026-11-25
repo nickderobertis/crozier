@@ -3,7 +3,7 @@
   "fern_cli_version": "5.216.0",
   "enum_type": "literals",
   "base": "fern-expected",
-  "digest": "10e23de8b73a521a075545ec95fa2bad38900f9a43127229189c709b6e8ff078",
+  "digest": "9eaf09e0947ce06c2d6a92b0b8e2cc67ad75a3e10a34b8b0b33d609b42c542c3",
   "removed": [
     "src/fern/core/enum.py"
   ]

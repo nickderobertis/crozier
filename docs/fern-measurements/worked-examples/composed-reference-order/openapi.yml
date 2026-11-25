@@ -26,16 +26,35 @@ components:
   schemas:
     Order:
       type: object
-      required: [buyer, terms]
+      required: [buyer, terms, charterer, lessee]
       properties:
         buyer:
           $ref: "#/components/schemas/Buyer"
+        charterer:
+          $ref: "#/components/schemas/Charterer"
+        lessee:
+          $ref: "#/components/schemas/Lessee"
         terms:
           $ref: "#/components/schemas/Terms"
     Buyer:
       allOf:
         - $ref: "#/components/schemas/Contact"
         - $ref: "#/components/schemas/Berth"
+    Charterer:
+      allOf:
+        - $ref: "#/components/schemas/Contact"
+        - $ref: "#/components/schemas/Berth"
+        - type: object
+          required: [name]
+    Lessee:
+      allOf:
+        - $ref: "#/components/schemas/Contact"
+        - $ref: "#/components/schemas/Berth"
+        - type: object
+          required: [deck]
+          properties:
+            deck:
+              type: string
     Terms:
       allOf:
         - $ref: "#/components/schemas/Schedule"

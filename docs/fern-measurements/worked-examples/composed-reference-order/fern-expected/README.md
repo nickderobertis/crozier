@@ -35,7 +35,7 @@ A full reference for this library is available [here](./reference.md).
 Instantiate and use the client with the following:
 
 ```python
-from fern import FernApi, Buyer, Terms
+from fern import FernApi, Buyer, Charterer, Lessee, Terms
 
 client = FernApi()
 
@@ -45,6 +45,19 @@ client.orders.place_order(
         phone="phone",
         pier="pier",
         slip=1,
+    ),
+    charterer=Charterer(
+        name="name",
+        phone="phone",
+        pier="pier",
+        slip=1,
+    ),
+    lessee=Lessee(
+        name="name",
+        phone="phone",
+        pier="pier",
+        slip=1,
+        deck="deck",
     ),
     terms=Terms(
         kind="kind",
@@ -73,7 +86,7 @@ The SDK also exports an `async` client so that you can make non-blocking calls t
 ```python
 import asyncio
 
-from fern import AsyncFernApi, Buyer, Terms
+from fern import AsyncFernApi, Buyer, Charterer, Lessee, Terms
 
 client = AsyncFernApi()
 
@@ -85,6 +98,19 @@ async def main() -> None:
             phone="phone",
             pier="pier",
             slip=1,
+        ),
+        charterer=Charterer(
+            name="name",
+            phone="phone",
+            pier="pier",
+            slip=1,
+        ),
+        lessee=Lessee(
+            name="name",
+            phone="phone",
+            pier="pier",
+            slip=1,
+            deck="deck",
         ),
         terms=Terms(
             kind="kind",

@@ -6,14 +6,20 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
+    from .alarm import Alarm
+    from .alarm_base import AlarmBase
     from .manual_trigger import ManualTrigger
     from .receipt import Receipt
+    from .surge_alarm import SurgeAlarm
     from .tide_trigger import TideTrigger
     from .trigger import Trigger
     from .wind_trigger import WindTrigger
 _dynamic_imports: typing.Dict[str, str] = {
+    "Alarm": ".alarm",
+    "AlarmBase": ".alarm_base",
     "ManualTrigger": ".manual_trigger",
     "Receipt": ".receipt",
+    "SurgeAlarm": ".surge_alarm",
     "TideTrigger": ".tide_trigger",
     "Trigger": ".trigger",
     "WindTrigger": ".wind_trigger",
@@ -41,4 +47,4 @@ def __dir__():
     return sorted(lazy_attrs)
 
 
-__all__ = ["ManualTrigger", "Receipt", "TideTrigger", "Trigger", "WindTrigger"]
+__all__ = ["Alarm", "AlarmBase", "ManualTrigger", "Receipt", "SurgeAlarm", "TideTrigger", "Trigger", "WindTrigger"]

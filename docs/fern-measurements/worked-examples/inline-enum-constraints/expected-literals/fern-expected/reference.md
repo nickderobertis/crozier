@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py#L101-L132">book_passage</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L105-L162">book_passage</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -20,6 +20,10 @@ client = FernApi(
 
 client.book_passage(
     vessel="vessel",
+    gate="upper",
+    lane="east",
+    side="port",
+    pilot="harbour",
     window="slack",
 )
 
@@ -38,6 +42,38 @@ client.book_passage(
 <dd>
 
 **vessel:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**gate:** `PassageGate` — Its own `not` rejects the first member.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**lane:** `PassageLane` — The first member already satisfies the pattern.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**side:** `PassageSide` — No member satisfies the pattern, so the first stands.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**pilot:** `PassagePilot` — A format no member is decided against, so the first stands.
     
 </dd>
 </dl>
@@ -65,7 +101,7 @@ client.book_passage(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py#L134-L164">book_mooring</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L164-L194">book_mooring</a>(...)</code></summary>
 <dl>
 <dd>
 

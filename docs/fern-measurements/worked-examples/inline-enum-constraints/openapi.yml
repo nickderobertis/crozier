@@ -49,9 +49,43 @@ components:
       required:
       - vessel
       - window
+      - gate
+      - lane
+      - side
+      - pilot
       properties:
         vessel:
           type: string
+        gate:
+          type: string
+          description: Its own `not` rejects the first member.
+          enum:
+          - upper
+          - lower
+          not:
+            enum:
+            - upper
+        lane:
+          type: string
+          description: The first member already satisfies the pattern.
+          enum:
+          - east
+          - west
+          pattern: ^e
+        side:
+          type: string
+          description: No member satisfies the pattern, so the first stands.
+          enum:
+          - port
+          - starboard
+          pattern: ^x
+        pilot:
+          type: string
+          description: A format no member is decided against, so the first stands.
+          enum:
+          - harbour
+          - sea
+          format: email
         window:
           type: string
           description: Locks never open at slack water.

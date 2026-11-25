@@ -4,6 +4,7 @@ import typing
 
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.request_options import RequestOptions
+from ..types.alarm import Alarm
 from ..types.receipt import Receipt
 from ..types.trigger import Trigger
 from .raw_client import AsyncRawWatchesClient, RawWatchesClient
@@ -28,7 +29,7 @@ class WatchesClient:
         return self._raw_client
 
     def create_watch(
-        self, *, name: str, trigger: Trigger, request_options: typing.Optional[RequestOptions] = None
+        self, *, name: str, trigger: Trigger, alarm: Alarm, request_options: typing.Optional[RequestOptions] = None
     ) -> Receipt:
         """
         Parameters
@@ -36,6 +37,8 @@ class WatchesClient:
         name : str
 
         trigger : Trigger
+
+        alarm : Alarm
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -47,7 +50,7 @@ class WatchesClient:
 
         Examples
         --------
-        from fern import FernApi, TideTrigger
+        from fern import FernApi, SurgeAlarm, TideTrigger
 
         client = FernApi()
         client.watches.create_watch(
@@ -56,9 +59,15 @@ class WatchesClient:
                 station="harbour-mouth",
                 height_m=2.5,
             ),
+            alarm=SurgeAlarm(
+                id="alarm-7",
+                surge_m=1.2,
+            ),
         )
         """
-        _response = self._raw_client.create_watch(name=name, trigger=trigger, request_options=request_options)
+        _response = self._raw_client.create_watch(
+            name=name, trigger=trigger, alarm=alarm, request_options=request_options
+        )
         return _response.data
 
 
@@ -78,7 +87,7 @@ class AsyncWatchesClient:
         return self._raw_client
 
     async def create_watch(
-        self, *, name: str, trigger: Trigger, request_options: typing.Optional[RequestOptions] = None
+        self, *, name: str, trigger: Trigger, alarm: Alarm, request_options: typing.Optional[RequestOptions] = None
     ) -> Receipt:
         """
         Parameters
@@ -86,6 +95,8 @@ class AsyncWatchesClient:
         name : str
 
         trigger : Trigger
+
+        alarm : Alarm
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -99,7 +110,7 @@ class AsyncWatchesClient:
         --------
         import asyncio
 
-        from fern import AsyncFernApi, TideTrigger
+        from fern import AsyncFernApi, SurgeAlarm, TideTrigger
 
         client = AsyncFernApi()
 
@@ -111,10 +122,16 @@ class AsyncWatchesClient:
                     station="harbour-mouth",
                     height_m=2.5,
                 ),
+                alarm=SurgeAlarm(
+                    id="alarm-7",
+                    surge_m=1.2,
+                ),
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.create_watch(name=name, trigger=trigger, request_options=request_options)
+        _response = await self._raw_client.create_watch(
+            name=name, trigger=trigger, alarm=alarm, request_options=request_options
+        )
         return _response.data

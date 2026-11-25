@@ -11,8 +11,8 @@ does not take, a missing required one, or a value whose type its annotation
 rejects is an error. Only the examples are reported, never the SDK's own
 modules.
 
-Exit 0 prints how many examples were checked; exit 1 prints pyright's report;
-exit 2 reports a root holding no documented example.
+Exit 0 prints how many examples were checked; exit 1 prints pyright's report on
+stderr; exit 2 reports a root holding no documented example, also on stderr.
 """
 
 from __future__ import annotations
@@ -76,7 +76,7 @@ def main(argv: list[str]) -> int:
             check=False,
         )
     if result.returncode != 0:
-        print(result.stdout + result.stderr)
+        print(result.stdout + result.stderr, file=sys.stderr)
         return 1
     print(f"{len(snippets)} worked examples type-check")
     return 0
