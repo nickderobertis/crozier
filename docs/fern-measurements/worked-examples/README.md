@@ -18,7 +18,12 @@ certified tree under the corpus gate's normalization, every departure held to
 bytes each ticket decides. Its `sdk_env_` journey type-checks every worked call
 each SDK documents with pyright and validates the repaired values against their
 schemas with
-[`validate.py`](../../departures/evidence/invalid-example-values/validate.py).
+[`validate.py`](../../departures/evidence/invalid-example-values/validate.py):
+each enum, date, union-member (`anyOf`/`oneOf`), `allOf` and `$ref` list, map
+and typeless value the tickets repair or change, read whole as its wire JSON at
+its docstring and `reference.md` call (a docstring line as it renders, a
+constructor as the object of its keywords), where Fern's value or its omission
+is rejected or both are accepted; and a value of the wrong member rejected.
 No case is a corpus fixture or settles a coverage row; each ticket's real
 witness is the specification its issue names.
 

@@ -378,10 +378,16 @@ fn required_binary_reference_part_is_exampled_as_bytes() {
     // fails the comparison.
     let reference = out.join("reference.md");
     let text = read(&reference);
-    std::fs::write(&reference, text.replace("file=b\"file\",", "file=\"string\",")).expect("rewrite");
+    std::fs::write(
+        &reference,
+        text.replace("file=b\"file\",", "file=\"string\","),
+    )
+    .expect("rewrite");
     let unexplained = failures(case, &format!("{DIR}/{case}/fern-expected"), &out);
     assert!(
-        unexplained.iter().any(|failure| failure.contains("reference.md")),
+        unexplained
+            .iter()
+            .any(|failure| failure.contains("reference.md")),
         "{unexplained:?}"
     );
 }

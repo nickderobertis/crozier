@@ -61,7 +61,11 @@ fn documentation_maps_spread_every_pair() {
                 "README.md",
                 "    toggles={\n        \"lamp\": True,\n        \"horn\": False\n    },",
             ),
-            ("#540", "README.md", "    offset={\n        \"dx\": 3\n    },"),
+            (
+                "#540",
+                "README.md",
+                "    offset={\n        \"dx\": 3\n    },",
+            ),
         ],
     );
 }
@@ -197,17 +201,45 @@ fn docstring_examples_keep_their_string_escapes() {
 fn narrowed_enum_examples_take_a_member_the_constraints_admit() {
     holds(
         "composed-enum-constraints",
-        &[("#541", "src/fern/client.py", "            state=ParcelState.STAMPED,")],
+        &[(
+            "#541",
+            "src/fern/client.py",
+            "            state=ParcelState.STAMPED,",
+        )],
     );
     holds(
         "inline-enum-constraints",
         &[
-            ("#960", "src/fern/client.py", "            window=PassageWindow.EBB,"),
-            ("#960", "src/fern/client.py", "            tide=BookMooringRequestTide.EBB,"),
-            ("#960", "src/fern/client.py", "            gate=PassageGate.LOWER,"),
-            ("#960", "src/fern/client.py", "            lane=PassageLane.EAST,"),
-            ("#960", "src/fern/client.py", "            side=PassageSide.PORT,"),
-            ("#960", "src/fern/client.py", "            pilot=PassagePilot.HARBOUR,"),
+            (
+                "#960",
+                "src/fern/client.py",
+                "            window=PassageWindow.EBB,",
+            ),
+            (
+                "#960",
+                "src/fern/client.py",
+                "            tide=BookMooringRequestTide.EBB,",
+            ),
+            (
+                "#960",
+                "src/fern/client.py",
+                "            gate=PassageGate.LOWER,",
+            ),
+            (
+                "#960",
+                "src/fern/client.py",
+                "            lane=PassageLane.EAST,",
+            ),
+            (
+                "#960",
+                "src/fern/client.py",
+                "            side=PassageSide.PORT,",
+            ),
+            (
+                "#960",
+                "src/fern/client.py",
+                "            pilot=PassagePilot.HARBOUR,",
+            ),
         ],
     );
 }
@@ -395,6 +427,19 @@ fn composite_path_parameters_keep_valid_worked_values() {
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
+/// One repaired or changed value to validate:
+/// `(dir, case, mode, file, pointer, argument, exit, crozier's verdict)`.
+type ValueCase = (
+    &'static str,
+    &'static str,
+    &'static str,
+    &'static str,
+    String,
+    &'static str,
+    i32,
+    &'static str,
+);
+
 // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This `sdk_env_*` journey runs only in the `sdk-env` project, which AGENTS.md promotes out of the affected tier into its own required CI leg, so no unrelated edit newly triggers it; `#[ignore]` is the one mechanism crates/crozier-e2e/AGENTS.md gives for routing a journey there.
 /// Every worked call each measurement's crozier SDK documents (its docstrings,
 /// `reference.md` and README), in both enum modes, binds to that SDK's
@@ -410,7 +455,14 @@ fn composite_path_parameters_keep_valid_worked_values() {
 fn sdk_env_worked_examples_bind_and_their_repaired_values_validate() {
     let python = python_env_with(
         "crozier-worked-examples-typecheck",
-        &["httpx", "pydantic", "pytest", "pyright==1.1.414", "jsonschema==4.26.0", "PyYAML==6.0.3"],
+        &[
+            "httpx",
+            "pydantic",
+            "pytest",
+            "pyright==1.1.414",
+            "jsonschema==4.26.0",
+            "PyYAML==6.0.3",
+        ],
     )
     .expect("an environment holding pyright, jsonschema and PyYAML");
     let root = repo_root();
@@ -450,28 +502,56 @@ fn sdk_env_worked_examples_bind_and_their_repaired_values_validate() {
     // `file=b"file"` to its `FormFile` (bytes) annotation.
     let multipart = "docs/fern-measurements/bodies-responses";
     for mode in ["python-enums", "literals"] {
-        let out = temp.path().join(format!("multipart-binary-required-part-{mode}"));
+        let out = temp
+            .path()
+            .join(format!("multipart-binary-required-part-{mode}"));
         generate_in(multipart, "multipart-binary-required-part", mode, &out);
         let readme = std::fs::read_to_string(out.join("README.md")).expect("the README");
-        assert_eq!(readme.matches("file=b\"file\",").count(), 2, "{mode}: {readme}");
+        assert_eq!(
+            readme.matches("file=b\"file\",").count(),
+            2,
+            "{mode}: {readme}"
+        );
         let run = check(&out);
         let stdout = String::from_utf8_lossy(&run.stdout);
-        assert!(run.status.success(), "{mode}: {}", String::from_utf8_lossy(&run.stderr));
-        assert!(stdout.contains("8 worked examples type-check"), "{mode}: {stdout}");
+        assert!(
+            run.status.success(),
+            "{mode}: {}",
+            String::from_utf8_lossy(&run.stderr)
+        );
+        assert!(
+            stdout.contains("8 worked examples type-check"),
+            "{mode}: {stdout}"
+        );
     }
     // A README call passing the str Fern writes for the bytes part fails as a
     // README example, and the corrected call passes again.
-    let out = temp.path().join("multipart-binary-required-part-python-enums");
+    let out = temp
+        .path()
+        .join("multipart-binary-required-part-python-enums");
     let readme = out.join("README.md");
     let corrected = std::fs::read_to_string(&readme).expect("the README");
-    std::fs::write(&readme, corrected.replacen("file=b\"file\",", "file=\"file\",", 1)).expect("break the call");
+    std::fs::write(
+        &readme,
+        corrected.replacen("file=b\"file\",", "file=\"file\",", 1),
+    )
+    .expect("break the call");
     let run = check(&out);
     let report = String::from_utf8_lossy(&run.stderr);
     assert_eq!(run.status.code(), Some(1), "{report}");
-    assert!(report.contains("readme_") && report.contains("\"FormFile\""), "{report}");
-    assert!(!report.contains("docstring_") && !report.contains("reference_"), "{report}");
+    assert!(
+        report.contains("readme_") && report.contains("\"FormFile\""),
+        "{report}"
+    );
+    assert!(
+        !report.contains("docstring_") && !report.contains("reference_"),
+        "{report}"
+    );
     std::fs::write(&readme, &corrected).expect("restore the call");
-    assert!(check(&out).status.success(), "the corrected README call binds");
+    assert!(
+        check(&out).status.success(),
+        "the corrected README call binds"
+    );
     for (dir, case, says) in [
         (DIR, "composite-path-parameters", "error"),
         (DIR, "docstring-example-escapes", "error"),
@@ -484,47 +564,148 @@ fn sdk_env_worked_examples_bind_and_their_repaired_values_validate() {
         assert!(report.contains(says), "{case}: {report}");
     }
     // Fern's README calls of the bytes part are checked, and fail, too.
-    let run = check(&root.join(multipart).join("multipart-binary-required-part/fern-expected"));
-    assert!(String::from_utf8_lossy(&run.stderr).contains("readme_"), "Fern's README calls are checked");
+    let run = check(
+        &root
+            .join(multipart)
+            .join("multipart-binary-required-part/fern-expected"),
+    );
+    assert!(
+        String::from_utf8_lossy(&run.stderr).contains("readme_"),
+        "Fern's README calls are checked"
+    );
     // A root without a generated package documents nothing to check.
     assert_eq!(check(&root.join(DIR)).status.code(), Some(2));
 
     let validator = root.join("docs/departures/evidence/invalid-example-values/validate.py");
-    let line_of = |file: &Path, argument: &str| {
-        let text = std::fs::read_to_string(file).expect("a generated client");
+    let line_in = |file: &Path, argument: &str| {
+        let text = std::fs::read_to_string(file).ok()?;
         let number = text
             .lines()
-            .position(|line| line.trim_start().starts_with(&format!("{argument}=")))
-            .unwrap_or_else(|| panic!("{} passes no {argument}=", file.display()));
-        format!("{}:{}", file.display(), number + 1)
+            .position(|line| line.trim_start().starts_with(&format!("{argument}=")))?;
+        Some(format!("{}:{}", file.display(), number + 1))
     };
-    for (case, mode, pointer, argument, code, says) in [
-        ("composed-enum-constraints", "literals", "/components/schemas/Parcel/properties/state", "state", 0, "crozier state='stamped': accepted"),
-        ("inline-enum-constraints", "literals", "/components/schemas/Passage/properties/window", "window", 0, "crozier window='ebb': accepted"),
-        ("inline-enum-constraints", "literals", "/paths/~1moorings/post/requestBody/content/application~1json/schema/properties/tide", "tide", 0, "crozier tide='ebb': accepted"),
-        ("declared-date-examples", "python-enums", "/components/schemas/Voyage/properties/sailed_on", "sailed_on", 1, "crozier sailed_on='2031-04-02': accepted"),
-        ("declared-date-examples", "python-enums", "/components/schemas/Voyage/properties/checked_on", "checked_on", 1, "crozier checked_on='2000-01-23': accepted"),
-    ] {
-        let crozier = temp.path().join(format!("{case}-{mode}")).join("src/fern/client.py");
-        // The literals tree is the base laid under its overlay, built for the run.
-        let literals = (mode == "literals").then(|| literals_tree_in(DIR, case).0);
-        let fern = literals
-            .as_ref()
-            .map_or_else(|| root.join(DIR).join(case).join("fern-expected"), |tree| tree.path().to_path_buf())
-            .join("src/fern/client.py");
-        let run = std::process::Command::new(&python)
+    let validate = |source: &Path, pointer: &str, fern: &str, crozier: &str, argument: &str| {
+        std::process::Command::new(&python)
             .arg(&validator)
-            .arg(root.join(DIR).join(case).join("openapi.yml"))
+            .arg(source)
             .arg(pointer)
-            .arg(line_of(&fern, argument))
-            .arg(line_of(&crozier, argument))
+            .arg(fern)
+            .arg(crozier)
             .arg(argument)
             .env("PYTHONDONTWRITEBYTECODE", "1")
             .output()
-            .expect("run the example validator");
+            .expect("run the example validator")
+    };
+    let body = "/requestBody/content/application~1json/schema/properties";
+    // `(dir, case, mode, file, pointer, argument, exit, crozier's verdict)`:
+    // every value a ticket repairs or changes, at its docstring and its
+    // `reference.md` call, against its own schema in the source document,
+    // reached through `$ref`, `allOf` and `anyOf`/`oneOf` members. Exit 0 is
+    // Fern's value (or its omission, `-`) rejected and crozier's accepted;
+    // exit 1 is both accepted, where crozier changed the call but not the value.
+    let watch = "/components/schemas/Watch/properties";
+    let order = "/components/schemas/Order/properties";
+    let cases: Vec<ValueCase> = vec![
+        (DIR, "composed-enum-constraints", "literals", "src/fern/client.py", "/components/schemas/Parcel/properties/state".into(), "state", 0, "crozier state='stamped': accepted"),
+        (DIR, "inline-enum-constraints", "literals", "src/fern/client.py", "/components/schemas/Passage/properties/window".into(), "window", 0, "crozier window='ebb': accepted"),
+        (DIR, "inline-enum-constraints", "literals", "src/fern/client.py", format!("/paths/~1moorings/post{body}/tide"), "tide", 0, "crozier tide='ebb': accepted"),
+        (DIR, "declared-date-examples", "python-enums", "src/fern/client.py", "/components/schemas/Voyage/properties/sailed_on".into(), "sailed_on", 1, "crozier sailed_on='2031-04-02': accepted"),
+        (DIR, "declared-date-examples", "python-enums", "src/fern/client.py", "/components/schemas/Voyage/properties/checked_on".into(), "checked_on", 1, "crozier checked_on='2000-01-23': accepted"),
+        // #935: the oneOf member declaring an example, a plain object and an allOf.
+        (DIR, "union-example-member", "python-enums", "src/fern/watches/client.py", format!("{watch}/trigger"), "trigger", 1, "crozier trigger={'station': 'harbour-mouth', 'height_m': 2.5}: accepted"),
+        (DIR, "union-example-member", "python-enums", "reference.md", format!("{watch}/trigger"), "trigger", 1, "crozier trigger={'station': 'harbour-mouth', 'height_m': 2.5}: accepted"),
+        (DIR, "union-example-member", "python-enums", "src/fern/watches/client.py", format!("{watch}/alarm"), "alarm", 1, "crozier alarm={'id': 'alarm-7', 'surge_m': 1.2}: accepted"),
+        (DIR, "union-example-member", "python-enums", "reference.md", format!("{watch}/alarm"), "alarm", 1, "crozier alarm={'id': 'alarm-7', 'surge_m': 1.2}: accepted"),
+        // #933: each allOf of two `$ref`s, its later member's fields first.
+        (DIR, "composed-reference-order", "python-enums", "src/fern/orders/client.py", format!("{order}/buyer"), "buyer", 1, "crozier buyer={'pier': 'pier', 'slip': 1, 'name': 'name', 'phone': 'phone'}: accepted"),
+        (DIR, "composed-reference-order", "python-enums", "src/fern/orders/client.py", format!("{order}/charterer"), "charterer", 1, "crozier charterer={'pier': 'pier', 'slip': 1, 'name': 'name', 'phone': 'phone'}: accepted"),
+        (DIR, "composed-reference-order", "python-enums", "src/fern/orders/client.py", format!("{order}/lessee"), "lessee", 1, "'deck': 'deck'}: accepted"),
+        (DIR, "composed-reference-order", "python-enums", "reference.md", format!("{order}/lessee"), "lessee", 1, "'deck': 'deck'}: accepted"),
+        (DIR, "composed-reference-order", "python-enums", "src/fern/orders/client.py", format!("{order}/terms"), "terms", 1, "crozier terms={'kind': 'kind', 'due_on': 'due_on'}: accepted"),
+        // #947 and #945: the anyOf path parameter Fern omits, and the `$ref`
+        // list and the maps Fern passes a string.
+        (DIR, "composite-path-parameters", "python-enums", "src/fern/berths/client.py", "/paths/~1berths~1{berth}/get/parameters/0/schema".into(), "berth", 0, "crozier berth={'slip': 'slip'}: accepted"),
+        (DIR, "composite-path-parameters", "python-enums", "reference.md", "/paths/~1berths~1{berth}/get/parameters/0/schema".into(), "berth", 0, "crozier berth={'slip': 'slip'}: accepted"),
+        (DIR, "composite-path-parameters", "python-enums", "src/fern/berths/client.py", "/paths/~1hulls~1{hullIds}/get/parameters/0/schema".into(), "hull_ids", 0, "crozier hull_ids=['hullIds']: accepted"),
+        (DIR, "composite-path-parameters", "python-enums", "reference.md", "/paths/~1hulls~1{hullIds}/get/parameters/0/schema".into(), "hull_ids", 0, "crozier hull_ids=['hullIds']: accepted"),
+        (DIR, "composite-path-parameters", "python-enums", "src/fern/berths/client.py", "/paths/~1tides~1{marks}/get/parameters/0/schema".into(), "marks", 0, "crozier marks={'key': 'value'}: accepted"),
+        (DIR, "composite-path-parameters", "python-enums", "src/fern/berths/client.py", "/paths/~1logs~1{stamps}/get/parameters/0/schema".into(), "stamps", 0, "crozier stamps={'key': '2024-01-15T09:30:00+00:00'}: accepted"),
+        (DIR, "composite-path-parameters", "python-enums", "reference.md", "/paths/~1logs~1{stamps}/get/parameters/0/schema".into(), "stamps", 0, "crozier stamps={'key': '2024-01-15T09:30:00+00:00'}: accepted"),
+        // #936: the required typeless property Fern omits.
+        (DIR, "typeless-body-values", "python-enums", "src/fern/locker/client.py", format!("/paths/~1state/post{body}/data"), "data", 0, "crozier data={'key': 'value'}: accepted"),
+        // #864: the docstring renders crozier's doubled escapes as the
+        // declared string, and Fern's as a broken literal.
+        (DIR, "docstring-example-escapes", "python-enums", "src/fern/client.py", format!("/paths/~1logbook/post{body}/entry"), "entry", 0, "crozier entry='Moored at dawn.\\nWind\\tNE 12 kn, \"steady\"': accepted"),
+        // The required binary part: bytes, read as their octets' string.
+        (multipart, "multipart-binary-required-part", "python-enums", "src/fern/uploads/client.py", "/paths/~1uploads/post/requestBody/content/multipart~1form-data/schema/properties/file".into(), "file", 1, "crozier file='file': accepted"),
+    ];
+    for (dir, case, mode, file, pointer, argument, code, says) in &cases {
+        let crozier = temp.path().join(format!("{case}-{mode}")).join(file);
+        // The literals tree is the base laid under its overlay, built for the run.
+        let literals = (*mode == "literals").then(|| literals_tree_in(dir, case).0);
+        let fern = literals
+            .as_ref()
+            .map_or_else(
+                || root.join(dir).join(case).join("fern-expected"),
+                |tree| tree.path().to_path_buf(),
+            )
+            .join(file);
+        let crozier_place = line_in(&crozier, argument)
+            .unwrap_or_else(|| panic!("{} passes no {argument}=", crozier.display()));
+        let fern_place = line_in(&fern, argument).unwrap_or_else(|| "-".to_string());
+        let run = validate(
+            &root.join(dir).join(case).join("openapi.yml"),
+            pointer,
+            &fern_place,
+            &crozier_place,
+            argument,
+        );
         let stdout = String::from_utf8_lossy(&run.stdout);
-        assert_eq!(run.status.code(), Some(code), "{case} {argument}: {stdout}{}", String::from_utf8_lossy(&run.stderr));
-        assert!(stdout.contains(says), "{case} {argument}: {stdout}");
+        assert_eq!(
+            run.status.code(),
+            Some(*code),
+            "{case} {file} {argument}: {stdout}{}",
+            String::from_utf8_lossy(&run.stderr)
+        );
+        assert!(stdout.contains(says), "{case} {file} {argument}: {stdout}");
+    }
+    // The composite reading rejects a value of the wrong member: a trigger is
+    // no alarm (neither oneOf member admits it), and a buyer, lacking the
+    // inline member's `deck`, is no lessee.
+    for (case, file, pointer, argument, says) in [
+        (
+            "union-example-member",
+            "src/fern/watches/client.py",
+            format!("{watch}/alarm"),
+            "trigger",
+            "is not valid under any of the given schemas",
+        ),
+        (
+            "composed-reference-order",
+            "src/fern/orders/client.py",
+            format!("{order}/lessee"),
+            "buyer",
+            "'deck' is a required property",
+        ),
+    ] {
+        let place = line_in(
+            &temp.path().join(format!("{case}-python-enums")).join(file),
+            argument,
+        )
+        .expect("the value's line");
+        let run = validate(
+            &root.join(DIR).join(case).join("openapi.yml"),
+            &pointer,
+            &place,
+            &place,
+            argument,
+        );
+        let stdout = String::from_utf8_lossy(&run.stdout);
+        assert_eq!(run.status.code(), Some(1), "{case} {argument}: {stdout}");
+        assert!(
+            stdout.contains(&format!("crozier {argument}=")) && stdout.contains(says),
+            "{case} {argument}: {stdout}"
+        );
     }
 
     // The validator over authored lines: a `datetime.datetime.fromisoformat`
@@ -545,7 +726,10 @@ fn sdk_env_worked_examples_bind_and_their_repaired_values_validate() {
         std::fs::write(&path, text).expect("write a client line");
         format!("{}:1", path.display())
     };
-    let fern = lines("fern.py", "    at=datetime.datetime.fromisoformat(\"2024-01-15 09:30\"),\n");
+    let fern = lines(
+        "fern.py",
+        "    at=datetime.datetime.fromisoformat(\"2024-01-15 09:30\"),\n",
+    );
     let crozier = lines(
         "crozier.py",
         "    at=datetime.datetime.fromisoformat(\n        \"2024-01-15 09:30:00+00:00\",\n    ),\n",
@@ -564,22 +748,167 @@ fn sdk_env_worked_examples_bind_and_their_repaired_values_validate() {
     };
     let run = validate(&fern, &crozier);
     let stdout = String::from_utf8_lossy(&run.stdout);
-    assert_eq!(run.status.code(), Some(0), "{stdout}{}", String::from_utf8_lossy(&run.stderr));
-    assert!(stdout.contains("crozier at='2024-01-15T09:30:00+00:00': accepted"), "{stdout}");
-    assert!(stdout.contains("fern at='2024-01-15T09:30': rejected"), "{stdout}");
+    assert_eq!(
+        run.status.code(),
+        Some(0),
+        "{stdout}{}",
+        String::from_utf8_lossy(&run.stderr)
+    );
+    assert!(
+        stdout.contains("crozier at='2024-01-15T09:30:00+00:00': accepted"),
+        "{stdout}"
+    );
+    assert!(
+        stdout.contains("fern at='2024-01-15T09:30': rejected"),
+        "{stdout}"
+    );
     for (name, text) in [
-        ("two.py", "    at=datetime.datetime.fromisoformat(\"2024-01-15 09:30:00+00:00\", 1),\n"),
-        ("keyword.py", "    at=datetime.date.fromisoformat(date_string=\"2024-01-15\"),\n"),
+        (
+            "two.py",
+            "    at=datetime.datetime.fromisoformat(\"2024-01-15 09:30:00+00:00\", 1),\n",
+        ),
+        (
+            "keyword.py",
+            "    at=datetime.date.fromisoformat(date_string=\"2024-01-15\"),\n",
+        ),
         ("name.py", "    at=datetime.date.fromisoformat(stamp),\n"),
-        ("other.py", "    at=calendar.fromisoformat(\"2024-01-15\"),\n"),
+        (
+            "other.py",
+            "    at=calendar.fromisoformat(\"2024-01-15\"),\n",
+        ),
     ] {
         let refused = lines(name, text);
         let run = validate(&fern, &refused);
         let stderr = String::from_utf8_lossy(&run.stderr);
         assert_eq!(run.status.code(), Some(2), "{name}: {stderr}");
-        assert!(stderr.contains("passes at= no literal value"), "{name}: {stderr}");
-        let corrected = lines(name, "    at=datetime.datetime.fromisoformat(\"2024-01-15 09:30:00+00:00\"),\n");
-        assert_eq!(validate(&fern, &corrected).status.code(), Some(0), "{name} corrected");
+        assert!(
+            stderr.contains("passes at= no literal value"),
+            "{name}: {stderr}"
+        );
+        let corrected = lines(
+            name,
+            "    at=datetime.datetime.fromisoformat(\"2024-01-15 09:30:00+00:00\"),\n",
+        );
+        assert_eq!(
+            validate(&fern, &corrected).status.code(),
+            Some(0),
+            "{name} corrected"
+        );
     }
+
+    // A model constructor is read as the object of its keywords, a value
+    // nested in it the same way; a constructor taking a positional argument is
+    // no literal. A docstring line is read as the docstring renders it: a
+    // non-raw one's escapes applied, a raw one's kept.
+    let schema = |name: &str, value: serde_json::Value| (name.to_string(), value);
+    let composite = work.path().join("composite.json");
+    std::fs::write(
+        &composite,
+        serde_json::json!({"openapi": "3.1.0", "info": {"title": "t", "version": "1"}, "paths": {},
+        "components": {"schemas": serde_json::Map::from_iter([
+            schema("Slot", serde_json::json!({"type": "object", "required": ["at", "tags"],
+                "properties": {"at": {"type": "string", "format": "date-time"},
+                    "tags": {"type": "array", "items": {"type": "string"}, "minItems": 1}}})),
+            schema("Either", serde_json::json!({"oneOf": [{"$ref": "#/components/schemas/Slot"},
+                {"type": "string", "pattern": "^a\\nb$"}]})),
+        ])}})
+        .to_string(),
+    )
+    .expect("write the document");
+    let check_at = |pointer: &str, left: &str, right: &str, argument: &str| {
+        std::process::Command::new(&python)
+            .arg(&validator)
+            .arg(&composite)
+            .arg(pointer)
+            .arg(left)
+            .arg(right)
+            .arg(argument)
+            .env("PYTHONDONTWRITEBYTECODE", "1")
+            .output()
+            .expect("run the example validator")
+    };
+    let slot = lines(
+        "slot.py",
+        "    slot=Slot(at=datetime.datetime.fromisoformat(\"2024-01-15 09:30:00+00:00\"), tags=[\"x\"]),\n",
+    );
+    let empty = lines("empty.py", "    slot=Slot(at=datetime.datetime.fromisoformat(\"2024-01-15 09:30:00+00:00\"), tags=[]),\n");
+    let run = check_at("/components/schemas/Either", &empty, &slot, "slot");
+    let stdout = String::from_utf8_lossy(&run.stdout);
+    assert_eq!(
+        run.status.code(),
+        Some(0),
+        "{stdout}{}",
+        String::from_utf8_lossy(&run.stderr)
+    );
+    assert!(
+        stdout
+            .contains("crozier slot={'at': '2024-01-15T09:30:00+00:00', 'tags': ['x']}: accepted"),
+        "{stdout}"
+    );
+    assert!(
+        stdout.contains("fern slot={'at': '2024-01-15T09:30:00+00:00', 'tags': []}: rejected"),
+        "{stdout}"
+    );
+    // Fern's omission is no value; crozier's omission is an input it cannot read.
+    assert_eq!(
+        check_at("/components/schemas/Either", "-", &slot, "slot")
+            .status
+            .code(),
+        Some(0)
+    );
+    assert_eq!(
+        check_at("/components/schemas/Either", &slot, "-", "slot")
+            .status
+            .code(),
+        Some(2)
+    );
+    let positional = lines("positional.py", "    slot=Slot(\"x\", tags=[\"x\"]),\n");
+    let run = check_at("/components/schemas/Either", &empty, &positional, "slot");
+    assert_eq!(
+        run.status.code(),
+        Some(2),
+        "{}",
+        String::from_utf8_lossy(&run.stderr)
+    );
+    assert!(String::from_utf8_lossy(&run.stderr).contains("passes slot= no literal value"));
+    let docstring = |name: &str, prefix: &str, value: &str| {
+        let path = work.path().join(name);
+        std::fs::write(&path, format!("def f():\n    {prefix}\"\"\"\n    f(\n        either={value},\n    )\n    \"\"\"\n")).expect("write a docstring");
+        format!("{}:4", path.display())
+    };
+    // `a\\nb` in a non-raw docstring renders `a\nb`, the string the pattern
+    // admits; in a raw one it stays `a\\nb`, which it does not; `a\nb` in a
+    // non-raw one renders a newline that breaks the literal.
+    let doubled = docstring("doubled.py", "", "\"a\\\\nb\"");
+    let raw = docstring("raw.py", "r", "\"a\\\\nb\"");
+    let single = docstring("single.py", "", "\"a\\nb\"");
+    let run = check_at("/components/schemas/Either", &single, &doubled, "either");
+    let stdout = String::from_utf8_lossy(&run.stdout);
+    assert_eq!(
+        run.status.code(),
+        Some(0),
+        "{stdout}{}",
+        String::from_utf8_lossy(&run.stderr)
+    );
+    assert!(
+        stdout.contains("crozier either='a\\nb': accepted"),
+        "{stdout}"
+    );
+    assert!(
+        stdout.contains("its docstring renders it as no Python literal"),
+        "{stdout}"
+    );
+    let run = check_at("/components/schemas/Either", &raw, &doubled, "either");
+    let stdout = String::from_utf8_lossy(&run.stdout);
+    assert_eq!(
+        run.status.code(),
+        Some(0),
+        "{stdout}{}",
+        String::from_utf8_lossy(&run.stderr)
+    );
+    assert!(
+        stdout.contains("fern either='a\\\\nb': rejected"),
+        "{stdout}"
+    );
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
