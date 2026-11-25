@@ -11,7 +11,7 @@ workflow, reusable call and matrix leg against it).
 | --- | --- | --- |
 | `lint` | 60 min | Release guard, pull request title, suppressions comment, `just ci-lint` (format, lint, typecheck, supply chain, doc), judged lint over the diff, visual docs |
 | `test-linux` | 240 min | Crate dry run, install and smoke, packaging, offline projects, SDK environments, host budget, live and corpus proof |
-| `test-windows` | 150 min | Offline projects, SDK environments, install and smoke |
+| `test-windows` | 240 min | Offline projects, SDK environments, install and smoke |
 | `test-macos` | 240 min | Offline projects, SDK environments, install and smoke |
 
 **The limits above 30 let a broad change finish; none is meant to cut off work that would pass.** `lint`'s rose from 30 to 60 when a pair-moving change's judged diff needed 5 batches of ~2.5 minutes each after the job's ~23 minutes of setup. Run
@@ -30,7 +30,7 @@ Linux, 77 to more than 90 on Windows and more than 120 on macOS; the old 90-minu
 cancelled #790 and #792, and the old 120-minute macOS limit cancelled #792, with nothing failed.
 The old 150-minute Linux limit cancelled #793 the same day: its main
 tier ran about 60 minutes and its final census-fallback, corpus-match and live-e2e step more
-than 78 before the cut-off. Windows is now at 150, and Linux and macOS at 240: macOS rose from 150 when the Fern 5.200.0 pair move's first stage alone took 2h04m (run [43716165831](https://github.com/nickderobertis/crozier/actions/runs/43716165831)) and the limit cancelled its sdk-env stage. Mac's stands until that lane has a warm result
+than 78 before the cut-off. All three test lanes are now at 240. Windows rose from 150 by the user's ruling when run [45434125778](https://github.com/nickderobertis/crozier/actions/runs/45434125778)'s "Test the affected projects" step took 2h18m and the limit cancelled the job in "Install crozier" after every test step passed; it stands until a re-measure, as for Linux. macOS rose from 150 when the Fern 5.200.0 pair move's first stage alone took 2h04m (run [43716165831](https://github.com/nickderobertis/crozier/actions/runs/43716165831)) and the limit cancelled its sdk-env stage. Mac's stands until that lane has a warm result
 cache (main's cache writer serves lint, Linux and Windows only; whether Mac joins it is an open
 decision) or the follow-up on the cold Mac leg is resolved.
 
