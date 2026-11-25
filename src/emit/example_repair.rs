@@ -129,7 +129,11 @@ pub(super) fn locate(files: &[GeneratedFile]) -> Vec<ExampleValue> {
             Destination::Docstring => text.replace('\\', "\\\\"),
             Destination::Readme | Destination::Reference => text.to_string(),
         };
-        let escaped: Vec<String> = block.lines.iter().map(|line| written(line.trim())).collect();
+        let escaped: Vec<String> = block
+            .lines
+            .iter()
+            .map(|line| written(line.trim()))
+            .collect();
         let wanted: Vec<&str> = escaped.iter().map(String::as_str).collect();
         let Some(first) = wanted.first() else {
             continue;

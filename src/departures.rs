@@ -4359,7 +4359,9 @@ fn container_path_parameters(context: &Context) -> BTreeMap<String, String> {
 /// (`dynamic_value: DynamicCompositeValue`, `DynamicCompositeValue =
 /// typing.Union[EntityType, FlexibleValue, CompositeEntity]`), each with it.
 fn union_path_parameters(context: &Context) -> BTreeMap<String, String> {
-    positional_parameters(context, |annotation| annotation.starts_with("typing.Union["))
+    positional_parameters(context, |annotation| {
+        annotation.starts_with("typing.Union[")
+    })
 }
 
 /// The positional parameters of the methods crozier's client modules define
@@ -4532,7 +4534,11 @@ fn container_path_parameter_call(pair: &Pair<'_>) -> Result<Option<Region>, Stri
                 .iter()
                 .map(|line| (*line).to_string())
                 .chain([(*placeholder).to_string()])
-                .chain(lines[argument_end + 1..=close].iter().map(|line| (*line).to_string()))
+                .chain(
+                    lines[argument_end + 1..=close]
+                        .iter()
+                        .map(|line| (*line).to_string()),
+                )
                 .collect();
             (opener, reduced)
         };
@@ -4627,7 +4633,9 @@ fn typeless_body_required_arguments(pair: &Pair<'_>) -> Result<Option<Region>, S
         let Some(head) = bare.strip_suffix('(') else {
             continue;
         };
-        let Some(method) = head.strip_prefix("client.").map(|path| path.rsplit('.').next().unwrap_or(path))
+        let Some(method) = head
+            .strip_prefix("client.")
+            .map(|path| path.rsplit('.').next().unwrap_or(path))
         else {
             continue;
         };
@@ -4654,7 +4662,9 @@ fn typeless_body_required_arguments(pair: &Pair<'_>) -> Result<Option<Region>, S
         if !required.get(method).is_some_and(|sets| {
             sets.iter().any(|set| {
                 arguments.iter().all(|argument| set.contains_key(*argument))
-                    && arguments.iter().any(|argument| set.get(*argument) == Some(&true))
+                    && arguments
+                        .iter()
+                        .any(|argument| set.get(*argument) == Some(&true))
             })
         }) {
             continue;
@@ -4751,7 +4761,10 @@ fn union_path_parameter_example(pair: &Pair<'_>) -> Option<Region> {
         }
         // The docstring's `Examples` section, from the blank line before its
         // heading to the line before the closing quotes.
-        let Some(heading) = (0..at).rev().find(|index| lines[*index].trim() == "Examples") else {
+        let Some(heading) = (0..at)
+            .rev()
+            .find(|index| lines[*index].trim() == "Examples")
+        else {
             continue;
         };
         let Some(end) = (at..lines.len()).find(|index| lines[*index].trim() == "\"\"\"") else {
@@ -4763,11 +4776,16 @@ fn union_path_parameter_example(pair: &Pair<'_>) -> Option<Region> {
         let start = heading - 1;
         // The same method's docstring in Fern's module: its `def` line, at the
         // same occurrence (sync, then async), then its docstring's closing quotes.
-        let Some(def) = (0..heading).rev().find(|index| python_method_name(lines[*index]).is_some())
+        let Some(def) = (0..heading)
+            .rev()
+            .find(|index| python_method_name(lines[*index]).is_some())
         else {
             continue;
         };
-        let occurrence = lines[..def].iter().filter(|line| **line == lines[def]).count();
+        let occurrence = lines[..def]
+            .iter()
+            .filter(|line| **line == lines[def])
+            .count();
         let Some(fern_def) = pair
             .fern
             .iter()
@@ -4781,7 +4799,9 @@ fn union_path_parameter_example(pair: &Pair<'_>) -> Option<Region> {
         let Some(fern) = (fern_def + 1..pair.fern.len())
             .filter(|index| pair.fern[*index].trim() == "\"\"\"")
             .nth(1)
-            .filter(|index| pair.fern[*index] == lines[end] && pair.fern[*index - 1] == lines[start - 1])
+            .filter(|index| {
+                pair.fern[*index] == lines[end] && pair.fern[*index - 1] == lines[start - 1]
+            })
         else {
             continue;
         };
@@ -4806,7 +4826,10 @@ fn orphaned_datetime_import(
     close: usize,
 ) -> (usize, usize) {
     let lines = pair.crozier;
-    if !lines[removed.clone()].iter().any(|line| line.contains("datetime.")) {
+    if !lines[removed.clone()]
+        .iter()
+        .any(|line| line.contains("datetime."))
+    {
         return (start, fern_start);
     }
     // The snippet's opening: the Markdown fence or the docstring's `--------`.
@@ -9639,15 +9662,35 @@ mod tests {
         for rel in ["README.md", "reference.md", "src/fern/uploads/client.py"] {
             assert!(holds(&context, rel, fern, crozier), "{rel}");
         }
-        assert!(!holds(&context, "src/fern/types/form_file.py", fern, crozier));
+        assert!(!holds(
+            &context,
+            "src/fern/types/form_file.py",
+            fern,
+            crozier
+        ));
         // Only the bytes spelling of Fern's own sample, of a bytes parameter.
         assert!(!holds(&context, "README.md", fern, "    file=b\"string\","));
-        assert!(!holds(&context, "README.md", "    note=\"file\",", "    note=b\"file\","));
-        assert!(!holds(&context, "README.md", fern, "        file=b\"file\","));
+        assert!(!holds(
+            &context,
+            "README.md",
+            "    note=\"file\",",
+            "    note=b\"file\","
+        ));
+        assert!(!holds(
+            &context,
+            "README.md",
+            fern,
+            "        file=b\"file\","
+        ));
         // A JSON binary body's `request` is `binary-json-body-example`'s.
         let raw = raw.replace("file: FormFile", "request: bytes");
         let context = Context::from_sources([], [("src/fern/uploads/raw_client.py", raw.as_str())]);
-        assert!(!holds(&context, "README.md", "    request=\"file\",", "    request=b\"file\","));
+        assert!(!holds(
+            &context,
+            "README.md",
+            "    request=\"file\",",
+            "    request=b\"file\","
+        ));
     }
 
     #[test]
@@ -9722,8 +9765,14 @@ mod tests {
             ],
         );
         let lists = container_path_parameters(&context);
-        assert_eq!(lists.get("string_list").map(String::as_str), Some("typing.List[str]"));
-        assert_eq!(lists.get("values").map(String::as_str), Some("typing.Dict[str, str]"));
+        assert_eq!(
+            lists.get("string_list").map(String::as_str),
+            Some("typing.List[str]")
+        );
+        assert_eq!(
+            lists.get("values").map(String::as_str),
+            Some("typing.Dict[str, str]")
+        );
         assert!(!lists.contains_key("key"));
         let unions = union_path_parameters(&context);
         assert_eq!(unions.keys().collect::<Vec<_>>(), ["key"]);
@@ -9741,9 +9790,18 @@ mod tests {
             )
         };
         // A `typing.List[str]` alias rejects the string placeholder, so does a map.
-        assert!(docstring("    string_list=\"stringList\",", "    string_list=[\"stringList\"],"));
-        assert!(docstring("    values=\"values\",", "    values={\"key\": \"value\"},"));
-        assert!(!docstring("    values=\"values\",", "    values=\"other\","));
+        assert!(docstring(
+            "    string_list=\"stringList\",",
+            "    string_list=[\"stringList\"],"
+        ));
+        assert!(docstring(
+            "    values=\"values\",",
+            "    values={\"key\": \"value\"},"
+        ));
+        assert!(!docstring(
+            "    values=\"values\",",
+            "    values=\"other\","
+        ));
     }
 
     #[test]
@@ -9753,7 +9811,10 @@ mod tests {
             [],
             [
                 ("src/fern/things/client.py", client),
-                ("src/fern/types/key.py", "Key = typing.Union[SlipKey, BuoyKey]\n"),
+                (
+                    "src/fern/types/key.py",
+                    "Key = typing.Union[SlipKey, BuoyKey]\n",
+                ),
             ],
         );
         let fern = ["```python", "client.things.by_union(...)", "```"];

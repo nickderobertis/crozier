@@ -3324,7 +3324,10 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         // keeps a description's trailing blank lines (`Field::doc_tail_blank_lines`).
         if !endpoint.body_schema_dropped {
             if let Some(RequestBody::Inline(fields)) = &mut endpoint.request_body {
-                for doc in fields.iter_mut().filter_map(|field| field.docstring.as_mut()) {
+                for doc in fields
+                    .iter_mut()
+                    .filter_map(|field| field.docstring.as_mut())
+                {
                     doc.truncate(doc.trim_end_matches('\n').len());
                 }
             }
@@ -6372,13 +6375,15 @@ fn quoted_date_example(doc: &OpenApi, parameter: &crate::openapi::Parameter) -> 
         .as_ref()
         .or_else(|| typed_schema_example(schema))
         .or_else(|| typed_schema_example(target));
-    declared.and_then(serde_json::Value::as_str).is_some_and(|text| {
-        crate::example_values::full_date(text)
-            && !doc
-                .yaml_unquoted_timestamps
-                .as_ref()
-                .is_some_and(|unquoted| unquoted.contains(text))
-    })
+    declared
+        .and_then(serde_json::Value::as_str)
+        .is_some_and(|text| {
+            crate::example_values::full_date(text)
+                && !doc
+                    .yaml_unquoted_timestamps
+                    .as_ref()
+                    .is_some_and(|unquoted| unquoted.contains(text))
+        })
 }
 
 /// The quoted example a `format: date` component a path parameter names by
@@ -12229,45 +12234,47 @@ fn append_request_fields(
     if !seen.insert(obj.name.clone()) {
         return;
     }
-    out.extend(obj.fields.iter().map(|f| BodyField {
-        constraints: f.constraints.clone(),
-        wire_name: f.wire_name.clone(),
-        py_name: naming::request_field_name(f.declared_name.as_deref().unwrap_or(&f.wire_name)),
-        type_ref: f.type_ref.clone(),
-        optional: f.optional,
-        // The *property* is what makes an inlined body field nullable, not the
-        // alias its type resolves to: braintrust's `PatchProjectAutomation.config`
-        // is a union whose last member is `{nullable: true}`, and Fern's convert
-        // wrapper annotates the bare `PatchProjectAutomationConfig`.
-        nullable: f.nullable,
-        spec_required: f.spec_required,
-        // The parameter keeps the blank lines the description ended on, which
-        // the model field's docstring drops (`Field::doc_tail_blank_lines`).
-        docstring: f
-            .docstring
-            .as_ref()
-            .map(|doc| format!("{doc}{}", "\n".repeat(f.doc_tail_blank_lines))),
-        convert: type_needs_convert(&f.type_ref, types),
-        is_file: false,
-        form_json: false,
-        form_content_type: None,
-        collision_prefix: Some(naming::field_name(request_class)),
-        inline_object: false,
-        example: match (&f.example_source, component_examples) {
-            (
-                FieldExampleSource::Object { property },
-                ComponentExamplePolicy::PropertyFallbacksOnly,
-            ) => property.clone(),
-            _ => f.example.clone(),
-        },
-        media_example: false,
-        schema_body_example: false,
-        reference_order: 0,
-        deprecated: f.deprecated,
-        declaration_order: 0,
-        markdown_order: 0,
-        union_member_example: f.union_member_example,
-        admits_only_empty_object: f.admits_only_empty_object,
+    out.extend(obj.fields.iter().map(|f| {
+        BodyField {
+            constraints: f.constraints.clone(),
+            wire_name: f.wire_name.clone(),
+            py_name: naming::request_field_name(f.declared_name.as_deref().unwrap_or(&f.wire_name)),
+            type_ref: f.type_ref.clone(),
+            optional: f.optional,
+            // The *property* is what makes an inlined body field nullable, not the
+            // alias its type resolves to: braintrust's `PatchProjectAutomation.config`
+            // is a union whose last member is `{nullable: true}`, and Fern's convert
+            // wrapper annotates the bare `PatchProjectAutomationConfig`.
+            nullable: f.nullable,
+            spec_required: f.spec_required,
+            // The parameter keeps the blank lines the description ended on, which
+            // the model field's docstring drops (`Field::doc_tail_blank_lines`).
+            docstring: f
+                .docstring
+                .as_ref()
+                .map(|doc| format!("{doc}{}", "\n".repeat(f.doc_tail_blank_lines))),
+            convert: type_needs_convert(&f.type_ref, types),
+            is_file: false,
+            form_json: false,
+            form_content_type: None,
+            collision_prefix: Some(naming::field_name(request_class)),
+            inline_object: false,
+            example: match (&f.example_source, component_examples) {
+                (
+                    FieldExampleSource::Object { property },
+                    ComponentExamplePolicy::PropertyFallbacksOnly,
+                ) => property.clone(),
+                _ => f.example.clone(),
+            },
+            media_example: false,
+            schema_body_example: false,
+            reference_order: 0,
+            deprecated: f.deprecated,
+            declaration_order: 0,
+            markdown_order: 0,
+            union_member_example: f.union_member_example,
+            admits_only_empty_object: f.admits_only_empty_object,
+        }
     }));
     for base in &obj.bases {
         if let Some(base_obj) = types.iter().find_map(|decl| match decl {
@@ -21035,14 +21042,21 @@ fn flattened_example_orders(
 /// of them declares (`Lessee`'s `deck`). Any other inline member leaves
 /// declaration order, as the certified pair keeps it for nexmo's
 /// `allOf: [$ref Text, {text}, $ref channelOptionsSms]`.
-fn reference_composition(schema: &Schema, schemas: &IndexMap<String, Schema>) -> Option<Vec<String>> {
+fn reference_composition(
+    schema: &Schema,
+    schemas: &IndexMap<String, Schema>,
+) -> Option<Vec<String>> {
     let members = schema.all_of.as_deref()?;
     let referenced: Vec<&Schema> = members
         .iter()
         .filter_map(|member| member.reference.as_deref())
         .filter_map(|reference| resolve_ref_from_schemas(schemas, reference))
         .collect();
-    let declared = |name: &String| referenced.iter().any(|target| target.properties.contains_key(name));
+    let declared = |name: &String| {
+        referenced
+            .iter()
+            .any(|target| target.properties.contains_key(name))
+    };
     let measured = |(at, member): (usize, &Schema)| {
         member.reference.is_some()
             || member.all_of.is_none()

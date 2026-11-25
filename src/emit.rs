@@ -10907,7 +10907,9 @@ impl<'a> ExampleCtx<'a> {
             _ => false,
         };
         if !self.field_examples_ignored
-            && variants.first().is_some_and(|first| models(first) && !declares_example(first))
+            && variants
+                .first()
+                .is_some_and(|first| models(first) && !declares_example(first))
         {
             if let Some(chosen) = variants.iter().find(|variant| declares_example(variant)) {
                 let chosen = chosen.clone();
@@ -11439,7 +11441,11 @@ impl<'a> ExampleCtx<'a> {
         // The model's own example sets what it inherits as well (#935).
         for field in &mut out {
             if let Some(value) = obj.inherited_examples.get(&field.wire_name) {
-                if !obj.fields.iter().any(|own| own.wire_name == field.wire_name) {
+                if !obj
+                    .fields
+                    .iter()
+                    .any(|own| own.wire_name == field.wire_name)
+                {
                     field.parent_example = true;
                     field.example = Some(value.clone());
                 }
@@ -11458,7 +11464,11 @@ impl<'a> ExampleCtx<'a> {
         // only an inline member declares after them all (`Lessee`'s `deck` in
         // docs/fern-measurements/worked-examples/composed-reference-order/).
         // The Markdown writers keep declaration order.
-        if let Some(trailing) = obj.reference_composition.as_ref().filter(|_| !self.documentation) {
+        if let Some(trailing) = obj
+            .reference_composition
+            .as_ref()
+            .filter(|_| !self.documentation)
+        {
             let own = ObjectType {
                 bases: Vec::new(),
                 reference_composition: None,
@@ -13386,7 +13396,9 @@ fn flat_dict_pairs(value: &str, calls: bool) -> Option<Vec<&str>> {
     let pairs = top_level_items(inner);
     pairs
         .iter()
-        .all(|pair| pair.starts_with('"') && pair.contains("\": ") && (calls || !pair.contains('(')))
+        .all(|pair| {
+            pair.starts_with('"') && pair.contains("\": ") && (calls || !pair.contains('('))
+        })
         .then_some(pairs)
 }
 
@@ -19351,7 +19363,6 @@ mod tests {
         )
         .expect_err("missing template is reported");
         assert!(error.to_string().contains("broken.py"), "{error}");
-
     }
     #[test]
     fn colliding_query_and_body_arguments_use_their_own_values() {
