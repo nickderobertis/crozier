@@ -20,12 +20,18 @@ class RawLockerClient:
         self._client_wrapper = client_wrapper
 
     def save_state(
-        self, *, data: typing.Any, request_options: typing.Optional[RequestOptions] = None
+        self,
+        *,
+        data: typing.Any,
+        directory: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[bool]:
         """
         Parameters
         ----------
         data : typing.Any
+
+        directory : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -38,6 +44,9 @@ class RawLockerClient:
         _response = self._client_wrapper.httpx_client.request(
             "state",
             method="POST",
+            params={
+                "directory": directory,
+            },
             json={
                 "data": data,
             },
@@ -67,7 +76,12 @@ class RawLockerClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_annotations(
-        self, *, locker_id: str, data: typing.Any, request_options: typing.Optional[RequestOptions] = None
+        self,
+        *,
+        locker_id: str,
+        data: typing.Any,
+        directory: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[bool]:
         """
         Parameters
@@ -75,6 +89,8 @@ class RawLockerClient:
         locker_id : str
 
         data : typing.Any
+
+        directory : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -87,6 +103,9 @@ class RawLockerClient:
         _response = self._client_wrapper.httpx_client.request(
             "annotations",
             method="POST",
+            params={
+                "directory": directory,
+            },
             json={
                 "lockerId": locker_id,
                 "data": data,
@@ -117,12 +136,18 @@ class RawLockerClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def answer_control(
-        self, *, request: typing.Any, request_options: typing.Optional[RequestOptions] = None
+        self,
+        *,
+        request: typing.Any,
+        directory: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[bool]:
         """
         Parameters
         ----------
         request : typing.Any
+
+        directory : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -135,7 +160,13 @@ class RawLockerClient:
         _response = self._client_wrapper.httpx_client.request(
             "control",
             method="POST",
+            params={
+                "directory": directory,
+            },
             json=request,
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -222,12 +253,18 @@ class AsyncRawLockerClient:
         self._client_wrapper = client_wrapper
 
     async def save_state(
-        self, *, data: typing.Any, request_options: typing.Optional[RequestOptions] = None
+        self,
+        *,
+        data: typing.Any,
+        directory: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[bool]:
         """
         Parameters
         ----------
         data : typing.Any
+
+        directory : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -240,6 +277,9 @@ class AsyncRawLockerClient:
         _response = await self._client_wrapper.httpx_client.request(
             "state",
             method="POST",
+            params={
+                "directory": directory,
+            },
             json={
                 "data": data,
             },
@@ -269,7 +309,12 @@ class AsyncRawLockerClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_annotations(
-        self, *, locker_id: str, data: typing.Any, request_options: typing.Optional[RequestOptions] = None
+        self,
+        *,
+        locker_id: str,
+        data: typing.Any,
+        directory: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[bool]:
         """
         Parameters
@@ -277,6 +322,8 @@ class AsyncRawLockerClient:
         locker_id : str
 
         data : typing.Any
+
+        directory : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -289,6 +336,9 @@ class AsyncRawLockerClient:
         _response = await self._client_wrapper.httpx_client.request(
             "annotations",
             method="POST",
+            params={
+                "directory": directory,
+            },
             json={
                 "lockerId": locker_id,
                 "data": data,
@@ -319,12 +369,18 @@ class AsyncRawLockerClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def answer_control(
-        self, *, request: typing.Any, request_options: typing.Optional[RequestOptions] = None
+        self,
+        *,
+        request: typing.Any,
+        directory: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[bool]:
         """
         Parameters
         ----------
         request : typing.Any
+
+        directory : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -337,7 +393,13 @@ class AsyncRawLockerClient:
         _response = await self._client_wrapper.httpx_client.request(
             "control",
             method="POST",
+            params={
+                "directory": directory,
+            },
             json=request,
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )

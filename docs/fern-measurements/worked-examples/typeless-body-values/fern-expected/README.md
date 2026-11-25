@@ -39,9 +39,7 @@ from fern import FernApi
 
 client = FernApi()
 
-client.locker.save_state(
-    data={"key": "value"},
-)
+client.locker.save_state()
 ```
 
 ## Environments
@@ -70,9 +68,7 @@ client = AsyncFernApi()
 
 
 async def main() -> None:
-    await client.locker.save_state(
-        data={"key": "value"},
-    )
+    await client.locker.save_state()
 
 
 asyncio.run(main())

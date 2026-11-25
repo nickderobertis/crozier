@@ -97,8 +97,23 @@ def temporal_literal(node: ast.expr) -> str | None:
     return text.replace(" ", "T", 1) if ast.unparse(node.func).endswith("datetime.fromisoformat") else text
 
 
+def argument_text(lines: list[str], index: int) -> str:
+    """The keyword argument opening on `lines[index]`, joined with the lines a
+    bracket it leaves open continues onto: the formatted docstring writes a date
+    as `day=datetime.date.fromisoformat(` with its string and `)` below it."""
+    text = lines[index].strip()
+    following = index + 1
+    while text.count("(") + text.count("[") + text.count("{") > (
+        text.count(")") + text.count("]") + text.count("}")
+    ) and following < len(lines):
+        text += lines[following].strip()
+        following += 1
+    return text.removesuffix(",")
+
+
 def line_value(place: str, argument: str) -> object:
-    """The value `argument=` takes on the 1-based line `FILE:LINE`."""
+    """The value `argument=` takes on the 1-based line `FILE:LINE`, the lines an
+    open bracket continues it onto included."""
     file, _, number = place.rpartition(":")
     if not file or not number.isdigit():
         raise InputError(f"{place} is not FILE:LINE")
@@ -106,7 +121,7 @@ def line_value(place: str, argument: str) -> object:
     index = int(number) - 1
     if not 0 <= index < len(lines):
         raise InputError(f"{place} is past the end of {file}")
-    text = lines[index].strip().removesuffix(",")
+    text = argument_text(lines, index)
     try:
         call = ast.parse(f"f({text})", mode="eval").body
     except SyntaxError as error:

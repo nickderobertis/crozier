@@ -25,11 +25,19 @@ class LockerClient:
         """
         return self._raw_client
 
-    def save_state(self, *, data: typing.Any, request_options: typing.Optional[RequestOptions] = None) -> bool:
+    def save_state(
+        self,
+        *,
+        data: typing.Any,
+        directory: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> bool:
         """
         Parameters
         ----------
         data : typing.Any
+
+        directory : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -44,15 +52,18 @@ class LockerClient:
         from fern import FernApi
 
         client = FernApi()
-        client.locker.save_state(
-            data={"key": "value"},
-        )
+        client.locker.save_state()
         """
-        _response = self._raw_client.save_state(data=data, request_options=request_options)
+        _response = self._raw_client.save_state(data=data, directory=directory, request_options=request_options)
         return _response.data
 
     def update_annotations(
-        self, *, locker_id: str, data: typing.Any, request_options: typing.Optional[RequestOptions] = None
+        self,
+        *,
+        locker_id: str,
+        data: typing.Any,
+        directory: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> bool:
         """
         Parameters
@@ -60,6 +71,8 @@ class LockerClient:
         locker_id : str
 
         data : typing.Any
+
+        directory : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -74,19 +87,26 @@ class LockerClient:
         from fern import FernApi
 
         client = FernApi()
-        client.locker.update_annotations(
-            locker_id="lockerId",
-            data={"key": "value"},
-        )
+        client.locker.update_annotations()
         """
-        _response = self._raw_client.update_annotations(locker_id=locker_id, data=data, request_options=request_options)
+        _response = self._raw_client.update_annotations(
+            locker_id=locker_id, data=data, directory=directory, request_options=request_options
+        )
         return _response.data
 
-    def answer_control(self, *, request: typing.Any, request_options: typing.Optional[RequestOptions] = None) -> bool:
+    def answer_control(
+        self,
+        *,
+        request: typing.Any,
+        directory: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> bool:
         """
         Parameters
         ----------
         request : typing.Any
+
+        directory : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -101,11 +121,11 @@ class LockerClient:
         from fern import FernApi
 
         client = FernApi()
-        client.locker.answer_control(
-            request={"key": "value"},
-        )
+        client.locker.answer_control()
         """
-        _response = self._raw_client.answer_control(request=request, request_options=request_options)
+        _response = self._raw_client.answer_control(
+            request=request, directory=directory, request_options=request_options
+        )
         return _response.data
 
     def create_workspace(
@@ -163,11 +183,19 @@ class AsyncLockerClient:
         """
         return self._raw_client
 
-    async def save_state(self, *, data: typing.Any, request_options: typing.Optional[RequestOptions] = None) -> bool:
+    async def save_state(
+        self,
+        *,
+        data: typing.Any,
+        directory: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> bool:
         """
         Parameters
         ----------
         data : typing.Any
+
+        directory : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -187,18 +215,21 @@ class AsyncLockerClient:
 
 
         async def main() -> None:
-            await client.locker.save_state(
-                data={"key": "value"},
-            )
+            await client.locker.save_state()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.save_state(data=data, request_options=request_options)
+        _response = await self._raw_client.save_state(data=data, directory=directory, request_options=request_options)
         return _response.data
 
     async def update_annotations(
-        self, *, locker_id: str, data: typing.Any, request_options: typing.Optional[RequestOptions] = None
+        self,
+        *,
+        locker_id: str,
+        data: typing.Any,
+        directory: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> bool:
         """
         Parameters
@@ -206,6 +237,8 @@ class AsyncLockerClient:
         locker_id : str
 
         data : typing.Any
+
+        directory : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -225,26 +258,29 @@ class AsyncLockerClient:
 
 
         async def main() -> None:
-            await client.locker.update_annotations(
-                locker_id="lockerId",
-                data={"key": "value"},
-            )
+            await client.locker.update_annotations()
 
 
         asyncio.run(main())
         """
         _response = await self._raw_client.update_annotations(
-            locker_id=locker_id, data=data, request_options=request_options
+            locker_id=locker_id, data=data, directory=directory, request_options=request_options
         )
         return _response.data
 
     async def answer_control(
-        self, *, request: typing.Any, request_options: typing.Optional[RequestOptions] = None
+        self,
+        *,
+        request: typing.Any,
+        directory: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> bool:
         """
         Parameters
         ----------
         request : typing.Any
+
+        directory : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -264,14 +300,14 @@ class AsyncLockerClient:
 
 
         async def main() -> None:
-            await client.locker.answer_control(
-                request={"key": "value"},
-            )
+            await client.locker.answer_control()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.answer_control(request=request, request_options=request_options)
+        _response = await self._raw_client.answer_control(
+            request=request, directory=directory, request_options=request_options
+        )
         return _response.data
 
     async def create_workspace(

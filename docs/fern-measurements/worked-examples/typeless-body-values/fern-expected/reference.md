@@ -1,6 +1,6 @@
 # Reference
 ## Locker
-<details><summary><code>client.locker.<a href="src/fern/locker/client.py#L28-L52">save_state</a>(...) -> bool</code></summary>
+<details><summary><code>client.locker.<a href="src/fern/locker/client.py#L28-L58">save_state</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -20,9 +20,7 @@ client = FernApi(
     environment=FernApiEnvironment.DEFAULT,
 )
 
-client.locker.save_state(
-    data={"key": "value"},
-)
+client.locker.save_state()
 
 ```
 </dd>
@@ -46,6 +44,14 @@ client.locker.save_state(
 <dl>
 <dd>
 
+**directory:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
     
 </dd>
@@ -58,7 +64,7 @@ client.locker.save_state(
 </dl>
 </details>
 
-<details><summary><code>client.locker.<a href="src/fern/locker/client.py#L54-L83">update_annotations</a>(...) -> bool</code></summary>
+<details><summary><code>client.locker.<a href="src/fern/locker/client.py#L60-L95">update_annotations</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -78,10 +84,7 @@ client = FernApi(
     environment=FernApiEnvironment.DEFAULT,
 )
 
-client.locker.update_annotations(
-    locker_id="lockerId",
-    data={"key": "value"},
-)
+client.locker.update_annotations()
 
 ```
 </dd>
@@ -113,6 +116,14 @@ client.locker.update_annotations(
 <dl>
 <dd>
 
+**directory:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
     
 </dd>
@@ -125,7 +136,7 @@ client.locker.update_annotations(
 </dl>
 </details>
 
-<details><summary><code>client.locker.<a href="src/fern/locker/client.py#L85-L109">answer_control</a>(...) -> bool</code></summary>
+<details><summary><code>client.locker.<a href="src/fern/locker/client.py#L97-L129">answer_control</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -145,9 +156,7 @@ client = FernApi(
     environment=FernApiEnvironment.DEFAULT,
 )
 
-client.locker.answer_control(
-    request={"key": "value"},
-)
+client.locker.answer_control()
 
 ```
 </dd>
@@ -171,6 +180,14 @@ client.locker.answer_control(
 <dl>
 <dd>
 
+**directory:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
     
 </dd>
@@ -183,7 +200,7 @@ client.locker.answer_control(
 </dl>
 </details>
 
-<details><summary><code>client.locker.<a href="src/fern/locker/client.py#L111-L148">create_workspace</a>(...) -> bool</code></summary>
+<details><summary><code>client.locker.<a href="src/fern/locker/client.py#L131-L168">create_workspace</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 

@@ -8,8 +8,16 @@ paths:
   /state:
     post:
       operationId: saveState
+      x-codeSamples:
+        - lang: js
+          source: "await locker.saveState({ ... })"
       tags: [locker]
       summary: An inline body requiring one typeless property.
+      parameters:
+        - name: directory
+          in: query
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
@@ -28,8 +36,16 @@ paths:
   /annotations:
     post:
       operationId: updateAnnotations
+      x-codeSamples:
+        - lang: js
+          source: "await locker.updateAnnotations({ ... })"
       tags: [locker]
       summary: An inline body requiring a string beside a typeless property.
+      parameters:
+        - name: directory
+          in: query
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
@@ -50,8 +66,16 @@ paths:
   /control:
     post:
       operationId: answerControl
+      x-codeSamples:
+        - lang: js
+          source: "await locker.answerControl({ ... })"
       tags: [locker]
       summary: A whole typeless body.
+      parameters:
+        - name: directory
+          in: query
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
