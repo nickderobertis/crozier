@@ -4048,6 +4048,14 @@ fn dedent(lines: &[&str]) -> Option<String> {
 ///
 /// When `ruff` cannot be run, or rejects the input.
 pub fn ruff_isort(source: &str) -> Result<String, String> {
+    let _phase = crate::profile::phase("spike-ruff-isort");
+    let done = crate::profile::spawn_timer("ruff");
+    let result = ruff_isort_inner(source);
+    done();
+    result
+}
+
+fn ruff_isort_inner(source: &str) -> Result<String, String> {
     let mut child = Command::new("ruff")
         .args([
             "check",

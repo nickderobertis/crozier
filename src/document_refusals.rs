@@ -2430,6 +2430,8 @@ fn invalid_field_alias_literal(wire_name: &str) -> Result<bool> {
             .collect::<Vec<_>>()
             .join(",")
     };
+    let _phase = crate::profile::phase("spike-ruff-alias-check");
+    let _spawn = crate::profile::spawn_guard("ruff");
     let mut command = Command::new("ruff");
     command.args([
         "check",

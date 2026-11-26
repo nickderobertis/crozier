@@ -89,6 +89,13 @@ impl RemoteFetcher for CurlFetcher {
 const CURL: &str = "curl";
 
 fn curl_fetch(program: &str, url: &str) -> std::result::Result<String, String> {
+    let done = crate::profile::spawn_timer("curl");
+    let result = curl_fetch_inner(program, url);
+    done();
+    result
+}
+
+fn curl_fetch_inner(program: &str, url: &str) -> std::result::Result<String, String> {
     let output = Command::new(program)
         .arg("--silent")
         .arg("--show-error")

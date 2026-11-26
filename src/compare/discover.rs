@@ -95,6 +95,7 @@ pub fn default_root(cwd: &Path) -> PathBuf {
 /// `git -C dir <args>`'s stdout when it exits 0. The directory decides, not a
 /// repository a calling hook points at, so git's location variables are dropped.
 fn git(dir: &Path, args: &[&str]) -> Option<Vec<u8>> {
+    let done = crate::profile::spawn_timer("git");
     let output = Command::new("git")
         .arg("-C")
         .arg(dir)
@@ -104,8 +105,9 @@ fn git(dir: &Path, args: &[&str]) -> Option<Vec<u8>> {
         .env_remove("GIT_INDEX_FILE")
         .stdin(Stdio::null())
         .stderr(Stdio::null())
-        .output()
-        .ok()?;
+        .output();
+    done();
+    let output = output.ok()?;
     output.status.success().then_some(output.stdout)
 }
 

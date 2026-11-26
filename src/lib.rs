@@ -32,6 +32,7 @@ pub mod naming;
 pub mod normalize;
 pub mod openapi;
 pub mod parity;
+pub mod profile;
 pub mod pyfmt;
 pub mod refs;
 pub mod schema;
@@ -93,14 +94,19 @@ pub struct GenerateArgs {
 /// Run the full pipeline: parse the spec, build the IR, render, and write files.
 /// Returns the files written so the caller can report a count.
 pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
+    let checks = profile::phase("refusal-checks");
     document_refusals::check_version_file(&args.spec, args.fern_strict)?;
     document_refusals::check_structure_file(&args.spec, args.fern_strict)?;
+    drop(checks);
+    let load = profile::phase("load");
     let mut doc = name_refusals::load(&args)?;
     openapi::filter_ignored(&mut doc);
     openapi::filter_by_audience(&mut doc, &args.audiences, args.audience_strict);
+    drop(load);
+    let checks = profile::phase("refusal-checks");
     document_refusals::check(&doc, &args.spec, args.fern_strict)?;
-    // The config constructor validates the package name (a `PackageName`), so an
-    // invalid, traversal-prone value can never reach the filesystem below.
+    drop(checks);
+    let lower = profile::phase("lower");
     let mut config = GenerateConfig::new(
         args.spec.clone(),
         args.output.clone(),
@@ -114,19 +120,22 @@ pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
     config.enum_type = args.enum_type;
     config.default_max_retries = args.default_max_retries;
     let ir = ir::build(&doc, &config);
+    drop(lower);
     if let Some(message) = ir.unemittable_extension() {
         return Err(Error::InvalidSpec {
             path: args.spec.clone(),
             message,
         });
     }
+    let checks = profile::phase("refusal-checks");
     document_refusals::check_sdk(&mut doc, &ir, &config, &args.spec, args.fern_strict)?;
     name_refusals::validate(&doc, &args.spec, args.fern_strict, &ir)?;
     name_refusals::validate_ir(&ir, &doc, &args.spec, args.fern_strict)?;
+    drop(checks);
+    let emit = profile::phase("emit");
     let (files, example_values) = emit::generate_recording(&ir)?;
-    // Regeneration is idempotent: clear the crozier-owned package tree first so a
-    // schema or endpoint dropped from the spec does not leave an orphaned module.
-    // In the flat layout that tree is the output root itself.
+    drop(emit);
+    let _write = profile::phase("write");
     match config.layout {
         settings::Layout::Packaged => {
             emit::clean_package_tree(&config.output, config.package_name.as_str())?;
@@ -138,11 +147,6 @@ pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
     Ok(files)
 }
 
-/// Write the worked-example values a schema rejects, at their lines in the
-/// tree just written to `output`, where [`example_values::RECORD_ENV`] names a
-/// directory: the golden comparisons read it to hold
-/// `docs/departures/evidence/invalid-example-values/inventory.tsv`. Without the
-/// variable nothing is written.
 fn record_example_values(
     output: &std::path::Path,
     values: &[example_values::ExampleValue],

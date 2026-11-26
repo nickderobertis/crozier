@@ -28,6 +28,14 @@ pub const LINE_LENGTH: usize = 120;
 /// target line length. Runs `ruff format --stdin-filename <file> -`, piping the
 /// source through stdin so nothing touches disk.
 pub fn format_source(file: &str, source: &str, width: usize) -> Result<String> {
+    let _format = crate::profile::phase("format");
+    let done = crate::profile::spawn_timer("ruff");
+    let result = format_source_inner(file, source, width);
+    done();
+    result
+}
+
+fn format_source_inner(file: &str, source: &str, width: usize) -> Result<String> {
     let mut child = Command::new("ruff")
         .arg("format")
         .arg("--line-length")
@@ -81,6 +89,83 @@ pub fn format_source(file: &str, source: &str, width: usize) -> Result<String> {
         file: file.to_string(),
         message: format!("ruff produced non-UTF-8 output: {source}"),
     })
+}
+
+/// SPIKE ONLY (`spike-windows-lane-breakdown`): format every `(path, source)`
+/// with as few `ruff format` processes as the platform's command line allows,
+/// instead of one process per file. The files are staged under the working
+/// directory, at their generated relative paths, so ruff discovers the same
+/// configuration it does for `--stdin-filename <path>` there.
+///
+/// # Errors
+///
+/// When the staging tree cannot be written or ruff fails.
+pub fn format_batch(items: &[(String, String)], width: usize) -> Result<Vec<String>> {
+    let fail = |file: &str, message: String| Error::Format {
+        file: file.to_string(),
+        message,
+    };
+    let nanos = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_or(0, |d| d.as_nanos());
+    let stage = std::path::PathBuf::from(format!(
+        ".crozier-spike-ruff-{}-{nanos}",
+        std::process::id()
+    ));
+    let result = (|| {
+        for (path, source) in items {
+            let full = stage.join(path);
+            if let Some(parent) = full.parent() {
+                std::fs::create_dir_all(parent).map_err(|e| fail(path, format!("stage: {e}")))?;
+            }
+            std::fs::write(&full, source).map_err(|e| fail(path, format!("stage: {e}")))?;
+        }
+        let mut chunks: Vec<Vec<std::path::PathBuf>> = vec![Vec::new()];
+        let mut length = 0;
+        for (path, _) in items {
+            let full = stage.join(path);
+            let len = full.as_os_str().len() + 3;
+            if length + len > 24_000 && !chunks.last().is_some_and(Vec::is_empty) {
+                chunks.push(Vec::new());
+                length = 0;
+            }
+            length += len;
+            chunks.last_mut().expect("one chunk").push(full);
+        }
+        for chunk in chunks.iter().filter(|c| !c.is_empty()) {
+            let done = crate::profile::spawn_timer("ruff");
+            let output = Command::new("ruff")
+                .arg("format")
+                .arg("--no-cache")
+                .arg("--line-length")
+                .arg(width.to_string())
+                .args(chunk)
+                .stdin(Stdio::null())
+                .output();
+            done();
+            let output =
+                output.map_err(|e| fail("(batch)", format!("could not run `ruff`: {e}")))?;
+            if !output.status.success() {
+                return Err(fail(
+                    "(batch)",
+                    format!(
+                        "ruff exited with {}: {}",
+                        output.status,
+                        String::from_utf8_lossy(&output.stderr).trim()
+                    ),
+                ));
+            }
+        }
+        items
+            .iter()
+            .map(|(path, _)| {
+                std::fs::read_to_string(stage.join(path))
+                    .map_err(|e| fail(path, format!("read back: {e}")))
+            })
+            .collect()
+    })();
+    let _ = std::fs::remove_dir_all(&stage);
+    result
 }
 
 #[cfg(test)]

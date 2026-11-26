@@ -50,6 +50,7 @@ pub fn run(command: &str, cwd: &Path, env: &[(String, String)]) -> Outcome {
         .stdin(Stdio::null())
         .output();
     let seconds = started.elapsed().as_secs_f64();
+    crate::profile::spawned("sh", started.elapsed());
     match output {
         Ok(output) => Outcome {
             end: output.status.code().map_or(End::Signalled, End::Exited),
