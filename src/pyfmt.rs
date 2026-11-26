@@ -97,7 +97,8 @@ fn format_source_inner(file: &str, source: &str, width: usize) -> Result<String>
 pub enum FormatMode {
     /// Unset or empty: one `ruff format` per file, as on `main`.
     PerFile,
-    /// `1`: one `ruff format` over the whole generation.
+    /// `1`: the whole generation in as few `ruff format` processes as the
+    /// command line allows (one per about 24,000 characters of paths).
     Batch,
     /// `verify`: both, failing the generation on any byte of difference.
     Verify,
@@ -235,6 +236,47 @@ mod tests {
         let src = "f(aaaaaaaaaa, bbbbbbbbbb, cccccccccc, dddddddddd, eeeeeeeeee)\n";
         assert_eq!(format_source("x.py", src, 200).unwrap(), src);
         assert!(format_source("x.py", src, 20).unwrap().contains(",\n"));
+    }
+
+    /// SPIKE ONLY: the batched formatter against the real `ruff`.
+    #[test]
+    fn a_batch_formats_like_one_file_at_a_time_and_cleans_up_when_ruff_refuses() {
+        let items = vec![
+            ("pkg/a.py".to_string(), "x={'a':1}".to_string()),
+            ("pkg/b.py".to_string(), "y=( 1 )".to_string()),
+        ];
+        let batched = super::format_batch(&items, LINE_LENGTH).unwrap();
+        for ((name, source), formatted) in items.iter().zip(&batched) {
+            assert_eq!(
+                formatted,
+                &format_source(name, source, LINE_LENGTH).unwrap()
+            );
+        }
+        let staged = || {
+            std::fs::read_dir(std::env::temp_dir())
+                .unwrap()
+                .filter_map(Result::ok)
+                .filter(|e| {
+                    e.file_name()
+                        .to_string_lossy()
+                        .starts_with(&format!("crozier-spike-ruff-{}-", std::process::id()))
+                })
+                .count()
+        };
+        let broken = vec![("pkg/c.py".to_string(), "def (:\n".to_string())];
+        let err = super::format_batch(&broken, LINE_LENGTH).unwrap_err();
+        assert!(
+            matches!(err, Error::Format { ref message, .. } if message.contains("ruff exited"))
+        );
+        assert_eq!(staged(), 0, "the staging tree is removed after a refusal");
+        for escape in ["../out.py", "/abs.py"] {
+            let err = super::format_batch(&[(escape.to_string(), String::new())], LINE_LENGTH)
+                .unwrap_err();
+            assert!(
+                matches!(err, Error::Format { ref message, .. } if message.contains("stay inside")),
+                "{escape}"
+            );
+        }
     }
 
     #[test]

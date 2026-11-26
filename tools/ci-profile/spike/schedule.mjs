@@ -120,7 +120,7 @@ function simulate(slots, rank, mode) {
 const orders = {
   // The order Nx actually started them in, replayed: the check that the model fits the run.
   observed: (id) => observedStart.get(id) ?? Infinity,
-  // Longest remaining chain first (critical-path first), then longest task.
+  // Longest remaining chain first (critical-path first).
   "longest-chain-first": (id) => -tailOf(id),
 };
 const result = {

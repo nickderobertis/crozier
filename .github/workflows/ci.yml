@@ -107,9 +107,10 @@ jobs:
           echo "{\"step\":\"sweep\",\"seconds\":$(( $(date +%s) - start )),\"exit\":$status}" > "$SPIKE_OUT/step-sweep.json"
           mkdir -p .nx/logs/sweep && mv .nx/logs/gate-* .nx/logs/sweep/ 2>/dev/null || true
           exit $status
-      # The golden replays with one `ruff format` per generation: the goldens' own byte
+      # The golden replays with each generation batched into a few `ruff format` processes
+      # (one per about 24,000 characters of paths) instead of one per file: the goldens' own byte
       # comparison proves the output unchanged, and the profiles give the formatting saving.
-      - name: crozier-e2e with one ruff process per generation
+      - name: crozier-e2e with batched ruff formatting
         if: ${{ !cancelled() }}
         timeout-minutes: 45
         shell: bash
@@ -237,9 +238,10 @@ jobs:
           echo "{\"step\":\"sweep\",\"seconds\":$(( $(date +%s) - start )),\"exit\":$status}" > "$SPIKE_OUT/step-sweep.json"
           mkdir -p .nx/logs/sweep && mv .nx/logs/gate-* .nx/logs/sweep/ 2>/dev/null || true
           exit $status
-      # The golden replays with one `ruff format` per generation: the goldens' own byte
+      # The golden replays with each generation batched into a few `ruff format` processes
+      # (one per about 24,000 characters of paths) instead of one per file: the goldens' own byte
       # comparison proves the output unchanged, and the profiles give the formatting saving.
-      - name: crozier-e2e with one ruff process per generation
+      - name: crozier-e2e with batched ruff formatting
         if: ${{ !cancelled() }}
         timeout-minutes: 45
         shell: bash

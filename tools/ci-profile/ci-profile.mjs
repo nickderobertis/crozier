@@ -175,7 +175,7 @@ export function schedule(events) {
   if (!Array.isArray(events)) throw new Error("an Nx profile is a JSON array of trace events");
   if (!events.every((e) => e !== null && typeof e === "object")) throw new Error("an Nx profile holds an entry that is not a trace event");
   for (const e of events.filter((x) => x.ph === "X")) {
-    if (typeof e.name !== "string" || ![e.ts, e.dur].every(Number.isFinite) || e.dur < 0) throw new Error(`an Nx trace event is not a timed task: ${JSON.stringify(e).slice(0, 200)}`);
+    if (typeof e.name !== "string" || ![e.ts, e.dur].every(Number.isFinite) || e.dur < 0 || !Number.isSafeInteger(e.tid) || e.tid < 0) throw new Error(`an Nx trace event is not a timed task: ${JSON.stringify(e).slice(0, 200)}`);
   }
   const tasks = events.filter((e) => e.ph === "X").map((e) => ({ target: e.name, start: e.ts / 1e6, end: (e.ts + e.dur) / 1e6, seconds: e.dur / 1e6, slot: e.tid, status: e.args?.status }));
   if (tasks.length === 0) return { tasks: [], wall_seconds: 0, task_seconds: 0, running_seconds: {} };
@@ -227,15 +227,17 @@ export function aggregateProfiles(lines) {
     e.seconds += seconds;
     e.count += count;
   };
-  const byCommand = {};
-  const phases = {};
-  const subprocesses = {};
-  const byTask = {};
+  // Names come from outside: null-prototype maps, so `__proto__` or `constructor` is just a key.
+  const map = () => Object.create(null);
+  const byCommand = map();
+  const phases = map();
+  const subprocesses = map();
+  const byTask = map();
   const generate = profiles.filter((p) => p.command === "generate");
   for (const p of profiles) {
     add(byCommand, p.command, p.total_seconds);
     const task = p.spike?.nx_project ? `${p.spike.nx_project}:${p.spike.nx_target}` : "(no Nx task)";
-    const t = byTask[task] ?? (byTask[task] = { processes: 0, seconds: 0, phases: {}, subprocesses: {} });
+    const t = byTask[task] ?? (byTask[task] = { processes: 0, seconds: 0, phases: map(), subprocesses: map() });
     t.processes += 1;
     t.seconds += p.total_seconds;
     for (const ph of p.phases) {
@@ -249,7 +251,7 @@ export function aggregateProfiles(lines) {
   }
   const ruffOf = (p) => p.subprocesses.find((s) => s.program === "ruff") ?? { spawns: 0, seconds: 0 };
   const generateTotal = generate.reduce((s, p) => s + p.total_seconds, 0);
-  const generatePhases = {};
+  const generatePhases = map();
   for (const p of generate) for (const ph of p.phases) add(generatePhases, ph.name, ph.seconds, ph.count);
   const ruffSpawns = generate.reduce((s, p) => s + ruffOf(p).spawns, 0);
   const ruffSeconds = generate.reduce((s, p) => s + ruffOf(p).seconds, 0);

@@ -75,12 +75,21 @@ test("crozier writes one schema-1 profile per process only when CROZIER_PROFILE 
   const ruff = one.subprocesses.find((s) => s.program === "ruff");
   assert.equal(ruff.spawns, phases.format.count, "one ruff spawn per formatted file");
   assert.equal(one.spike.exit_code, 0);
-  for (const [args, command, code] of [[["--version"], "version", 0], [["--help"], "help", 0], [["--no-such-flag"], "usage-error", 2], [["schema"], "schema", 0], [["config", "--no-config"], "config", 0]]) {
+  const strip = join(dir, "strip.py");
+  writeFileSync(strip, "x = 1  # a comment\n");
+  for (const [args, command, code] of [[["--version"], "version", 0], [["--help"], "help", 0], [["--no-such-flag"], "usage-error", 2], [["schema"], "schema", 0], [["config", "--no-config"], "config", 0], [["internal-strip", strip], "internal-strip", 0], [["compare", join(dir, "nowhere")], "compare", 1]]) {
     const where = join(dir, command);
     assert.equal(run(CROZIER, args, { CROZIER_PROFILE: where }).status, code, args.join(" "));
     assert.deepEqual(profilesIn(where).map((p) => [p.command, p.spike.exit_code]), [[command, code]]);
   }
   assert.equal(profilesIn(profile)[0].spike.args[0], "generate", "the arguments are recorded");
+  // Every argument and attribution value round-trips through the JSON, however it is spelled.
+  const awkward = 'quote " backslash \\ tab \t bell \u0007 é';
+  const attributed = { NX_TASK_TARGET_PROJECT: "proj", NX_TASK_TARGET_TARGET: "test", PYTEST_CURRENT_TEST: awkward, NEXTEST_TEST_NAME: "crate::case" };
+  run(CROZIER, ["generate", "--spec", awkward, "--output", join(dir, "o"), "--package-name", "t", "--project-name", "t", "--no-config"], { CROZIER_PROFILE: join(dir, "esc"), ...attributed });
+  const [escaped] = profilesIn(join(dir, "esc"));
+  assert.equal(escaped.spike.args[2], awkward);
+  assert.deepEqual([escaped.spike.nx_project, escaped.spike.nx_target, escaped.spike.pytest_test, escaped.spike.nextest_test], ["proj", "test", awkward, "crate::case"]);
   // Bare `crozier` runs every configured generator, and `init` writes a starter config.
   const project = scratch();
   writeFileSync(join(project, "spec.yml"), SPEC);
@@ -219,6 +228,24 @@ test("the spawn hooks charge each child and tree copy to the test that started i
   const nodeChildren = records.filter((r) => r.event === "child" && r.pid === nodeRun.pid);
   assert.equal(nodeChildren.length, forms.length, "every child_process form records its child once it closes");
   assert.ok(nodeChildren.every((r) => Number.isFinite(r.seconds)));
+  // A failed copy still raises and still resets the copy timer; a timed-out child is timed once.
+  const recover = scratch();
+  const recovered = run(process.platform === "win32" ? "python" : "python3", ["-c", [
+    "import shutil, subprocess, sys, tempfile",
+    "d = tempfile.mkdtemp()",
+    "try:\n    shutil.copytree(d + '/missing', d + '/x')\nexcept FileNotFoundError:\n    pass\nelse:\n    raise SystemExit('the failed copy did not raise')",
+    "shutil.copytree(sys.argv[1], d + '/ok')",
+    "try:\n    subprocess.run([sys.executable, '-c', 'import time; time.sleep(30)'], timeout=0.5)\nexcept subprocess.TimeoutExpired:\n    pass",
+  ].join("\n"), hooks], { ...env, SPIKE_SPAWN_LOG: recover });
+  assert.equal(recovered.status, 0, recovered.stderr);
+  const after = readdirSync(recover).flatMap((f) => readFileSync(join(recover, f), "utf8").trim().split("\n").map((l) => JSON.parse(l)));
+  assert.equal(after.filter((r) => r.event === "copytree").length, 2, "the failed and the next copy are both timed at the outermost level");
+  assert.equal(after.filter((r) => r.event === "child").length, 1, "the killed child is timed exactly once");
+  // A program that cannot start keeps its own error, and is still counted.
+  const failedSpawn = run("node", ["-e", "const c = require('node:child_process'); const r = c.spawnSync('no-such-program-anywhere'); if (r.error?.code !== 'ENOENT') process.exit(7); try { c.execFileSync('no-such-program-anywhere'); process.exit(8); } catch (e) { if (e.code !== 'ENOENT') process.exit(9); }"], { ...env, SPIKE_SPAWN_LOG: recover });
+  assert.equal(failedSpawn.status, 0, failedSpawn.stderr);
+  const nodeFailed = readdirSync(recover).flatMap((f) => readFileSync(join(recover, f), "utf8").trim().split("\n").map((l) => JSON.parse(l))).filter((r) => r.pid === failedSpawn.pid);
+  assert.deepEqual(nodeFailed.map((r) => [r.event, r.program]), [["spawn", "no-such-program-anywhere"], ["child", "no-such-program-anywhere"], ["spawn", "no-such-program-anywhere"], ["child", "no-such-program-anywhere"]]);
   // A log that cannot be written loses records, never the measured call.
   const blockedLog = join(scratch(), "a-file");
   writeFileSync(blockedLog, "");
