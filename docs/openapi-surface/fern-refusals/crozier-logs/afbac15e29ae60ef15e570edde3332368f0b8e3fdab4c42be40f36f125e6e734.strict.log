@@ -1,1 +1,1 @@
-crozier: invalid OpenAPI document <document>: request-property-camelcase-collision: GET /requests/{id}/events parameters "id" and "id" in different locations declare the same request name "id"; give them distinct names (fern-strict: Fern refuses this document)
+crozier: invalid OpenAPI document <document>: enum-name-unsuitable: PUT /projects/{id} request body/properties/context/properties/approx_usage enum value "< 1M"; declare a usable name with x-crozier-enum (fern-strict: Fern refuses this document)
