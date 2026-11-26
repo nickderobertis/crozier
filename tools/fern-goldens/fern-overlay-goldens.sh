@@ -19,6 +19,7 @@
 #     tests/fixtures/fern-generator-config.txt inside generate-fern-fixture.sh.
 #
 # Needs what generate-fern-fixture.sh needs (Docker, fern, a release crozier).
+# Holds the host's Fern generation lock for the whole run.
 # Usage: tools/fern-goldens/fern-overlay-goldens.sh [--jobs N] (--enum-type literals | --default-max-retries N) FIXTURE...
 # One summary line on success; logs under .local/fern-overlay/<fixture>.log.
 set -euo pipefail
@@ -33,6 +34,7 @@ repo_root="$(cd "$(dirname "$0")/../.." && pwd)" || {
   exit 1
 }
 
+arguments=("$@")
 usage="usage: tools/fern-goldens/fern-overlay-goldens.sh [--jobs N] (--enum-type literals | --default-max-retries N) FIXTURE..."
 jobs=1
 setting=()
@@ -70,6 +72,17 @@ done
   echo "$usage" >&2
   exit 1
 }
+
+# The whole run holds the host's Fern generation lock, sharing the hold of a
+# caller that already has it, so no caller wraps it in `flock`
+# (docs/fern-goldens.md#one-fern-run-at-a-time-on-a-host).
+fern_lock="$repo_root/tools/fern-goldens/fern_generation_lock.py"
+[ -r "$fern_lock" ] || {
+  echo "fern-overlay-goldens: missing $fern_lock — restore it with git checkout --" \
+       "tools/fern-goldens/fern_generation_lock.py, then re-run" >&2
+  exit 1
+}
+python3 "$fern_lock" held || exec python3 "$fern_lock" run --label fern-overlay-goldens -- "$0" ${arguments[@]+"${arguments[@]}"}
 
 report_failures fern-overlay-goldens "check that tests/fixtures/ and .local/fern-overlay/ are \
 writable on a disk with free space and that the expected/ provenance it read is intact, then re-run \

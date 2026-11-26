@@ -45,6 +45,7 @@
         "{workspaceRoot}/tools/witness-search/witness-search-local-census.py",
         "{workspaceRoot}/tools/llmlint/llmlint-diff.py",
         "{workspaceRoot}/tools/fern-goldens/generate-fern-fixture.sh",
+        "{workspaceRoot}/tools/fern-goldens/fern_generation_lock.py",
         "{workspaceRoot}/scripts/census-python.sh",
         "{workspaceRoot}/justfile",
         "pythonTooling"
@@ -91,6 +92,7 @@
         "{workspaceRoot}/tools/witness-search/witness-search-local-census.py",
         "{workspaceRoot}/tools/llmlint/llmlint-diff.py",
         "{workspaceRoot}/tools/fern-goldens/generate-fern-fixture.sh",
+        "{workspaceRoot}/tools/fern-goldens/fern_generation_lock.py",
         "{workspaceRoot}/scripts/census-python.sh",
         "{workspaceRoot}/justfile",
         "pythonTooling"

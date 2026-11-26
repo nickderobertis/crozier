@@ -16,7 +16,8 @@ job of its own, so every decision lives here where the tests drive it:
   shard     one shard's items, each through `fern-references.py generate`, with
             `metadata.json` at the candidate pair; per item its seconds, its log,
             its outcome and the files it wrote; an item that failed is one such
-            outcome, never the shard's failure
+            outcome, never the shard's failure; it holds the host's Fern
+            generation lock (`fern_generation_lock.py`) while its items generate
   assemble  every shard's result combined into one bundle, each planned item of
             a shard that uploaded nothing carried as not generated; red only when
             the bundle itself is unsound: a shard's items unaccounted for, its
@@ -1908,7 +1909,11 @@ def shard(args: argparse.Namespace) -> int:
         shutil.rmtree(output)
     (output / "files").mkdir(parents=True)
     set_pair(base, pair)
-    results = [generate_item(base, entry, output / "logs") for entry in jobs[args.index].items]
+    # The shard's every item generates inside one hold of the host's Fern
+    # generation lock, which each `fern-references.py generate` it starts shares.
+    lock = load_module("fern_generation_lock", Path(__file__).resolve().with_name("fern_generation_lock.py"))
+    with lock.hold("fern-goldens-weekly"):
+        results = [generate_item(base, entry, output / "logs") for entry in jobs[args.index].items]
     written, deleted, faults = [], [], []
     for path in sorted({path for result in results for path in result.changed}):
         if (base / path).is_symlink():

@@ -152,6 +152,8 @@ MIRRORED = (
     "tools/fern-goldens/certified_pair.py",
     # Loaded by fern-references.py to keep each untouched generation reusable.
     "tools/fern-goldens/certified_tree.py",
+    # Loaded by every Fern-running tool: the host's Fern generation lock.
+    "tools/fern-goldens/fern_generation_lock.py",
     "tools/fern-refusals/fern-refusals.py",
     # Read by fern-refusals.py at import: the unsettled-record contract.
     "docs/fern-refusals/unsettled-contract.json",

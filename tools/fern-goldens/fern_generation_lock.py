@@ -1,0 +1,257 @@
+#!/usr/bin/env python3
+"""Serialize Fern on this host: the one lock every crozier Fern entry point holds.
+
+Fern generations run one at a time on a host, because two overlapping runs spoil
+any measurement that must run alone. Every crozier entry point that starts Fern
+(`fern-references.py generate`, `fern-refusals.py`'s Fern runs, `weekly.py
+shard`, `fern-goldens generate|run`, `generate-fern-fixture.sh` and the scripts
+looping over it, `witness_screen.py`'s Fern screen, `output-insensitive-remeasure.py`
+and the `justfile` recipes reaching Fern by another route) holds
+
+    ${XDG_CACHE_HOME:-$HOME/.cache}/crozier/fern-generation.lock
+
+for its whole Fern interval, so no caller wraps one in `flock`.
+
+Nesting: an entry point started inside another one's hold shares that hold
+rather than taking the lock again, which would deadlock. The holder exports
+`CROZIER_FERN_GENERATION_LOCK_HOLDER=<its pid>` and records the same pid in
+`fern-generation.lock.holder` beside the lock for as long as it holds it. A
+process is inside that hold when the variable it inherited names that recorded
+pid and the pid is the process itself or one of its ancestors, so a variable
+leaked into an unrelated process, or one left from a hold already released,
+never stands in for the lock. A hold made outside these entry points (a hand
+`flock` around a bare `fern` run) records no holder, so an entry point started
+under it waits for it rather than joining it.
+
+Usage: fern_generation_lock.py held
+       fern_generation_lock.py run --label LABEL -- COMMAND [ARG...]
+
+`held` exits 0 when this process is inside a hold, 1 when it is not. `run` holds
+the lock (or shares the hold it was started in) while COMMAND runs and exits
+with COMMAND's status; while another process holds it, it says so once on
+stderr and waits. Exit 2 on a usage error.
+"""
+
+from __future__ import annotations
+
+import argparse
+import contextlib
+import os
+import signal
+import subprocess
+import sys
+import tempfile
+from collections.abc import Generator
+from pathlib import Path
+from typing import IO
+
+HOLDER_ENV = "CROZIER_FERN_GENERATION_LOCK_HOLDER"
+LOCK_NAME = "fern-generation.lock"
+# How far up the process tree a holder is looked for: an entry point nests a few
+# levels (a recipe, a family delegate, a script), never this many.
+MAX_DEPTH = 64
+
+
+def cache_root() -> Path:
+    base = os.environ.get("XDG_CACHE_HOME") or ""
+    return (Path(base) if os.path.isabs(base) else Path.home() / ".cache") / "crozier"
+
+
+def lock_path() -> Path:
+    return cache_root() / LOCK_NAME
+
+
+def holder_path() -> Path:
+    return lock_path().with_name(LOCK_NAME + ".holder")
+
+
+def recorded_holder() -> int | None:
+    """The pid the current holder recorded, or None when no crozier entry point holds the lock."""
+    try:
+        text = holder_path().read_text(encoding="utf-8").strip()
+    except OSError:
+        return None
+    return int(text) if text.isdigit() else None
+
+
+def parent_of(pid: int) -> int | None:
+    """`pid`'s parent, read from /proc where there is one and from `ps` elsewhere."""
+    stat = Path("/proc") / str(pid) / "stat"
+    if stat.parent.parent.is_dir():
+        try:
+            # `pid (comm) state ppid …`: comm may hold spaces and parentheses.
+            fields = stat.read_text(encoding="utf-8", errors="replace").rsplit(")", 1)[1].split()
+            return int(fields[1])
+        except (OSError, IndexError, ValueError):
+            return None
+    try:
+        shown = subprocess.run(
+            ["ps", "-o", "ppid=", "-p", str(pid)], capture_output=True, text=True, check=False, timeout=10
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    text = shown.stdout.strip()
+    return int(text) if text.isdigit() else None
+
+
+def is_self_or_ancestor(pid: int) -> bool:
+    current: int | None = os.getpid()
+    for _ in range(MAX_DEPTH):
+        if current is None or current <= 0:
+            return False
+        if current == pid:
+            return True
+        if os.name == "nt":
+            # No portable parent lookup: the recorded holder and the inherited
+            # variable agreeing is the evidence there.
+            return True
+        current = parent_of(current)
+    return False
+
+
+def held() -> bool:
+    """Whether this process runs inside a crozier entry point's hold of the lock."""
+    named = os.environ.get(HOLDER_ENV, "")
+    if not named.isdigit():
+        return False
+    pid = int(named)
+    return recorded_holder() == pid and is_self_or_ancestor(pid)
+
+
+def _try_lock(handle: IO[str]) -> bool:
+    if sys.platform == "win32":
+        import msvcrt
+
+        try:
+            msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
+            return True
+        except OSError:
+            return False
+    import fcntl
+
+    try:
+        fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        return True
+    except BlockingIOError:
+        return False
+
+
+def _lock(handle: IO[str]) -> None:
+    if sys.platform == "win32":
+        import msvcrt
+
+        while True:
+            try:
+                msvcrt.locking(handle.fileno(), msvcrt.LK_LOCK, 1)
+                return
+            except OSError:
+                continue
+    import fcntl
+
+    fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+
+
+def _unlock(handle: IO[str]) -> None:
+    if sys.platform == "win32":
+        import msvcrt
+
+        with contextlib.suppress(OSError):
+            msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+        return
+    import fcntl
+
+    fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+
+
+def _record_holder(pid: int) -> None:
+    path = holder_path()
+    descriptor, staged = tempfile.mkstemp(prefix=path.name + ".", dir=path.parent)
+    with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
+        handle.write(f"{pid}\n")
+    os.replace(staged, path)
+
+
+@contextlib.contextmanager
+def hold(label: str) -> Generator[None]:
+    """Hold the host's Fern generation lock for the block, or share the hold this
+    process already runs inside; while another process holds it, say so once on
+    stderr and wait."""
+    if held():
+        yield
+        return
+    path = lock_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    handle = path.open("a+", encoding="utf-8")
+    try:
+        if not _try_lock(handle):
+            holder = recorded_holder()
+            print(
+                f"{label}: waiting for the host Fern generation lock {path} "
+                f"({f'pid {holder}' if holder else 'another Fern run'} holds it; Fern runs one at a time on a host)",
+                file=sys.stderr,
+                flush=True,
+            )
+            _lock(handle)
+            print(f"{label}: took the host Fern generation lock", file=sys.stderr, flush=True)
+        previous = os.environ.get(HOLDER_ENV)
+        try:
+            _record_holder(os.getpid())
+            os.environ[HOLDER_ENV] = str(os.getpid())
+            yield
+        finally:
+            if previous is None:
+                os.environ.pop(HOLDER_ENV, None)
+            else:
+                os.environ[HOLDER_ENV] = previous
+            with contextlib.suppress(OSError):
+                holder_path().unlink()
+            _unlock(handle)
+    finally:
+        handle.close()
+
+
+def run(label: str, command: list[str]) -> int:
+    """`command`'s exit status, run inside the hold; a terminating signal reaches it too."""
+    with hold(label):
+        try:
+            child = subprocess.Popen(command)
+        except OSError as error:
+            print(f"{label}: cannot start {command[0]}: {error}; check the path and re-run", file=sys.stderr)
+            return 127
+
+        def forward(signum: int, _frame: object) -> None:
+            with contextlib.suppress(ProcessLookupError):
+                child.send_signal(signum)
+
+        forwarded = [signal.SIGTERM] + ([signal.SIGHUP] if hasattr(signal, "SIGHUP") else [])
+        previous = {signum: signal.signal(signum, forward) for signum in forwarded}
+        # The terminal delivers an interrupt to the child too; this process only
+        # waits for it to finish.
+        interrupt = signal.signal(signal.SIGINT, signal.SIG_IGN)
+        try:
+            status = child.wait()
+        finally:
+            signal.signal(signal.SIGINT, interrupt)
+            for signum, handler in previous.items():
+                signal.signal(signum, handler)
+    return 128 - status if status < 0 else status
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(prog="fern_generation_lock.py", description=__doc__.split("\n", 1)[0])
+    commands = parser.add_subparsers(dest="command", required=True)
+    commands.add_parser("held", help="exit 0 inside a crozier entry point's hold, 1 outside one")
+    running = commands.add_parser("run", help="run COMMAND holding the lock (or sharing the hold it runs in)")
+    running.add_argument("--label", required=True, help="the entry point's name, for the waiting line")
+    running.add_argument("command", nargs=argparse.REMAINDER)
+    args = parser.parse_args(argv)
+    if args.command == "held":
+        return 0 if held() else 1
+    command = args.command[1:] if args.command[:1] == ["--"] else args.command
+    if not command:
+        parser.error("run needs a COMMAND after --")
+    return run(args.label, command)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

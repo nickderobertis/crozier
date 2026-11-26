@@ -22,6 +22,7 @@
         "{workspaceRoot}/tools/fern-goldens/fern-goldens",
         "{workspaceRoot}/tools/fern-goldens/generate-corpus-fixtures.sh",
         "{workspaceRoot}/tools/fern-goldens/generate-fern-fixture.sh",
+        "{workspaceRoot}/tools/fern-goldens/fern_generation_lock.py",
         "{workspaceRoot}/tools/fern-goldens/fern-references.py",
         "{workspaceRoot}/tools/fern-goldens/golden_overlay.py",
         "{workspaceRoot}/tools/fern-goldens/tests/fern_goldens_test.py",

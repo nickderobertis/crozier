@@ -29,10 +29,10 @@ record — audiences, a non-default organization, the flat layout, a document wh
 remote refs were served from a scratch port — does not publish at all.
 
 Publication is atomic (the entry is assembled beside its final name and renamed
-into place) and first-wins: an existing entry is kept. It takes no lock of its
-own: it runs inside a generation, which already holds the host's
-`fern-generation.lock`, and a second hold of that lock from the same caller would
-deadlock.
+into place) and first-wins: an existing entry is kept, so two publications of
+one key never need a lock between them, and this module takes none. The Fern
+run that produced the tree is its caller's to serialize: every caller holds the
+host's Fern generation lock (`fern_generation_lock.py`) while Fern runs.
 
 Usage: certified_tree.py publish DOCUMENT TREE --enum-type python-enums|literals [--log FILE]
        certified_tree.py find DOCUMENT --enum-type python-enums|literals [--cli V --generator V]

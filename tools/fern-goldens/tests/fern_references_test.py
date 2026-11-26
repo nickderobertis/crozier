@@ -155,12 +155,13 @@ class FernReferencesTests(unittest.TestCase):
             # The certified-tree store this run publishes into, never the host's.
             "XDG_CACHE_HOME": str(self.root / "cache"),
         }
-        # The tool loads golden_overlay.py and certified_tree.py from beside itself.
+        # The tool loads golden_overlay.py, certified_tree.py and fern_generation_lock.py from beside itself.
         self.tool = self.root / "tools/fern-goldens/fern-references.py"
         self.tool.parent.mkdir(parents=True)
         shutil.copy2(TOOL, self.tool)
         shutil.copy2(REPO / "tools/fern-goldens/golden_overlay.py", self.tool.parent / "golden_overlay.py")
         shutil.copy2(REPO / "tools/fern-goldens/certified_tree.py", self.tool.parent / "certified_tree.py")
+        shutil.copy2(REPO / "tools/fern-goldens/fern_generation_lock.py", self.tool.parent / "fern_generation_lock.py")
 
     def write(self, path: str, text: str, *, executable: bool = False) -> Path:
         target = self.root / path

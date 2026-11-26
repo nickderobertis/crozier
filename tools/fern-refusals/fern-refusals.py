@@ -36,6 +36,11 @@ Subcommands, in the order a refresh runs them:
     header or cross references drift from the registry contract, or when a
     committed shape's verdict at the pin is not its role's (offline).
 
+A subcommand that runs Fern holds the host's Fern generation lock
+(``tools/fern-goldens/fern_generation_lock.py``) from its first Fern run until it
+exits, sharing the hold of a caller that already has it; while another Fern run
+holds it, the subcommand says so and waits.
+
 Every class a document carries is found by matching each diagnostic in its Fern
 log against ``classes.tsv``'s ``diagnostic`` templates, where ``<…>`` stands for
 a document-specific part. A diagnostic no template matches fails ``build``, so a
@@ -626,12 +631,34 @@ def fern_workspace(document: Path, workspace: Path) -> None:
 NODE_HEAP = "--max-old-space-size=16384"
 
 
+# The host's Fern generation lock (`tools/fern-goldens/fern_generation_lock.py`):
+# the first Fern run of a command takes it (or shares the hold the command was
+# started in), and the command keeps it until it ends, so every subcommand that
+# runs Fern holds it from its first `fern check` to its exit.
+FERN_HOLD = contextlib.ExitStack()
+_TAKING = threading.Lock()
+_HOLDING: list[bool] = []
+
+
+def hold_fern_lock() -> None:
+    """Take the host's Fern generation lock for the rest of this command, once."""
+    with _TAKING:
+        if _HOLDING:
+            return
+        path = REPO / "tools" / "fern-goldens" / "fern_generation_lock.py"
+        if not path.is_file():
+            fail(f"{rel(path)} is missing; restore it from git")
+        FERN_HOLD.enter_context(_load("fern_generation_lock", path).hold("fern-refusals"))
+        _HOLDING.append(True)
+
+
 def fern_run(command: list[str], workspace: Path, timeout: int) -> tuple[str, str]:
     if shutil.which(command[0]) is None:
         fail(
             f"`{command[0]}` is not on PATH; run `just setup-fern` (it installs the Fern CLI and needs Docker "
             "for `fern generate`)"
         )
+    hold_fern_lock()
     env = dict(
         os.environ, FERN_TOKEN="preview-only-no-publish", CI="true", GITHUB_ACTIONS="true", NODE_OPTIONS=NODE_HEAP
     )
@@ -2994,7 +3021,8 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("build", help="rewrite the tables from the committed inputs").set_defaults(run=build)
     sub.add_parser("check", help="fail when the tables drift from the inputs").set_defaults(run=check)
     args = parser.parse_args(argv)
-    return args.run(args)
+    with FERN_HOLD:
+        return args.run(args)
 
 
 if __name__ == "__main__":

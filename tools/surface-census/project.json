@@ -35,6 +35,7 @@
         "{workspaceRoot}/crates/crozier-e2e/tests/e2e/*.rs",
         "{workspaceRoot}/tests/generation.rs",
         "{workspaceRoot}/tools/fern-goldens/generate-fern-fixture.sh",
+        "{workspaceRoot}/tools/fern-goldens/fern_generation_lock.py",
         "{workspaceRoot}/tools/corpus/corpus-lib.sh",
         "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
         "{workspaceRoot}/tools/corpus/fetch-corpus.sh",

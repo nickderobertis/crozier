@@ -18,6 +18,61 @@ and which do not, and why each half was decided that way — is stated once, in
 [`corpus-licensing.md`](corpus-licensing.md). Screen a candidate against it
 before Route A or Route B spends a generate.
 
+## One Fern run at a time on a host
+
+Two Fern runs overlapping on one host spoil any measurement that has to run
+alone, so Fern generations on a host run one at a time. **Every crozier Fern
+entry point holds the host's Fern generation lock itself, so callers run those
+entry points unwrapped.** Only a Fern run made outside them — a bare `fern`
+invoked by hand — is wrapped in
+`flock "${XDG_CACHE_HOME:-$HOME/.cache}/crozier/fern-generation.lock" <command>`.
+Never wrap a crozier entry point in `flock` on that lock: the outer hold records
+no holder, so the entry point waits on it and the two deadlock.
+
+The entry points that hold it, each for its whole Fern interval — from its
+first Fern check or generation to its end:
+
+- `fern-references.py generate` (`just fern-references`), for the whole family;
+- `fern-refusals.py`'s Fern-running subcommands (`measure` through
+  `just fern-refusals-measure`, `probe`, `finding`, `shapes`, `confirm`,
+  `reduce`), from the first Fern run to the command's exit;
+- `weekly.py shard`, across its items;
+- `fern-goldens generate` (`just fern-goldens-generate`) and `fern-goldens run`
+  (`just fern-goldens`), across the generation;
+- `generate-fern-fixture.sh`, around its Fern run, and the scripts looping over
+  it, `fern-overlay-goldens.sh` and `generate-corpus-fixtures.sh`
+  (`just fixtures-generate-corpus`), for their whole run;
+- `witness_screen.py`'s Fern screen (`just witness-screen`, and
+  `golden-reach-search.py screen`, which runs it), across its check and
+  generation;
+- `output-insensitive-remeasure.py`, from its first Fern generation to its end;
+- `just test-fern-probe-refusal`, around its Nx run.
+
+`certified_tree.py` takes no lock and needs none: publication is atomic and
+first-wins, and each of its callers (`fern-references.py`,
+`generate-fern-fixture.sh`, `witness_screen.py`) holds the lock while it runs
+Fern.
+
+**Nesting.** An entry point started inside another's hold shares that hold
+rather than taking the lock a second time. The holder exports
+`CROZIER_FERN_GENERATION_LOCK_HOLDER=<its pid>` and records that pid in
+`fern-generation.lock.holder` beside the lock while it holds it; a process is
+inside the hold when the variable it inherited names the recorded pid and that
+pid is the process or one of its ancestors. So `weekly.py shard` holds the lock
+and each `fern-references.py generate` it starts, and each script that one
+delegates to, runs inside the same hold. A variable leaked into an unrelated
+process, or left over from a released hold, is not a hold. The one
+implementation is
+[`tools/fern-goldens/fern_generation_lock.py`](../tools/fern-goldens/fern_generation_lock.py)
+(`hold()` for Python, `run --label L -- COMMAND` for shell); a new Fern entry
+point takes it there and joins the cases of
+`tools/fern-goldens/tests/fern_generation_lock_test.py`.
+
+While another process holds the lock, an entry point prints one line naming the
+lock and the holder's pid, then waits. A suite that drives an entry point with a
+doubled `fern` sets `XDG_CACHE_HOME` to a scratch directory, so it never waits
+on a real Fern run on the same host.
+
 ## Add or change a fixture
 
 Before spending a generate on a shape, check
@@ -285,8 +340,9 @@ A move of the certified pair — `cliVersion` and `generatorVersion` in
 [`../assets/scaffolding/metadata.json`](../assets/scaffolding/metadata.json),
 the one place the pair is declared — regenerates every committed Fern
 reference, family by family. Each family is one command, which runs Fern one
-generation at a time in a scratch workspace outside the checkout and writes each
-item where its gate reads it:
+generation at a time in a scratch workspace outside the checkout, holding the
+host's [Fern generation lock](#one-fern-run-at-a-time-on-a-host) for the whole
+family, and writes each item where its gate reads it:
 
 ```sh
 just fern-references-list <family>              # the family's item names, one per line

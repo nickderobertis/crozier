@@ -24,6 +24,7 @@
         "{workspaceRoot}/tests/fixtures/CORPUS.md",
         "{workspaceRoot}/tools/surface-census/openapi-surface-census.py",
         "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
+        "{workspaceRoot}/tools/fern-goldens/fern_generation_lock.py",
         "pythonTooling"
       ],
       "outputs": [

@@ -55,7 +55,10 @@ with that reason line. `generate` regenerates the
 named items, or the whole family when none is named, at the certified pair
 unless `--version`/`--cli-version` name another, writing each item where its
 committed reference lives. Fern runs once at a time, in a scratch workspace
-outside any checkout (so it stamps no `originGitCommit`). Quiet on success
+outside any checkout (so it stamps no `originGitCommit`), holding the host's
+Fern generation lock (`fern_generation_lock.py`) for the whole family, which
+every delegate shares; while another Fern run holds it, `generate` says so and
+waits. Quiet on success
 apart from one summary line; a failed item names its log and the rest still run.
 
 Exit status: 0 when every item listed, checked or regenerated; 1 when an item
@@ -377,6 +380,19 @@ def certified_tree_store() -> ModuleType:
     module = importlib.util.module_from_spec(spec)
     # Registered before execution: its dataclasses resolve their module by name.
     sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def generation_lock() -> ModuleType:
+    """`fern_generation_lock.py` beside this tool: the host's Fern generation lock."""
+    path = Path(__file__).with_name("fern_generation_lock.py")
+    spec = importlib.util.spec_from_file_location("fern_generation_lock", path)
+    if not path.is_file() or spec is None or spec.loader is None:
+        raise SystemExit(
+            "fern-references: cannot load tools/fern-goldens/fern_generation_lock.py; restore it with git checkout"
+        )
+    module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
 
@@ -1968,17 +1984,20 @@ def main(argv: list[str] | None = None) -> int:
             f"no {args.family} item {', '.join(unknown)}; `fern-references.py list {args.family}` names the family"
         )
     failures = []
-    for item in args.items or known:
-        # The validation `check` runs, before Fern starts, with its reason line.
-        if (line := broken(args.family, item)) is not None:
-            failures.append(line)
-            print(f"fern-references: {line}", file=sys.stderr, flush=True)
-            continue
-        try:
-            generator(item, pair)
-        except (ReferenceError, OSError) as error:
-            failures.append(f"{item}: {error}")
-            print(f"fern-references: {args.family} {item}: {error}", file=sys.stderr, flush=True)
+    # The whole family regenerates inside one hold of the host's Fern generation
+    # lock; every delegate it starts shares that hold.
+    with generation_lock().hold("fern-references"):
+        for item in args.items or known:
+            # The validation `check` runs, before Fern starts, with its reason line.
+            if (line := broken(args.family, item)) is not None:
+                failures.append(line)
+                print(f"fern-references: {line}", file=sys.stderr, flush=True)
+                continue
+            try:
+                generator(item, pair)
+            except (ReferenceError, OSError) as error:
+                failures.append(f"{item}: {error}")
+                print(f"fern-references: {args.family} {item}: {error}", file=sys.stderr, flush=True)
     done = len(args.items or known) - len(failures)
     print(
         f"fern-references: {args.family}: {done} regenerated, {len(failures)} failed at Fern CLI {pair.cli} with fernapi/fern-python-sdk {pair.generator}"

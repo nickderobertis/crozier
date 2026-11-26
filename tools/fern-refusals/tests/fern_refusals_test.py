@@ -46,6 +46,8 @@ SCRIPT_LOADS = (
     "tools/fern-refusals/fern-refusals.py",
     "tools/fern-refusals/sdk_evaluation.py",
     "tools/fern-refusals/sdk_evaluation_runtime.py",
+    # Taken by the first Fern run: the host's Fern generation lock.
+    "tools/fern-goldens/fern_generation_lock.py",
     "assets/scaffolding/metadata.json",
     # Read at import: the unsettled-record contract both gates share.
     "docs/fern-refusals/unsettled-contract.json",
@@ -72,6 +74,27 @@ DISPOSITIONS_HEADER = (
 PAIR_LINE = (
     f"fern-refusals: Fern CLI {CERTIFIED['cliVersion']}, fernapi/fern-python-sdk {CERTIFIED['generatorVersion']}\n"
 )
+
+
+_CACHE: list[tuple[tempfile.TemporaryDirectory[str], str | None]] = []
+
+
+def setUpModule() -> None:
+    """Every Fern run these suites start, through a stand-in `fern`, holds the
+    Fern generation lock under `XDG_CACHE_HOME`: this suite's own scratch, never
+    the host's, so no case waits on a real Fern run on the same host."""
+    cache = tempfile.TemporaryDirectory(prefix="fern-lock-cache-")
+    _CACHE.append((cache, os.environ.get("XDG_CACHE_HOME")))
+    os.environ["XDG_CACHE_HOME"] = cache.name
+
+
+def tearDownModule() -> None:
+    cache, previous = _CACHE.pop()
+    if previous is None:
+        os.environ.pop("XDG_CACHE_HOME", None)
+    else:
+        os.environ["XDG_CACHE_HOME"] = previous
+    cache.cleanup()
 
 
 def run(
