@@ -2430,6 +2430,7 @@ fn invalid_field_alias_literal(wire_name: &str) -> Result<bool> {
             .collect::<Vec<_>>()
             .join(",")
     };
+    // llmlint: ignore[changed_behavior_has_e2e] SPIKE ONLY: this branch never lands (its task: "no tests of its own beyond what keeps its harness honest"); the durable runtime-profiling node owns this proof, and the 27,277 crozier processes profiled in run 45840622476's sweep step exercised this site.
     let _phase = crate::profile::phase("spike-ruff-alias-check");
     let _spawn = crate::profile::spawn_guard("ruff");
     let mut command = Command::new("ruff");

@@ -1,6 +1,6 @@
-// SPIKE ONLY (spike-windows-lane-breakdown): keeps the measurement harness honest. Every
-// case drives a real process: the built crozier binary, the reader, the replay, the spawn
-// hooks, the spawn bench, the experiment script and the gate.
+// SPIKE ONLY (spike-windows-lane-breakdown): the host-tool half of the harness's proof.
+// Every case drives a real process: the built crozier binary, ruff, python, bash, the spawn
+// hooks, the spawn bench and the gate. The offline reader and replay are ci-profile's.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -30,6 +30,8 @@ components:
     Thing: {type: object, properties: {name: {type: string}}}
 `;
 
+// The target depends on crozier:build; run by hand, a missing binary fails here, never skips.
+const requireCrozier = () => assert.ok(existsSync(CROZIER), `${CROZIER} is missing: run \`just nx run crozier:build\` first`);
 const scratch = () => mkdtempSync(join(tmpdir(), "ci-profile-test-"));
 const run = (program, args, env = {}, cwd = ROOT) => spawnSync(program, args, { cwd, encoding: "utf8", env: { ...process.env, ...env } });
 
@@ -55,7 +57,8 @@ function tree(dir) {
 
 const profilesIn = (dir) => (existsSync(dir) ? readdirSync(dir).map((f) => JSON.parse(readFileSync(join(dir, f), "utf8"))) : []);
 
-test("crozier writes one schema-1 profile per process only when CROZIER_PROFILE names a directory", { skip: !existsSync(CROZIER) && "build crozier first (crozier:build)" }, () => {
+test("crozier writes one schema-1 profile per process only when CROZIER_PROFILE names a directory", () => {
+  requireCrozier();
   const dir = scratch();
   const profile = join(dir, "profile");
   assert.equal(generate(dir, {}).result.status, 0);
@@ -70,14 +73,19 @@ test("crozier writes one schema-1 profile per process only when CROZIER_PROFILE 
   const ruff = one.subprocesses.find((s) => s.program === "ruff");
   assert.equal(ruff.spawns, phases.format.count, "one ruff spawn per formatted file");
   assert.equal(one.spike.exit_code, 0);
-  assert.equal(run(CROZIER, ["--version"], { CROZIER_PROFILE: join(dir, "v") }).status, 0);
-  assert.equal(profilesIn(join(dir, "v"))[0].command, "version");
+  for (const [args, command, code] of [[["--version"], "version", 0], [["--help"], "help", 0], [["--no-such-flag"], "usage-error", 2], [["schema"], "schema", 0]]) {
+    const where = join(dir, command);
+    assert.equal(run(CROZIER, args, { CROZIER_PROFILE: where }).status, code, args.join(" "));
+    assert.deepEqual(profilesIn(where).map((p) => [p.command, p.spike.exit_code]), [[command, code]]);
+  }
+  assert.equal(profilesIn(profile)[0].spike.args[0], "generate", "the arguments are recorded");
   const failed = run(CROZIER, ["generate", "--spec", join(dir, "missing.yml"), "--output", join(dir, "x"), "--package-name", "t", "--project-name", "t", "--no-config"], { CROZIER_PROFILE: join(dir, "f") });
   assert.equal(failed.status, 1);
   assert.deepEqual(profilesIn(join(dir, "f")).map((p) => [p.command, p.spike.exit_code]), [["generate", 1]]);
 });
 
-test("one batched ruff writes the same bytes as one ruff per file, verify agrees, and an unknown mode is refused", { skip: !existsSync(CROZIER) && "build crozier first (crozier:build)" }, () => {
+test("one batched ruff writes the same bytes as one ruff per file, verify agrees, and an unknown mode is refused", () => {
+  requireCrozier();
   const dir = scratch();
   const plain = generate(dir, {});
   const batched = generate(dir, { CROZIER_SPIKE_RUFF_BATCH: "1", CROZIER_PROFILE: join(dir, "b") });
@@ -86,6 +94,16 @@ test("one batched ruff writes the same bytes as one ruff per file, verify agrees
   const [profile] = profilesIn(join(dir, "b"));
   assert.equal(profile.subprocesses.find((s) => s.program === "ruff").spawns, 1);
   assert.equal(generate(dir, { CROZIER_SPIKE_RUFF_BATCH: "verify" }).result.status, 0);
+  // A caller's ruff configuration reaches the per-file path but not the isolated batch,
+  // so verify must refuse the generation rather than write either side.
+  const caller = scratch();
+  writeFileSync(join(caller, "pyproject.toml"), '[tool.ruff.format]\nquote-style = "single"\n');
+  writeFileSync(join(caller, "spec.yml"), SPEC);
+  const mismatch = run(CROZIER, ["generate", "--spec", "spec.yml", "--output", "out", "--package-name", "tiny", "--project-name", "tiny", "--no-config"], { CROZIER_SPIKE_RUFF_BATCH: "verify" }, caller);
+  assert.equal(mismatch.status, 1);
+  assert.match(mismatch.stderr, /SPIKE: one batched `ruff format` differs from the per-file output/);
+  assert.equal(existsSync(join(caller, "out")), false, "nothing is written");
+  assert.deepEqual(readdirSync(tmpdir()).filter((n) => n.startsWith(`crozier-spike-ruff-`) && n.includes(`-${mismatch.pid}-`)), [], "the staging tree is removed");
   const bogus = generate(dir, { CROZIER_SPIKE_RUFF_BATCH: "bogus" }).result;
   assert.equal(bogus.status, 1);
   assert.match(bogus.stderr, /CROZIER_SPIKE_RUFF_BATCH must be empty, `1` or `verify`/);
@@ -120,7 +138,8 @@ function artifactTree(profiles) {
   return dir;
 }
 
-test("the reader turns an artifact tree into per-target, per-case, slot and crozier-phase figures", { skip: !existsSync(CROZIER) && "build crozier first (crozier:build)" }, () => {
+test("the reader reads the profiles crozier really writes", () => {
+  requireCrozier();
   const dir = scratch();
   generate(dir, { CROZIER_PROFILE: join(dir, "p") });
   const artifacts = artifactTree(profilesIn(join(dir, "p")));
@@ -141,51 +160,13 @@ test("the reader turns an artifact tree into per-target, per-case, slot and croz
   assert.deepEqual(lane.spike.ruff_batch.runs.map((r) => r.mode), ["per-file", "batch"]);
 });
 
-test("the reader refuses a bad invocation and a record that is not a schema-1 profile", () => {
-  assert.equal(run("node", [READER, "run", "1", "2"]).status, 2);
-  assert.equal(run("node", [READER, "local", scratch(), "--out"]).status, 2);
-  const artifacts = artifactTree([{ schema_version: 2 }]);
-  const result = run("node", [READER, "local", artifacts]);
-  assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /not a schema_version 1 CROZIER_PROFILE record/);
-});
-
-test("the workflow uploads the artifacts the reader reads", () => {
-  const workflow = readFileSync(join(ROOT, ".github", "workflows", "ci.yml"), "utf8");
-  const reader = readFileSync(READER, "utf8");
-  for (const prefix of ["test-timings-", "spike-profile-"]) {
-    assert.ok(workflow.includes(`name: ${prefix}\${{ github.job }}`), `ci.yml uploads ${prefix}<job>`);
-    assert.ok(reader.includes(`\`${prefix}\${name}\``), `the reader reads ${prefix}<job>`);
-  }
-  assert.ok(readFileSync(join(ROOT, "tools", "ci-profile", "spike", "ruff-batch-experiment.sh"), "utf8").includes("printf 'mode\\tround\\tseconds\\texit\\n'"));
-  assert.ok(reader.includes('"mode\\tround\\tseconds\\texit"'));
-});
-
-test("the replay reproduces a measured schedule and separates Nx's exclusive tasks from a mutex", () => {
-  const dir = scratch();
-  const at = (target, start, seconds) => ({ target, seconds, start, end: start + seconds, gate_step: "sweep" });
-  // a and x run alone (parallelism: false); b and c run in parallel; d depends on b.
-  writeFileSync(join(dir, "report.json"), JSON.stringify({ lanes: [{ job: "j", schedule: { sweep: { wall_seconds: 30 } }, targets: [at("b", 0, 10), at("c", 0, 10), at("d", 10, 10), at("a", 20, 5), at("x", 25, 5)] }] }));
-  const task = (parallelism) => ({ parallelism });
-  writeFileSync(join(dir, "tasks.json"), JSON.stringify({ tasks: { tasks: { a: task(false), x: task(false), b: task(true), c: task(true), d: task(true) }, dependencies: { d: ["b"] } } }));
-  const result = run("node", [join(ROOT, "tools/ci-profile/spike/schedule.mjs"), join(dir, "report.json"), "j", "sweep", join(dir, "tasks.json")]);
-  assert.equal(result.status, 0, result.stderr);
-  const out = JSON.parse(result.stdout);
-  assert.equal(out.simulated.alone.observed[2], 30, "replays the measured 30 s");
-  assert.equal(out.simulated.mutex.observed[2], 20, "a mutex lets a and x run beside b, c and d");
-  assert.deepEqual(out.critical_path.chain, ["b", "d"]);
-  const scaled = run("node", [join(ROOT, "tools/ci-profile/spike/schedule.mjs"), join(dir, "report.json"), "j", "sweep", join(dir, "tasks.json"), "--scale", "d=0.5"]);
-  assert.equal(JSON.parse(scaled.stdout).simulated.alone.observed[2], 25);
-  assert.equal(run("node", [join(ROOT, "tools/ci-profile/spike/schedule.mjs"), join(dir, "report.json"), "j", "sweep", join(dir, "tasks.json"), "--scale", "nope=1"]).status, 2);
-});
-
 test("the spawn hooks charge each child and tree copy to the test that started it", () => {
   const dir = scratch();
   const hooks = join(ROOT, "tools", "ci-profile", "spike", "spawncount");
   const env = { SPIKE_SPAWN_LOG: dir, PYTHONPATH: hooks, PYTEST_CURRENT_TEST: "t.py::case (call)", NODE_OPTIONS: `--import ${new URL(`file://${join(hooks, "spawncount.mjs")}`).href}` };
   const py = run(process.platform === "win32" ? "python" : "python3", ["-c", "import shutil, subprocess, sys, tempfile; subprocess.run([sys.executable, '-c', 'pass']); d = tempfile.mkdtemp(); shutil.copytree(sys.argv[1], d + '/c'); shutil.rmtree(d)", hooks], env);
   assert.equal(py.status, 0, py.stderr);
-  const nodeRun = run("node", ["-e", "require('node:child_process').spawnSync(process.execPath, ['-e', '0'])"], env);
+  const nodeRun = run("node", ["-e", "const c = require('node:child_process'); c.spawnSync(process.execPath, ['-e', '0']); c.execFile(process.execPath, ['-e', '0'], () => {}); c.fork('-e', [], { execArgv: ['-e', '0'] }).on('exit', () => {});"], env);
   assert.equal(nodeRun.status, 0, nodeRun.stderr);
   const records = readdirSync(dir).flatMap((f) => readFileSync(join(dir, f), "utf8").trim().split("\n").map((l) => JSON.parse(l)));
   const events = (kind) => records.filter((r) => r.event === kind);
@@ -193,7 +174,9 @@ test("the spawn hooks charge each child and tree copy to the test that started i
   assert.ok(events("child").every((r) => Number.isFinite(r.seconds)));
   assert.equal(events("copytree").length, 1, "one outermost copy, however deep the tree");
   assert.equal(events("rmtree").length, 1);
-  assert.ok(records.some((r) => r.event === "child" && r.program === "node"), "a Node child with its seconds");
+  const nodeChildren = records.filter((r) => r.event === "child" && r.pid === nodeRun.pid);
+  assert.equal(nodeChildren.length, 3, "spawnSync, execFile and fork each record their child once it closes");
+  assert.ok(nodeChildren.every((r) => Number.isFinite(r.seconds)));
 });
 
 test("the spawn bench writes per-program samples and refuses a bad repeat count", () => {

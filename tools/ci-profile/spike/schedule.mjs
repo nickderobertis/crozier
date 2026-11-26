@@ -27,18 +27,20 @@ for (let i = 0; i < rest.length; i++) {
   if (rest[i] !== "--scale" || !rest[i + 1]) fail(`unknown or incomplete argument '${rest[i]}'; only --scale task=factor,... follows the four paths`);
   for (const pair of rest[++i].split(",")) {
     const [task, factor, extra] = pair.split("=");
-    if (!task || extra !== undefined || !/^\d+(\.\d+)?$/.test(factor ?? "")) fail(`--scale takes task=factor pairs with a non-negative factor, not '${pair}'`);
+    if (!task || extra !== undefined || !/^\d+(\.\d+)?$/.test(factor ?? "") || !Number.isFinite(Number(factor))) fail(`--scale takes task=factor pairs with a finite non-negative factor, not '${pair}'`);
     scale.set(task, Number(factor));
   }
 }
 const report = JSON.parse(readFileSync(reportPath, "utf8"));
-const lane = report.lanes.find((l) => l.job === job);
+const lane = Array.isArray(report?.lanes) ? report.lanes.find((l) => l?.job === job) : undefined;
 if (!lane) fail(`${reportPath} has no lane '${job}'`);
 const measured = lane.targets.filter((t) => t.gate_step === step && t.start !== undefined);
 if (measured.length === 0) fail(`lane '${job}' has no timed targets for gate step '${step}'`);
-if (!measured.every((t) => Number.isFinite(t.seconds) && t.seconds >= 0)) fail(`lane '${job}' has a target without non-negative seconds`);
+if (!measured.every((t) => typeof t.target === "string" && Number.isFinite(t.seconds) && t.seconds >= 0 && Number.isFinite(t.start))) fail(`lane '${job}' has a target without a name, a start and non-negative seconds`);
 const graph = JSON.parse(readFileSync(graphPath, "utf8")).tasks;
-if (!graph || typeof graph.tasks !== "object" || typeof graph.dependencies !== "object") fail(`${graphPath} is not the task graph \`nx run-many --graph=<file>\` writes`);
+const isMap = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
+const goodDeps = isMap(graph?.dependencies) && Object.values(graph.dependencies).every((d) => Array.isArray(d) && d.every((x) => typeof x === "string"));
+if (!isMap(graph?.tasks) || !goodDeps) fail(`${graphPath} is not the task graph \`nx run-many --graph=<file>\` writes`);
 const deps = graph.dependencies;
 const duration = new Map(measured.map((t) => [t.target, t.seconds * (scale.get(t.target) ?? 1)]));
 const unknown = [...scale.keys()].filter((task) => !duration.has(task));
@@ -71,6 +73,8 @@ const headOf = (id) => {
   }
   return head.get(id);
 };
+// Walking every tail first refuses a cyclic graph before the head walk could recurse forever.
+for (const id of ids) tailOf(id);
 const critical = ids.map(headOf).sort((a, b) => b.seconds - a.seconds)[0];
 
 // Tasks Nx runs with `parallelism: false`. Nx starts one only with nothing else running and

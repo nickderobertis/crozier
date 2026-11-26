@@ -211,8 +211,9 @@ function quantiles(values) {
 export function aggregateProfiles(lines) {
   const profiles = lines.filter((l) => l.trim()).map((l) => JSON.parse(l));
   for (const p of profiles) {
-    const timed = (list, key) => Array.isArray(list) && list.every((x) => typeof x?.[key] === "string" && Number.isFinite(x.seconds));
-    if (p?.schema_version !== 1 || typeof p.command !== "string" || !Number.isFinite(p.total_seconds) || !timed(p.phases, "name") || !timed(p.subprocesses, "program")) {
+    const seconds = (v) => Number.isFinite(v) && v >= 0;
+    const timed = (list, key, count) => Array.isArray(list) && list.every((x) => typeof x?.[key] === "string" && seconds(x.seconds) && Number.isSafeInteger(x[count]) && x[count] >= 0);
+    if (p?.schema_version !== 1 || typeof p.command !== "string" || !seconds(p.total_seconds) || !timed(p.phases, "name", "count") || !timed(p.subprocesses, "program", "spawns")) {
       throw new Error(`not a schema_version 1 CROZIER_PROFILE record: ${JSON.stringify(p).slice(0, 200)}`);
     }
   }
@@ -314,7 +315,9 @@ function lane(job, jobLog, artifacts) {
     const [header, ...lines] = readFileSync(runsTsv, "utf8").trim().split("\n");
     if (header !== "mode\tround\tseconds\texit") throw new Error(`${runsTsv} does not start with the header ruff-batch-experiment.sh writes`);
     const rows = lines.map((l) => l.split("\t"));
-    if (!rows.every((r) => r.length === 4 && r.slice(1).every((v) => Number.isFinite(Number(v))))) throw new Error(`${runsTsv} has a row that is not mode, round, seconds, exit`);
+    const MODES = new Set(["per-file", "batch", "verify"]);
+    const count = (v) => /^\d+$/.test(v);
+    if (!rows.every((r) => r.length === 4 && MODES.has(r[0]) && count(r[1]) && /^\d+(\.\d+)?$/.test(r[2]) && count(r[3]))) throw new Error(`${runsTsv} has a row that is not mode, round, seconds, exit`);
     ruffBatch.runs = rows.map(([mode, round, secs, exit]) => ({ mode, round: Number(round), seconds: Number(secs), exit: Number(exit) }));
     for (const f of walk(join(spike, "ruff-batch")).filter((f) => f.endsWith(".jsonl"))) {
       ruffBatch[basename(f, ".jsonl")] = aggregateProfiles(readFileSync(f, "utf8").split("\n"));

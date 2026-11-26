@@ -21,8 +21,8 @@ permissions:
   contents: read
 
 env:
-  # Nx's task parallelism for the measured step: run 45840622476 measured Nx's default, 3;
-  # this run measures 4 on the same 4-processor runners.
+  # Nx's task parallelism for the measured step. Nx's default is 3; 4 asks whether a fourth
+  # slot pays on the runners' 4 processors.
   NX_PARALLEL: "4"
 
 jobs:
@@ -80,6 +80,7 @@ jobs:
       # read ci.yml and hold it to the real lanes' contract. They read the real file, as on
       # any other branch, so they measure their real course rather than failing on this
       # cut-down one; git is told to ignore the swap so the tree still reads as clean.
+      # llmlint: ignore[changed_behavior_has_e2e] SPIKE ONLY: the swap exists so the suites that hold the real lanes' contract (tools/ci/tests/ci_workflow.rs, .github/tests/graph.test.mjs, ci-journeys) measure their real course on this never-landing branch; reconciling them with the cut-down workflow would change what they prove, which the spike may not do.
       - name: Put the real ci.yml in front of the suites
         shell: bash
         run: |
@@ -208,6 +209,7 @@ jobs:
       # read ci.yml and hold it to the real lanes' contract. They read the real file, as on
       # any other branch, so they measure their real course rather than failing on this
       # cut-down one; git is told to ignore the swap so the tree still reads as clean.
+      # llmlint: ignore[changed_behavior_has_e2e] SPIKE ONLY: the swap exists so the suites that hold the real lanes' contract (tools/ci/tests/ci_workflow.rs, .github/tests/graph.test.mjs, ci-journeys) measure their real course on this never-landing branch; reconciling them with the cut-down workflow would change what they prove, which the spike may not do.
       - name: Put the real ci.yml in front of the suites
         shell: bash
         run: |

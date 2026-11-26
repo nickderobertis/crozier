@@ -11,18 +11,36 @@
   "targets": {
     "test": {
       "executor": "nx:run-commands",
-      "dependsOn": [
-        {
-          "projects": [
-            "crozier"
-          ],
-          "target": "build"
-        }
-      ],
       "options": {
-        "command": "node --test tools/ci-profile/tests/ci-profile.test.mjs"
+        "command": "node --test tools/ci-profile/tests/reader.test.mjs"
       },
-      "cache": false
+      "cache": true,
+      "inputs": [
+        "default",
+        "{workspaceRoot}/.github/workflows/ci.yml"
+      ]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "node --check tools/ci-profile/ci-profile.mjs",
+          "node --check tools/ci-profile/spike/schedule.mjs",
+          "node --check tools/ci-profile/spike/spawn-bench.mjs",
+          "node --check tools/ci-profile/spike/spawncount/spawncount.mjs",
+          "node --check tools/ci-profile/tests/reader.test.mjs",
+          "bash -n tools/ci-profile/spike/ruff-batch-experiment.sh",
+          "uv run --locked --all-packages ruff check tools/ci-profile",
+          "uv run --locked --all-packages ruff format --check tools/ci-profile",
+          "node scripts/check-project-boundaries.mjs ci-profile"
+        ],
+        "parallel": false
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "boundaries"
+      ]
     }
   }
 }

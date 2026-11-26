@@ -38,7 +38,6 @@ fn main() -> ExitCode {
 fn run() -> ExitCode {
     match parse_args(std::env::args_os()) {
         Ok(cli) => {
-            // SPIKE ONLY: the profile is filed under the parsed subcommand.
             let command = cli.command_name();
             match execute(cli) {
                 Ok(code) => {

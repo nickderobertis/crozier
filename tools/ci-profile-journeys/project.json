@@ -1,0 +1,41 @@
+{
+  "name": "ci-profile-journeys",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "tags": [
+    "type:tooling",
+    "lang:javascript"
+  ],
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        {
+          "projects": [
+            "crozier"
+          ],
+          "target": "build"
+        }
+      ],
+      "options": {
+        "command": "node --test tools/ci-profile-journeys/tests/journeys.test.mjs"
+      },
+      "cache": false
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "node --check tools/ci-profile-journeys/tests/journeys.test.mjs",
+          "node scripts/check-project-boundaries.mjs ci-profile-journeys"
+        ],
+        "parallel": false
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "boundaries"
+      ]
+    }
+  }
+}

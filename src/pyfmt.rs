@@ -127,6 +127,7 @@ impl FormatMode {
     }
 }
 
+// llmlint: ignore[changed_behavior_has_e2e] SPIKE ONLY: this branch never lands (its task: "no tests of its own beyond what keeps its harness honest"); the durable generation-cost node owns this proof, and run 45840622476's A/B exercised the batch path (30 ruff processes over 3 large generations). Its byte identity is proved by verify over all 1,150 crozier-e2e tests, and ci-profile-journeys drives the batch, verify-mismatch and refused-mode paths.
 /// SPIKE ONLY (`spike-windows-lane-breakdown`): format every `(path, source)`
 /// with as few `ruff format` processes as the platform's command line allows,
 /// instead of one process per file, staged at their generated relative paths.
@@ -147,6 +148,16 @@ pub fn format_batch(items: &[(String, String)], width: usize) -> Result<Vec<Stri
     // a generated `templates/` package unformatted (run 45863948064, letta and maif-otoroshi).
     let stage =
         std::env::temp_dir().join(format!("crozier-spike-ruff-{}-{nanos}", std::process::id()));
+    if let Some((path, _)) = items.iter().find(|(path, _)| {
+        !std::path::Path::new(path)
+            .components()
+            .all(|c| matches!(c, std::path::Component::Normal(_)))
+    }) {
+        return Err(fail(
+            path,
+            "a generated path must stay inside its tree to be staged".to_string(),
+        ));
+    }
     let result = (|| {
         for (path, source) in items {
             let full = stage.join(path);
