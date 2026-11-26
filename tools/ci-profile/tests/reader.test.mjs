@@ -100,6 +100,22 @@ test("the reader sums several processes by command, phase, program and Nx task",
   assert.equal(report(artifactTree({ profiles: [] })).lanes[0].crozier_profile.sweep.processes, 0);
 });
 
+test("the reader's statistics are the median, p90, maximum and mean of every generation", () => {
+  const spawning = (n) => ({ ...PROFILE, subprocesses: [{ program: "ruff", spawns: n, seconds: n / 10 }] });
+  const generated = report(artifactTree({ profiles: [1, 2, 3, 4, 10].map(spawning) })).lanes[0].crozier_profile.sweep.generate;
+  assert.deepEqual(generated.ruff_spawns_per_generation, { n: 5, mean: 4, median: 3, p90: 4, max: 10, sum: 20 });
+  assert.ok(Math.abs(generated.ruff_seconds_per_spawn - 0.1) < 1e-12);
+});
+
+test("a long target with no recorded cases is named as missing, and one with cases is not", () => {
+  const dir = artifactTree();
+  const timings = join(dir, "test-timings-test-linux", "sweep");
+  const x = (name, dur) => ({ name, ph: "X", ts: 0, dur, tid: 0, args: { status: "success" } });
+  writeFileSync(join(timings, "gate-1.profile.json"), JSON.stringify([x("a:test", 40e6), x("b:test", 40e6), x("silent:build", 40e6), x("short:test", 5e6)]));
+  const { missing } = report(dir).lanes[0];
+  assert.deepEqual(missing, ["per-case seconds for silent:build (its runner prints none: unittest, a script, or a cargo build)"]);
+});
+
 test("a run is read from its cache with no fetch, its targets from the job log when no Nx profile was kept", () => {
   const cache = scratch();
   const job = { databaseId: 7, name: "test-windows", startedAt: "2026-11-26T10:00:00Z", completedAt: "2026-11-26T11:00:00Z", steps: [{ name: "Test", startedAt: "2026-11-26T10:00:00Z", completedAt: "2026-11-26T10:30:00Z" }] };

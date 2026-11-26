@@ -60,11 +60,14 @@ def _program(argv) -> str:
     an argument list's first element is the program whole, spaces in its path included.
     """
     try:
-        if isinstance(argv, (str, bytes)):
-            words = os.fsdecode(argv).split()
-            first = words[0] if words else ""
-        else:
-            first = os.fsdecode(argv if isinstance(argv, os.PathLike) else next(iter(argv), ""))
+        match argv:
+            case str() | bytes():
+                words = os.fsdecode(argv).split()
+                first = words[0] if words else ""
+            case os.PathLike():
+                first = os.fsdecode(argv)
+            case _:
+                first = os.fsdecode(next(iter(argv), ""))
     except (TypeError, ValueError):
         return "?"
     return os.path.basename(first).removesuffix(".exe") or "?"

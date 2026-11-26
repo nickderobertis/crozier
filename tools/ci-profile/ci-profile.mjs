@@ -298,11 +298,12 @@ function readJson(path, valid) {
 }
 const object = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
 const natural = (v) => Number.isSafeInteger(v) && v >= 0;
-const RUNNER = (v) => object(v) && Number.isSafeInteger(v.cpus) && v.cpus > 0;
+const text = (v) => v === undefined || v === null || typeof v === "string";
+const RUNNER = (v) => object(v) && Number.isSafeInteger(v.cpus) && v.cpus > 0 && [v.job, v.platform, v.release, v.cpu_model, v.nx_parallel].every(text) && (v.memory_bytes === undefined || natural(v.memory_bytes));
 const STEP = (v) => object(v) && typeof v.step === "string" && natural(v.seconds) && natural(v.exit);
-const timing = (s) => object(s) && Number.isSafeInteger(s.n) && s.n > 0 && [s.median, s.mean, s.min, s.max].every((x) => Number.isFinite(x) && x >= 0);
+const timing = (s) => object(s) && Number.isSafeInteger(s.n) && s.n > 0 && [s.median, s.mean, s.min, s.max].every((x) => Number.isFinite(x) && x >= 0) && Array.isArray(s.samples) && s.samples.length === s.n && s.samples.every((x) => Number.isFinite(x) && x >= 0);
 // spawn-bench.mjs writes this schema: a timed spawn has n and median, a failed one an error.
-const SPAWN_BENCH = (v) => object(v) && v.schema === "spike-spawn-bench-1" && Array.isArray(v.spawns) && v.spawns.every((s) => typeof s?.label === "string" && (typeof s.error === "string" || timing(s))) && object(v.fs) && Object.values(v.fs).every(timing);
+const SPAWN_BENCH = (v) => object(v) && v.schema === "spike-spawn-bench-1" && Number.isSafeInteger(v.repeats) && v.repeats > 0 && Number.isSafeInteger(v.cpus) && text(v.platform) && text(v.cpu_model) && Array.isArray(v.spawns) && v.spawns.every((s) => typeof s?.label === "string" && (typeof s.error === "string" || timing(s))) && object(v.fs) && Object.values(v.fs).every(timing);
 
 /** One lane's figures from its job (if read from a run) and its two artifacts. */
 function lane(job, jobLog, artifacts) {

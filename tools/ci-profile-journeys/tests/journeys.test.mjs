@@ -254,6 +254,12 @@ test("the spawn hooks charge each child and tree copy to the test that started i
   const spacedLog = scratch();
   assert.equal(run(process.platform === "win32" ? "python" : "python3", ["-c", "import subprocess, sys; subprocess.run([sys.argv[1]])", prog], { ...env, SPIKE_SPAWN_LOG: spacedLog }).status, 0);
   assert.equal(run("node", ["-e", "require('node:child_process').spawnSync(process.argv[1])", prog], { ...env, SPIKE_SPAWN_LOG: spacedLog }).status, 0);
+  // A command-line string names its first word; bytes and a path-like name the program too.
+  const pyForms = "import pathlib, subprocess, sys; p = sys.argv[1]; subprocess.run('true', shell=True); subprocess.run(['true'.encode()]); subprocess.run([pathlib.Path(p)])";
+  const formsLog = scratch();
+  assert.equal(run(process.platform === "win32" ? "python" : "python3", ["-c", pyForms, prog], { ...env, SPIKE_SPAWN_LOG: formsLog }).status, 0);
+  const formed = readdirSync(formsLog).flatMap((f) => readFileSync(join(formsLog, f), "utf8").trim().split("\n").map((l) => JSON.parse(l))).filter((r) => r.event === "spawn").map((r) => r.program);
+  assert.deepEqual(formed, ["sh", "true", "prog"], "shell=True runs /bin/sh, a bytes argv names its program, a Path names its file");
   const spacedPrograms = readdirSync(spacedLog).flatMap((f) => readFileSync(join(spacedLog, f), "utf8").trim().split("\n").map((l) => JSON.parse(l).program));
   assert.deepEqual([...new Set(spacedPrograms)], ["prog"]);
   // A log that cannot be written loses records, never the measured call.
@@ -277,12 +283,16 @@ test("the spawn bench writes per-program samples the reader accepts, records a m
   mkdirSync(join(artifacts, "test-timings-test-linux"), { recursive: true });
   mkdirSync(spike);
   const out = join(spike, "spawn-bench.json");
-  const result = run("node", [join(ROOT, "tools/ci-profile/spike/spawn-bench.mjs"), out, "1"]);
+  const result = run("node", [join(ROOT, "tools/ci-profile/spike/spawn-bench.mjs"), out, "3"]);
   assert.equal(result.status, 0, result.stderr);
   const bench = JSON.parse(readFileSync(out, "utf8"));
   const git = bench.spawns.find((s) => s.label === "git --version");
-  assert.equal(git.n, 1);
-  assert.ok(git.median > 0);
+  assert.equal(git.n, 3);
+  assert.deepEqual(git.samples, [...git.samples].sort((a, b) => a - b), "samples are kept sorted");
+  assert.equal(git.median, git.samples[1]);
+  assert.equal(git.min, git.samples[0]);
+  assert.equal(git.max, git.samples[2]);
+  assert.ok(Math.abs(git.mean - git.samples.reduce((a, b) => a + b, 0) / 3) < 1e-12);
   assert.ok(bench.fs["write and remove 1000 small files"].median > 0);
   const read = run("node", [READER, "local", artifacts]);
   assert.equal(read.status, 0, read.stderr);
