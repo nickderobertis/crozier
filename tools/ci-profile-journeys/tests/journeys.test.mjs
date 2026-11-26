@@ -246,6 +246,16 @@ test("the spawn hooks charge each child and tree copy to the test that started i
   assert.equal(failedSpawn.status, 0, failedSpawn.stderr);
   const nodeFailed = readdirSync(recover).flatMap((f) => readFileSync(join(recover, f), "utf8").trim().split("\n").map((l) => JSON.parse(l))).filter((r) => r.pid === failedSpawn.pid);
   assert.deepEqual(nodeFailed.map((r) => [r.event, r.program]), [["spawn", "no-such-program-anywhere"], ["child", "no-such-program-anywhere"], ["spawn", "no-such-program-anywhere"], ["child", "no-such-program-anywhere"]]);
+  // A program whose path holds a space is named whole, from Python's argv and from Node's.
+  const spaced = join(scratch(), "with space");
+  mkdirSync(spaced);
+  const prog = join(spaced, "prog");
+  writeFileSync(prog, "#!/bin/sh\nexit 0\n", { mode: 0o755 });
+  const spacedLog = scratch();
+  assert.equal(run(process.platform === "win32" ? "python" : "python3", ["-c", "import subprocess, sys; subprocess.run([sys.argv[1]])", prog], { ...env, SPIKE_SPAWN_LOG: spacedLog }).status, 0);
+  assert.equal(run("node", ["-e", "require('node:child_process').spawnSync(process.argv[1])", prog], { ...env, SPIKE_SPAWN_LOG: spacedLog }).status, 0);
+  const spacedPrograms = readdirSync(spacedLog).flatMap((f) => readFileSync(join(spacedLog, f), "utf8").trim().split("\n").map((l) => JSON.parse(l).program));
+  assert.deepEqual([...new Set(spacedPrograms)], ["prog"]);
   // A log that cannot be written loses records, never the measured call.
   const blockedLog = join(scratch(), "a-file");
   writeFileSync(blockedLog, "");
@@ -322,4 +332,18 @@ test("the gate streams Nx's output, line by line with its seconds, when CROZIER_
   const lines = readFileSync(stream, "utf8").trim().split("\n");
   assert.ok(lines.every((l) => /^\d+\.\d{3}\t/.test(l)), "every line carries the seconds since the gate started");
   assert.ok(lines.some((l) => l.includes("nx run workspace:test")));
+});
+
+// Structural on purpose: the artifacts these names reach exist only in a GitHub Actions run of
+// ci.yml, which no test can start; this holds the writer and the reader to one spelling.
+test("the workflow uploads the artifacts the reader reads, and the experiment writes the columns it parses", () => {
+  // As committed: the harness puts the real ci.yml in the working tree before the suites run.
+  const workflow = spawnSync("git", ["show", "HEAD:.github/workflows/ci.yml"], { cwd: ROOT, encoding: "utf8" }).stdout;
+  const reader = readFileSync(READER, "utf8");
+  for (const prefix of ["test-timings-", "spike-profile-"]) {
+    assert.ok(workflow.includes(`name: ${prefix}\${{ github.job }}`), `ci.yml uploads ${prefix}<job>`);
+    assert.ok(reader.includes(`\`${prefix}\${name}\``), `the reader reads ${prefix}<job>`);
+  }
+  assert.ok(readFileSync(join(ROOT, "tools", "ci-profile", "spike", "ruff-batch-experiment.sh"), "utf8").includes("printf 'mode\\tround\\tseconds\\texit\\n'"));
+  assert.ok(reader.includes('"mode\\tround\\tseconds\\texit"'));
 });

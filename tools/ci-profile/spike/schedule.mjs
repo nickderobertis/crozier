@@ -48,8 +48,11 @@ if (!measured.every((t) => typeof t.target === "string" && Number.isFinite(t.sec
 const graph = readJson(graphPath)?.tasks;
 const isMap = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
 const goodDeps = isMap(graph?.dependencies) && Object.values(graph.dependencies).every((d) => Array.isArray(d) && d.every((x) => typeof x === "string"));
-if (!isMap(graph?.tasks) || !Object.values(graph.tasks).every(isMap) || !goodDeps) fail(`${graphPath} is not the task graph \`nx run-many --graph=<file>\` writes`);
+const goodTask = (t) => isMap(t) && (t.parallelism === undefined || typeof t.parallelism === "boolean");
+if (!isMap(graph?.tasks) || !Object.values(graph.tasks).every(goodTask) || !goodDeps) fail(`${graphPath} is not the task graph \`nx run-many --graph=<file>\` writes`);
 const deps = graph.dependencies;
+const repeated = measured.map((t) => t.target).filter((id, i, all) => all.indexOf(id) !== i);
+if (repeated.length) fail(`gate step '${step}' times ${repeated[0]} more than once; replay one gate run at a time`);
 const duration = new Map(measured.map((t) => [t.target, t.seconds * (scale.get(t.target) ?? 1)]));
 if (![...duration.values()].every(Number.isFinite)) fail("a scaled duration is not finite; use smaller --scale factors");
 const unknown = [...scale.keys()].filter((task) => !duration.has(task));

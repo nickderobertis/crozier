@@ -313,8 +313,12 @@ function lane(job, jobLog, artifacts) {
   const steps = (job?.steps ?? []).map((s) => ({ name: s.name, seconds: s.startedAt && s.completedAt ? seconds(s.startedAt, s.completedAt) : null, conclusion: s.conclusion }));
   const files = walk(timings);
   const gateSteps = {};
-  for (const log of files.filter((f) => /gate-\d+\.log$/.test(f))) {
-    const stepName = basename(join(log, ".."));
+  const logs = files.filter((f) => /gate-\d+\.log$/.test(f));
+  const dirOf = (log) => basename(join(log, ".."));
+  for (const log of logs) {
+    // A step that ran the gate more than once keeps each run apart, named by its log.
+    const shared = logs.filter((other) => dirOf(other) === dirOf(log)).length > 1;
+    const stepName = shared ? `${dirOf(log)}/${basename(log, ".log")}` : dirOf(log);
     const profilePath = log.replace(/\.log$/, ".profile.json");
     const sched = existsSync(profilePath) ? schedule(JSON.parse(readFileSync(profilePath, "utf8"))) : undefined;
     const known = sched ? new Set(sched.tasks.map((t) => t.target)) : undefined;
@@ -322,12 +326,18 @@ function lane(job, jobLog, artifacts) {
     const parallel = /--parallel[= ](\d+)/.exec(text)?.[1];
     gateSteps[stepName] = { log, schedule: sched, cases: parseCases(text, known), parallel };
   }
-  // Each gate step's Nx profile is the source of its targets, with their start, end and slot;
-  // the job log's `gate: task` lines (which name no step) stand in only when no profile was kept.
+  // Each gate step's Nx profile is the source of its targets, with their start, end and slot.
+  // The job log's `gate: task` lines (which name no step) add what no kept profile covers:
+  // one line per target is spent for each profiled run of that target.
   const profiled = Object.entries(gateSteps).filter(([, g]) => g.schedule);
-  const targets = profiled.length
-    ? profiled.flatMap(([stepName, g]) => g.schedule.tasks.map((t) => ({ target: t.target, seconds: t.seconds, status: t.status, cached: String(t.status).includes("cache"), gate_step: stepName, start: t.start, end: t.end, slot: t.slot })))
-    : jobLog ? gateTaskLines(jobLog) : [];
+  const targets = profiled.flatMap(([stepName, g]) => g.schedule.tasks.map((t) => ({ target: t.target, seconds: t.seconds, status: t.status, cached: String(t.status).includes("cache"), gate_step: stepName, start: t.start, end: t.end, slot: t.slot })));
+  const covered = new Map();
+  for (const t of targets) covered.set(t.target, (covered.get(t.target) ?? 0) + 1);
+  for (const line of jobLog ? gateTaskLines(jobLog) : []) {
+    const left = covered.get(line.target) ?? 0;
+    if (left > 0) covered.set(line.target, left - 1);
+    else targets.push(line);
+  }
   if (Object.keys(gateSteps).length === 0) missing.push(`no gate logs in artifact test-timings-${name}`);
   const cases = Object.entries(gateSteps).flatMap(([stepName, g]) => g.cases.map((c) => ({ ...c, gate_step: stepName })));
   const casedTargets = new Set(cases.map((c) => c.target));

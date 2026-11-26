@@ -54,13 +54,20 @@ def _write(record: Record) -> None:
 
 
 def _program(argv) -> str:
-    """The program a Popen argument names, or "?"; it never raises inside the measured call."""
+    """The program a Popen argument names, or "?"; it never raises inside the measured call.
+
+    A string is a command line (the shell's, or Windows'), whose first word is the program;
+    an argument list's first element is the program whole, spaces in its path included.
+    """
     try:
-        first = argv if isinstance(argv, (str, bytes, os.PathLike)) else next(iter(argv), "?")
-        words = os.fsdecode(first).split()
+        if isinstance(argv, (str, bytes)):
+            words = os.fsdecode(argv).split()
+            first = words[0] if words else ""
+        else:
+            first = os.fsdecode(argv if isinstance(argv, os.PathLike) else next(iter(argv), ""))
     except (TypeError, ValueError):
         return "?"
-    return os.path.basename(words[0]).removesuffix(".exe") if words else "?"
+    return os.path.basename(first).removesuffix(".exe") or "?"
 
 
 def _hook(event: str, args: tuple) -> None:

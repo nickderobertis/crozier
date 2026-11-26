@@ -11,7 +11,7 @@ const dir = process.env.SPIKE_SPAWN_LOG;
 if (dir) {
   const write = (program, event = "spawn", seconds = undefined) => {
     try {
-      appendFileSync(join(dir, `node-${process.pid}.jsonl`), `${JSON.stringify({ event, seconds, program: basename(String(program).split(" ")[0]).replace(/\.(exe|cmd)$/, ""), pid: process.pid, test: process.argv[1] ? basename(process.argv[1]) : null, nx: `${process.env.NX_TASK_TARGET_PROJECT}:${process.env.NX_TASK_TARGET_TARGET}` })}\n`);
+      appendFileSync(join(dir, `node-${process.pid}.jsonl`), `${JSON.stringify({ event, seconds, program: basename(String(program)).replace(/\.(exe|cmd)$/, ""), pid: process.pid, test: process.argv[1] ? basename(process.argv[1]) : null, nx: `${process.env.NX_TASK_TARGET_PROJECT}:${process.env.NX_TASK_TARGET_TARGET}` })}\n`);
     } catch {}
   };
   // exec calls module.exports.execFile, so a call made inside a wrapped one is the same child.
@@ -20,7 +20,9 @@ if (dir) {
     const original = childProcess[name];
     childProcess[name] = function (command, ...rest) {
       if (inside) return original.call(this, command, ...rest);
-      const program = name === "fork" ? "node" : name.startsWith("exec") && !name.startsWith("execFile") ? String(command).split(" ")[0] : command;
+      // exec and execSync take a shell command line, whose first word is the program; the
+      // others take the program itself, spaces in its path included.
+      const program = name === "fork" ? "node" : name === "exec" || name === "execSync" ? String(command).trim().split(/\s+/)[0] : command;
       write(program);
       const start = performance.now();
       const done = () => write(program, "child", (performance.now() - start) / 1000);

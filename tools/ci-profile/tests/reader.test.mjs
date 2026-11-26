@@ -116,6 +116,25 @@ test("a run is read from its cache with no fetch, its targets from the job log w
   assert.ok(lane.missing.some((m) => m.includes("no gate logs")));
 });
 
+test("two gate runs in one step stay apart, and a step without a profile keeps its job-log targets", () => {
+  const cache = scratch();
+  const job = { databaseId: 7, name: "test-linux", startedAt: null, completedAt: null, steps: [] };
+  writeFileSync(join(cache, "run.json"), JSON.stringify({ databaseId: 9, headSha: "abc", status: "completed", jobs: [job] }));
+  writeFileSync(join(cache, "job-7.log"), ["gate: task a:test: 4.000s (success)", "gate: task z:test: 2.000s (success)", ""].join("\n"));
+  const timings = join(cache, "artifacts", "test-timings-test-linux", "sweep");
+  mkdirSync(timings, { recursive: true });
+  const x = (name, dur) => ({ name, ph: "X", ts: 0, dur, tid: 0, args: { status: "success" } });
+  for (const [pid, task] of [["1", "a:test"], ["2", "b:test"]]) {
+    writeFileSync(join(timings, `gate-${pid}.log`), `> nx run ${task}\n`);
+    writeFileSync(join(timings, `gate-${pid}.profile.json`), JSON.stringify([x(task, 4e6)]));
+  }
+  const result = spawnSync(process.execPath, [READER, "run", "9", "--cache-dir", cache], { cwd: ROOT, encoding: "utf8", env: { ...process.env, PATH: dirname(process.execPath) } });
+  assert.equal(result.status, 0, result.stderr);
+  const [lane] = JSON.parse(result.stdout).lanes;
+  assert.deepEqual(Object.keys(lane.schedule).sort(), ["sweep/gate-1", "sweep/gate-2"]);
+  assert.deepEqual(lane.targets.map((t) => [t.target, t.gate_step ?? null]).sort(), [["a:test", "sweep/gate-1"], ["b:test", "sweep/gate-2"], ["z:test", null]], "a:test's job-log line is the profiled run; z:test's has no profile and is kept");
+});
+
 test("the reader refuses a bad invocation and records it cannot trust", () => {
   assert.equal(node([READER, "run", "1", "2"]).status, 2);
   assert.equal(node([READER, "run", "0"]).status, 2);
@@ -160,20 +179,6 @@ test("the gate's stream keeps each line whole across chunks, flushes the last on
   assert.equal(blocked.stderr.match(/could not append to CROZIER_SPIKE_STREAM/g)?.length, 1, "it says so once");
 });
 
-// Structural on purpose: the artifacts these names reach exist only in a GitHub Actions run of
-// ci.yml, which no test can start; this holds the writer and the reader to one spelling.
-test("the workflow uploads the artifacts the reader reads, and the experiment writes the columns it parses", () => {
-  // As committed: the harness puts the real ci.yml in the working tree before the suites run.
-  const workflow = spawnSync("git", ["show", "HEAD:.github/workflows/ci.yml"], { cwd: ROOT, encoding: "utf8" }).stdout;
-  const reader = readFileSync(READER, "utf8");
-  for (const prefix of ["test-timings-", "spike-profile-"]) {
-    assert.ok(workflow.includes(`name: ${prefix}\${{ github.job }}`), `ci.yml uploads ${prefix}<job>`);
-    assert.ok(reader.includes(`\`${prefix}\${name}\``), `the reader reads ${prefix}<job>`);
-  }
-  assert.ok(readFileSync(join(ROOT, "tools", "ci-profile", "spike", "ruff-batch-experiment.sh"), "utf8").includes("printf 'mode\\tround\\tseconds\\texit\\n'"));
-  assert.ok(reader.includes('"mode\\tround\\tseconds\\texit"'));
-});
-
 function replayFixture() {
   const dir = scratch();
   const at = (target, start, seconds) => ({ target, seconds, start, end: start + seconds, gate_step: "sweep" });
@@ -182,6 +187,8 @@ function replayFixture() {
   const graph = (dependencies) => JSON.stringify({ tasks: { tasks: { a: { parallelism: false }, x: { parallelism: false }, b: {}, c: {}, d: {} }, dependencies } });
   writeFileSync(join(dir, "tasks.json"), graph({ d: ["b"] }));
   writeFileSync(join(dir, "cycle.json"), graph({ d: ["b"], b: ["d"] }));
+  writeFileSync(join(dir, "loose.json"), JSON.stringify({ tasks: { tasks: { a: { parallelism: "no" } }, dependencies: {} } }));
+  writeFileSync(join(dir, "twice.json"), JSON.stringify({ lanes: [{ job: "j", targets: [at("b", 0, 10), at("b", 10, 10)] }] }));
   return dir;
 }
 
@@ -208,5 +215,9 @@ test("the replay refuses scale factors, lanes and graphs it cannot use", () => {
     assert.equal(result.status, 2, `${args.join(" ")}: ${result.stdout}${result.stderr}`);
   }
   assert.match(replay(dir, "cycle.json").stderr, /cycle/);
+  assert.equal(replay(dir, "loose.json").status, 2, "parallelism must be a boolean");
+  const twice = node([REPLAY, join(dir, "twice.json"), "j", "sweep", join(dir, "tasks.json")]);
+  assert.equal(twice.status, 2);
+  assert.match(twice.stderr, /more than once/);
   assert.equal(node([REPLAY, join(dir, "report.json"), "nobody", "sweep", join(dir, "tasks.json")]).status, 2);
 });
