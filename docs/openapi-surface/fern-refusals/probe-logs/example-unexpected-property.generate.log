@@ -5,7 +5,7 @@ Warnings for generators.yml:
 [api]: python-sdk fernapi/fern-python-sdk Started.
 [api]: python-sdk __package__.yml -> service -> endpoints -> probe -> examples[0] -> response
                   __package__.yml
-                  [error] Unexpected property "id"
+                  [error] Unexpected property "zzz"
                   
 [api]: python-sdk Found 1 errors and 0 warnings in <n> seconds.
 [api]: python-sdk Failed.

@@ -12,7 +12,7 @@ example-missing-required-query-parameter	documents	check	1	Example is missing re
 example-not-enum-value	documents	check	1	<…> is not a valid example for this enum. Enum values are:	50	refuse	GET /activities x-fern-examples response	50/50
 example-summary-not-string	documents	generate	1	Cannot use 'in' operator to search for 'wireValue' in <…>	0	refuse	POST /notes request example first summary 1	0/0
 example-type-mismatch	documents	check	1	Expected example to be <…>. Example is: <…>	203	refuse	GET /probe response example	202/203
-example-unexpected-property	documents	check	1	Unexpected property <…>	196	refuse	GET /probe components/schemas/Thing_Item collides with ThingItem	196/196
+example-unexpected-property	documents	check	1	Unexpected property <…>	196	refuse	GET /activities x-fern-examples response zzz	196/196
 extension-reference-cycle	documents	check	0	Maximum call stack size exceeded	2	refuse	components/schemas/Node/x-link	2/2
 generated-file-name-too-long	names	generate	1	OSError: [Errno 36] File name too long: <…>	1	refuse	thing_level5xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	1/1
 generator-lint-failure	documents	generate	1	Failed to run command: ruff check <…>	12	refuse	are both Event_UserAccountDeleted	12/12

@@ -1,0 +1,204 @@
+openapi: 3.0.3
+info:
+  title: Reagent registry
+  version: 1.0.0
+paths:
+  /oligos:
+    post:
+      operationId: createOligo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OligoCreate'
+      responses:
+        '200':
+          description: The registered oligo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OligoCreate'
+  /primers:
+    get:
+      operationId: getPrimer
+      responses:
+        '200':
+          description: A primer.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrimerCreate'
+  /plasmids:
+    get:
+      operationId: getPlasmid
+      responses:
+        '200':
+          description: A plasmid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlasmidCreate'
+  /strains:
+    get:
+      operationId: getStrain
+      responses:
+        '200':
+          description: A strain.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StrainCreate'
+  /vectors:
+    get:
+      operationId: getVector
+      responses:
+        '200':
+          description: A vector.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VectorCreate'
+components:
+  schemas:
+    # Benchling's `OligoCreate`: the first parent only requires a name beside
+    # its `$ref`, the second declares `folderId` again, described otherwise.
+    # Each base requires the name its wrapper requires: a wrapper requiring a
+    # property its base leaves optional is a separately recorded difference.
+    OligoBase:
+      type: object
+      required:
+      - name
+      properties:
+        name:
+          type: string
+          description: Name of the oligo.
+        folderId:
+          type: string
+          description: ID of the folder containing the oligo.
+        bases:
+          type: string
+    OligoBaseForCreate:
+      allOf:
+      - $ref: '#/components/schemas/OligoBase'
+      - required:
+        - name
+    RegistryTarget:
+      type: object
+      properties:
+        folderId:
+          type: string
+          description: ID of the folder containing the entity.
+        registryId:
+          type: string
+          description: Registry the entity is registered into.
+    OligoCreate:
+      additionalProperties: false
+      allOf:
+      - $ref: '#/components/schemas/OligoBaseForCreate'
+      - $ref: '#/components/schemas/RegistryTarget'
+    # The second parent types the repeated property otherwise.
+    PrimerBase:
+      type: object
+      required:
+      - label
+      properties:
+        label:
+          type: string
+        length:
+          type: string
+    PrimerBaseForCreate:
+      allOf:
+      - $ref: '#/components/schemas/PrimerBase'
+      - required:
+        - label
+    PrimerMeasure:
+      type: object
+      properties:
+        length:
+          type: integer
+        meltingPoint:
+          type: number
+    PrimerCreate:
+      allOf:
+      - $ref: '#/components/schemas/PrimerBaseForCreate'
+      - $ref: '#/components/schemas/PrimerMeasure'
+    # The first parent is a bare `allOf` of its `$ref`, and both declare the
+    # property the same way.
+    PlasmidBase:
+      type: object
+      properties:
+        backbone:
+          type: string
+        copyNumber:
+          type: integer
+    PlasmidBaseForCreate:
+      allOf:
+      - $ref: '#/components/schemas/PlasmidBase'
+    PlasmidCopies:
+      type: object
+      properties:
+        copyNumber:
+          type: integer
+        origin:
+          type: string
+    PlasmidCreate:
+      allOf:
+      - $ref: '#/components/schemas/PlasmidBaseForCreate'
+      - $ref: '#/components/schemas/PlasmidCopies'
+    # The parent declaring the property directly comes first.
+    StrainBase:
+      type: object
+      required:
+      - genotype
+      properties:
+        genotype:
+          type: string
+        folderId:
+          type: string
+    StrainBaseForCreate:
+      allOf:
+      - $ref: '#/components/schemas/StrainBase'
+      - required:
+        - genotype
+    StrainTarget:
+      type: object
+      properties:
+        folderId:
+          type: string
+        registryId:
+          type: string
+    StrainCreate:
+      allOf:
+      - $ref: '#/components/schemas/StrainTarget'
+      - $ref: '#/components/schemas/StrainBaseForCreate'
+    # The repeated property is a reference to one component in both parents.
+    Folder:
+      type: object
+      properties:
+        id:
+          type: string
+    VectorBase:
+      type: object
+      required:
+      - name
+      properties:
+        name:
+          type: string
+        folder:
+          $ref: '#/components/schemas/Folder'
+    VectorBaseForCreate:
+      allOf:
+      - $ref: '#/components/schemas/VectorBase'
+      - required:
+        - name
+    VectorPlacement:
+      type: object
+      properties:
+        folder:
+          $ref: '#/components/schemas/Folder'
+        shelf:
+          type: string
+    VectorCreate:
+      allOf:
+      - $ref: '#/components/schemas/VectorBaseForCreate'
+      - $ref: '#/components/schemas/VectorPlacement'

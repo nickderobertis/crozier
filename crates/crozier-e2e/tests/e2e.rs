@@ -27441,6 +27441,14 @@ fn two_parents_sharing_an_inherited_property_are_refused_on_a_component_and_a_re
             "request-two-parents-probe.yml",
             "POST /hostnames request body property \"errors\"",
         ),
+        // Fern CLI 5.216.0 refuses it once the inheriting parent adds a
+        // property of its own beside its `$ref` (#985); a parent only
+        // requiring a name there is Benchling's `OligoCreate`, which generates
+        // (`naming-acceptance/repeated-inherited-properties`).
+        (
+            "wrapper-adds-property-probe.yml",
+            "#/components/schemas/OligoCreate property \"folderId\"",
+        ),
     ] {
         for strict in [false, true] {
             let run = refusal_run(&crozier, &class.join(probe), strict).unwrap();
@@ -28267,6 +28275,36 @@ fn shape_role_failures(classes: &[String], path: &Path) -> Vec<String> {
 /// refused shape (`*-probe.yml`/`.json`) is refused with the class, and every
 /// accepted near miss (`*-control.yml`/`.json`) generates identical bytes in
 /// both modes.
+/// Shapes Fern refuses only because it names two components alike
+/// (`Thing_Item`, `ThingItem`) and validates the earlier one's example against
+/// the later declaration. crozier gives each component its own class
+/// (`colliding-component-own-class`), so each is valid OpenAPI and the refusal
+/// only Fern's limitation (#991): crozier generates them in both modes, with
+/// and without `--fern-strict`, as it does a control.
+const COMPONENT_COLLISION_SHAPES: [(&str, &str); 6] = [
+    (
+        "example-missing-required-property",
+        "allof-collision-probe.yml",
+    ),
+    (
+        "example-missing-required-property",
+        "component-collision-probe.yml",
+    ),
+    (
+        "example-unexpected-property",
+        "allof-base-collision-probe.yml",
+    ),
+    ("example-unexpected-property", "allof-collision-probe.yml"),
+    (
+        "example-unexpected-property",
+        "allof-inline-collision-probe.yml",
+    ),
+    (
+        "example-unexpected-property",
+        "component-collision-probe.yml",
+    ),
+];
+
 fn example_value_class_holds(id: &str, diagnostic: &str) {
     let class = repo_root().join(FERN_REFUSALS_DIR).join(id);
     for strict in [false, true] {
@@ -28290,7 +28328,8 @@ fn example_value_class_holds(id: &str, diagnostic: &str) {
         let spec = class.join(&case);
         let normal = refusal_run(&crozier, &spec, false).unwrap();
         let strict = refusal_run(&crozier, &spec, true).unwrap();
-        if case.ends_with("-probe.yml") || case.ends_with("-probe.json") {
+        let fern_limitation = COMPONENT_COLLISION_SHAPES.contains(&(id, case.as_str()));
+        if !fern_limitation && (case.ends_with("-probe.yml") || case.ends_with("-probe.json")) {
             for (run, strict) in [(&normal, false), (&strict, true)] {
                 let failures = refused_failures(id, run, &format!("{id}: "), strict);
                 assert!(failures.is_empty(), "{case}: {}", failures.join("\n"));
@@ -28383,7 +28422,7 @@ fn example_not_enum_value_refusal_covers_measured_shapes() {
 fn example_unexpected_property_refusal_covers_measured_shapes() {
     example_value_class_holds(
         "example-unexpected-property",
-        "example-unexpected-property: GET /probe components/schemas/Thing_Item collides with ThingItem",
+        "example-unexpected-property: GET /activities x-fern-examples response zzz",
     );
 }
 
@@ -28393,6 +28432,48 @@ fn example_missing_required_property_refusal_covers_measured_shapes() {
         "example-missing-required-property",
         "example-missing-required-property: GET /requests/{id} response extends nullable",
     );
+}
+
+/// #991 retires only the component-collision refusal: the class's
+/// `component-collision` shape generates, and the same document with an example
+/// its own schema rejects (a date-time for a `format: date` property) is still
+/// refused in both modes, by `example-type-mismatch`.
+#[test]
+fn a_schema_invalid_example_beside_colliding_components_is_still_refused() {
+    let class = repo_root()
+        .join(FERN_REFUSALS_DIR)
+        .join("example-missing-required-property");
+    let collision = std::fs::read_to_string(class.join("component-collision-probe.yml")).unwrap();
+    let workspace = tempfile::tempdir().unwrap();
+    let invalid = workspace.path().join("invalid-example.yml");
+    let old = "    Thing_Item: {type: object, properties: {name: {type: string}}}";
+    assert!(collision.contains(old), "the collision shape changed");
+    std::fs::write(
+        &invalid,
+        collision.replace(
+            old,
+            "    Thing_Item: {type: object, properties: {name: {type: string}, \
+             born: {type: string, format: date, example: '2006-01-02T15:04:05+00:00'}}}",
+        ),
+    )
+    .unwrap();
+    for strict in [false, true] {
+        let generated = refusal_run(
+            &crozier,
+            &class.join("component-collision-probe.yml"),
+            strict,
+        )
+        .unwrap();
+        assert_eq!(generated.code, Some(0), "{}", generated.stderr);
+        let run = refusal_run(&crozier, &invalid, strict).unwrap();
+        let failures = refused_failures(
+            "example-type-mismatch",
+            &run,
+            "example-type-mismatch: GET /probe response example \"2006-01-02T15:04:05+00:00\"",
+            strict,
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+    }
 }
 
 #[test]

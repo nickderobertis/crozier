@@ -1,5 +1,33 @@
 # example-unexpected-property: refuse
 
+## Component collisions retired at Fern CLI 5.216.0 / fern-python-sdk 5.42.0 (#991)
+
+Decision: **refuse**, narrowed. Two components Fern names alike (`Thing_Item` and `ThingItem`) are one type to
+the pair, the later declaration, and its check validates its example of the
+earlier one, reached from a response, against that later one. crozier gives
+each component its own class (the
+[`colliding-component-own-class`](../../departures/evidence/colliding-component-own-class.md)
+departure), so such a document is valid OpenAPI and the refusal only Fern's
+limitation: crozier no longer refuses it, in either mode, with or without
+`--fern-strict` (#991). An inline schema taking a component's name still
+refuses: crozier types it with that component, as Fern does.
+
+The class's probe was that collision; it is now the
+[`component-collision`](component-collision-probe.yml) shape, and the probe is
+the former `fern-examples` shape, an `x-fern-examples` response naming a key
+its schema does not declare, which the pair still refuses
+([probe record](fern-refusal.txt), `Unexpected property "zzz"`) and crozier
+refuses in both modes. Fern still refuses every collision shape
+([`shapes.tsv`](../../openapi-surface/fern-refusals/shapes.tsv)); crozier
+generates `component-collision`, `allof-collision`, `allof-base-collision` and
+`allof-inline-collision` in both modes, identically under `--fern-strict`, and
+still refuses the inline-object collisions. Of the population documents crozier
+refused through the collision, every one still refuses under `--fern-strict`
+with another class its Fern log carries, except braille-dev's integrations
+document `981dd0a3…`, now a `fern-limitation` disposition with its
+[SDK evaluation](../../openapi-surface/fern-refusals/limitations/981dd0a3479197032c4ebd98b040f6a53d4b6878d008a3a83518fb1f7fc5e269.json)
+(it carries `example-missing-required-property`).
+
 ## At Fern CLI 5.216.0 / fern-python-sdk 5.42.0
 
 Decision: **refuse**, unchanged. The Fern goldens run 44880783817

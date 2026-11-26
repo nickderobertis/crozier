@@ -35,6 +35,13 @@ is one crozier refused, so its generating at all is the regression.
 | `normalized-component-identity` | [#944](https://github.com/nickderobertis/crozier/issues/944) | Components `kiln/glaze-coat` and `kiln-glaze/coat`, both `KilnGlazeCoat`, reached from one request body: one class, the last declaration's (`right: int`), so `left` is typed with it. crozier keeps that class and gives `kiln/glaze-coat` its own `KilnGlazeCoat2`: the [`colliding-component-own-class`](../../departures/evidence/colliding-component-own-class.md) departure. |
 | `normalized-component-identity-responses` | #944 | The same components, each an operation's `200`: Fern refuses (its [`fern-refusal.txt`](normalized-component-identity-responses/fern-refusal.txt), `Example is missing required property "response.body.right"`) because it validates its example of one against the merged other. The document is valid OpenAPI and the refusal only Fern's limitation (manager ruling `a3`), so crozier generates it, each response typed with its own component's class. |
 | `normalized-component-identity-control` | #944 | One component `kiln/glaze-coat`: `KilnGlazeCoat`, as crozier writes it. |
+| `repeated-inherited-properties` | [#985](https://github.com/nickderobertis/crozier/issues/985) | A property two `allOf` parents declare, the first reaching it through its own `$ref` parent beside only a `required` list (Benchling's `OligoCreate`: `folderId` from `OligoBaseRequestForCreate` and `CreateEntityIntoRegistry`), is one field, the first declaration's: its type (`PrimerCreate.length` stays `str` against the second parent's `integer`), its description, its position, and a shared `$ref` (`VectorCreate.folder`). The same holds where that parent is a bare `allOf` of its `$ref` (`PlasmidCreate`) and where the directly declaring parent comes first (`StrainCreate`). crozier refused the document (`object-property-name-collision`); a parent adding a property of its own beside its `$ref` is still refused, as the pair refuses it ([`wrapper-adds-property`](../../fern-refusals/object-property-name-collision/wrapper-adds-property-probe.yml)). |
+
+A repeated property a later parent marks `required` is measured differently
+again: the pair makes it required and moves it to the front of the model, and
+drops the `required` its first declaration's own schema states. crozier does
+not follow that yet, so no case here declares it; it is recorded as a
+follow-up, as are the residuals Benchling's whole document shows beside #985.
 
 Two measured differences are outside these tickets and recorded as follow-ups:
 Fern types an operation whose response is a `~1`-escaped pointer to a

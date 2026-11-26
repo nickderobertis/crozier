@@ -23,7 +23,7 @@ One type crozier refused as declared twice where the certified pair declares it 
 
 ## The verdict
 
-`src/ir.rs`'s `move_inline_body_enums_to_tags` removes a dropped form component's nested types from the root transitively, not only the field types themselves; `src/name_refusals.rs` no longer counts a group-placed component as an enum colliding with its own root declaration, and no longer refuses first-letter-case twins at all: `deduplicate_type_names` keeps the later one, as the certified pair does. Where an operation answers the earlier twin, the certified pair's refusal is its example check, and crozier's example checks refuse the same documents with the same classes (`src/document_refusals/examples.rs`'s `collision_class` now also compares two enums: the earlier's first value, Fern's example of it, must be among the later's).
+`src/ir.rs`'s `move_inline_body_enums_to_tags` removes a dropped form component's nested types from the root transitively, not only the field types themselves; `src/name_refusals.rs` no longer counts a group-placed component as an enum colliding with its own root declaration, and no longer refuses first-letter-case twins at all: `deduplicate_type_names` keeps the later one, as the certified pair does. Where an operation answers the earlier twin, the certified pair's refusal is its example check. crozier refused those documents with the same classes until #991: it now gives the earlier twin its own class (`Print2`, `Mode2`, the `colliding-component-own-class` departure), so the documents are valid and the refusal only Fern's limitation, and both controls generate in both modes, with and without `--fern-strict`.
 
 ## What holds it
 

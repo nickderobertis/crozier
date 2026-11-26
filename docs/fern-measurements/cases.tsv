@@ -160,6 +160,7 @@ naming-acceptance/recursive-alias-dependents	docs/fern-measurements/naming-accep
 naming-acceptance/relative-response-ref	docs/fern-measurements/naming-acceptance/relative-response-ref/openapi.yml	python-enums	packaged	-
 naming-acceptance/request-local-union-payloads	docs/fern-measurements/naming-acceptance/request-local-union-payloads/openapi.yml	python-enums	packaged	-
 naming-acceptance/root-import-order	docs/fern-measurements/naming-acceptance/root-import-order/openapi.yml	python-enums	packaged	-
+naming-acceptance/repeated-inherited-properties	docs/fern-measurements/naming-acceptance/repeated-inherited-properties/openapi.yml	python-enums	packaged	-
 naming-acceptance/xml-helper-import	docs/fern-measurements/naming-acceptance/xml-helper-import/openapi.yml	python-enums	packaged	-
 naming-acceptance/boolean-component-schemas/expected-literals	docs/fern-measurements/naming-acceptance/boolean-component-schemas/openapi.yml	literals	packaged	fern-expected:docs/fern-measurements/naming-acceptance/boolean-component-schemas/fern-expected
 naming-acceptance/discriminator-only-parent/expected-literals	docs/fern-measurements/naming-acceptance/discriminator-only-parent/openapi.yml	literals	packaged	fern-expected:docs/fern-measurements/naming-acceptance/discriminator-only-parent/fern-expected
@@ -176,6 +177,7 @@ naming-acceptance/relative-response-ref/expected-literals	docs/fern-measurements
 naming-acceptance/request-local-union-payloads/expected-literals	docs/fern-measurements/naming-acceptance/request-local-union-payloads/openapi.yml	literals	packaged	fern-expected:docs/fern-measurements/naming-acceptance/request-local-union-payloads/fern-expected
 naming-acceptance/root-import-order/expected-literals	docs/fern-measurements/naming-acceptance/root-import-order/openapi.yml	literals	packaged	fern-expected:docs/fern-measurements/naming-acceptance/root-import-order/fern-expected
 naming-acceptance/xml-helper-import/expected-literals	docs/fern-measurements/naming-acceptance/xml-helper-import/openapi.yml	literals	packaged	fern-expected:docs/fern-measurements/naming-acceptance/xml-helper-import/fern-expected
+naming-acceptance/repeated-inherited-properties/expected-literals	docs/fern-measurements/naming-acceptance/repeated-inherited-properties/openapi.yml	literals	packaged	fern-expected:docs/fern-measurements/naming-acceptance/repeated-inherited-properties/fern-expected
 output-defects/602-validation-error-shadowing	docs/fern-measurements/output-defects/602-validation-error-shadowing/openapi.yml	python-enums	packaged	-
 output-defects/612-parameter-location-collision	docs/fern-measurements/output-defects/612-parameter-location-collision/openapi.yml	python-enums	packaged	-
 parameter-lowering/base-path-lifted-bare	docs/fern-measurements/parameter-lowering/base-path-lifted-bare/openapi.yml	python-enums	packaged	-

@@ -1,5 +1,19 @@
 # example-missing-required-property: refuse
 
+## Component collisions retired at Fern CLI 5.216.0 / fern-python-sdk 5.42.0 (#991)
+
+Decision: **refuse**, narrowed. Two components Fern names alike (`Thing_Item` and `ThingItem`) are one type to
+the pair, the later declaration, and its check validates its example of the
+earlier one, reached from a response, against that later one. crozier gives
+each component its own class (the
+[`colliding-component-own-class`](../../departures/evidence/colliding-component-own-class.md)
+departure), so such a document is valid OpenAPI and the refusal only Fern's
+limitation: crozier no longer refuses it, in either mode, with or without
+`--fern-strict` (#991). An inline schema taking a component's name still
+refuses: crozier types it with that component, as Fern does.
+
+Its probe is no collision and stands. crozier generates the `component-collision` and `allof-collision` shapes in both modes, which Fern still refuses; braille-dev's integrations document `981dd0a3…`, refused only by `TaxCode` beside `Tax_Code`, is now a `fern-limitation` disposition with its [SDK evaluation](../../openapi-surface/fern-refusals/limitations/981dd0a3479197032c4ebd98b040f6a53d4b6878d008a3a83518fb1f7fc5e269.json). Every other population document crozier refused through the collision still refuses under `--fern-strict` with another class its Fern log carries.
+
 ## At Fern CLI 5.216.0 / fern-python-sdk 5.42.0
 
 Decision: **refuse**, unchanged. The Fern goldens run 44880783817
