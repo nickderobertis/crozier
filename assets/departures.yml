@@ -339,6 +339,30 @@
     or `f_value`, so Python raises `TypeError` for the unexpected keyword.
   evidence: docs/departures/evidence/digit-leading-property-example-keyword.md
 
+- id: discriminated-union-v1-wire-keys
+  kind: fern-defect
+  trigger: >-
+    Every SDK: `core/pydantic_utilities.py`'s `parse_obj_as`, the entry point
+    every generated client parses a response through.
+  fern: >-
+    Every input that is not a model class is dealiased to Python field names
+    before validation, so under Pydantic v1 a discriminated union whose tag
+    property needs an alias (a wire key `schema` declared as field `schema_`)
+    loses the key Pydantic v1 looks its discriminator up by.
+  crozier: >-
+    The same function, except that under Pydantic v1 an input whose type holds
+    a discriminated union outside any model (the union itself, or a list, map
+    or optional of one) is validated as received, through a
+    `_has_discriminated_union` helper defined just before it. Pydantic v2's
+    path and every other input are unchanged.
+  reason: >-
+    The generated package declares `pydantic >= 1.9.2`, and through the
+    certified SDK's own client a valid response of such a union raises a
+    validation error under Pydantic 1.10 ("Discriminator 'schema_' is missing
+    in value") although Pydantic validates the same payload directly. crozier's
+    parser constructs the variant under both Pydantic majors.
+  evidence: docs/departures/evidence/discriminated-union-v1-wire-keys.md
+
 - id: docstring-example-escapes
   kind: fern-defect
   trigger: >-

@@ -157,6 +157,13 @@ const ACCEPTED: &[(&str, &str, &str, &str, &str)] = &[
         "src/fern/types/kiln_glaze_coat.py",
         "class KilnGlazeCoat(UniversalBaseModel):\n    right: int",
     ),
+    (
+        "#983 (a union tagged by an aliased wire key; its runtime parse is the sdk_env_ journey)",
+        "aliased-union-discriminator",
+        "",
+        "src/fern/types/query_response.py",
+        "typing.Union[QueryResponse_Table, QueryResponse_Graph], pydantic.Field(discriminator=\"schema_\")",
+    ),
 ];
 
 fn spec(case: &str) -> PathBuf {
@@ -525,6 +532,20 @@ fn sdk_env_recursive_alias_dependents_import_and_construct() {
         "python-enums",
         "recursive-alias-dependents",
     );
+}
+
+/// #983: a response of a discriminated union whose tag's wire key `schema`
+/// is the aliased field `schema_` parses through the generated client into
+/// its variant under both Pydantic majors and both enum modes. The certified
+/// runtime dealiases the union's input, and Pydantic 1.10 then reports the
+/// discriminator missing: crozier's `discriminated-union-v1-wire-keys`
+/// departure keeps the wire keys there.
+#[test]
+#[ignore = "SDK Python-environment tier (builds Pydantic 1 and 2 environments from PyPI with uv); run via `just test-sdk-env`"]
+fn sdk_env_aliased_discriminated_unions_parse_under_both_pydantic_majors() {
+    for mode in ["python-enums", "literals"] {
+        runtime_journey("aliased-union-discriminator", mode, "aliased-discriminator");
+    }
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These journeys generate one small SDK per measurement in each enum mode, comparing each whole against its certified tree, on the crozier-e2e edge every other golden comparison shares; a narrower edge for generator-replay journeys is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
