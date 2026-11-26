@@ -104,6 +104,9 @@ export function gateTaskLines(log) {
 
 const NEXTEST = /^\s*(PASS|FAIL|FLAKY|TIMEOUT|SIGSEGV|SIGABRT|LEAK|LEAK-FAIL)\s+\[\s*([\d.]+)s\]\s+(?:\(\s*\d+\/\s*\d+\)\s+)?(\S+)\s+(.+?)\s*$/;
 const PYTEST = /^([\d.]+)s (setup|call|teardown)\s+(\S+::\S.*?)\s*$/;
+// Node's test runner prints TAP when its output is not a terminal (CI) and its spec reporter otherwise.
+const TAP_OK = /^(\s*)(?:not )?ok \d+ - (.+?)(?:\s+#.*)?$/;
+const TAP_DURATION = /^\s*duration_ms: ([\d.]+)$/;
 const NODE = /^(\s*)[✔✖﹣]\s+(.+?)\s+\(([\d.]+)ms\)(?:\s+#.*)?$/;
 
 /** Every test case a gate log's Nx output records, attributed to the task whose section it is in. */
@@ -111,9 +114,11 @@ export function parseCases(gateLog, knownTasks) {
   const cases = [];
   const pytest = new Map();
   let target;
+  let tap;
   for (const raw of gateLog.split("\n")) {
     const line = clean(raw);
-    const header = /^> nx run (\S+?)(?:\s.*)?$/.exec(line);
+    // On GitHub, Nx opens each task's output as a log group with its status icon.
+    const header = /^(?:::group::\S*\s*)?>\s+nx run (\S+?)(?:\s.*)?$/.exec(line);
     if (header && (!knownTasks || knownTasks.has(header[1]))) {
       target = header[1];
       continue;
@@ -131,6 +136,17 @@ export function parseCases(gateLog, knownTasks) {
       entry[m[2]] += Number(m[1]);
       entry.seconds += Number(m[1]);
       pytest.set(key, entry);
+      continue;
+    }
+    m = TAP_OK.exec(line);
+    if (m) {
+      tap = { target, case: m[2], depth: Math.floor(m[1].length / 4) };
+      continue;
+    }
+    m = TAP_DURATION.exec(line);
+    if (m && tap) {
+      cases.push({ ...tap, seconds: Number(m[1]) / 1000, kind: "node" });
+      tap = undefined;
       continue;
     }
     m = NODE.exec(line);
