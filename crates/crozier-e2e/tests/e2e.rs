@@ -19039,8 +19039,8 @@ fn binary_request_media_types_are_preserved() {
     let client = std::fs::read_to_string(out.join("src/acme/widgets/client.py"))
         .expect("widgets client is generated");
     assert!(
-        client.contains("request=\"string\"") && !client.contains("request=b\"string\""),
-        "referenced binary request examples use Fern's string literal: {client}"
+        client.contains("request=b\"string\"") && !client.contains("request=\"string\""),
+        "a referenced binary request example is bytes for its bytes alias (the `binary-body-example` departure): {client}"
     );
 }
 
@@ -19061,9 +19061,9 @@ fn wildcard_binary_requests_with_path_params_omit_json_content_type() {
         .expect("widgets client is generated");
     assert!(
         client.contains("request: bytes")
-            && client.contains("request=\"string\"")
-            && !client.contains("request=b\"string\""),
-        "the high-level bytes method should use Fern's string example: {client}"
+            && client.contains("request=b\"string\"")
+            && !client.contains("request=\"string\""),
+        "the high-level bytes method's example is bytes (the `binary-body-example` departure): {client}"
     );
     // fern-python-sdk 5.41.3 documents the body by the signature's `bytes`
     // (apideck.com-file-storage's `upload_sessions.upload`, a `*/*` binary

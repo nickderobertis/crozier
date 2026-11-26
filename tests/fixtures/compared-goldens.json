@@ -664,6 +664,12 @@
       ]
     },
     "docs/fern-measurements/naming-acceptance/request-local-union-payloads/fern-expected": {},
+    "docs/fern-measurements/naming-acceptance/request-options-body-property/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/naming-acceptance/request-options-body-property/fern-expected": {},
     "docs/fern-measurements/naming-acceptance/root-import-order/expected-literals/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
@@ -1007,6 +1013,12 @@
       ]
     },
     "docs/fern-measurements/worked-examples/alias-body-reference-order/fern-expected": {},
+    "docs/fern-measurements/worked-examples/binary-body-examples/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/worked-examples/binary-body-examples/fern-expected": {},
     "docs/fern-measurements/worked-examples/composed-enum-constraints/expected-literals/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
@@ -1061,6 +1073,12 @@
       ]
     },
     "docs/fern-measurements/worked-examples/kept-blank-descriptions/fern-expected": {},
+    "docs/fern-measurements/worked-examples/nested-argument-widths/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/worked-examples/nested-argument-widths/fern-expected": {},
     "docs/fern-measurements/worked-examples/numeric-dict-pairs/expected-literals/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"

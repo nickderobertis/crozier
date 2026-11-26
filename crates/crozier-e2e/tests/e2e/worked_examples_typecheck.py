@@ -73,6 +73,26 @@ def docstring_examples(source: str) -> list[str]:
     return found
 
 
+def reference_usages(text: str) -> list[str]:
+    """Each `reference.md` usage block but a bare `client.<method>(...)`: an
+    operation the pair works no example for (an `application/octet-stream`
+    body's) is documented by that placeholder, its arguments abbreviated as the
+    README's are, and so binds no call."""
+    found = []
+    for block in USAGE.findall(text):
+        try:
+            tree = ast.parse(block)
+        except SyntaxError:
+            found.append(block)
+            continue
+        placeholder = len(tree.body) == 1 and any(
+            isinstance(node, ast.Constant) and node.value is Ellipsis for node in ast.walk(tree)
+        )
+        if not placeholder:
+            found.append(block)
+    return found
+
+
 def examples(root: Path) -> list[tuple[str, str]]:
     """Each documented worked example as `(source, code)`, the source one of
     `docstring`, `reference` and `readme`."""
@@ -81,7 +101,7 @@ def examples(root: Path) -> list[tuple[str, str]]:
         found.extend(("docstring", code) for code in docstring_examples(client.read_text(encoding="utf-8")))
     reference = root / "reference.md"
     if reference.is_file():
-        found.extend(("reference", code) for code in USAGE.findall(reference.read_text(encoding="utf-8")))
+        found.extend(("reference", code) for code in reference_usages(reference.read_text(encoding="utf-8")))
     readme = root / "README.md"
     if readme.is_file():
         found.extend(("readme", code) for code in readme_calls(readme.read_text(encoding="utf-8")))

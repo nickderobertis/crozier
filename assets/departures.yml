@@ -32,6 +32,29 @@
     invalid declared union examples and abstains on unsupported assertions.
   evidence: docs/departures/evidence/anyof-path-param-schema-example.md
 
+- id: binary-body-example
+  kind: fern-defect
+  trigger: >-
+    A request body the method takes as a single request argument annotated
+    bytes (a binary string body under a media type other than
+    application/octet-stream, wildcard media among them), in the worked
+    examples of README.md, reference.md and each client.py docstring.
+  fern: >-
+    The body's declared example, or the "string" sample where it declares
+    none, as a str (request="<binary string>"), which the bytes parameter
+    rejects.
+  crozier: >-
+    The same text as bytes, its UTF-8 encoding: the str literal behind a b
+    prefix where it is ASCII (request=b"<binary string>"), and spelled with
+    \xNN escapes where it is not; the annotation, the request construction and
+    every other byte of the call remain matched.
+  reason: >-
+    Type-checking the documented call against the generated signature rejects
+    the str for the bytes parameter, so the example does not match the code;
+    the bytes literal is a value the annotation admits, carrying the text the
+    document declares.
+  evidence: docs/departures/evidence/binary-body-example.md
+
 - id: binary-form-part-example
   kind: fern-defect
   trigger: >-
@@ -936,6 +959,30 @@
     `client.applicants.all(...)` raises `AttributeError`, and the usage example
     under the same heading already calls `all_`.
   evidence: docs/departures/evidence/reference-heading-escaped-method-name.md
+
+- id: renamed-request-options-docs
+  kind: fern-defect
+  trigger: >-
+    An operation one of whose own arguments (a body property, parameter or
+    header) is named request_options, so both sides' generated methods take
+    the SDK's options as _request_options: its entry in reference.md's
+    parameter list, and README.md's retry and timeout calls when it is the
+    README's first operation.
+  fern: >-
+    The options entry is **request_options:**
+    `typing.Optional[RequestOptions]`, listed beside the argument of the same
+    name, and the README calls pass request_options={"max_retries": 1} and
+    request_options={"timeout": 1}.
+  crozier: >-
+    The method's own name for its options, **_request_options:** and
+    _request_options={; every other byte of each line, and every signature,
+    remain matched.
+  reason: >-
+    The generated method declares no second request_options: the documented
+    options entry names the operation's own argument, and the README's calls
+    bind the options dictionary to that argument, so it is sent in the request
+    as the argument's value and no retry or timeout option is applied.
+  evidence: docs/departures/evidence/renamed-request-options-docs.md
 
 - id: repeated-credential-example-keyword
   kind: fern-defect
