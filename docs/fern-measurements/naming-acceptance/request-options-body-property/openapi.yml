@@ -1,0 +1,71 @@
+openapi: 3.0.3
+info:
+  title: Courier Desk
+  version: 1.0.0
+servers:
+- url: https://courier.example.com
+paths:
+  /dispatches:
+    post:
+      operationId: createDispatch
+      tags:
+      - dispatches
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - request_options
+              properties:
+                kwargs:
+                  type: string
+                request_options:
+                  type: string
+                  example: express
+                self:
+                  type: string
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dispatch'
+  /dispatches/{dispatch_id}:
+    put:
+      operationId: updateDispatch
+      tags:
+      - dispatches
+      parameters:
+      - name: dispatch_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                note:
+                  type: string
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dispatch'
+components:
+  schemas:
+    Dispatch:
+      type: object
+      properties:
+        id:
+          type: string
+        request_options:
+          type: string

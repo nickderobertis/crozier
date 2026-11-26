@@ -1540,6 +1540,106 @@ fn binary_form_part_example_line(pair: &Pair<'_>, fern: &str, crozier: &str) -> 
             .contains(name)
 }
 
+/// `binary-body-example`: a worked call's `request=` argument for a body the
+/// method annotates `bytes`, where Fern passes the text as a str and crozier
+/// the same text as bytes. A docstring doubles the backslashes of a `\xNN`
+/// escape, as it doubles every escape (`docstring-example-escapes`). Fern's
+/// `"string"` sample beside a JSON binary method is `binary-json-body-example`'s.
+fn binary_body_example_line(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    let docstring = pair.rel.ends_with("client.py");
+    if !(DOCS_FILES.contains(&pair.rel) || docstring) {
+        return false;
+    }
+    let fern_argument = fern.trim_start();
+    let indent = &fern[..fern.len() - fern_argument.len()];
+    let (Some(fern_value), Some(crozier_value)) = (
+        fern_argument
+            .strip_prefix("request=")
+            .and_then(|value| value.strip_suffix(',')),
+        crozier
+            .strip_prefix(indent)
+            .and_then(|argument| argument.strip_prefix("request="))
+            .and_then(|value| value.strip_suffix(',')),
+    ) else {
+        return false;
+    };
+    let context = pair.context.request_examples();
+    if fern_value == "\"string\"" && !context.binary_json_methods.is_empty() {
+        return false;
+    }
+    let Some(text) = crate::emit::string_literal_text(fern_value) else {
+        return false;
+    };
+    let encodes_text =
+        |literal: &str| python_bytes_literal(literal).as_deref() == Some(text.as_bytes());
+    (encodes_text(crozier_value) || docstring && encodes_text(&crozier_value.replace("\\\\", "\\")))
+        && context.bytes_parameters.contains("request")
+}
+
+/// `renamed-request-options-docs`: where an operation's own argument is named
+/// `request_options`, its SDK option is `_request_options` (as both sides'
+/// signatures declare it), and crozier's README retry and timeout calls and its
+/// `reference.md` parameter list name that option where Fern's name
+/// `request_options`: the body argument the method takes under that name.
+fn renamed_request_options_docs_line(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    let renamed = match pair.rel {
+        "README.md" if fern.starts_with("client.") && fern.ends_with("request_options={") => {
+            format!(
+                "{}_request_options={{",
+                fern.strip_suffix("request_options={").unwrap_or(fern)
+            )
+        }
+        "reference.md" => fern.replacen("**request_options:** ", "**_request_options:** ", 1),
+        _ => return false,
+    };
+    renamed != fern
+        && crozier == renamed
+        && (pair.rel == "README.md"
+            || fern
+                .ends_with("`typing.Optional[RequestOptions]` — Request-specific configuration."))
+        && pair
+            .context
+            .request_examples()
+            .method_parameters
+            .values()
+            .any(|parameters| {
+                parameters.contains_key("request_options")
+                    && parameters.contains_key("_request_options")
+            })
+}
+
+/// The bytes a Python bytes literal (`b"…"` or `b'…'`) holds, reading the
+/// escapes crozier writes (`\xNN`, `\\`, a quote, `\n`, `\r`, `\t`); `None` for
+/// anything else, a non-ASCII character among them.
+fn python_bytes_literal(literal: &str) -> Option<Vec<u8>> {
+    let body = literal.strip_prefix('b')?;
+    let quote = body.chars().next().filter(|c| matches!(c, '"' | '\''))?;
+    let inner = body[1..].strip_suffix(quote)?;
+    let mut out = Vec::new();
+    let mut chars = inner.chars();
+    while let Some(c) = chars.next() {
+        if !c.is_ascii() || c == quote {
+            return None;
+        }
+        if c != '\\' {
+            out.push(c as u8);
+            continue;
+        }
+        match chars.next()? {
+            'x' => {
+                let digits: String = chars.by_ref().take(2).collect();
+                out.push(u8::from_str_radix(&digits, 16).ok()?);
+            }
+            'n' => out.push(b'\n'),
+            'r' => out.push(b'\r'),
+            't' => out.push(b'\t'),
+            escaped @ ('\\' | '"' | '\'') => out.push(escaped as u8),
+            _ => return None,
+        }
+    }
+    Some(out)
+}
+
 fn binary_json_body_example_line(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
     let (Some(fern_value), Some(crozier_value)) = (
         fern.trim_start().strip_prefix("request="),
@@ -2153,8 +2253,9 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 64] = [
+pub const RULE_IDS: [&str; 66] = [
     "anyof-path-param-schema-example",
+    "binary-body-example",
     "binary-form-part-example",
     "binary-json-body-example",
     "body-query-parameter-value",
@@ -2200,6 +2301,7 @@ pub const RULE_IDS: [&str; 64] = [
     "recursive-alias-named-type",
     "reference-anchor-follows-corrected-client",
     "reference-heading-escaped-method-name",
+    "renamed-request-options-docs",
     "repeated-credential-example-keyword",
     "repeated-query-body-example-keyword",
     "request-alias-reference-parameters",
@@ -2381,6 +2483,14 @@ pub fn rule(id: &str) -> Option<Rule> {
         },
         "discriminated-union-v1-wire-keys" => Rule {
             region: Some(discriminated_union_v1_wire_keys),
+            ..none
+        },
+        "renamed-request-options-docs" => Rule {
+            line: Some(renamed_request_options_docs_line),
+            ..none
+        },
+        "binary-body-example" => Rule {
+            line: Some(binary_body_example_line),
             ..none
         },
         "binary-form-part-example" => Rule {
@@ -9688,6 +9798,139 @@ mod tests {
         assert!(holds(&context, fern, crozier));
         assert!(!holds(&context, "    request=\"other\",", crozier));
         assert!(!holds(&context, fern, "    request=b\"other\","));
+    }
+
+    #[test]
+    fn the_binary_body_line_rule_needs_a_bytes_request_and_the_same_text() {
+        let holds = |context: &Context, rel: &str, fern: &str, crozier: &str| {
+            let (left, right) = ([fern], [crozier]);
+            binary_body_example_line(
+                &Pair {
+                    rel,
+                    fern: &left,
+                    crozier: &right,
+                    context,
+                },
+                fern,
+                crozier,
+            )
+        };
+        let fern = "    request=\"<binary string>\",";
+        let crozier = "    request=b\"<binary string>\",";
+        // Without a generated bytes `request`, nothing is excused.
+        assert!(!holds(&Context::default(), "reference.md", fern, crozier));
+        let raw = "class RawBlobsClient:\n    def attach_note(\n        self,\n        blob_id: str,\n        *,\n        request: bytes,\n    ) -> HttpResponse[Blob]:\n        pass\n";
+        let context = Context::from_sources([], [("src/fern/blobs/raw_client.py", raw)]);
+        for rel in ["README.md", "reference.md", "src/fern/blobs/client.py"] {
+            assert!(holds(&context, rel, fern, crozier), "{rel}");
+        }
+        assert!(!holds(&context, "src/fern/types/blob.py", fern, crozier));
+        // Each writer's own quoting, and non-ASCII text as its UTF-8 octets,
+        // doubled only inside a docstring.
+        assert!(holds(
+            &context,
+            "src/fern/blobs/client.py",
+            "            request='note \"quoted\" body',",
+            "            request=b'note \"quoted\" body',"
+        ));
+        let cafe = "    request=\"café receipt\",";
+        assert!(holds(
+            &context,
+            "reference.md",
+            cafe,
+            "    request=b\"caf\\xc3\\xa9 receipt\","
+        ));
+        assert!(holds(
+            &context,
+            "src/fern/blobs/client.py",
+            cafe,
+            "    request=b\"caf\\\\xc3\\\\xa9 receipt\","
+        ));
+        assert!(!holds(
+            &context,
+            "reference.md",
+            cafe,
+            "    request=b\"caf\\\\xc3\\\\xa9 receipt\","
+        ));
+        // Only that text, as bytes, at the same indent.
+        assert!(!holds(
+            &context,
+            "reference.md",
+            fern,
+            "    request=b\"other\","
+        ));
+        assert!(!holds(&context, "reference.md", fern, fern));
+        assert!(!holds(
+            &context,
+            "reference.md",
+            fern,
+            "        request=b\"<binary string>\","
+        ));
+        assert!(!holds(
+            &context,
+            "reference.md",
+            fern,
+            "    file=b\"<binary string>\","
+        ));
+        // Fern's sample beside a JSON binary method is the other entry's.
+        let json = "class RawThingsClient:\n    def upload(\n        self,\n        *,\n        request: bytes,\n    ) -> None:\n        self._client_wrapper.httpx_client.request(\n            json=request,\n            headers={\n                \"content-type\": \"application/json\",\n            },\n        )\n";
+        let json = Context::from_sources([], [("things/raw_client.py", json)]);
+        assert!(!holds(
+            &json,
+            "reference.md",
+            "    request=\"string\",",
+            "    request=b\"string\","
+        ));
+        assert!(holds(&json, "reference.md", fern, crozier));
+    }
+
+    #[test]
+    fn the_renamed_request_options_rule_needs_a_method_taking_both_names() {
+        let holds = |context: &Context, rel: &str, fern: &str, crozier: &str| {
+            let (left, right) = ([fern], [crozier]);
+            renamed_request_options_docs_line(
+                &Pair {
+                    rel,
+                    fern: &left,
+                    crozier: &right,
+                    context,
+                },
+                fern,
+                crozier,
+            )
+        };
+        let entry = "**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.";
+        let renamed = "**_request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.";
+        let readme = "client.dispatches.create_dispatch(..., request_options={";
+        let readme_renamed = "client.dispatches.create_dispatch(..., _request_options={";
+        let plain = "class RawDispatchesClient:\n    def create_dispatch(\n        self,\n        *,\n        note: str,\n        request_options: typing.Optional[RequestOptions] = None,\n    ) -> HttpResponse[Dispatch]:\n        pass\n";
+        let plain = Context::from_sources([], [("src/fern/dispatches/raw_client.py", plain)]);
+        assert!(!holds(&plain, "reference.md", entry, renamed));
+        assert!(!holds(&plain, "README.md", readme, readme_renamed));
+        let raw = "class RawDispatchesClient:\n    def create_dispatch(\n        self,\n        *,\n        request_options: str,\n        _request_options: typing.Optional[RequestOptions] = None,\n    ) -> HttpResponse[Dispatch]:\n        pass\n";
+        let context = Context::from_sources([], [("src/fern/dispatches/raw_client.py", raw)]);
+        assert!(holds(&context, "reference.md", entry, renamed));
+        assert!(holds(&context, "README.md", readme, readme_renamed));
+        // The body argument's own entry keeps its name, as does every other file.
+        assert!(!holds(
+            &context,
+            "reference.md",
+            "**request_options:** `str` ",
+            "**_request_options:** `str` "
+        ));
+        assert!(!holds(
+            &context,
+            "src/fern/dispatches/client.py",
+            readme,
+            readme_renamed
+        ));
+        assert!(!holds(&context, "reference.md", entry, entry));
+        assert!(!holds(
+            &context,
+            "README.md",
+            readme,
+            "client.dispatches.create_dispatch(..., options={"
+        ));
     }
 
     #[test]

@@ -408,6 +408,8 @@ docs/fern-measurements/naming-acceptance/repeated-inherited-properties/expected-
 docs/fern-measurements/naming-acceptance/repeated-inherited-properties/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_documents_generate_as_the_certified_pair_does
 docs/fern-measurements/naming-acceptance/request-local-union-payloads/expected-literals/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_repairs_match_the_certified_pair
 docs/fern-measurements/naming-acceptance/request-local-union-payloads/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_repairs_match_the_certified_pair
+docs/fern-measurements/naming-acceptance/request-options-body-property/expected-literals/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_documents_generate_as_the_certified_pair_does
+docs/fern-measurements/naming-acceptance/request-options-body-property/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_documents_generate_as_the_certified_pair_does
 docs/fern-measurements/naming-acceptance/root-import-order/expected-literals/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_repairs_match_the_certified_pair
 docs/fern-measurements/naming-acceptance/root-import-order/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_repairs_match_the_certified_pair
 docs/fern-measurements/naming-acceptance/xml-helper-import/expected-literals/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_repairs_match_the_certified_pair
@@ -577,6 +579,8 @@ docs/fern-measurements/union-literals/telescope-renamed-discriminant/fern-expect
 docs/fern-measurements/union-literals/thermostat-nullable-member/fern-expected	crozier-e2e::e2e	unions::union_shapes_match_complete_goldens_in_both_enum_modes
 docs/fern-measurements/worked-examples/alias-body-reference-order/expected-literals/fern-expected	crozier-e2e::e2e	worked_examples::reference_lists_the_flattened_body_after_the_queries
 docs/fern-measurements/worked-examples/alias-body-reference-order/fern-expected	crozier-e2e::e2e	worked_examples::reference_lists_the_flattened_body_after_the_queries
+docs/fern-measurements/worked-examples/binary-body-examples/expected-literals/fern-expected	crozier-e2e::e2e	worked_examples::binary_body_examples_are_bytes_in_every_writer
+docs/fern-measurements/worked-examples/binary-body-examples/fern-expected	crozier-e2e::e2e	worked_examples::binary_body_examples_are_bytes_in_every_writer
 docs/fern-measurements/worked-examples/composed-enum-constraints/expected-literals/fern-expected	crozier-e2e::e2e	worked_examples::narrowed_enum_examples_take_a_member_the_constraints_admit
 docs/fern-measurements/worked-examples/composed-enum-constraints/fern-expected	crozier-e2e::e2e	worked_examples::narrowed_enum_examples_take_a_member_the_constraints_admit
 docs/fern-measurements/worked-examples/composed-reference-order/expected-literals/fern-expected	crozier-e2e::e2e	worked_examples::reference_compositions_list_the_later_member_first
@@ -595,6 +599,8 @@ docs/fern-measurements/worked-examples/inline-enum-constraints/expected-literals
 docs/fern-measurements/worked-examples/inline-enum-constraints/fern-expected	crozier-e2e::e2e	worked_examples::narrowed_enum_examples_take_a_member_the_constraints_admit
 docs/fern-measurements/worked-examples/kept-blank-descriptions/expected-literals/fern-expected	crozier-e2e::e2e	worked_examples::kept_description_blank_lines_follow_the_body_schema
 docs/fern-measurements/worked-examples/kept-blank-descriptions/fern-expected	crozier-e2e::e2e	worked_examples::kept_description_blank_lines_follow_the_body_schema
+docs/fern-measurements/worked-examples/nested-argument-widths/expected-literals/fern-expected	crozier-e2e::e2e	worked_examples::worked_call_arguments_count_their_comma_in_the_width
+docs/fern-measurements/worked-examples/nested-argument-widths/fern-expected	crozier-e2e::e2e	worked_examples::worked_call_arguments_count_their_comma_in_the_width
 docs/fern-measurements/worked-examples/numeric-dict-pairs/expected-literals/fern-expected	crozier-e2e::e2e	worked_examples::documentation_maps_spread_every_pair
 docs/fern-measurements/worked-examples/numeric-dict-pairs/fern-expected	crozier-e2e::e2e	worked_examples::documentation_maps_spread_every_pair
 docs/fern-measurements/worked-examples/optional-enum-query-arrays/expected-literals/fern-expected	crozier-e2e::e2e	worked_examples::optional_enum_query_arrays_are_left_out_of_worked_calls

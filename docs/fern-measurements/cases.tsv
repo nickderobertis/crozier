@@ -572,3 +572,9 @@ naming-acceptance/single-letter-component-words	docs/fern-measurements/naming-ac
 naming-acceptance/single-letter-component-words/expected-literals	docs/fern-measurements/naming-acceptance/single-letter-component-words/openapi.yml	literals	packaged	fern-expected:docs/fern-measurements/naming-acceptance/single-letter-component-words/fern-expected
 naming-acceptance/aliased-union-discriminator	docs/fern-measurements/naming-acceptance/aliased-union-discriminator/openapi.yml	python-enums	packaged	-
 naming-acceptance/aliased-union-discriminator/expected-literals	docs/fern-measurements/naming-acceptance/aliased-union-discriminator/openapi.yml	literals	packaged	fern-expected:docs/fern-measurements/naming-acceptance/aliased-union-discriminator/fern-expected
+naming-acceptance/request-options-body-property	docs/fern-measurements/naming-acceptance/request-options-body-property/openapi.yml	python-enums	packaged	-
+naming-acceptance/request-options-body-property/expected-literals	docs/fern-measurements/naming-acceptance/request-options-body-property/openapi.yml	literals	packaged	fern-expected:docs/fern-measurements/naming-acceptance/request-options-body-property/fern-expected
+worked-examples/binary-body-examples	docs/fern-measurements/worked-examples/binary-body-examples/openapi.yml	python-enums	packaged	-
+worked-examples/binary-body-examples/expected-literals	docs/fern-measurements/worked-examples/binary-body-examples/openapi.yml	literals	packaged	fern-expected:docs/fern-measurements/worked-examples/binary-body-examples/fern-expected
+worked-examples/nested-argument-widths	docs/fern-measurements/worked-examples/nested-argument-widths/openapi.yml	python-enums	packaged	-
+worked-examples/nested-argument-widths/expected-literals	docs/fern-measurements/worked-examples/nested-argument-widths/openapi.yml	literals	packaged	fern-expected:docs/fern-measurements/worked-examples/nested-argument-widths/fern-expected

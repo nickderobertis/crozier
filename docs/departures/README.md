@@ -213,7 +213,7 @@ when the two differ.
 
 | Kind | Entries | Meaning |
 | --- | --- | --- |
-| `fern-defect` | 50 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
+| `fern-defect` | 52 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
 | `branding` | 1 | crozier names itself where Fern names itself. |
 | `packaging` | 1 | crozier writes the packaged SDK's publishing details from its own settings. |
 | `provenance` | 1 | crozier writes a fixed record of how the SDK was generated. |
@@ -229,6 +229,15 @@ when the two differ.
 - **crozier writes:** The specification's declared example (branch_id_or_ref="abcdefghijklmnopqrst"). Every other argument and line is retained.
 - **Why:** Both calls bind and are valid strings for the parameter's str annotation; crozier's passes the value the specification itself declares, where Fern's passes a placeholder or an arbitrary first alternative. The rule rejects invalid declared union examples and abstains on unsupported assertions.
 - **Evidence:** [`docs/departures/evidence/anyof-path-param-schema-example.md`](../../docs/departures/evidence/anyof-path-param-schema-example.md)
+
+### `binary-body-example`
+
+- **Kind:** `fern-defect`
+- **Trigger:** A request body the method takes as a single request argument annotated bytes (a binary string body under a media type other than application/octet-stream, wildcard media among them), in the worked examples of README.md, reference.md and each client.py docstring.
+- **Fern writes:** The body's declared example, or the "string" sample where it declares none, as a str (request="<binary string>"), which the bytes parameter rejects.
+- **crozier writes:** The same text as bytes, its UTF-8 encoding: the str literal behind a b prefix where it is ASCII (request=b"<binary string>"), and spelled with \xNN escapes where it is not; the annotation, the request construction and every other byte of the call remain matched.
+- **Why:** Type-checking the documented call against the generated signature rejects the str for the bytes parameter, so the example does not match the code; the bytes literal is a value the annotation admits, carrying the text the document declares.
+- **Evidence:** [`docs/departures/evidence/binary-body-example.md`](../../docs/departures/evidence/binary-body-example.md)
 
 ### `binary-form-part-example`
 
@@ -634,6 +643,15 @@ when the two differ.
 - **crozier writes:** The heading names the method the client defines (`all_`) and anchors the link at its lines, as every other heading is anchored. Every other byte of the line is retained.
 - **Why:** The heading documents a method the generated client does not have: `client.applicants.all(...)` raises `AttributeError`, and the usage example under the same heading already calls `all_`.
 - **Evidence:** [`docs/departures/evidence/reference-heading-escaped-method-name.md`](../../docs/departures/evidence/reference-heading-escaped-method-name.md)
+
+### `renamed-request-options-docs`
+
+- **Kind:** `fern-defect`
+- **Trigger:** An operation one of whose own arguments (a body property, parameter or header) is named request_options, so both sides' generated methods take the SDK's options as _request_options: its entry in reference.md's parameter list, and README.md's retry and timeout calls when it is the README's first operation.
+- **Fern writes:** The options entry is **request_options:** `typing.Optional[RequestOptions]`, listed beside the argument of the same name, and the README calls pass request_options={"max_retries": 1} and request_options={"timeout": 1}.
+- **crozier writes:** The method's own name for its options, **_request_options:** and _request_options={; every other byte of each line, and every signature, remain matched.
+- **Why:** The generated method declares no second request_options: the documented options entry names the operation's own argument, and the README's calls bind the options dictionary to that argument, so it is sent in the request as the argument's value and no retry or timeout option is applied.
+- **Evidence:** [`docs/departures/evidence/renamed-request-options-docs.md`](../../docs/departures/evidence/renamed-request-options-docs.md)
 
 ### `repeated-credential-example-keyword`
 

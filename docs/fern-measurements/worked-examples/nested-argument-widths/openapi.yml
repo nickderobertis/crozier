@@ -1,0 +1,72 @@
+openapi: 3.0.3
+info:
+  title: Bulletin Post
+  version: 1.0.0
+servers:
+- url: https://bulletin.example.com
+paths:
+  /bulletins/{bulletin_id}/notify:
+    post:
+      operationId: notifyBulletin
+      tags:
+      - bulletins
+      parameters:
+      - name: bulletin_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - cc_addresses
+              - bcc_addresses
+              - routing
+              - handling
+              properties:
+                cc_addresses:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                  - alpha-one@example.com
+                  - second-beta-twoooo@example.com
+                bcc_addresses:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                  - alpha-on@example.com
+                  - second-beta-twooo@example.com
+                routing:
+                  type: object
+                  additionalProperties:
+                    type: string
+                  example:
+                    priority: high
+                    channel: postal-mail-express-one-twooo
+                handling:
+                  type: object
+                  additionalProperties:
+                    type: string
+                  example:
+                    priority: high
+                    channel: postal-mail-express-one-tww
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bulletin'
+components:
+  schemas:
+    Bulletin:
+      type: object
+      properties:
+        id:
+          type: string

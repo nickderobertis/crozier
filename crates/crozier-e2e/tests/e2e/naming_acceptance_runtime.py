@@ -3,8 +3,9 @@
 Usage: naming_acceptance_runtime.py JOURNEY SDK_SRC
 
 JOURNEY is one of `colliding-request`, `colliding-responses`,
-`colliding-control` (#944), `recursive-alias-dependents` (#922) or
-`aliased-discriminator` (#983); SDK_SRC is
+`colliding-control` (#944), `recursive-alias-dependents` (#922),
+`aliased-discriminator` (#983) or `request-options-body-property` (#981);
+SDK_SRC is
 the generated SDK's `src/` directory. Each request goes over real HTTP to a
 server this script runs on a free local port.
 
@@ -31,10 +32,12 @@ MAX_BODY = 1 << 20
 
 class Server:
     """A real HTTP server on a free local port, answering each path with its
-    configured JSON body and recording every request body it receives."""
+    configured JSON body and recording every request body it receives, and the
+    headers each request carried."""
 
     def __init__(self, bodies: dict[str, object]) -> None:
         self.received: list[object] = []
+        self.headers: list[dict[str, str]] = []
         server = self
 
         class Handler(http.server.BaseHTTPRequestHandler):
@@ -48,6 +51,7 @@ class Server:
                     self.send_error(400, f"Content-Length must be 0..{MAX_BODY}, not {declared!r}")
                     return
                 server.received.append(json.loads(self.rfile.read(int(declared)) or b"null"))
+                server.headers.append({key.lower(): value for key, value in self.headers.items()})
                 self._answer()
 
             def _answer(self) -> None:
@@ -69,13 +73,17 @@ class Server:
         self.httpd = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)
         threading.Thread(target=self.httpd.serve_forever, daemon=True).start()
 
+    @property
+    def base_url(self) -> str:
+        return f"http://127.0.0.1:{self.httpd.server_address[1]}"
+
     def client(self) -> Any:
         """The generated SDK's async client pointed at this server. Its class is
         imported from the SDK under test, generated at run time, so this script
         has no static type for it."""
         from fern import AsyncFernApi
 
-        return AsyncFernApi(base_url=f"http://127.0.0.1:{self.httpd.server_address[1]}")
+        return AsyncFernApi(base_url=self.base_url)
 
     def close(self) -> None:
         self.httpd.shutdown()
@@ -127,13 +135,7 @@ def colliding_control() -> None:
 
 def recursive_alias_dependents() -> None:
     """Every module imports, and the dependent model holds a recursive object."""
-    import fern
-
-    for module in pkgutil.walk_packages(fern.__path__, "fern."):
-        # `fern.version` reads the installed distribution's metadata, and this
-        # journey runs the SDK from its source tree, uninstalled.
-        if module.name != "fern.version":
-            importlib.import_module(module.name)
+    import_every_module()
     from fern.types.fit_summary import FitSummary
 
     summary = FitSummary(report={"engine": "nuts", "inference_diagnostics": {"chains": [1, {"ok": True}]}})
@@ -161,12 +163,55 @@ def aliased_discriminator() -> None:
         raise SystemExit(f"aliased-discriminator: get_query('g') returned {graph!r}")
 
 
+def import_every_module() -> None:
+    """Import every module of the generated `fern` package."""
+    import fern
+
+    for module in pkgutil.walk_packages(fern.__path__, "fern."):
+        # `fern.version` reads the installed distribution's metadata, and this
+        # journey runs the SDK from its source tree, uninstalled.
+        if module.name != "fern.version":
+            importlib.import_module(module.name)
+
+
+def request_options_body_property() -> None:
+    """A body property named `request_options` is sent as the caller's value,
+    while the SDK's own options, `_request_options`, apply as options, through
+    the sync, async and both raw clients alike."""
+    from fern import AsyncFernApi, FernApi
+
+    import_every_module()
+    server = Server({"/dispatches": {"id": "d-1", "request_options": "express"}})
+    options = {"additional_headers": {"x-courier-trace": "t-1"}, "max_retries": 0}
+    arguments: dict[str, Any] = {"request_options": "express", "kwargs_": "k", "self_": "s"}
+    try:
+        sync = FernApi(base_url=server.base_url).dispatches
+        async_ = AsyncFernApi(base_url=server.base_url).dispatches
+        results = [
+            sync.create_dispatch(**arguments, _request_options=options),
+            sync.with_raw_response.create_dispatch(**arguments, _request_options=options).data,
+            asyncio.run(async_.create_dispatch(**arguments, _request_options=options)),
+            asyncio.run(async_.with_raw_response.create_dispatch(**arguments, _request_options=options)).data,
+        ]
+    finally:
+        server.close()
+    sent = {"request_options": "express", "kwargs": "k", "self": "s"}
+    if server.received != [sent] * 4:
+        raise SystemExit(f"request-options-body-property: sent {server.received!r}")
+    traces = [headers.get("x-courier-trace") for headers in server.headers]
+    if traces != ["t-1"] * 4:
+        raise SystemExit(f"request-options-body-property: the options' header reached {traces!r}")
+    if any(result.id != "d-1" or result.request_options != "express" for result in results):
+        raise SystemExit(f"request-options-body-property: returned {results!r}")
+
+
 JOURNEYS: dict[str, Callable[[], None]] = {
     "aliased-discriminator": aliased_discriminator,
     "colliding-request": colliding_request,
     "colliding-responses": colliding_responses,
     "colliding-control": colliding_control,
     "recursive-alias-dependents": recursive_alias_dependents,
+    "request-options-body-property": request_options_body_property,
 }
 
 

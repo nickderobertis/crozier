@@ -1,6 +1,6 @@
 //! The naming, import and document-acceptance tickets of the naming-acceptance
 //! node (#536, #919, #920, #921, #922, #923, #924, #941, #942, #943, #944,
-//! #946, #948, #955, #956), each settled against a from-scratch document under
+//! #946, #948, #955, #956) and #981, each settled against a from-scratch document under
 //! [`DIR`] and the certified pair's complete tree for it (Fern CLI 5.216.0,
 //! fern-python-sdk 5.42.0), in both enum modes.
 //!
@@ -142,6 +142,13 @@ const ACCEPTED: &[(&str, &str, &str, &str, &str)] = &[
         "",
         "src/fern/client.py",
         "type_path_param: str,",
+    ),
+    (
+        "#981 (ruff refused the duplicate `request_options` parameter)",
+        "request-options-body-property",
+        "Duplicate parameter",
+        "src/fern/dispatches/raw_client.py",
+        "        request_options: str,\n        kwargs_: typing.Optional[str] = OMIT,\n        self_: typing.Optional[str] = OMIT,\n        _request_options: typing.Optional[RequestOptions] = None,\n",
     ),
     (
         "#944 (the control: one component)",
@@ -517,6 +524,22 @@ fn sdk_env_colliding_components_send_and_parse_their_own_shapes() {
             "normalized-component-identity-control",
             mode,
             "colliding-control",
+        );
+    }
+}
+
+/// #981: through the generated client, under both Pydantic majors and both
+/// enum modes, every module imports and the sync, async and both raw clients
+/// send the caller's `request_options` body value while applying
+/// `_request_options` as the SDK's options (its header reaches the server).
+#[test]
+#[ignore = "SDK Python-environment tier (builds Pydantic 1 and 2 environments from PyPI with uv); run via `just test-sdk-env`"]
+fn sdk_env_request_options_body_property_sends_beside_the_sdk_options() {
+    for mode in ["python-enums", "literals"] {
+        runtime_journey(
+            "request-options-body-property",
+            mode,
+            "request-options-body-property",
         );
     }
 }
