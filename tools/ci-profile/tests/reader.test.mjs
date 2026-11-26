@@ -163,7 +163,8 @@ test("the gate's stream keeps each line whole across chunks, flushes the last on
 // Structural on purpose: the artifacts these names reach exist only in a GitHub Actions run of
 // ci.yml, which no test can start; this holds the writer and the reader to one spelling.
 test("the workflow uploads the artifacts the reader reads, and the experiment writes the columns it parses", () => {
-  const workflow = readFileSync(join(ROOT, ".github", "workflows", "ci.yml"), "utf8");
+  // As committed: the harness puts the real ci.yml in the working tree before the suites run.
+  const workflow = spawnSync("git", ["show", "HEAD:.github/workflows/ci.yml"], { cwd: ROOT, encoding: "utf8" }).stdout;
   const reader = readFileSync(READER, "utf8");
   for (const prefix of ["test-timings-", "spike-profile-"]) {
     assert.ok(workflow.includes(`name: ${prefix}\${{ github.job }}`), `ci.yml uploads ${prefix}<job>`);

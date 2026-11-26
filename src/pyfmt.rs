@@ -28,7 +28,7 @@ pub const LINE_LENGTH: usize = 120;
 /// target line length. Runs `ruff format --stdin-filename <file> -`, piping the
 /// source through stdin so nothing touches disk.
 pub fn format_source(file: &str, source: &str, width: usize) -> Result<String> {
-    let _format = crate::profile::phase("format");
+    let _format = crate::profile::phase(crate::profile::PhaseName::Format);
     let done = crate::profile::spawn_timer("ruff");
     let result = format_source_inner(file, source, width);
     done();
@@ -238,7 +238,6 @@ mod tests {
         assert!(format_source("x.py", src, 20).unwrap().contains(",\n"));
     }
 
-    /// SPIKE ONLY: the batched formatter against the real `ruff`.
     #[test]
     fn a_batch_formats_like_one_file_at_a_time_and_cleans_up_when_ruff_refuses() {
         let items = vec![

@@ -13750,24 +13750,25 @@ fn format_python_files(pkg: &str, files: &mut [GeneratedFile]) -> Result<()> {
             })
             .collect()
     };
-    let batched = |files: &[GeneratedFile], phase: &'static str| -> Result<Vec<String>> {
-        let _format = crate::profile::phase(phase);
-        let items: Vec<(String, String)> = batch
-            .iter()
-            .map(|&i| {
-                (
-                    files[i].path.to_string_lossy().into_owned(),
-                    files[i].contents.clone(),
-                )
-            })
-            .collect();
-        crate::pyfmt::format_batch(&items, crate::pyfmt::LINE_LENGTH)
-    };
+    let batched =
+        |files: &[GeneratedFile], phase: crate::profile::PhaseName| -> Result<Vec<String>> {
+            let _format = crate::profile::phase(phase);
+            let items: Vec<(String, String)> = batch
+                .iter()
+                .map(|&i| {
+                    (
+                        files[i].path.to_string_lossy().into_owned(),
+                        files[i].contents.clone(),
+                    )
+                })
+                .collect();
+            crate::pyfmt::format_batch(&items, crate::pyfmt::LINE_LENGTH)
+        };
     let formatted = match mode {
-        crate::pyfmt::FormatMode::Batch => batched(files, "format")?,
+        crate::pyfmt::FormatMode::Batch => batched(files, crate::profile::PhaseName::Format)?,
         crate::pyfmt::FormatMode::Verify => {
             let one = per_file(files)?;
-            let many = batched(files, "format-batch")?;
+            let many = batched(files, crate::profile::PhaseName::FormatBatch)?;
             if let Some(k) = (0..one.len()).find(|&k| one[k] != many[k]) {
                 return Err(Error::Format {
                     file: files[batch[k]].path.to_string_lossy().into_owned(),

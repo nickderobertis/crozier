@@ -25,6 +25,7 @@ env:
   # slot pays on the runners' 4 processors.
   NX_PARALLEL: "4"
 
+# llmlint: ignore[changed_behavior_has_e2e] SPIKE ONLY: these two jobs replace the four real lanes on a branch that never lands; the suites holding the real lanes' contract keep proving it, against the real ci.yml put back before they run (the "Put the real ci.yml in front of the suites" steps), and ci-profile's own drift test reads this file as committed.
 jobs:
   test-windows:
     runs-on: windows-latest
@@ -34,7 +35,8 @@ jobs:
     steps:
       - name: Enable Git long paths
         run: git config --global core.longpaths true
-      # As test-windows: this job's own checkout and temp directories out of real-time scanning.
+      # As test-windows does, so the measurement matches the real lane: the e2e suites write
+      # and run thousands of fresh files, each scanned on first touch, and the runner is discarded.
       - name: Leave this job's own directories out of Defender scanning
         shell: pwsh
         run: Add-MpPreference -ExclusionPath $env:GITHUB_WORKSPACE, $env:RUNNER_TEMP, $env:TEMP

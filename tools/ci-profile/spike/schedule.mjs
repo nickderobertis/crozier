@@ -31,19 +31,27 @@ for (let i = 0; i < rest.length; i++) {
     scale.set(task, Number(factor));
   }
 }
-const report = JSON.parse(readFileSync(reportPath, "utf8"));
+const readJson = (path) => {
+  try {
+    return JSON.parse(readFileSync(path, "utf8"));
+  } catch (error) {
+    return fail(`${path} is not readable JSON: ${error.message}`);
+  }
+};
+const report = readJson(reportPath);
 const lane = Array.isArray(report?.lanes) ? report.lanes.find((l) => l?.job === job) : undefined;
 if (!lane) fail(`${reportPath} has no lane '${job}'`);
 if (!Array.isArray(lane.targets) || !lane.targets.every((t) => t !== null && typeof t === "object")) fail(`lane '${job}' has no list of targets`);
 const measured = lane.targets.filter((t) => t.gate_step === step && t.start !== undefined);
 if (measured.length === 0) fail(`lane '${job}' has no timed targets for gate step '${step}'`);
 if (!measured.every((t) => typeof t.target === "string" && Number.isFinite(t.seconds) && t.seconds >= 0 && Number.isFinite(t.start))) fail(`lane '${job}' has a target without a name, a start and non-negative seconds`);
-const graph = JSON.parse(readFileSync(graphPath, "utf8")).tasks;
+const graph = readJson(graphPath)?.tasks;
 const isMap = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
 const goodDeps = isMap(graph?.dependencies) && Object.values(graph.dependencies).every((d) => Array.isArray(d) && d.every((x) => typeof x === "string"));
 if (!isMap(graph?.tasks) || !Object.values(graph.tasks).every(isMap) || !goodDeps) fail(`${graphPath} is not the task graph \`nx run-many --graph=<file>\` writes`);
 const deps = graph.dependencies;
 const duration = new Map(measured.map((t) => [t.target, t.seconds * (scale.get(t.target) ?? 1)]));
+if (![...duration.values()].every(Number.isFinite)) fail("a scaled duration is not finite; use smaller --scale factors");
 const unknown = [...scale.keys()].filter((task) => !duration.has(task));
 if (unknown.length) fail(`--scale names task(s) the lane did not run: ${unknown.join(", ")}`);
 const observedStart = new Map(measured.map((t) => [t.target, t.start]));

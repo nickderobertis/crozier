@@ -369,7 +369,7 @@ fn do_generate(
     selected: Option<&str>,
     overrides: &CliOverrides,
 ) -> crate::Result<()> {
-    let settings_phase = crate::profile::phase("settings");
+    let settings_phase = crate::profile::phase(crate::profile::PhaseName::Settings);
     let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
     // `--config` beats `CROZIER_CONFIG`; either names files explicitly and
     // disables auto-discovery.
@@ -389,7 +389,7 @@ fn do_generate(
     drop(settings_phase);
     let multiple = names.len() > 1;
     for name in &names {
-        let resolve_phase = crate::profile::phase("settings");
+        let resolve_phase = crate::profile::phase(crate::profile::PhaseName::Settings);
         let args: GenerateArgs = settings::resolve(name, &loaded.config, &env, overrides)?;
         drop(resolve_phase);
         let output = args.output.clone();

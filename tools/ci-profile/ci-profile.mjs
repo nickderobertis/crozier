@@ -101,6 +101,13 @@ const ANSI = /\u001b\[[0-9;]*[A-Za-z]/g;
 const clean = (line) => line.replace(ANSI, "").replace(/\r$/, "");
 const seconds = (a, b) => (Date.parse(b) - Date.parse(a)) / 1000;
 
+/** A duration as a runner printed it, refused unless it is a plain finite decimal. */
+function duration(text) {
+  const value = Number(text);
+  if (!/^\d+(\.\d+)?$/.test(text) || !Number.isFinite(value)) throw new Error(`'${text}' is not a duration a runner prints`);
+  return value;
+}
+
 /** The `gate: task` lines of a job log, each with the step command that printed it. */
 export function gateTaskLines(log) {
   const targets = [];
@@ -111,18 +118,18 @@ export function gateTaskLines(log) {
       step = line.slice("##[group]Run ".length).trim();
       continue;
     }
-    const m = /^gate: task (\S+): ([\d.]+)s \(([^)]+)\)$/.exec(line);
-    if (m) targets.push({ target: m[1], seconds: Number(m[2]), status: m[3], cached: m[3].includes("cache"), step });
+    const m = /^gate: task (\S+): (\d+(?:\.\d+)?)s \(([^)]+)\)$/.exec(line);
+    if (m) targets.push({ target: m[1], seconds: duration(m[2]), status: m[3], cached: m[3].includes("cache"), step });
   }
   return targets;
 }
 
-const NEXTEST = /^\s*(PASS|FAIL|FLAKY|TIMEOUT|SIGSEGV|SIGABRT|LEAK|LEAK-FAIL)\s+\[\s*([\d.]+)s\]\s+(?:\(\s*\d+\/\s*\d+\)\s+)?(\S+)\s+(.+?)\s*$/;
-const PYTEST = /^([\d.]+)s (setup|call|teardown)\s+(\S+::\S.*?)\s*$/;
+const NEXTEST = /^\s*(PASS|FAIL|FLAKY|TIMEOUT|SIGSEGV|SIGABRT|LEAK|LEAK-FAIL)\s+\[\s*(\d+(?:\.\d+)?)s\]\s+(?:\(\s*\d+\/\s*\d+\)\s+)?(\S+)\s+(.+?)\s*$/;
+const PYTEST = /^(\d+(?:\.\d+)?)s (setup|call|teardown)\s+(\S+::\S.*?)\s*$/;
 // Node's test runner prints TAP when its output is not a terminal (CI) and its spec reporter otherwise.
 const TAP_OK = /^(\s*)(?:not )?ok \d+ - (.+?)(?:\s+#.*)?$/;
-const TAP_DURATION = /^\s*duration_ms: ([\d.]+)$/;
-const NODE = /^(\s*)[✔✖﹣]\s+(.+?)\s+\(([\d.]+)ms\)(?:\s+#.*)?$/;
+const TAP_DURATION = /^\s*duration_ms: (\d+(?:\.\d+)?)$/;
+const NODE = /^(\s*)[✔✖﹣]\s+(.+?)\s+\((\d+(?:\.\d+)?)ms\)(?:\s+#.*)?$/;
 
 /** Every test case a gate log's Nx output records, attributed to the task whose section it is in. */
 export function parseCases(gateLog, knownTasks) {
@@ -141,15 +148,15 @@ export function parseCases(gateLog, knownTasks) {
     if (!target) continue;
     let m = NEXTEST.exec(line);
     if (m) {
-      cases.push({ target, case: `${m[3]} ${m[4]}`, seconds: Number(m[2]), kind: "nextest", outcome: m[1] });
+      cases.push({ target, case: `${m[3]} ${m[4]}`, seconds: duration(m[2]), kind: "nextest", outcome: m[1] });
       continue;
     }
     m = PYTEST.exec(line);
     if (m) {
       const key = `${target}\u0000${m[3]}`;
       const entry = pytest.get(key) ?? { target, case: m[3], seconds: 0, kind: "pytest", setup: 0, call: 0, teardown: 0 };
-      entry[m[2]] += Number(m[1]);
-      entry.seconds += Number(m[1]);
+      entry[m[2]] += duration(m[1]);
+      entry.seconds += duration(m[1]);
       pytest.set(key, entry);
       continue;
     }
@@ -160,12 +167,12 @@ export function parseCases(gateLog, knownTasks) {
     }
     m = TAP_DURATION.exec(line);
     if (m && tap) {
-      cases.push({ ...tap, seconds: Number(m[1]) / 1000, kind: "node" });
+      cases.push({ ...tap, seconds: duration(m[1]) / 1000, kind: "node" });
       tap = undefined;
       continue;
     }
     m = NODE.exec(line);
-    if (m) cases.push({ target, case: m[2], seconds: Number(m[3]) / 1000, kind: "node", depth: Math.floor(m[1].length / 2) });
+    if (m) cases.push({ target, case: m[2], seconds: duration(m[3]) / 1000, kind: "node", depth: Math.floor(m[1].length / 2) });
   }
   return [...cases, ...pytest.values()];
 }

@@ -94,19 +94,19 @@ pub struct GenerateArgs {
 /// Run the full pipeline: parse the spec, build the IR, render, and write files.
 /// Returns the files written so the caller can report a count.
 pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
-    let checks = profile::phase("refusal-checks");
+    let checks = profile::phase(profile::PhaseName::RefusalChecks);
     document_refusals::check_version_file(&args.spec, args.fern_strict)?;
     document_refusals::check_structure_file(&args.spec, args.fern_strict)?;
     drop(checks);
-    let load = profile::phase("load");
+    let load = profile::phase(profile::PhaseName::Load);
     let mut doc = name_refusals::load(&args)?;
     openapi::filter_ignored(&mut doc);
     openapi::filter_by_audience(&mut doc, &args.audiences, args.audience_strict);
     drop(load);
-    let checks = profile::phase("refusal-checks");
+    let checks = profile::phase(profile::PhaseName::RefusalChecks);
     document_refusals::check(&doc, &args.spec, args.fern_strict)?;
     drop(checks);
-    let lower = profile::phase("lower");
+    let lower = profile::phase(profile::PhaseName::Lower);
     let mut config = GenerateConfig::new(
         args.spec.clone(),
         args.output.clone(),
@@ -127,15 +127,15 @@ pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
             message,
         });
     }
-    let checks = profile::phase("refusal-checks");
+    let checks = profile::phase(profile::PhaseName::RefusalChecks);
     document_refusals::check_sdk(&mut doc, &ir, &config, &args.spec, args.fern_strict)?;
     name_refusals::validate(&doc, &args.spec, args.fern_strict, &ir)?;
     name_refusals::validate_ir(&ir, &doc, &args.spec, args.fern_strict)?;
     drop(checks);
-    let emit = profile::phase("emit");
+    let emit = profile::phase(profile::PhaseName::Emit);
     let (files, example_values) = emit::generate_recording(&ir)?;
     drop(emit);
-    let _write = profile::phase("write");
+    let _write = profile::phase(profile::PhaseName::Write);
     match config.layout {
         settings::Layout::Packaged => {
             emit::clean_package_tree(&config.output, config.package_name.as_str())?;

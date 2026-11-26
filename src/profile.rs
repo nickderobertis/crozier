@@ -44,6 +44,39 @@ impl Command {
     }
 }
 
+/// The phases a profile times. The first seven are the `runtime-profiling`
+/// node's agreed names; the last three are this spike's.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PhaseName {
+    Settings,
+    Load,
+    RefusalChecks,
+    Lower,
+    Emit,
+    Format,
+    Write,
+    FormatBatch,
+    RuffIsort,
+    RuffAliasCheck,
+}
+
+impl PhaseName {
+    fn as_str(self) -> &'static str {
+        match self {
+            Self::Settings => "settings",
+            Self::Load => "load",
+            Self::RefusalChecks => "refusal-checks",
+            Self::Lower => "lower",
+            Self::Emit => "emit",
+            Self::Format => "format",
+            Self::Write => "write",
+            Self::FormatBatch => "format-batch",
+            Self::RuffIsort => "spike-ruff-isort",
+            Self::RuffAliasCheck => "spike-ruff-alias-check",
+        }
+    }
+}
+
 /// One phase's or one program's running total.
 struct Total {
     name: &'static str,
@@ -98,12 +131,12 @@ pub fn start() {
 
 /// A running phase timer; its time is added to `name` when it drops.
 pub struct Phase {
-    name: &'static str,
+    name: PhaseName,
     started: Option<Instant>,
 }
 
 /// Time the rest of the enclosing scope as phase `name`.
-pub fn phase(name: &'static str) -> Phase {
+pub fn phase(name: PhaseName) -> Phase {
     Phase {
         name,
         started: state().map(|_| Instant::now()),
@@ -113,7 +146,7 @@ pub fn phase(name: &'static str) -> Phase {
 impl Drop for Phase {
     fn drop(&mut self) {
         if let (Some(state), Some(started)) = (state(), self.started) {
-            add_phase(state, self.name, started.elapsed());
+            add_phase(state, self.name.as_str(), started.elapsed());
         }
     }
 }
