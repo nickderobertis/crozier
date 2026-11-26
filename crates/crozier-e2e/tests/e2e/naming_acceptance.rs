@@ -452,7 +452,7 @@ fn colliding_response_components_each_keep_their_own_class() {
 }
 
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
-// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This `sdk_env_*` journey runs only in the `sdk-env` project (tests/sdk_env/project.json: `tier:promoted`, `cache: false`), promoted out of the affected tier into its own required CI leg; crates/crozier-e2e/AGENTS.md makes `#[ignore]` the one mechanism that routes a journey to that project. The #922 journey inside the block is ignored and selected by no project until its `sdk_env_` prefix is restored.
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This `sdk_env_*` journey runs only in the `sdk-env` project (tests/sdk_env/project.json: `tier:promoted`, `cache: false`), promoted out of the affected tier into its own required CI leg; crates/crozier-e2e/AGENTS.md makes `#[ignore]` the one mechanism that routes a journey to that project.
 /// The SDK-environment journeys `naming_acceptance_runtime.py` runs, each over
 /// the case's SDK under every Pydantic major the generated `pyproject.toml`
 /// admits.
