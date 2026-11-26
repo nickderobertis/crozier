@@ -35,8 +35,10 @@ is one crozier refused, so its generating at all is the regression.
 | `normalized-component-identity` | [#944](https://github.com/nickderobertis/crozier/issues/944) | Components `kiln/glaze-coat` and `kiln-glaze/coat`, both `KilnGlazeCoat`, reached from one request body: one class, the last declaration's (`right: int`), so `left` is typed with it. crozier keeps that class and gives `kiln/glaze-coat` its own `KilnGlazeCoat2`: the [`colliding-component-own-class`](../../departures/evidence/colliding-component-own-class.md) departure. |
 | `normalized-component-identity-responses` | #944 | The same components, each an operation's `200`: Fern refuses (its [`fern-refusal.txt`](normalized-component-identity-responses/fern-refusal.txt), `Example is missing required property "response.body.right"`) because it validates its example of one against the merged other. The document is valid OpenAPI and the refusal only Fern's limitation (manager ruling `a3`), so crozier generates it, each response typed with its own component's class. |
 | `normalized-component-identity-control` | #944 | One component `kiln/glaze-coat`: `KilnGlazeCoat`, as crozier writes it. |
+| `single-letter-component-words` | [#992](https://github.com/nickderobertis/crozier/issues/992) | A run of one-letter words in a component name is one class word: `a/b-c` is `Abc`, `p-q-r` `Pqr`, `m_n` `Mn`, `u/v-w` `Uvw` and `k/l-mn` `KlMn`, while `ab/c-d` is `AbCd` and a lone one-letter word beside longer ones keeps its capital (`e/fg-h` is `EFgH`). Every annotation and return type naming one spells it the same way. Each is named by an unescaped pointer (`#/components/schemas/a/b-c`), which the pair resolves. |
 
-Two measured differences are outside these tickets and recorded as follow-ups:
-Fern types an operation whose response is a `~1`-escaped pointer to a
-slash-named component as `typing.Any` (crozier resolves it), and a one-letter
-word of a component name (`a/b-c`) is cased `Abc` by Fern and `ABC` by crozier.
+One measured difference is outside these tickets and recorded as a follow-up:
+Fern types an operation whose response, or a property, is a `~1`-escaped
+pointer to a slash-named component as `typing.Any` (crozier resolves it). A
+first measurement of `single-letter-component-words` with escaped pointers
+showed it again for every property and the response.

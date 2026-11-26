@@ -684,3 +684,36 @@ fn the_colliding_component_departure_explains_only_the_renamed_class() {
     );
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+/// #992: a run of one-letter words in a component name is one class word, as
+/// the certified pair cases it (`a/b-c` is `Abc`, `p-q-r` `Pqr`, `m_n` `Mn`,
+/// `k/l-mn` `KlMn`), at its declaration and at every annotation naming it,
+/// while a lone one-letter word beside longer ones keeps its capital (`EFgH`).
+#[test]
+fn single_letter_component_words_use_the_certified_casing() {
+    let case = "single-letter-component-words";
+    let temp = tempfile::tempdir().expect("output tempdir");
+    let mut failures = both_modes_failures(case, temp.path());
+    let sdk = temp.path().join("sdk");
+    for (file, certified) in [
+        ("src/fern/types/abc.py", "class Abc(UniversalBaseModel):"),
+        ("src/fern/types/kl_mn.py", "class KlMn(UniversalBaseModel):"),
+        ("src/fern/types/uvw.py", "class Uvw(enum.StrEnum):"),
+        (
+            "src/fern/types/roster.py",
+            "    first: typing.Optional[Abc] = None\n    second: typing.Optional[Pqr] = None\n    \
+             third: typing.Optional[Mn] = None\n    fourth: typing.Optional[AbCd] = None\n    \
+             fifth: typing.Optional[EFgH] = None\n    sixth: typing.Optional[KlMn] = None\n    \
+             lamp: typing.Optional[Uvw] = None\n",
+        ),
+        (
+            "src/fern/client.py",
+            "    def get_entry(self, entry_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Abc:",
+        ),
+    ] {
+        if !read(&sdk.join(file)).contains(certified) {
+            failures.push(format!("#992 {case}: {file} lacks {certified:?}"));
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n\n"));
+}
