@@ -65,7 +65,7 @@ function fetchRun(runId, cacheDir) {
   for (const job of run.jobs) {
     const logPath = join(cacheDir, `job-${job.databaseId}.log`);
     if (!existsSync(logPath)) checkQuota();
-    cached(logPath, () => gh(["api", `repos/${REPOSITORY}/actions/jobs/${job.databaseId}/logs`]));
+    cached(logPath, () => gh(["api", "--allow-escape-sequences", `repos/${REPOSITORY}/actions/jobs/${job.databaseId}/logs`]));
   }
   const artifacts = join(cacheDir, "artifacts");
   if (!existsSync(artifacts)) {
