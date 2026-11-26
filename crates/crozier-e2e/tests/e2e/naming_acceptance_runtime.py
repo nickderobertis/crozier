@@ -3,7 +3,8 @@
 Usage: naming_acceptance_runtime.py JOURNEY SDK_SRC
 
 JOURNEY is one of `colliding-request`, `colliding-responses`,
-`colliding-control` (#944) or `recursive-alias-dependents` (#922); SDK_SRC is
+`colliding-control` (#944), `recursive-alias-dependents` (#922) or
+`aliased-discriminator` (#983); SDK_SRC is
 the generated SDK's `src/` directory. Each request goes over real HTTP to a
 server this script runs on a free local port.
 
@@ -140,7 +141,28 @@ def recursive_alias_dependents() -> None:
         raise SystemExit(f"recursive-alias-dependents: built {summary!r}")
 
 
+def aliased_discriminator() -> None:
+    """Each variant of a union tagged by a wire key needing a Python alias
+    (`schema`, field `schema_`) parses through the client into its own class."""
+    from fern import QueryResponse_Graph, QueryResponse_Table
+
+    server = Server(
+        {"/queries/t": {"schema": "table", "rowCount": 3}, "/queries/g": {"schema": "graph", "nodes": ["a", "b"]}}
+    )
+    try:
+        api = server.client()
+        table = asyncio.run(api.get_query("t"))
+        graph = asyncio.run(api.get_query("g"))
+    finally:
+        server.close()
+    if not isinstance(table, QueryResponse_Table) or (table.schema_, table.row_count) != ("table", 3):
+        raise SystemExit(f"aliased-discriminator: get_query('t') returned {table!r}")
+    if not isinstance(graph, QueryResponse_Graph) or (graph.schema_, graph.nodes) != ("graph", ["a", "b"]):
+        raise SystemExit(f"aliased-discriminator: get_query('g') returned {graph!r}")
+
+
 JOURNEYS: dict[str, Callable[[], None]] = {
+    "aliased-discriminator": aliased_discriminator,
     "colliding-request": colliding_request,
     "colliding-responses": colliding_responses,
     "colliding-control": colliding_control,

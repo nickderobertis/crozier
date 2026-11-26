@@ -213,7 +213,7 @@ when the two differ.
 
 | Kind | Entries | Meaning |
 | --- | --- | --- |
-| `fern-defect` | 49 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
+| `fern-defect` | 50 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
 | `branding` | 1 | crozier names itself where Fern names itself. |
 | `packaging` | 1 | crozier writes the packaged SDK's publishing details from its own settings. |
 | `provenance` | 1 | crozier writes a fixed record of how the SDK was generated. |
@@ -364,6 +364,15 @@ when the two differ.
 - **crozier writes:** `_5g_mm_cause_value=0`, the parameter the method declares, with the same value. Every other byte of the line is retained.
 - **Why:** The documented call does not bind: the method takes no `f_5g_mm_cause_value` or `f_value`, so Python raises `TypeError` for the unexpected keyword.
 - **Evidence:** [`docs/departures/evidence/digit-leading-property-example-keyword.md`](../../docs/departures/evidence/digit-leading-property-example-keyword.md)
+
+### `discriminated-union-v1-wire-keys`
+
+- **Kind:** `fern-defect`
+- **Trigger:** Every SDK: `core/pydantic_utilities.py`'s `parse_obj_as`, the entry point every generated client parses a response through.
+- **Fern writes:** Every input that is not a model class is dealiased to Python field names before validation, so under Pydantic v1 a discriminated union whose tag property needs an alias (a wire key `schema` declared as field `schema_`) loses the key Pydantic v1 looks its discriminator up by.
+- **crozier writes:** The same function, except that under Pydantic v1 an input whose type holds a discriminated union outside any model (the union itself, or a list, map or optional of one) is validated as received, through a `_has_discriminated_union` helper defined just before it. Pydantic v2's path and every other input are unchanged.
+- **Why:** The generated package declares `pydantic >= 1.9.2`, and through the certified SDK's own client a valid response of such a union raises a validation error under Pydantic 1.10 ("Discriminator 'schema_' is missing in value") although Pydantic validates the same payload directly. crozier's parser constructs the variant under both Pydantic majors.
+- **Evidence:** [`docs/departures/evidence/discriminated-union-v1-wire-keys.md`](../../docs/departures/evidence/discriminated-union-v1-wire-keys.md)
 
 ### `docstring-example-escapes`
 

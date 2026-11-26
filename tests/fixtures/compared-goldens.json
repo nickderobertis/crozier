@@ -586,6 +586,12 @@
     "docs/fern-measurements/models-refs-literals/verified-seal/fern-expected": {},
     "docs/fern-measurements/models-refs-literals/woven-thread/fern-expected": {},
     "docs/fern-measurements/models-refs-remote/library-records/fern-expected": {},
+    "docs/fern-measurements/naming-acceptance/aliased-union-discriminator/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/naming-acceptance/aliased-union-discriminator/fern-expected": {},
     "docs/fern-measurements/naming-acceptance/boolean-component-schemas/expected-literals/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"

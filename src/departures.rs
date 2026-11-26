@@ -2153,7 +2153,7 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 63] = [
+pub const RULE_IDS: [&str; 64] = [
     "anyof-path-param-schema-example",
     "binary-form-part-example",
     "binary-json-body-example",
@@ -2170,6 +2170,7 @@ pub const RULE_IDS: [&str; 63] = [
     "declared-timestamp-property-example",
     "digit-leading-method-reference-identifiers",
     "digit-leading-property-example-keyword",
+    "discriminated-union-v1-wire-keys",
     "docstring-example-escapes",
     "docstring-literal-dollar-escape",
     "emoji-tag-reference-identifiers",
@@ -2376,6 +2377,10 @@ pub fn rule(id: &str) -> Option<Rule> {
         },
         "fern-metadata-generator-config" => Rule {
             region: Some(metadata_generator_config),
+            ..none
+        },
+        "discriminated-union-v1-wire-keys" => Rule {
+            region: Some(discriminated_union_v1_wire_keys),
             ..none
         },
         "binary-form-part-example" => Rule {
@@ -3731,6 +3736,62 @@ fn metadata_generator_config(pair: &Pair<'_>) -> Result<Option<Region>, String> 
         Member::Shared => false,
     };
     Ok(holds.then_some(window))
+}
+
+/// The helper crozier's `core/pydantic_utilities.py` adds before `parse_obj_as`
+/// (the `discriminated-union-v1-wire-keys` departure), as the comparison reads it.
+const V1_DISCRIMINATED_UNION_HELPER: &str = "def _has_discriminated_union(type_: Any) -> bool:
+    \"\"\"Whether `type_` holds a discriminated union outside any model: Pydantic v1
+    finds a union's discriminator under its wire alias only, so such input is
+    validated as received rather than dealiased.\"\"\"
+    args = typing_extensions.get_args(type_)
+    if typing_extensions.get_origin(type_) is typing_extensions.Annotated:
+        if any(isinstance(meta, _FieldInfo) and getattr(meta, \"discriminator\", None) for meta in args[1:]):
+            return True
+        return _has_discriminated_union(args[0])
+    return any(_has_discriminated_union(arg) for arg in args)
+
+
+";
+
+/// The certified runtime's dealiasing of every non-model input to `parse_obj_as`.
+const CERTIFIED_NON_MODEL_DEALIAS: &str = "    else:
+        dealiased_object = convert_and_respect_annotation_metadata(object_=object_, annotation=type_, direction=\"read\")
+    if IS_PYDANTIC_V2:";
+
+/// crozier's replacement: under Pydantic v1 a discriminated union's input keeps
+/// its wire keys.
+const V1_DISCRIMINATED_UNION_DEALIAS: &str = "    else:
+        dealiased_object = (
+            object_
+            if not IS_PYDANTIC_V2 and _has_discriminated_union(type_)
+            else convert_and_respect_annotation_metadata(object_=object_, annotation=type_, direction=\"read\")
+        )
+    if IS_PYDANTIC_V2:";
+
+/// `discriminated-union-v1-wire-keys`: crozier's `core/pydantic_utilities.py`
+/// is the certified runtime's with exactly the helper inserted before
+/// `def parse_obj_as` and the non-model dealiasing guarded by it, once each.
+fn discriminated_union_v1_wire_keys(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    if !(pair.rel == "core/pydantic_utilities.py"
+        || pair.rel.ends_with("/core/pydantic_utilities.py"))
+    {
+        return Ok(None);
+    }
+    let crozier = pair.crozier.join("\n");
+    let helper = format!("{V1_DISCRIMINATED_UNION_HELPER}def parse_obj_as(");
+    if crozier.matches(helper.as_str()).count() != 1
+        || crozier.matches(V1_DISCRIMINATED_UNION_DEALIAS).count() != 1
+    {
+        return Ok(None);
+    }
+    let certified = crozier
+        .replace(helper.as_str(), "def parse_obj_as(")
+        .replace(V1_DISCRIMINATED_UNION_DEALIAS, CERTIFIED_NON_MODEL_DEALIAS);
+    if certified != pair.fern.join("\n") {
+        return Ok(None);
+    }
+    Ok(differing_window(pair.fern, pair.crozier))
 }
 
 /// Where a JSON document's top-level `generatorConfig` member sits.
@@ -10401,6 +10462,41 @@ mod tests {
     fn metadata_region(fern: &str, crozier: &str, rel: &str) -> Option<Region> {
         let (fern, crozier) = (lines(fern), lines(crozier));
         metadata_generator_config(&pair(rel, &fern, &crozier)).unwrap()
+    }
+
+    /// The shipped runtime is the certified one with exactly the
+    /// `discriminated-union-v1-wire-keys` change, and the rule takes nothing else.
+    #[test]
+    fn the_v1_wire_key_rule_takes_only_the_shipped_parse_change() {
+        let shipped = include_str!("../assets/core/pydantic_utilities.py");
+        let helper = format!("{V1_DISCRIMINATED_UNION_HELPER}def parse_obj_as(");
+        let certified = shipped
+            .replace(helper.as_str(), "def parse_obj_as(")
+            .replace(V1_DISCRIMINATED_UNION_DEALIAS, CERTIFIED_NON_MODEL_DEALIAS);
+        assert_ne!(certified, shipped, "the shipped runtime carries the change");
+        let region = |rel: &str, fern: &str, crozier: &str| {
+            let (fern, crozier) = (lines(fern), lines(crozier));
+            discriminated_union_v1_wire_keys(&pair(rel, &fern, &crozier)).unwrap()
+        };
+        let rel = "src/fern/core/pydantic_utilities.py";
+        let found = region(rel, &certified, shipped).expect("the shipped change");
+        let crozier = lines(shipped);
+        assert!(crozier[found.crozier.start].starts_with("def _has_discriminated_union("));
+        assert_eq!(crozier[found.crozier.end - 1], "        )");
+        assert!(region("core/pydantic_utilities.py", &certified, shipped).is_some());
+        assert!(region("src/fern/core/serialization.py", &certified, shipped).is_none());
+        // Any other difference, on either side, is not this departure.
+        let other = certified.replace("def parse_sse_obj(", "def parse_sse_object(");
+        assert!(region(rel, &other, shipped).is_none());
+        let unguarded =
+            shipped.replace(V1_DISCRIMINATED_UNION_DEALIAS, CERTIFIED_NON_MODEL_DEALIAS);
+        assert!(region(rel, &certified, &unguarded).is_none());
+        let twice = shipped.replace(
+            helper.as_str(),
+            &format!("{V1_DISCRIMINATED_UNION_HELPER}{helper}"),
+        );
+        assert!(region(rel, &certified, &twice).is_none());
+        assert!(region(rel, &certified, &certified).is_none());
     }
 
     #[test]

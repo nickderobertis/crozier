@@ -1,0 +1,50 @@
+openapi: 3.0.3
+info:
+  title: Atlas Query
+  version: 1.0.0
+paths:
+  /queries/{id}:
+    get:
+      operationId: getQuery
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The query's result, tagged by the schema it was answered from.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryResponse'
+components:
+  schemas:
+    QueryResponse:
+      oneOf:
+        - $ref: '#/components/schemas/TableResult'
+        - $ref: '#/components/schemas/GraphResult'
+      discriminator:
+        propertyName: schema
+        mapping:
+          table: '#/components/schemas/TableResult'
+          graph: '#/components/schemas/GraphResult'
+    TableResult:
+      type: object
+      required: [schema, rowCount]
+      properties:
+        schema:
+          type: string
+        rowCount:
+          type: integer
+    GraphResult:
+      type: object
+      required: [schema, nodes]
+      properties:
+        schema:
+          type: string
+        nodes:
+          type: array
+          items:
+            type: string

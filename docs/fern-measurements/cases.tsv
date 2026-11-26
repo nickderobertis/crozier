@@ -568,3 +568,5 @@ type-lowering/enum-use-site-descriptions	docs/fern-measurements/type-lowering/en
 type-lowering/enum-use-site-descriptions/expected-literals	docs/fern-measurements/type-lowering/enum-use-site-descriptions/openapi.yml	literals	packaged	fern-expected:docs/fern-measurements/type-lowering/enum-use-site-descriptions/fern-expected
 naming-acceptance/single-letter-component-words	docs/fern-measurements/naming-acceptance/single-letter-component-words/openapi.yml	python-enums	packaged	-
 naming-acceptance/single-letter-component-words/expected-literals	docs/fern-measurements/naming-acceptance/single-letter-component-words/openapi.yml	literals	packaged	fern-expected:docs/fern-measurements/naming-acceptance/single-letter-component-words/fern-expected
+naming-acceptance/aliased-union-discriminator	docs/fern-measurements/naming-acceptance/aliased-union-discriminator/openapi.yml	python-enums	packaged	-
+naming-acceptance/aliased-union-discriminator/expected-literals	docs/fern-measurements/naming-acceptance/aliased-union-discriminator/openapi.yml	literals	packaged	fern-expected:docs/fern-measurements/naming-acceptance/aliased-union-discriminator/fern-expected

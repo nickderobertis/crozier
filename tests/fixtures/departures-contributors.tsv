@@ -377,6 +377,8 @@ docs/fern-measurements/models-refs-literals/union-sample/fern-expected	crozier-e
 docs/fern-measurements/models-refs-literals/verified-seal/fern-expected	crozier-e2e::e2e	property_metadata_shapes_match_the_certified_fern_trees
 docs/fern-measurements/models-refs-literals/woven-thread/fern-expected	crozier-e2e::e2e	remaining_model_shapes_match_the_certified_fern_trees
 docs/fern-measurements/models-refs-remote/library-records/fern-expected	crozier-e2e::e2e	remote_model_components_match_the_certified_fern_tree
+docs/fern-measurements/naming-acceptance/aliased-union-discriminator/expected-literals/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_documents_generate_as_the_certified_pair_does
+docs/fern-measurements/naming-acceptance/aliased-union-discriminator/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_documents_generate_as_the_certified_pair_does
 docs/fern-measurements/naming-acceptance/boolean-component-schemas/expected-literals/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_documents_generate_as_the_certified_pair_does
 docs/fern-measurements/naming-acceptance/boolean-component-schemas/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_documents_generate_as_the_certified_pair_does
 docs/fern-measurements/naming-acceptance/discriminator-only-parent/expected-literals/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_documents_generate_as_the_certified_pair_does

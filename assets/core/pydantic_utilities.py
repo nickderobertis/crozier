@@ -291,6 +291,18 @@ def _drop_extras_colliding_with_fields(model: type, data: Any) -> Any:
     return {key: value for key, value in data.items() if key not in colliding}
 
 
+def _has_discriminated_union(type_: Any) -> bool:
+    """Whether `type_` holds a discriminated union outside any model: Pydantic v1
+    finds a union's discriminator under its wire alias only, so such input is
+    validated as received rather than dealiased."""
+    args = typing_extensions.get_args(type_)
+    if typing_extensions.get_origin(type_) is typing_extensions.Annotated:
+        if any(isinstance(meta, _FieldInfo) and getattr(meta, "discriminator", None) for meta in args[1:]):
+            return True
+        return _has_discriminated_union(args[0])
+    return any(_has_discriminated_union(arg) for arg in args)
+
+
 def parse_obj_as(type_: Type[T], object_: Any) -> T:
 
 
@@ -308,7 +320,11 @@ def parse_obj_as(type_: Type[T], object_: Any) -> T:
             else convert_and_respect_annotation_metadata(object_=object_, annotation=type_, direction="read")
         )
     else:
-        dealiased_object = convert_and_respect_annotation_metadata(object_=object_, annotation=type_, direction="read")
+        dealiased_object = (
+            object_
+            if not IS_PYDANTIC_V2 and _has_discriminated_union(type_)
+            else convert_and_respect_annotation_metadata(object_=object_, annotation=type_, direction="read")
+        )
     if IS_PYDANTIC_V2:
         adapter = _get_type_adapter(type_)
         return adapter.validate_python(dealiased_object)  # type: ignore[no-any-return]
