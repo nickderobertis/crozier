@@ -165,10 +165,7 @@ fn narrowed_enum_defaults_respect_the_pattern_without_changing_the_type() {
             "target {target}: expected {expected}"
         );
     }
-    for target in [
-        "anyOf: [{ minLength: 1 }]",
-        "oneOf: [{ maxLength: 20 }]",
-    ] {
+    for target in ["anyOf: [{ minLength: 1 }]", "oneOf: [{ maxLength: 20 }]"] {
         let further_constraint = constrained("target", target);
         assert!(
             render(&further_constraint)["README.md"]
