@@ -96,9 +96,9 @@ fn recording_probe() {
             ordinary();
         }
         Ok("unwound") => {
-            let unwound = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            let unwound = std::panic::catch_unwind(|| {
                 departures_ledger::perturbed(|| panic!("a perturbed comparison panicked"))
-            }));
+            });
             assert!(unwound.is_err(), "the perturbed closure did not panic");
             assert!(
                 departures_ledger::recording_eligible(),
