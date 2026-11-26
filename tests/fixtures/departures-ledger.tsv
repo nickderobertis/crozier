@@ -2063,11 +2063,8 @@ docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expe
 docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/client.py	12	colliding-component-own-class
 docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/client.py	113	colliding-component-own-class
 docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/client.py	120	colliding-component-own-class
-docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/client.py	121	colliding-component-own-class
 docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/client.py	253	colliding-component-own-class
-docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/client.py	254	colliding-component-own-class
 docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/client.py	260	colliding-component-own-class
-docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/client.py	261	colliding-component-own-class
 docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/fern-measurements/naming-acceptance/normalized-component-identity/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
