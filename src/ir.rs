@@ -15191,6 +15191,35 @@ fn sole_reference_member(schema: &Schema) -> Option<&str> {
 }
 
 impl Builder<'_> {
+    /// The inline `type: string` member of a named `allOf` the certified pair
+    /// lowers to `str`: one declaring no enum, format, properties or composition,
+    /// beside members none of which is itself a string (a `$ref` to one is the
+    /// scalar narrowing the other rules decide).
+    fn string_all_of_member<'s>(&self, schema: &'s Schema) -> Option<&'s Schema> {
+        let members = schema.all_of.as_deref()?;
+        let plain_string = |member: &Schema| {
+            member.reference.is_none()
+                && is_string_type(member)
+                && member.enum_values.is_none()
+                && member.format.is_none()
+                && member.properties.is_empty()
+                && member.all_of.is_none()
+                && member.one_of.is_none()
+                && member.any_of.is_none()
+        };
+        let index = members.iter().position(plain_string)?;
+        let other_is_string = members.iter().enumerate().any(|(at, member)| {
+            at != index
+                && match member.reference.as_deref() {
+                    Some(reference) => {
+                        resolve_ref_from_schemas(self.schemas, reference).is_none_or(is_string_type)
+                    }
+                    None => is_string_type(member) || member.enum_values.is_some(),
+                }
+        });
+        (schema.reference.is_none() && !other_is_string).then(|| &members[index])
+    }
+
     /// Classify one named schema and push it (plus any hoisted types).
     fn add_named(&mut self, name: &str, schema: &Schema) {
         let before = self.types.len();
@@ -15242,6 +15271,18 @@ impl Builder<'_> {
         if let Some(values) = merged_string_enum_union_values(schema) {
             self.types
                 .push(TypeDecl::Enum(build_enum(schema, name, values, docstring)));
+            return;
+        }
+
+        // An `allOf` beside a plain `type: string` member is that string, before
+        // any inheritance or union flattening, documented by the member: the
+        // `type-lowering/string-member-compositions` measurement's `TagCode`
+        // (`$ref Hound` then the string) and `BadgeCode` (the string then a
+        // `oneOf`) are the certified pair's `= str`, and `CollarCode` takes the
+        // member's description over its own (#984).
+        if let Some(member) = self.string_all_of_member(schema) {
+            let docstring = operation_doc(member.description.as_deref()).or(docstring);
+            self.push_alias(name, module, TypeRef::Primitive(Prim::Str), docstring);
             return;
         }
 
@@ -21836,18 +21877,27 @@ fn scalar_narrowed_enum_type(
         .flatten()
         .filter_map(|value| value.as_str().map(str::to_owned))
         .collect();
-    let mut declaration = build_enum(
-        target,
-        &name,
-        values,
-        clean_doc(
-            schema
-                .description
-                .as_deref()
-                .or(member.description.as_deref())
-                .or(target.description.as_deref()),
-        ),
-    );
+    // A copy named exactly as the enum it narrows is that component's own
+    // declaration, which keeps the enum's description: the
+    // `type-lowering/enum-use-site-descriptions` measurement's `Parcel.state`
+    // copy is `ParcelState`, and the certified pair documents it "Where a
+    // parcel is in its journey.", not with the narrowing member's sentence (#982).
+    let own_name = schema
+        .all_of
+        .as_deref()
+        .and_then(<[Schema]>::first)
+        .and_then(|first| first.reference.as_deref())
+        .is_some_and(|reference| ref_to_class(reference) == name);
+    let use_site = schema
+        .description
+        .as_deref()
+        .or(member.description.as_deref());
+    let docstring = if own_name {
+        target.description.as_deref().or(use_site)
+    } else {
+        use_site.or(target.description.as_deref())
+    };
+    let mut declaration = build_enum(target, &name, values, clean_doc(docstring));
     if let Some(value) = narrowed_enum_example(schema, schemas) {
         declaration.select_example_member(&value);
     }

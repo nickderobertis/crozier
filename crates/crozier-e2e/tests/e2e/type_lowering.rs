@@ -649,3 +649,56 @@ fn union_members_lower_dedupe_merge_and_hoist_as_the_certified_pair() {
     );
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+/// #984: an `allOf` beside a plain `type: string` member is the certified
+/// pair's `str` alias, before inheritance (`TagCode` over `$ref Hound`) or
+/// union flattening (`BadgeCode` over a `oneOf`), documented by the string
+/// member's description over the composition's own (`CollarCode`); the object
+/// composition `Hound` stays a model.
+#[test]
+fn string_compositions_keep_the_certified_scalar_type() {
+    holds(
+        "string-member-compositions",
+        &[
+            (
+                "#984",
+                "src/fern/types/tag_code.py",
+                "TagCode = str\n\"\"\"\nA tag code, after the referenced hound.\n\"\"\"\n",
+            ),
+            (
+                "#984",
+                "src/fern/types/badge_code.py",
+                "BadgeCode = str\n\"\"\"\nA badge code, before a union of breeds.\n\"\"\"\n",
+            ),
+            (
+                "#984",
+                "src/fern/types/collar_code.py",
+                "CollarCode = str\n\"\"\"\nThe string member's description.\n\"\"\"\n",
+            ),
+            ("#984", "src/fern/types/leash_code.py", "LeashCode = str\n"),
+            ("#984", "src/fern/types/hound.py", "class Hound(Animal):"),
+        ],
+    );
+}
+
+/// #982: a property narrowing an enum whose use-site copy is named as the enum
+/// itself (`Parcel.state` over `ParcelState`) leaves the enum documented with
+/// its own description; the property keeps the narrowing member's sentence.
+#[test]
+fn enum_components_keep_their_own_description() {
+    holds(
+        "enum-use-site-descriptions",
+        &[
+            (
+                "#982",
+                "src/fern/types/parcel_state.py",
+                "class ParcelState(enum.StrEnum):\n    \"\"\"\n    Where a parcel is in its journey.\n    \"\"\"\n",
+            ),
+            (
+                "#982",
+                "src/fern/client.py",
+                "        state : ParcelState\n            A registered parcel is never a draft.\n",
+            ),
+        ],
+    );
+}
