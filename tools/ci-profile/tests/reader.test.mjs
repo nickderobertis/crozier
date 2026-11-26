@@ -151,6 +151,39 @@ test("two gate runs in one step stay apart, and a step without a profile keeps i
   assert.deepEqual(lane.targets.map((t) => [t.target, t.gate_step ?? null]).sort(), [["a:test", "sweep/gate-1"], ["b:test", "sweep/gate-2"], ["z:test", null]], "a:test's job-log line is the profiled run; z:test's has no profile and is kept");
 });
 
+// A stand-in `gh` on PATH, as the repository's CI tooling tests stand in for external tools:
+// it answers `api rate_limit` with the given quota and records every call it gets.
+function standInGh(quota) {
+  const bin = scratch();
+  const calls = join(bin, "calls.log");
+  const script = join(bin, "gh.mjs");
+  writeFileSync(script, `import { appendFileSync } from "node:fs";\nappendFileSync(${JSON.stringify(calls)}, process.argv.slice(2).join(" ") + "\\n");\nif (process.argv[2] === "api" && process.argv[3] === "rate_limit") console.log(${JSON.stringify(JSON.stringify(quota))});\nelse process.exit(9);\n`);
+  writeFileSync(join(bin, "gh"), `#!/bin/sh\nexec ${JSON.stringify(process.execPath)} ${JSON.stringify(script)} "$@"\n`, { mode: 0o755 });
+  return { path: `${bin}:${dirname(process.execPath)}`, calls: () => readFileSync(calls, "utf8").trim().split("\n") };
+}
+
+test("the reader fetches nothing under 40% of the core quota, or when the quota answer is malformed", { skip: process.platform === "win32" && "the stand-in gh is a POSIX script" }, () => {
+  for (const [quota, pattern] of [[{ resources: { core: { limit: 5000, remaining: 1999, reset: 1795722569 } } }, /under 40%.*no fetch made/], [{ resources: {} }, /answered no core limit/]]) {
+    const gh = standInGh(quota);
+    const result = spawnSync(process.execPath, [READER, "run", "9", "--cache-dir", scratch()], { cwd: ROOT, encoding: "utf8", env: { ...process.env, PATH: gh.path } });
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, pattern);
+    assert.deepEqual(gh.calls(), ["api rate_limit"], "the refusal comes before any other GitHub read");
+  }
+});
+
+test("the records the workflow writes with record.mjs read back through the reader", () => {
+  const dir = artifactTree();
+  const spike = join(dir, "spike-profile-test-linux");
+  const record = (...args) => assert.equal(node([join(ROOT, "tools/ci-profile/spike/record.mjs"), ...args]).status, 0);
+  record("runner", join(spike, "runner.json"));
+  record("step", join(spike, "step-sweep.json"), "sweep", "4049", "1");
+  const [lane] = report(dir).lanes;
+  assert.ok(lane.spike.runner.cpus > 0);
+  assert.deepEqual(lane.spike.gate_steps, [{ step: "sweep", seconds: 4049, exit: 1 }]);
+  assert.equal(node([join(ROOT, "tools/ci-profile/spike/record.mjs"), "step", join(spike, "x.json"), "sweep", "-1", "0"]).status, 2);
+});
+
 test("the reader refuses a bad invocation and records it cannot trust", () => {
   assert.equal(node([READER, "run", "1", "2"]).status, 2);
   assert.equal(node([READER, "run", "0"]).status, 2);

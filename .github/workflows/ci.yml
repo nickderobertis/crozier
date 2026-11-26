@@ -76,7 +76,7 @@ jobs:
           SPIKE_OUT="$RUNNER_TEMP/spike-out"
           echo "SPIKE_OUT=$SPIKE_OUT" >> "$GITHUB_ENV"
           mkdir -p "$SPIKE_OUT"
-          node -e 'const os=require("os");console.log(JSON.stringify({job:process.env.GITHUB_JOB,platform:os.platform(),release:os.release(),cpus:os.cpus().length,cpu_model:os.cpus()[0]?.model,memory_bytes:os.totalmem(),nx_parallel:process.env.NX_PARALLEL}))' > "$SPIKE_OUT/runner.json"
+          node tools/ci-profile/spike/record.mjs runner "$SPIKE_OUT/runner.json"
           cat "$SPIKE_OUT/runner.json"
       # Several suites (ci, ci-journeys, gate-timing, github-workflows, llmlint-resolution)
       # read ci.yml and hold it to the real lanes' contract. They read the real file, as on
@@ -106,7 +106,7 @@ jobs:
           start=$(date +%s)
           status=0
           just lane-test --sweep --exclude=tag:tier:promoted || status=$?
-          echo "{\"step\":\"sweep\",\"seconds\":$(( $(date +%s) - start )),\"exit\":$status}" > "$SPIKE_OUT/step-sweep.json"
+          node tools/ci-profile/spike/record.mjs step "$SPIKE_OUT/step-sweep.json" sweep "$(( $(date +%s) - start ))" "$status"
           mkdir -p .nx/logs/sweep && mv .nx/logs/gate-* .nx/logs/sweep/ 2>/dev/null || true
           exit $status
       # The golden replays with each generation batched into a few `ruff format` processes
@@ -127,7 +127,7 @@ jobs:
           start=$(date +%s)
           status=0
           just test --sweep --projects=crozier-e2e || status=$?
-          echo "{\"step\":\"e2e-batch\",\"seconds\":$(( $(date +%s) - start )),\"exit\":$status}" > "$SPIKE_OUT/step-e2e-batch.json"
+          node tools/ci-profile/spike/record.mjs step "$SPIKE_OUT/step-e2e-batch.json" e2e-batch "$(( $(date +%s) - start ))" "$status"
           mkdir -p .nx/logs/e2e-batch && mv .nx/logs/gate-* .nx/logs/e2e-batch/ 2>/dev/null || true
           exit $status
       - name: What one spawn costs here
@@ -207,7 +207,7 @@ jobs:
           SPIKE_OUT="$RUNNER_TEMP/spike-out"
           echo "SPIKE_OUT=$SPIKE_OUT" >> "$GITHUB_ENV"
           mkdir -p "$SPIKE_OUT"
-          node -e 'const os=require("os");console.log(JSON.stringify({job:process.env.GITHUB_JOB,platform:os.platform(),release:os.release(),cpus:os.cpus().length,cpu_model:os.cpus()[0]?.model,memory_bytes:os.totalmem(),nx_parallel:process.env.NX_PARALLEL}))' > "$SPIKE_OUT/runner.json"
+          node tools/ci-profile/spike/record.mjs runner "$SPIKE_OUT/runner.json"
           cat "$SPIKE_OUT/runner.json"
       # Several suites (ci, ci-journeys, gate-timing, github-workflows, llmlint-resolution)
       # read ci.yml and hold it to the real lanes' contract. They read the real file, as on
@@ -237,7 +237,7 @@ jobs:
           start=$(date +%s)
           status=0
           just lane-test --sweep --exclude=tag:tier:promoted || status=$?
-          echo "{\"step\":\"sweep\",\"seconds\":$(( $(date +%s) - start )),\"exit\":$status}" > "$SPIKE_OUT/step-sweep.json"
+          node tools/ci-profile/spike/record.mjs step "$SPIKE_OUT/step-sweep.json" sweep "$(( $(date +%s) - start ))" "$status"
           mkdir -p .nx/logs/sweep && mv .nx/logs/gate-* .nx/logs/sweep/ 2>/dev/null || true
           exit $status
       # The golden replays with each generation batched into a few `ruff format` processes
@@ -258,7 +258,7 @@ jobs:
           start=$(date +%s)
           status=0
           just test --sweep --projects=crozier-e2e || status=$?
-          echo "{\"step\":\"e2e-batch\",\"seconds\":$(( $(date +%s) - start )),\"exit\":$status}" > "$SPIKE_OUT/step-e2e-batch.json"
+          node tools/ci-profile/spike/record.mjs step "$SPIKE_OUT/step-e2e-batch.json" e2e-batch "$(( $(date +%s) - start ))" "$status"
           mkdir -p .nx/logs/e2e-batch && mv .nx/logs/gate-* .nx/logs/e2e-batch/ 2>/dev/null || true
           exit $status
       - name: What one spawn costs here

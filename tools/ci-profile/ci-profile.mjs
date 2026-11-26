@@ -17,6 +17,7 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, readFileSync, realpathSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
+import { isRunner, isStep } from "./spike/record.mjs";
 import { basename, join } from "node:path";
 
 const TOOL = "ci-profile";
@@ -289,6 +290,9 @@ function walk(dir) {
   });
 }
 
+/** The modes ruff-batch-experiment.sh runs, in the order it runs them. */
+export const EXPERIMENT_MODES = ["per-file", "batch", "verify"];
+
 /** An artifact's JSON file, refused unless `valid` holds for it; undefined when it is absent. */
 function readJson(path, valid) {
   if (!existsSync(path)) return undefined;
@@ -299,8 +303,6 @@ function readJson(path, valid) {
 const object = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
 const natural = (v) => Number.isSafeInteger(v) && v >= 0;
 const text = (v) => v === undefined || v === null || typeof v === "string";
-const RUNNER = (v) => object(v) && Number.isSafeInteger(v.cpus) && v.cpus > 0 && [v.job, v.platform, v.release, v.cpu_model, v.nx_parallel].every(text) && (v.memory_bytes === undefined || natural(v.memory_bytes));
-const STEP = (v) => object(v) && typeof v.step === "string" && natural(v.seconds) && natural(v.exit);
 const timing = (s) => object(s) && Number.isSafeInteger(s.n) && s.n > 0 && [s.median, s.mean, s.min, s.max].every((x) => Number.isFinite(x) && x >= 0) && Array.isArray(s.samples) && s.samples.length === s.n && s.samples.every((x) => Number.isFinite(x) && x >= 0);
 // spawn-bench.mjs writes this schema: a timed spawn has n and median, a failed one an error.
 const SPAWN_BENCH = (v) => object(v) && v.schema === "spike-spawn-bench-1" && Number.isSafeInteger(v.repeats) && v.repeats > 0 && Number.isSafeInteger(v.cpus) && text(v.platform) && text(v.cpu_model) && Array.isArray(v.spawns) && v.spawns.every((s) => typeof s?.label === "string" && (typeof s.error === "string" || timing(s))) && object(v.fs) && Object.values(v.fs).every(timing);
@@ -353,7 +355,7 @@ function lane(job, jobLog, artifacts) {
     const [header, ...lines] = readFileSync(runsTsv, "utf8").trim().split("\n");
     if (header !== "mode\tround\tseconds\texit") throw new Error(`${runsTsv} does not start with the header ruff-batch-experiment.sh writes`);
     const rows = lines.map((l) => l.split("\t"));
-    const MODES = new Set(["per-file", "batch", "verify"]);
+    const MODES = new Set(EXPERIMENT_MODES);
     const count = (v) => /^\d+$/.test(v) && Number.isSafeInteger(Number(v));
     const secs = (v) => /^\d+(\.\d+)?$/.test(v) && Number.isFinite(Number(v));
     if (!rows.every((r) => r.length === 4 && MODES.has(r[0]) && count(r[1]) && secs(r[2]) && count(r[3]))) throw new Error(`${runsTsv} has a row that is not mode, round, seconds, exit`);
@@ -362,7 +364,7 @@ function lane(job, jobLog, artifacts) {
       ruffBatch[basename(f, ".jsonl")] = aggregateProfiles(readFileSync(f, "utf8").split("\n"));
     }
   }
-  const stepFiles = walk(spike).filter((f) => /step-.*\.json$/.test(f)).map((f) => readJson(f, STEP));
+  const stepFiles = walk(spike).filter((f) => /step-.*\.json$/.test(f)).map((f) => readJson(f, isStep));
   return {
     job: name,
     os: job ? (name.includes("windows") ? "windows" : name.includes("macos") ? "macos" : "linux") : process.platform,
@@ -374,7 +376,7 @@ function lane(job, jobLog, artifacts) {
     schedule: Object.fromEntries(Object.entries(gateSteps).map(([k, g]) => [k, g.schedule && { ...g.schedule, tasks: undefined, parallel: g.parallel }])),
     crozier_profile: crozier,
     spike: {
-      runner: readJson(join(spike, "runner.json"), RUNNER),
+      runner: readJson(join(spike, "runner.json"), isRunner),
       gate_steps: stepFiles,
       spawn_bench: readJson(join(spike, "spawn-bench.json"), SPAWN_BENCH),
       ruff_batch: ruffBatch,

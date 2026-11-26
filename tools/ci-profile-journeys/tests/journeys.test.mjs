@@ -8,6 +8,7 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { EXPERIMENT_MODES } from "../../ci-profile/ci-profile.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const EXE = process.platform === "win32" ? ".exe" : "";
@@ -311,25 +312,36 @@ test("the experiment script refuses a bad round count before running anything", 
   assert.match(result.stderr, /rounds must be a positive integer/);
 });
 
-test("the reader and the replay read what the pinned Nx really writes: its trace and its task graph", () => {
+test("the reader and the replay read what the pinned Nx, nextest, pytest and the gate really print", () => {
   const dir = scratch();
-  const gate = run("node", [join(ROOT, "tools/ci/gate.mjs"), "--sweep", "--projects=workspace,gate-timing", "--", "nx", "run-many", "--targets=test"]);
+  const projects = "workspace,gate-timing,fern-refusals-strict,pool-maintenance";
+  const gate = run("node", [join(ROOT, "tools/ci/gate.mjs"), "--sweep", `--projects=${projects}`, "--", "nx", "run-many", "--targets=test"], { PYTEST_ADDOPTS: "--durations=0 --durations-min=0" });
   assert.equal(gate.status, 0, gate.stdout + gate.stderr);
   const log = /output in (\S+)\)/.exec(gate.stdout)[1];
-  const artifacts = join(dir, "artifacts");
-  const timings = join(artifacts, "test-timings-test-linux", "sweep");
+  // The gate's own stdout is what a CI job log holds; its run is read back from a cache.
+  const cache = join(dir, "cache");
+  const timings = join(cache, "artifacts", "test-timings-test-linux", "sweep");
   mkdirSync(timings, { recursive: true });
   writeFileSync(join(timings, "gate-1.log"), readFileSync(log, "utf8"));
   writeFileSync(join(timings, "gate-1.profile.json"), readFileSync(log.replace(/\.log$/, ".profile.json"), "utf8"));
-  const out = join(dir, "report.json");
-  assert.equal(run("node", [READER, "local", artifacts, "--out", out]).status, 0);
-  const [lane] = JSON.parse(readFileSync(out, "utf8")).lanes;
-  assert.deepEqual(lane.targets.map((t) => t.target).sort(), ["gate-timing:test", "workspace:test"]);
+  writeFileSync(join(cache, "run.json"), JSON.stringify({ databaseId: 9, headSha: "abc", status: "completed", jobs: [{ databaseId: 7, name: "test-linux", steps: [] }] }));
+  writeFileSync(join(cache, "job-7.log"), gate.stdout);
+  const read = run("node", [READER, "run", "9", "--cache-dir", cache]);
+  assert.equal(read.status, 0, read.stderr);
+  const [lane] = JSON.parse(read.stdout).lanes;
+  const fromProfile = lane.targets.filter((t) => t.gate_step === "sweep").map((t) => t.target).sort();
+  assert.deepEqual(fromProfile, ["fern-refusals-strict:test", "gate-timing:test", "pool-maintenance:test", "workspace:test"]);
+  assert.deepEqual(lane.targets.filter((t) => t.gate_step !== "sweep"), [], "every `gate: task` line the gate printed matches a profiled task");
   assert.ok(lane.targets.every((t) => t.seconds > 0 && t.end > t.start && Number.isInteger(t.slot)));
-  assert.ok(lane.cases.some((c) => c.kind === "node" && c.target === "workspace:test"), "Node's cases are attributed to their task");
+  const kinds = (target) => new Set(lane.cases.filter((c) => c.target === target).map((c) => c.kind));
+  assert.ok(kinds("workspace:test").has("node"), "Node's cases, as its runner prints them");
+  assert.ok(kinds("fern-refusals-strict:test").has("pytest"), "pytest's --durations lines");
+  assert.ok(kinds("pool-maintenance:test").has("nextest"), "nextest's PASS lines");
   const graph = join(dir, "tasks.json");
-  assert.equal(run(join(ROOT, "node_modules", ".bin", `nx${process.platform === "win32" ? ".cmd" : ""}`), ["run-many", "--targets=test", "--projects=workspace,gate-timing", `--graph=${graph}`], { NX_DAEMON: "false", NX_TUI: "false" }).status, 0);
-  const replay = run("node", [join(ROOT, "tools/ci-profile/spike/schedule.mjs"), out, "test-linux", "sweep", graph]);
+  assert.equal(run(join(ROOT, "node_modules", ".bin", `nx${process.platform === "win32" ? ".cmd" : ""}`), ["run-many", "--targets=test", `--projects=${projects}`, `--graph=${graph}`], { NX_DAEMON: "false", NX_TUI: "false" }).status, 0);
+  const report = join(dir, "report.json");
+  writeFileSync(report, read.stdout);
+  const replay = run("node", [join(ROOT, "tools/ci-profile/spike/schedule.mjs"), report, "test-linux", "sweep", graph]);
   assert.equal(replay.status, 0, replay.stderr);
   const wall = JSON.parse(replay.stdout).simulated.alone.observed[3];
   assert.ok(Math.abs(wall - lane.schedule.sweep.wall_seconds) < 0.5, `the replay of a real run reproduces its wall (${wall} against ${lane.schedule.sweep.wall_seconds})`);
@@ -356,4 +368,7 @@ test("the workflow uploads the artifacts the reader reads, and the experiment wr
   }
   assert.ok(readFileSync(join(ROOT, "tools", "ci-profile", "spike", "ruff-batch-experiment.sh"), "utf8").includes("printf 'mode\\tround\\tseconds\\texit\\n'"));
   assert.ok(reader.includes('"mode\\tround\\tseconds\\texit"'));
+  const script = readFileSync(join(ROOT, "tools", "ci-profile", "spike", "ruff-batch-experiment.sh"), "utf8");
+  const written = [...script.matchAll(/^\s*run (\S+) /gm)].map((m) => m[1]);
+  assert.deepEqual([...new Set(written)], EXPERIMENT_MODES, "the script runs exactly the modes the reader accepts, in order");
 });

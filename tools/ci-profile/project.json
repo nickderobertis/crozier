@@ -42,6 +42,7 @@
           "node --check tools/ci-profile/ci-profile.mjs",
           "node --check tools/ci-profile/spike/schedule.mjs",
           "node --check tools/ci-profile/spike/spawn-bench.mjs",
+          "node --check tools/ci-profile/spike/record.mjs",
           "node --check tools/ci-profile/spike/spawncount/spawncount.mjs",
           "node --check tools/ci-profile/tests/reader.test.mjs",
           "bash -n tools/ci-profile/spike/ruff-batch-experiment.sh",
