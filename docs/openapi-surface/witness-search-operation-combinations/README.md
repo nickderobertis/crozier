@@ -90,10 +90,10 @@ candidate. It is also the open-row list for the completion report.
 | `combo-query-param-ref-object` | `interaction-proven` | 3009 | 0 |
 | `combo-query-param-ref-string-enum` | `interaction-proven` | 3189 | 0 |
 | `combo-streaming-method-name` | `interaction-proven` | 2984 | 0 |
-| `combo-success-anyof-nullable` | `search-incomplete` | 2979 | 2845 |
+| `combo-success-anyof-nullable` | `search-incomplete` | 2979 | 61 |
 | `combo-success-json-beside-binary-schema` | `interaction-proven` | 3009 | 0 |
 | `combo-success-json-beside-download` | `interaction-proven` | 2998 | 0 |
-| `combo-success-oneof-nullable` | `search-incomplete` | 2963 | 2829 |
+| `combo-success-oneof-nullable` | `search-incomplete` | 2963 | 61 |
 | `combo-success-statuses-mixed-media` | `interaction-proven` | 3139 | 0 |
 | `combo-success-text-beside-download` | `interaction-proven` | 2969 | 0 |
 
@@ -152,6 +152,53 @@ real witness among the populations it finished, and its outstanding candidates r
 census cells, the outstanding index and the verdict table above from `just census-repin`'s
 views. Its `check` mode, in the census suite, recomputes everything except the arm counts
 from committed bytes; those are measured, and record the reach store's commit `23d492a3281c`.
+
+## Nullable success-union screen (issue #954)
+
+On 2026-11-26 every outstanding candidate of `combo-success-anyof-nullable` (2,845)
+and `combo-success-oneof-nullable` (2,829) was screened, and each census cell now
+states its outcome under `2026-11-26 screen (#954)`. No Fern ran for this screen:
+the complete trigger of the interaction branch held for no candidate. In order:
+
+1. **The population screen**, offline. A fresh `population_screen.py screen
+   --workers 8` over this tree reproduced
+   [`screen.tsv`](../witness-search-combination-populations/screen.tsv) byte for
+   byte. That screen applies the census's real-source eligibility rule (#953:
+   `tooling_resource_path`, `rejected-authored`), each key's trigger and the
+   corpus licence reading, under which an aggregation's grant is no publisher
+   grant. A candidate the screen holds took its verdict from there. 52
+   identities whose bytes no population held were fetched at their recorded
+   commit through the shared raw-response cache, and 2 more answered 404.
+   Thirteen more were recorded with a tree-download `<owner>--<repo>/` prefix on
+   their path. Read without it, each one's SHA-256 is the recorded one. Each such
+   document was then screened the same way: eligibility by its repository path,
+   the trigger, then `info.license`, or the repository's licence where it
+   declares none (read through `tools/witness-search/rate_limit_guard.py`).
+2. **The interaction branch**, with instrumented crozier, for the 82 documents
+   that passed. The branch is `src/ir.rs::nullable_success_union`'s keyword
+   arm, the dropped-`null` union. It runs only when an *inline* success schema
+   holds a `type: null` member beside two or more others, or beside one that is
+   itself a union or a string enum. A `$ref` member beside `null` collapses
+   earlier, as an optional. The declaration-level trigger does not imply it.
+   That is why the 40 and 14 certified-screen byte matches never executed it
+   ([record](../witness-search-combinations-schemas/README.md)). Over each
+   document's exact bytes alone, 53 runs execute none of either arm's regions.
+   The other 29 are refused under registered refusal classes
+   (`enum-name-unsuitable` 13, `request-property-camelcase-collision` 3,
+   `service-auth-undefined` 3, `endpoint-auth-undefined` 2,
+   `generator-lint-failure` 2 and `path-parameter-unreferenced` 2, and one each
+   of `default-not-valid-for-type`, `object-extends-non-object`,
+   `unresolved-reference` and `unsupported-openapi-version`). The same measurement over the hand-written
+   `beacon-signal-results` executes 2 regions of each arm. Over registered
+   `registered-literals-msgbyte-tianji-1843a239`, whose `GET /page/{slug}` wraps
+   a union in `anyOf: [..., null]`, it executes none.
+
+So no candidate reaches the comparison stage, and no Fern generation is owed. 61
+candidates per key stay outstanding, each named in
+[`outstanding-candidates.tsv`](outstanding-candidates.tsv). Their bytes cannot be
+read: 43 are recorded only by a digest, with no repository, path or commit; 17
+answer 404 at their recorded commit; and one is a non-public input. Both rows stay
+open, and `beacon-signal-results` stays their unproven hand-written cover.
 
 ## Census encoding
 
