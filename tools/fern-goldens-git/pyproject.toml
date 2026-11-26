@@ -8,7 +8,13 @@ name = "crozier-fern-goldens-git"
 version = "0.0.0"
 description = "Fern goldens suites that drive the real git."
 requires-python = ">=3.11"
-dependencies = ["crozier-corpus", "crozier-fern-goldens", "crozier-surface-census"]
+dependencies = [
+    "crozier-corpus",
+    "crozier-fern-goldens",
+    "crozier-fern-refusals",
+    "crozier-surface-census",
+    "crozier-witness-search",
+]
 
 [tool.uv]
 package = false
@@ -16,4 +22,6 @@ package = false
 [tool.uv.sources]
 crozier-corpus = { workspace = true }
 crozier-fern-goldens = { workspace = true }
+crozier-fern-refusals = { workspace = true }
 crozier-surface-census = { workspace = true }
+crozier-witness-search = { workspace = true }

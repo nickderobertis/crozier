@@ -66,7 +66,7 @@ implementation is
 [`tools/fern-goldens/fern_generation_lock.py`](../tools/fern-goldens/fern_generation_lock.py)
 (`hold()` for Python, `run --label L -- COMMAND` for shell); a new Fern entry
 point takes it there and joins the cases of
-`tools/fern-goldens/tests/fern_generation_lock_test.py`.
+`tools/fern-goldens-git/tests/fern_generation_lock_test.py`.
 
 While another process holds the lock, an entry point prints one line naming the
 lock and the holder's pid, then waits. A suite that drives an entry point with a

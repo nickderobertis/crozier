@@ -17,7 +17,8 @@ rather than taking the lock again, which would deadlock. The holder exports
 `CROZIER_FERN_GENERATION_LOCK_HOLDER=<its pid>` and records the same pid in
 `fern-generation.lock.holder` beside the lock for as long as it holds it. A
 process is inside that hold when the variable it inherited names that recorded
-pid and the pid is the process itself or one of its ancestors, so a variable
+pid and the pid is the process itself or one of its ancestors (on Windows, which has no
+parent lookup here, only the process itself), so a variable
 leaked into an unrelated process, or one left from a hold already released,
 never stands in for the lock. A hold made outside these entry points (a hand
 `flock` around a bare `fern` run) records no holder, so an entry point started
@@ -102,9 +103,10 @@ def is_self_or_ancestor(pid: int) -> bool:
         if current == pid:
             return True
         if os.name == "nt":
-            # No portable parent lookup: the recorded holder and the inherited
-            # variable agreeing is the evidence there.
-            return True
+            # Windows has no parent lookup here, so only the holder itself is
+            # verified there; Fern, and every entry point nesting another, runs
+            # on Linux and macOS.
+            return False
         current = parent_of(current)
     return False
 

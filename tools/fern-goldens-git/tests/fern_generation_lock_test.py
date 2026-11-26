@@ -28,6 +28,7 @@ import importlib.util
 import json
 import os
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
@@ -678,6 +679,7 @@ class NestingIsVerifiedNotTrusted(unittest.TestCase):
             [sys.executable, str(LOCK_SCRIPT), "held"], env=dict(self.environment, **extra), check=False
         ).returncode
 
+    @unittest.skipIf(os.name == "nt", "Windows has no parent lookup, so only the holder itself is a hold there")
     def test_a_variable_naming_no_recorded_holder_or_no_ancestor_is_not_a_hold(self) -> None:
         self.assertEqual(1, self.held())
         self.assertEqual(1, self.held(**{LOCK.HOLDER_ENV: str(os.getpid())}), "no holder recorded")
@@ -692,6 +694,69 @@ class NestingIsVerifiedNotTrusted(unittest.TestCase):
         self.assertEqual(1, self.held(**{LOCK.HOLDER_ENV: str(stranger.pid)}))
         holder.write_text(f"{os.getpid()}\n", encoding="utf-8")
         self.assertEqual(0, self.held(**{LOCK.HOLDER_ENV: str(os.getpid())}), "this process is the child's parent")
+
+    def lock_is_free(self) -> bool:
+        """Whether another process could take the lock now (a fresh process asks, so no hold of this one counts)."""
+        probe = (
+            "import fcntl, sys\n"
+            "with open(sys.argv[1], 'a+') as handle:\n"
+            "    try:\n"
+            "        fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)\n"
+            "    except BlockingIOError:\n"
+            "        sys.exit(1)\n"
+        )
+        lock = Path(self.environment["XDG_CACHE_HOME"]) / "crozier" / "fern-generation.lock"
+        return subprocess.run([sys.executable, "-c", probe, str(lock)], check=False).returncode == 0
+
+    @unittest.skipIf(os.name == "nt", "SIGTERM and flock are POSIX")
+    def test_a_terminated_run_ends_its_command_and_frees_the_lock(self) -> None:
+        """`run` hands SIGTERM to its command, exits as the signal asked, and leaves
+        neither the lock held nor a holder recorded."""
+        scratch = Path(self.environment["XDG_CACHE_HOME"])
+        started, ended = scratch / "started", scratch / "ended"
+        child = (
+            "import pathlib, signal, sys, time\n"
+            "def stop(signum, frame):\n"
+            f"    pathlib.Path({str(ended)!r}).write_text(str(signum))\n"
+            "    sys.exit(128 + signum)\n"
+            "signal.signal(signal.SIGTERM, stop)\n"
+            f"pathlib.Path({str(started)!r}).write_text('')\n"
+            "time.sleep(60)\n"
+        )
+        wrapper = subprocess.Popen(
+            [sys.executable, str(LOCK_SCRIPT), "run", "--label", "probe", "--", sys.executable, "-c", child],
+            env=self.environment,
+        )
+        deadline = time.monotonic() + HANG_GUARD_SECONDS
+        while not started.exists() and time.monotonic() < deadline:
+            time.sleep(0.05)
+        self.assertTrue(started.exists(), "the command never started")
+        self.assertFalse(self.lock_is_free(), "the command ran outside the lock")
+        wrapper.send_signal(signal.SIGTERM)
+        self.assertEqual(128 + signal.SIGTERM, wrapper.wait(timeout=HANG_GUARD_SECONDS))
+        self.assertEqual(str(int(signal.SIGTERM)), ended.read_text(), "the command was not handed the signal")
+        self.assertTrue(self.lock_is_free())
+        self.assertFalse((scratch / "crozier" / "fern-generation.lock.holder").exists())
+
+    @unittest.skipIf(os.name == "nt", "flock is POSIX")
+    def test_a_hold_left_by_an_error_restores_its_variable_and_frees_the_lock(self) -> None:
+        saved = {key: os.environ.get(key) for key in ("XDG_CACHE_HOME", LOCK.HOLDER_ENV)}
+        os.environ["XDG_CACHE_HOME"] = self.environment["XDG_CACHE_HOME"]
+        os.environ.pop(LOCK.HOLDER_ENV, None)
+        try:
+            with self.assertRaises(RuntimeError), LOCK.hold("probe"):
+                self.assertEqual(str(os.getpid()), os.environ[LOCK.HOLDER_ENV])
+                self.assertFalse(self.lock_is_free())
+                raise RuntimeError("an entry point failing mid-generation")
+            self.assertNotIn(LOCK.HOLDER_ENV, os.environ)
+            self.assertIsNone(LOCK.recorded_holder())
+            self.assertTrue(self.lock_is_free())
+        finally:
+            for key, value in saved.items():
+                if value is None:
+                    os.environ.pop(key, None)
+                else:
+                    os.environ[key] = value
 
     def test_run_returns_the_commands_status_and_names_one_it_cannot_start(self) -> None:
         ran = subprocess.run(
