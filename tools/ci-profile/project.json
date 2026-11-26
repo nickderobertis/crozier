@@ -1,0 +1,28 @@
+{
+  "name": "ci-profile",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "tags": [
+    "type:tooling",
+    "lang:javascript",
+    "lang:python",
+    "lang:bash"
+  ],
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        {
+          "projects": [
+            "crozier"
+          ],
+          "target": "build"
+        }
+      ],
+      "options": {
+        "command": "node --test tools/ci-profile/tests/ci-profile.test.mjs"
+      },
+      "cache": false
+    }
+  }
+}

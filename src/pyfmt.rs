@@ -91,6 +91,42 @@ fn format_source_inner(file: &str, source: &str, width: usize) -> Result<String>
     })
 }
 
+/// SPIKE ONLY (`spike-windows-lane-breakdown`): how a generation's files are
+/// formatted, from `CROZIER_SPIKE_RUFF_BATCH`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FormatMode {
+    /// Unset or empty: one `ruff format` per file, as on `main`.
+    PerFile,
+    /// `1`: one `ruff format` over the whole generation.
+    Batch,
+    /// `verify`: both, failing the generation on any byte of difference.
+    Verify,
+}
+
+impl FormatMode {
+    /// Read the mode, refusing any value it does not name.
+    ///
+    /// # Errors
+    ///
+    /// When the variable holds anything but empty, `1` or `verify`.
+    pub fn from_env() -> Result<Self> {
+        match std::env::var_os("CROZIER_SPIKE_RUFF_BATCH") {
+            None => Ok(Self::PerFile),
+            Some(value) => match value.to_str() {
+                Some("") => Ok(Self::PerFile),
+                Some("1") => Ok(Self::Batch),
+                Some("verify") => Ok(Self::Verify),
+                _ => Err(Error::Format {
+                    file: "(every file)".to_string(),
+                    message: format!(
+                        "CROZIER_SPIKE_RUFF_BATCH must be empty, `1` or `verify`, not {value:?}"
+                    ),
+                }),
+            },
+        }
+    }
+}
+
 /// SPIKE ONLY (`spike-windows-lane-breakdown`): format every `(path, source)`
 /// with as few `ruff format` processes as the platform's command line allows,
 /// instead of one process per file, staged at their generated relative paths.

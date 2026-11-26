@@ -15,7 +15,7 @@
 // the core rate limit left. `local` reads an already-downloaded artifact tree
 // (one sub-directory per artifact, as `gh run download` writes it).
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, readdirSync, readFileSync, realpathSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, realpathSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { basename, join } from "node:path";
 
@@ -30,14 +30,15 @@ function die(message, action, code = 1) {
   process.exit(code);
 }
 
-// --- fetching -------------------------------------------------------------------------
-
 function gh(args, options = {}) {
   return execFileSync("gh", args, { encoding: options.encoding ?? "utf8", maxBuffer: 1024 * 1024 * 1024, stdio: ["ignore", "pipe", "pipe"] });
 }
 
 function checkQuota() {
-  const core = JSON.parse(gh(["api", "rate_limit"])).resources.core;
+  const core = JSON.parse(gh(["api", "rate_limit"]))?.resources?.core;
+  if (![core?.limit, core?.remaining, core?.reset].every(Number.isSafeInteger) || core.limit < 1) {
+    die(`'gh api rate_limit' answered no core limit: ${JSON.stringify(core)}`, "check `gh auth status`, then rerun");
+  }
   if (core.remaining / core.limit < 0.4) {
     die(`only ${core.remaining}/${core.limit} of the GitHub core rate limit remains (under 40%); no fetch made`,
       `rerun after ${new Date(core.reset * 1000).toISOString()}, or read a cached run`);
@@ -61,26 +62,37 @@ function fetchRun(runId, cacheDir) {
     run = JSON.parse(gh(["run", "view", String(runId), "--repo", REPOSITORY, "--json", "databaseId,headSha,status,conclusion,createdAt,updatedAt,jobs,event,headBranch"]));
     writeFileSync(runPath, JSON.stringify(run, null, 2));
   }
+  const jobOk = (job) => Number.isSafeInteger(job?.databaseId) && typeof job.name === "string" && Array.isArray(job.steps);
+  if (String(run?.databaseId) !== String(runId) || typeof run.headSha !== "string" || !Array.isArray(run.jobs) || !run.jobs.every(jobOk)) {
+    die(`run ${runId}'s metadata is not a run with jobs (${runPath})`, `delete ${runPath} and rerun to fetch it again`);
+  }
   if (run.status !== "completed") die(`run ${runId} is ${run.status}`, "wait for it to finish, then rerun");
   for (const job of run.jobs) {
     const logPath = join(cacheDir, `job-${job.databaseId}.log`);
     if (!existsSync(logPath)) checkQuota();
     cached(logPath, () => gh(["api", "--allow-escape-sequences", `repos/${REPOSITORY}/actions/jobs/${job.databaseId}/logs`]));
   }
+  // Downloaded beside the cache and moved in whole, so a failed download is retried next time.
   const artifacts = join(cacheDir, "artifacts");
   if (!existsSync(artifacts)) {
     checkQuota();
-    mkdirSync(artifacts, { recursive: true });
+    const partial = `${artifacts}.partial`;
+    rmSync(partial, { recursive: true, force: true });
+    mkdirSync(partial, { recursive: true });
     try {
-      gh(["run", "download", String(runId), "--repo", REPOSITORY, "--dir", artifacts]);
+      gh(["run", "download", String(runId), "--repo", REPOSITORY, "--dir", partial]);
     } catch (error) {
-      console.error(`${TOOL}: run ${runId} has no artifacts to download (${String(error.stderr || error.message).trim()})`);
+      const message = String(error.stderr || error.message).trim();
+      if (!/no valid artifacts found/i.test(message)) {
+        rmSync(partial, { recursive: true, force: true });
+        die(`could not download run ${runId}'s artifacts: ${message}`, "check `gh auth status` and the run's artifact retention, then rerun");
+      }
+      console.error(`${TOOL}: run ${runId} has no artifacts; its report carries job-log figures only`);
     }
+    renameSync(partial, artifacts);
   }
   return { run, artifacts };
 }
-
-// --- parsing --------------------------------------------------------------------------
 
 const ANSI = /\u001b\[[0-9;]*[A-Za-z]/g;
 const clean = (line) => line.replace(ANSI, "").replace(/\r$/, "");
@@ -157,6 +169,10 @@ export function parseCases(gateLog, knownTasks) {
 
 /** Each task's start, end and slot from an Nx profile, with slot utilisation over the run. */
 export function schedule(events) {
+  if (!Array.isArray(events)) throw new Error("an Nx profile is a JSON array of trace events");
+  for (const e of events.filter((x) => x?.ph === "X")) {
+    if (typeof e.name !== "string" || ![e.ts, e.dur].every(Number.isFinite) || e.dur < 0) throw new Error(`an Nx trace event is not a timed task: ${JSON.stringify(e).slice(0, 200)}`);
+  }
   const tasks = events.filter((e) => e.ph === "X").map((e) => ({ target: e.name, start: e.ts / 1e6, end: (e.ts + e.dur) / 1e6, seconds: e.dur / 1e6, slot: e.tid, status: e.args?.status }));
   if (tasks.length === 0) return { tasks: [], wall_seconds: 0, task_seconds: 0, running_seconds: {} };
   const t0 = Math.min(...tasks.map((t) => t.start));
@@ -194,6 +210,12 @@ function quantiles(values) {
 /** Sum crozier's per-process profiles: by command, phase, program and Nx task. */
 export function aggregateProfiles(lines) {
   const profiles = lines.filter((l) => l.trim()).map((l) => JSON.parse(l));
+  for (const p of profiles) {
+    const timed = (list, key) => Array.isArray(list) && list.every((x) => typeof x?.[key] === "string" && Number.isFinite(x.seconds));
+    if (p?.schema_version !== 1 || typeof p.command !== "string" || !Number.isFinite(p.total_seconds) || !timed(p.phases, "name") || !timed(p.subprocesses, "program")) {
+      throw new Error(`not a schema_version 1 CROZIER_PROFILE record: ${JSON.stringify(p).slice(0, 200)}`);
+    }
+  }
   const add = (map, key, seconds, count = 1) => {
     const e = map[key] ?? (map[key] = { seconds: 0, count: 0 });
     e.seconds += seconds;
@@ -244,8 +266,6 @@ export function aggregateProfiles(lines) {
   };
 }
 
-// --- assembling -----------------------------------------------------------------------
-
 function walk(dir) {
   if (!existsSync(dir)) return [];
   return readdirSync(dir).flatMap((name) => {
@@ -274,23 +294,12 @@ function lane(job, jobLog, artifacts) {
     const parallel = /--parallel[= ](\d+)/.exec(text)?.[1];
     gateSteps[stepName] = { log, schedule: sched, cases: parseCases(text, known), parallel };
   }
-  let targets = [];
-  if (jobLog) targets = gateTaskLines(jobLog);
-  // A step cut off before the gate printed its timings still has its Nx profile.
-  for (const [stepName, g] of Object.entries(gateSteps)) {
-    if (!g.schedule) continue;
-    for (const t of g.schedule.tasks) {
-      const known = targets.find((x) => x.target === t.target && (x.gate_step ?? stepName) === stepName && x.from !== "profile");
-      if (known) {
-        known.gate_step = stepName;
-        known.start = t.start;
-        known.end = t.end;
-        known.slot = t.slot;
-      } else {
-        targets.push({ target: t.target, seconds: t.seconds, status: t.status, cached: String(t.status).includes("cache"), gate_step: stepName, start: t.start, end: t.end, slot: t.slot, from: "profile" });
-      }
-    }
-  }
+  // Each gate step's Nx profile is the source of its targets, with their start, end and slot;
+  // the job log's `gate: task` lines (which name no step) stand in only when no profile was kept.
+  const profiled = Object.entries(gateSteps).filter(([, g]) => g.schedule);
+  const targets = profiled.length
+    ? profiled.flatMap(([stepName, g]) => g.schedule.tasks.map((t) => ({ target: t.target, seconds: t.seconds, status: t.status, cached: String(t.status).includes("cache"), gate_step: stepName, start: t.start, end: t.end, slot: t.slot })))
+    : jobLog ? gateTaskLines(jobLog) : [];
   if (Object.keys(gateSteps).length === 0) missing.push(`no gate logs in artifact test-timings-${name}`);
   const cases = Object.entries(gateSteps).flatMap(([stepName, g]) => g.cases.map((c) => ({ ...c, gate_step: stepName })));
   const casedTargets = new Set(cases.map((c) => c.target));
@@ -302,7 +311,10 @@ function lane(job, jobLog, artifacts) {
   const ruffBatch = {};
   const runsTsv = join(spike, "ruff-batch", "runs.tsv");
   if (existsSync(runsTsv)) {
-    const rows = readFileSync(runsTsv, "utf8").trim().split("\n").slice(1).map((l) => l.split("\t"));
+    const [header, ...lines] = readFileSync(runsTsv, "utf8").trim().split("\n");
+    if (header !== "mode\tround\tseconds\texit") throw new Error(`${runsTsv} does not start with the header ruff-batch-experiment.sh writes`);
+    const rows = lines.map((l) => l.split("\t"));
+    if (!rows.every((r) => r.length === 4 && r.slice(1).every((v) => Number.isFinite(Number(v))))) throw new Error(`${runsTsv} has a row that is not mode, round, seconds, exit`);
     ruffBatch.runs = rows.map(([mode, round, secs, exit]) => ({ mode, round: Number(round), seconds: Number(secs), exit: Number(exit) }));
     for (const f of walk(join(spike, "ruff-batch")).filter((f) => f.endsWith(".jsonl"))) {
       ruffBatch[basename(f, ".jsonl")] = aggregateProfiles(readFileSync(f, "utf8").split("\n"));
@@ -335,12 +347,16 @@ function main() {
   const positional = [];
   while (argv.length) {
     const arg = argv.shift();
-    if (arg === "--cache-dir" || arg === "--out") flags[arg.slice(2)] = argv.shift();
-    else if (arg.startsWith("--")) die(`unknown argument '${arg}'`, USAGE, 2);
+    if (arg === "--cache-dir" || arg === "--out") {
+      const value = argv.shift();
+      if (!value || value.startsWith("--")) die(`${arg} takes a path`, USAGE, 2);
+      flags[arg.slice(2)] = value;
+    } else if (arg.startsWith("--")) die(`unknown argument '${arg}'`, USAGE, 2);
     else positional.push(arg);
   }
+  if (positional.length !== 1) die(`expected one ${verb === "local" ? "artifact directory" : "run id"}, got ${positional.length}`, USAGE, 2);
   let report;
-  if (verb === "run" && /^\d+$/.test(positional[0] ?? "")) {
+  if (verb === "run" && /^[1-9]\d{0,15}$/.test(positional[0])) {
     const runId = positional[0];
     const cacheDir = flags["cache-dir"] ?? join(process.env.XDG_CACHE_HOME || join(homedir(), ".cache"), "crozier", "ci-profile", runId);
     const { run, artifacts } = fetchRun(runId, cacheDir);
@@ -349,7 +365,7 @@ function main() {
       source: { kind: "run", run_id: Number(runId), head_sha: run.headSha },
       lanes: run.jobs.map((job) => lane(job, readFileSync(join(cacheDir, `job-${job.databaseId}.log`), "utf8"), artifacts)),
     };
-  } else if (verb === "local" && positional[0]) {
+  } else if (verb === "local" && existsSync(positional[0])) {
     const dir = positional[0];
     const names = readdirSync(dir).filter((n) => n.startsWith("test-timings-")).map((n) => n.slice("test-timings-".length));
     report = { schema_version: 1, source: { kind: "local", run_id: null, head_sha: null }, lanes: names.map((name) => lane({ name }, undefined, dir)) };

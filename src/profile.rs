@@ -169,7 +169,10 @@ pub fn write(command: &str, exit_code: u8) {
             )
         })
         .collect();
-    let args: Vec<String> = std::env::args().skip(1).map(|a| json_string(&a)).collect();
+    let args: Vec<String> = std::env::args_os()
+        .skip(1)
+        .map(|a| json_string(&a.to_string_lossy()))
+        .collect();
     // `spike` carries what only this spike reads: which Nx task and test
     // started the process, so a profile can be attributed to its suite.
     let body = format!(

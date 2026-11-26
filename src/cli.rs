@@ -48,6 +48,22 @@ pub struct Cli {
     no_config: bool,
 }
 
+impl Cli {
+    /// SPIKE ONLY (`spike-windows-lane-breakdown`): the subcommand a
+    /// `CROZIER_PROFILE` file is filed under; bare `crozier` generates.
+    #[must_use]
+    pub fn command_name(&self) -> &'static str {
+        match self.command {
+            None | Some(Command::Generate(_)) => "generate",
+            Some(Command::Init(_)) => "init",
+            Some(Command::Config(_)) => "config",
+            Some(Command::Compare(_)) => "compare",
+            Some(Command::Schema) => "schema",
+            Some(Command::InternalStrip { .. }) => "internal-strip",
+        }
+    }
+}
+
 /// Top-level subcommands.
 #[derive(Subcommand)]
 enum Command {

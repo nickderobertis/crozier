@@ -13740,7 +13740,7 @@ fn format_python_files(pkg: &str, files: &mut [GeneratedFile]) -> Result<()> {
             batch.push(index);
         }
     }
-    let mode = std::env::var("CROZIER_SPIKE_RUFF_BATCH").unwrap_or_default();
+    let mode = crate::pyfmt::FormatMode::from_env()?;
     let per_file = |files: &[GeneratedFile]| -> Result<Vec<String>> {
         batch
             .iter()
@@ -13763,9 +13763,9 @@ fn format_python_files(pkg: &str, files: &mut [GeneratedFile]) -> Result<()> {
             .collect();
         crate::pyfmt::format_batch(&items, crate::pyfmt::LINE_LENGTH)
     };
-    let formatted = match mode.as_str() {
-        "1" => batched(files, "format")?,
-        "verify" => {
+    let formatted = match mode {
+        crate::pyfmt::FormatMode::Batch => batched(files, "format")?,
+        crate::pyfmt::FormatMode::Verify => {
             let one = per_file(files)?;
             let many = batched(files, "format-batch")?;
             if let Some(k) = (0..one.len()).find(|&k| one[k] != many[k]) {
@@ -13777,7 +13777,7 @@ fn format_python_files(pkg: &str, files: &mut [GeneratedFile]) -> Result<()> {
             }
             one
         }
-        _ => per_file(files)?,
+        crate::pyfmt::FormatMode::PerFile => per_file(files)?,
     };
     for (&i, contents) in batch.iter().zip(formatted) {
         files[i].contents = contents;

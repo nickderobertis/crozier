@@ -38,7 +38,6 @@ jobs:
       - name: Leave this job's own directories out of Defender scanning
         shell: pwsh
         run: Add-MpPreference -ExclusionPath $env:GITHUB_WORKSPACE, $env:RUNNER_TEMP, $env:TEMP
-      # Full history, as the test lanes check out.
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -123,7 +122,7 @@ jobs:
           mkdir -p .nx/logs "$CROZIER_PROFILE"
           start=$(date +%s)
           status=0
-          node tools/ci/gate.mjs --sweep --projects=crozier-e2e -- nx run-many --targets=test || status=$?
+          just test --sweep --projects=crozier-e2e || status=$?
           echo "{\"step\":\"e2e-batch\",\"seconds\":$(( $(date +%s) - start )),\"exit\":$status}" > "$SPIKE_OUT/step-e2e-batch.json"
           mkdir -p .nx/logs/e2e-batch && mv .nx/logs/gate-* .nx/logs/e2e-batch/ 2>/dev/null || true
           exit $status
@@ -167,7 +166,6 @@ jobs:
     env:
       SWEEP_STEP_MINUTES: "175"
     steps:
-      # Full history, as the test lanes check out.
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -252,7 +250,7 @@ jobs:
           mkdir -p .nx/logs "$CROZIER_PROFILE"
           start=$(date +%s)
           status=0
-          node tools/ci/gate.mjs --sweep --projects=crozier-e2e -- nx run-many --targets=test || status=$?
+          just test --sweep --projects=crozier-e2e || status=$?
           echo "{\"step\":\"e2e-batch\",\"seconds\":$(( $(date +%s) - start )),\"exit\":$status}" > "$SPIKE_OUT/step-e2e-batch.json"
           mkdir -p .nx/logs/e2e-batch && mv .nx/logs/gate-* .nx/logs/e2e-batch/ 2>/dev/null || true
           exit $status

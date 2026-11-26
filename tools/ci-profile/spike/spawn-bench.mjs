@@ -18,6 +18,10 @@ if (!out) {
   process.exit(2);
 }
 const repeats = Number(repeatsArg ?? 20);
+if (!Number.isSafeInteger(repeats) || repeats < 1 || repeats > 1000) {
+  console.error(`spawn-bench: repeats must be an integer from 1 to 1000, not '${repeatsArg}'`);
+  process.exit(2);
+}
 const ROOT = resolve(import.meta.dirname, "..", "..", "..");
 const exe = process.platform === "win32" ? ".exe" : "";
 

@@ -18,20 +18,31 @@ if (!graphPath) {
   console.error("schedule: usage: node tools/ci-profile/spike/schedule.mjs <report.json> <job> <gate-step> <tasks.json> [--scale task=factor,...]");
   process.exit(2);
 }
+const fail = (message) => {
+  console.error(`schedule: ${message}`);
+  process.exit(2);
+};
 const scale = new Map();
 for (let i = 0; i < rest.length; i++) {
-  if (rest[i] === "--scale") for (const pair of rest[++i].split(",")) {
-    const [task, factor] = pair.split("=");
+  if (rest[i] !== "--scale" || !rest[i + 1]) fail(`unknown or incomplete argument '${rest[i]}'; only --scale task=factor,... follows the four paths`);
+  for (const pair of rest[++i].split(",")) {
+    const [task, factor, extra] = pair.split("=");
+    if (!task || extra !== undefined || !/^\d+(\.\d+)?$/.test(factor ?? "")) fail(`--scale takes task=factor pairs with a non-negative factor, not '${pair}'`);
     scale.set(task, Number(factor));
   }
 }
 const report = JSON.parse(readFileSync(reportPath, "utf8"));
 const lane = report.lanes.find((l) => l.job === job);
-if (!lane) throw new Error(`no lane ${job}`);
+if (!lane) fail(`${reportPath} has no lane '${job}'`);
 const measured = lane.targets.filter((t) => t.gate_step === step && t.start !== undefined);
+if (measured.length === 0) fail(`lane '${job}' has no timed targets for gate step '${step}'`);
+if (!measured.every((t) => Number.isFinite(t.seconds) && t.seconds >= 0)) fail(`lane '${job}' has a target without non-negative seconds`);
 const graph = JSON.parse(readFileSync(graphPath, "utf8")).tasks;
+if (!graph || typeof graph.tasks !== "object" || typeof graph.dependencies !== "object") fail(`${graphPath} is not the task graph \`nx run-many --graph=<file>\` writes`);
 const deps = graph.dependencies;
 const duration = new Map(measured.map((t) => [t.target, t.seconds * (scale.get(t.target) ?? 1)]));
+const unknown = [...scale.keys()].filter((task) => !duration.has(task));
+if (unknown.length) fail(`--scale names task(s) the lane did not run: ${unknown.join(", ")}`);
 const observedStart = new Map(measured.map((t) => [t.target, t.start]));
 const ids = [...duration.keys()];
 
@@ -39,8 +50,14 @@ const ids = [...duration.keys()];
 const dependents = new Map(ids.map((id) => [id, []]));
 for (const id of ids) for (const d of deps[id] ?? []) if (dependents.has(d)) dependents.get(d).push(id);
 const tail = new Map();
+const visiting = new Set();
 const tailOf = (id) => {
-  if (!tail.has(id)) tail.set(id, duration.get(id) + Math.max(0, ...dependents.get(id).map(tailOf)));
+  if (visiting.has(id)) fail(`the task graph has a cycle through ${id}`);
+  if (!tail.has(id)) {
+    visiting.add(id);
+    tail.set(id, duration.get(id) + Math.max(0, ...dependents.get(id).map(tailOf)));
+    visiting.delete(id);
+  }
   return tail.get(id);
 };
 // The critical path: the chain of dependencies with the largest summed duration.

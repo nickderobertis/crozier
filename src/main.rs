@@ -35,42 +35,31 @@ fn main() -> ExitCode {
     }
 }
 
-/// SPIKE ONLY: the subcommand a profile is filed under.
-fn command_name() -> String {
-    const NAMES: [&str; 6] = [
-        "generate",
-        "compare",
-        "init",
-        "config",
-        "schema",
-        "internal-strip",
-    ];
-    let args: Vec<String> = std::env::args().skip(1).collect();
-    if args.iter().any(|a| a == "--version" || a == "-V") {
-        return "version".to_string();
-    }
-    args.iter()
-        .find(|a| NAMES.contains(&a.as_str()))
-        .cloned()
-        .unwrap_or_else(|| "generate".to_string())
-}
-
 fn run() -> ExitCode {
     match parse_args(std::env::args_os()) {
-        Ok(cli) => match execute(cli) {
-            Ok(code) => {
-                crozier::profile::write(&command_name(), code);
-                ExitCode::from(code)
+        Ok(cli) => {
+            // SPIKE ONLY: the profile is filed under the parsed subcommand.
+            let command = cli.command_name();
+            match execute(cli) {
+                Ok(code) => {
+                    crozier::profile::write(command, code);
+                    ExitCode::from(code)
+                }
+                Err(message) => {
+                    crozier::profile::write(command, 1);
+                    eprintln!("crozier: {message}");
+                    ExitCode::FAILURE
+                }
             }
-            Err(message) => {
-                crozier::profile::write(&command_name(), 1);
-                eprintln!("crozier: {message}");
-                ExitCode::FAILURE
-            }
-        },
+        }
         // clap already printed help/version/usage; propagate its exit code.
         Err(e) => {
-            crozier::profile::write(&command_name(), u8::try_from(e.exit_code()).unwrap_or(2));
+            let command = match e.kind() {
+                clap::error::ErrorKind::DisplayVersion => "version",
+                clap::error::ErrorKind::DisplayHelp => "help",
+                _ => "usage-error",
+            };
+            crozier::profile::write(command, u8::try_from(e.exit_code()).unwrap_or(2));
             e.exit()
         }
     }
