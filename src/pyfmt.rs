@@ -29,7 +29,7 @@ pub const LINE_LENGTH: usize = 120;
 /// source through stdin so nothing touches disk.
 pub fn format_source(file: &str, source: &str, width: usize) -> Result<String> {
     let _format = crate::profile::phase(crate::profile::PhaseName::Format);
-    let done = crate::profile::spawn_timer("ruff");
+    let done = crate::profile::spawn_timer(crate::profile::Program::Ruff);
     let result = format_source_inner(file, source, width);
     done();
     result
@@ -180,7 +180,7 @@ pub fn format_batch(items: &[(String, String)], width: usize) -> Result<Vec<Stri
             chunks.last_mut().expect("one chunk").push(full);
         }
         for chunk in chunks.iter().filter(|c| !c.is_empty()) {
-            let done = crate::profile::spawn_timer("ruff");
+            let done = crate::profile::spawn_timer(crate::profile::Program::Ruff);
             let output = Command::new("ruff")
                 .arg("format")
                 .arg("--isolated")
@@ -268,6 +268,18 @@ mod tests {
             matches!(err, Error::Format { ref message, .. } if message.contains("ruff exited"))
         );
         assert_eq!(staged(), 0, "the staging tree is removed after a refusal");
+        // `pkg` staged as a file leaves no directory to stage `pkg/d.py` in.
+        let clash = vec![
+            ("pkg".to_string(), "x = 1\n".to_string()),
+            ("pkg/d.py".to_string(), "y = 2\n".to_string()),
+        ];
+        let err = super::format_batch(&clash, LINE_LENGTH).unwrap_err();
+        assert!(matches!(err, Error::Format { ref message, .. } if message.starts_with("stage:")));
+        assert_eq!(
+            staged(),
+            0,
+            "the staging tree is removed after a staging failure"
+        );
         for escape in ["../out.py", "/abs.py"] {
             let err = super::format_batch(&[(escape.to_string(), String::new())], LINE_LENGTH)
                 .unwrap_err();

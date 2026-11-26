@@ -77,6 +77,26 @@ impl PhaseName {
     }
 }
 
+/// The programs crozier starts, each counted under its own name.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Program {
+    Ruff,
+    Git,
+    Sh,
+    Curl,
+}
+
+impl Program {
+    fn as_str(self) -> &'static str {
+        match self {
+            Self::Ruff => "ruff",
+            Self::Git => "git",
+            Self::Sh => "sh",
+            Self::Curl => "curl",
+        }
+    }
+}
+
 /// One phase's or one program's running total.
 struct Total {
     name: &'static str,
@@ -164,7 +184,7 @@ fn add_phase(state: &State, name: &'static str, elapsed: Duration) {
 }
 
 /// Record one finished child process of `program` that took `elapsed`.
-pub fn spawned(program: &'static str, elapsed: Duration) {
+pub fn spawned(program: Program, elapsed: Duration) {
     let Some(state) = state() else { return };
     add(
         &mut state
@@ -172,13 +192,13 @@ pub fn spawned(program: &'static str, elapsed: Duration) {
             .lock()
             .unwrap_or_else(|e| e.into_inner())
             .spawns,
-        program,
+        program.as_str(),
         elapsed,
     );
 }
 
 /// Start a timer for a child of `program`; the returned closure records it.
-pub fn spawn_timer(program: &'static str) -> impl FnOnce() {
+pub fn spawn_timer(program: Program) -> impl FnOnce() {
     let started = state().map(|_| Instant::now());
     move || {
         if let Some(started) = started {
@@ -189,12 +209,12 @@ pub fn spawn_timer(program: &'static str) -> impl FnOnce() {
 
 /// A running child-process timer for `program`, recorded when it drops.
 pub struct SpawnGuard {
-    program: &'static str,
+    program: Program,
     started: Option<Instant>,
 }
 
 /// Time the rest of the enclosing scope as one child of `program`.
-pub fn spawn_guard(program: &'static str) -> SpawnGuard {
+pub fn spawn_guard(program: Program) -> SpawnGuard {
     SpawnGuard {
         program,
         started: state().map(|_| Instant::now()),

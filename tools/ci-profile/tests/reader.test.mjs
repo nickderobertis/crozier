@@ -104,6 +104,8 @@ test("the reader's statistics are the median, p90, maximum and mean of every gen
   const spawning = (n) => ({ ...PROFILE, subprocesses: [{ program: "ruff", spawns: n, seconds: n / 10 }] });
   const generated = report(artifactTree({ profiles: [1, 2, 3, 4, 10].map(spawning) })).lanes[0].crozier_profile.sweep.generate;
   assert.deepEqual(generated.ruff_spawns_per_generation, { n: 5, mean: 4, median: 3, p90: 4, max: 10, sum: 20 });
+  const even = report(artifactTree({ profiles: [1, 3].map(spawning) })).lanes[0].crozier_profile.sweep.generate;
+  assert.equal(even.ruff_spawns_per_generation.median, 2, "an even count's median averages its middle two");
   assert.ok(Math.abs(generated.ruff_seconds_per_spawn - 0.1) < 1e-12);
 });
 
@@ -189,6 +191,7 @@ test("the reader refuses a bad invocation and records it cannot trust", () => {
   assert.equal(node([READER, "run", "0"]).status, 2);
   assert.equal(node([READER, "local", scratch(), "--out"]).status, 2);
   assert.equal(node([READER, "fetch", "1"]).status, 2);
+  assert.equal(node([READER, "local", READER]).status, 2, "a file is not an artifact directory");
   const refused = (tree, pattern) => {
     const result = node([READER, "local", tree]);
     assert.notEqual(result.status, 0);

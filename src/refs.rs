@@ -90,7 +90,7 @@ const CURL: &str = "curl";
 
 fn curl_fetch(program: &str, url: &str) -> std::result::Result<String, String> {
     // llmlint: ignore[changed_behavior_has_e2e] SPIKE ONLY: this branch never lands (its task: "no tests of its own beyond what keeps its harness honest"); the durable runtime-profiling node owns this proof, and the 27,277 crozier processes profiled in run 45840622476's sweep step exercised this site.
-    let done = crate::profile::spawn_timer("curl");
+    let done = crate::profile::spawn_timer(crate::profile::Program::Curl);
     let result = curl_fetch_inner(program, url);
     done();
     result

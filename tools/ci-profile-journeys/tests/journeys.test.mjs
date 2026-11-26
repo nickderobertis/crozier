@@ -247,6 +247,12 @@ test("the spawn hooks charge each child and tree copy to the test that started i
   assert.equal(failedSpawn.status, 0, failedSpawn.stderr);
   const nodeFailed = readdirSync(recover).flatMap((f) => readFileSync(join(recover, f), "utf8").trim().split("\n").map((l) => JSON.parse(l))).filter((r) => r.pid === failedSpawn.pid);
   assert.deepEqual(nodeFailed.map((r) => [r.event, r.program]), [["spawn", "no-such-program-anywhere"], ["child", "no-such-program-anywhere"], ["spawn", "no-such-program-anywhere"], ["child", "no-such-program-anywhere"]]);
+  // A child that cannot start keeps its own exception, and its attempt is still counted.
+  const unstarted = scratch();
+  const missingChild = run(process.platform === "win32" ? "python" : "python3", ["-c", "import subprocess\ntry:\n    subprocess.run(['no-such-program-anywhere'])\nexcept FileNotFoundError:\n    raise SystemExit(0)\nraise SystemExit(6)"], { ...env, SPIKE_SPAWN_LOG: unstarted });
+  assert.equal(missingChild.status, 0, missingChild.stderr);
+  const attempts = readdirSync(unstarted).flatMap((f) => readFileSync(join(unstarted, f), "utf8").trim().split("\n").map((l) => JSON.parse(l)));
+  assert.deepEqual(attempts.map((r) => [r.event, r.program]), [["spawn", "no-such-program-anywhere"]]);
   // A program whose path holds a space is named whole, from Python's argv and from Node's.
   const spaced = join(scratch(), "with space");
   mkdirSync(spaced);

@@ -96,7 +96,7 @@ pub fn default_root(cwd: &Path) -> PathBuf {
 /// repository a calling hook points at, so git's location variables are dropped.
 fn git(dir: &Path, args: &[&str]) -> Option<Vec<u8>> {
     // llmlint: ignore[changed_behavior_has_e2e] SPIKE ONLY: this branch never lands (its task: "no tests of its own beyond what keeps its harness honest"); the durable runtime-profiling node owns this proof, and the 27,277 crozier processes profiled in run 45840622476's sweep step exercised this site.
-    let done = crate::profile::spawn_timer("git");
+    let done = crate::profile::spawn_timer(crate::profile::Program::Git);
     let output = Command::new("git")
         .arg("-C")
         .arg(dir)

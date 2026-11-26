@@ -215,8 +215,10 @@ export function schedule(events) {
 function quantiles(values) {
   const a = [...values].sort((x, y) => x - y);
   const n = a.length;
+  // p90 is the nearest rank at or below 90%; the median averages the middle two of an even count.
   const q = (p) => (n ? a[Math.min(n - 1, Math.floor(p * (n - 1)))] : null);
-  return { n, mean: n ? a.reduce((s, x) => s + x, 0) / n : null, median: q(0.5), p90: q(0.9), max: n ? a[n - 1] : null, sum: a.reduce((s, x) => s + x, 0) };
+  const median = n ? (a[Math.floor((n - 1) / 2)] + a[Math.ceil((n - 1) / 2)]) / 2 : null;
+  return { n, mean: n ? a.reduce((s, x) => s + x, 0) / n : null, median, p90: q(0.9), max: n ? a[n - 1] : null, sum: a.reduce((s, x) => s + x, 0) };
 }
 
 /** Sum crozier's per-process profiles: by command, phase, program and Nx task. */
@@ -409,7 +411,7 @@ function main() {
       source: { kind: "run", run_id: Number(runId), head_sha: run.headSha },
       lanes: run.jobs.map((job) => lane(job, readFileSync(join(cacheDir, `job-${job.databaseId}.log`), "utf8"), artifacts)),
     };
-  } else if (verb === "local" && existsSync(positional[0])) {
+  } else if (verb === "local" && existsSync(positional[0]) && statSync(positional[0]).isDirectory()) {
     const dir = positional[0];
     const names = readdirSync(dir).filter((n) => n.startsWith("test-timings-")).map((n) => n.slice("test-timings-".length));
     report = { schema_version: 1, source: { kind: "local", run_id: null, head_sha: null }, lanes: names.map((name) => lane({ name }, undefined, dir)) };

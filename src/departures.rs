@@ -4050,7 +4050,7 @@ fn dedent(lines: &[&str]) -> Option<String> {
 pub fn ruff_isort(source: &str) -> Result<String, String> {
     // llmlint: ignore[changed_behavior_has_e2e] SPIKE ONLY: this branch never lands (its task: "no tests of its own beyond what keeps its harness honest"); the durable runtime-profiling node owns this proof, and the 27,277 crozier processes profiled in run 45840622476's sweep step exercised this site.
     let _phase = crate::profile::phase(crate::profile::PhaseName::RuffIsort);
-    let done = crate::profile::spawn_timer("ruff");
+    let done = crate::profile::spawn_timer(crate::profile::Program::Ruff);
     let result = ruff_isort_inner(source);
     done();
     result
