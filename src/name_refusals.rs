@@ -742,6 +742,18 @@ fn request_property_name(property: &serde_json::Value) -> Option<&str> {
 /// properties named "result"`. Two parents declaring it with no inheritance, a
 /// second parent not declaring it, a single parent, and an object redeclaring
 /// its one parent's property all generate.
+///
+/// The inheriting parent must compose more than its one `$ref`: properties of
+/// its own (`CollectionResponse`'s inline `result`) or a second `$ref` (SURFnet's
+/// `Offering`, `allOf: [OfferingId, OfferingProperties]`). Measured at Fern CLI 5.216.0 /
+/// fern-python-sdk 5.42.0 (#985,
+/// `docs/fern-measurements/naming-acceptance/repeated-inherited-properties/`),
+/// Benchling's `OligoCreate` is `allOf: [OligoBaseRequestForCreate,
+/// CreateEntityIntoRegistry]`, where `OligoBaseRequestForCreate` is only
+/// `allOf: [$ref OligoBaseRequest, {required: [name]}]`, and the pair
+/// generates one `folder_id` field from the two declarations, whatever their
+/// types or descriptions, while the same parent adding one property of its own
+/// is refused.
 fn check_shared_parent_properties(doc: &OpenApi, path: &Path) -> Result<()> {
     let schemas = &doc.components.schemas;
     let refuse = |schema: &Schema, location: &str| {
@@ -777,7 +789,8 @@ fn check_shared_parent_properties(doc: &OpenApi, path: &Path) -> Result<()> {
 }
 
 /// The property two or more of `schema`'s `$ref` parents declare (at any depth)
-/// where one of them reaches it through a `$ref` parent of its own.
+/// where one of them reaches it through a `$ref` parent of its own and composes
+/// more beside it: properties of its own, or a second `$ref`.
 fn shared_parent_property(
     schema: &Schema,
     schemas: &indexmap::IndexMap<String, Schema>,
@@ -813,6 +826,19 @@ fn shared_parent_property(
         })
         .collect();
     for (index, parent) in parents.iter().enumerate() {
+        let members = parent.all_of.iter().flatten();
+        let composed = !parent.properties.is_empty()
+            || members
+                .clone()
+                .filter(|member| member.reference.is_some())
+                .count()
+                > 1
+            || members
+                .clone()
+                .any(|member| member.reference.is_none() && !member.properties.is_empty());
+        if !composed {
+            continue;
+        }
         let mut inherited = Vec::new();
         for member in parent
             .all_of
@@ -1799,12 +1825,36 @@ mod tests {
                 "{shape}: {error}"
             );
         }
+        // The inheriting parent adds a property of its own, or a second `$ref`,
+        // beside its `$ref`.
+        for (shape, element) in [
+            (
+                "wrapper-adds-property-probe.yml",
+                "OligoCreate property \"folderId\"",
+            ),
+            (
+                "two-reference-parent-probe.yml",
+                "CourseOffering property \"offeringType\"",
+            ),
+        ] {
+            let error = shape_refusal(&format!("object-property-name-collision/{shape}"))
+                .unwrap_or_default();
+            assert!(
+                error.contains(&format!(
+                    "object-property-name-collision: #/components/schemas/{element}"
+                )),
+                "{shape}: {error}"
+            );
+        }
         for control in [
             "two-direct-parents-control.yml",
             "second-parent-unrelated-control.yml",
             "single-parent-control.yml",
             "redeclared-non-nullable-base-control.yml",
             "inherited-required-control.yml",
+            // Benchling's `OligoCreate` (#985): the inheriting parent only
+            // requires a name beside its `$ref`.
+            "required-only-wrapper-control.yml",
         ] {
             assert_eq!(
                 shape_refusal(&format!("object-property-name-collision/{control}")),

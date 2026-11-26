@@ -2114,6 +2114,12 @@ docs/fern-measurements/naming-acceptance/relative-response-ref/fern-expected	src
 docs/fern-measurements/naming-acceptance/relative-response-ref/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/naming-acceptance/relative-response-ref/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/naming-acceptance/relative-response-ref/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/repeated-inherited-properties/expected-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
+docs/fern-measurements/naming-acceptance/repeated-inherited-properties/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/repeated-inherited-properties/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/repeated-inherited-properties/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/repeated-inherited-properties/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/naming-acceptance/repeated-inherited-properties/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/naming-acceptance/request-local-union-payloads/expected-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
 docs/fern-measurements/naming-acceptance/request-local-union-payloads/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/naming-acceptance/request-local-union-payloads/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix

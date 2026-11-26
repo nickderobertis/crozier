@@ -151,6 +151,13 @@ const ACCEPTED: &[(&str, &str, &str, &str, &str)] = &[
         "class KilnGlazeCoat(UniversalBaseModel):\n    left: str",
     ),
     (
+        "#985 (a property two `allOf` parents declare, one through its own `$ref`)",
+        "repeated-inherited-properties",
+        "object-property-name-collision",
+        "src/fern/types/oligo_create.py",
+        "    folder_id: typing_extensions.Annotated[\n        typing.Optional[str],\n        FieldMetadata(alias=\"folderId\"),\n        pydantic.Field(alias=\"folderId\", description=\"ID of the folder containing the oligo.\"),\n    ] = None",
+    ),
+    (
         "#944 (two components spelling one class, reached from a request)",
         "normalized-component-identity",
         "",

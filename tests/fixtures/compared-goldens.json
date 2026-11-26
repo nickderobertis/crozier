@@ -664,6 +664,12 @@
       ]
     },
     "docs/fern-measurements/naming-acceptance/relative-response-ref/fern-expected": {},
+    "docs/fern-measurements/naming-acceptance/repeated-inherited-properties/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/naming-acceptance/repeated-inherited-properties/fern-expected": {},
     "docs/fern-measurements/naming-acceptance/request-local-union-payloads/expected-literals/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"

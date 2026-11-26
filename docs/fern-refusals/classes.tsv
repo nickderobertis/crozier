@@ -7,12 +7,12 @@ duplicate-path-parameter	names	check	1	Endpoint has duplicate path parameter: <�
 endpoint-auth-undefined	documents	check	1	Endpoint requires auth, but no auth is defined.	23	refuse	GET /probe security/session	23/23
 enum-name-unsuitable	names	check	1	Enum name <…> for value <…> is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names	369	refuse	#/components/schemas/Color enum value "#0094FF"	369/369
 enum-value-unnameable	names	check	1	Enum value <…> is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names	331	refuse	#/components/schemas/Minutes enum value "10080"	331/331
-example-missing-required-property	documents	check	1	Example is missing required property <…>	130	refuse	GET /requests/{id} response extends nullable	130/130
+example-missing-required-property	documents	check	1	Example is missing required property <…>	130	refuse	GET /requests/{id} response extends nullable	129/130
 example-missing-required-query-parameter	documents	check	1	Example is missing required query parameter <…>	2	refuse	GET /collections x-fern-examples/0 query parameter f	2/2
 example-not-enum-value	documents	check	1	<…> is not a valid example for this enum. Enum values are:	50	refuse	GET /activities x-fern-examples response	50/50
 example-summary-not-string	documents	generate	1	Cannot use 'in' operator to search for 'wireValue' in <…>	0	refuse	POST /notes request example first summary 1	0/0
 example-type-mismatch	documents	check	1	Expected example to be <…>. Example is: <…>	203	refuse	GET /probe response example	202/203
-example-unexpected-property	documents	check	1	Unexpected property <…>	196	refuse	GET /probe components/schemas/Thing_Item collides with ThingItem	196/196
+example-unexpected-property	documents	check	1	Unexpected property <…>	196	refuse	GET /activities x-fern-examples response zzz	196/196
 extension-reference-cycle	documents	check	0	Maximum call stack size exceeded	2	refuse	components/schemas/Node/x-link	2/2
 generated-file-name-too-long	names	generate	1	OSError: [Errno 36] File name too long: <…>	1	refuse	thing_level5xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	1/1
 generator-lint-failure	documents	generate	1	Failed to run command: ruff check <…>	12	refuse	are both Event_UserAccountDeleted	12/12

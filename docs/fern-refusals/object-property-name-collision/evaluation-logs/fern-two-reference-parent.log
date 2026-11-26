@@ -1,0 +1,13 @@
+fern-refusals: Fern CLI 5.216.0, fernapi/fern-python-sdk 5.42.0
+check exit: 1
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 1 error
+    [error]
+        path: __package__.yml -> types -> CourseOffering
+        issue: Object has multiple properties named "offeringType":
+  - CourseOffering -> offeringType
+  - CourseOffering -> (extends) OfferingProperties -> offeringType
+
+Found 1 error and 0 warnings in <n> seconds.
+For guidance, run `fern instructions spec`.

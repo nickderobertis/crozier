@@ -414,10 +414,13 @@ fn a_missing_info_refuses_and_an_info_object_recovers() {
 /// Two components whose names differ only in their first letter's case are one
 /// type, the later declaration: a document no operation of which answers the
 /// earlier one generates in both modes, writing the certified pair's one
-/// model; where an operation answers it, the certified pair's example check
-/// fails against the merged type and crozier refuses with the same class.
+/// model. Where an operation answers it, the certified pair's example check
+/// fails against the merged type and Fern refuses; crozier gives the earlier
+/// component its own class, so the document is valid and the refusal only
+/// Fern's limitation (#991): it generates in both modes, with and without
+/// `--fern-strict`, each operation typed with its own component's class.
 #[test]
-fn first_letter_case_twins_merge_unless_an_example_of_the_earlier_fails() {
+fn first_letter_case_twins_merge_unless_an_operation_answers_the_earlier() {
     let dir = case_dir("crozier-refuses-type-name-collision");
     let probe = "first-letter-operationless-probe";
     assert_eq!(
@@ -452,22 +455,29 @@ fn first_letter_case_twins_merge_unless_an_example_of_the_earlier_fails() {
             "strict {strict}"
         );
     }
-    for (control, diagnostic, fern_says) in [
+    for (control, fern_says, file, own_class) in [
         (
             "first-letter-referenced-object-control",
-            "example-unexpected-property: GET /prints/{printId} components/schemas/Print collides with print",
             "Unexpected property \"id\"",
+            "src/fern/client.py",
+            "-> Print2:",
         ),
         (
             "first-letter-referenced-enum-control",
-            "example-not-enum-value: GET /legs/{legId} components/schemas/Mode collides with mode",
             "\"WALK\" is not a valid example for this enum",
+            "src/fern/types/leg.py",
+            "    mode: Mode2\n",
         ),
     ] {
         let log = std::fs::read_to_string(dir.join(format!("{control}.fern.log"))).unwrap();
-        assert!(log.contains(fern_says), "{control}: the committed Fern log no longer refuses");
+        assert!(
+            log.contains(fern_says),
+            "{control}: the committed Fern log no longer refuses"
+        );
         assert_eq!(
-            std::fs::read_to_string(dir.join(format!("{control}.exit-code"))).unwrap().trim(),
+            std::fs::read_to_string(dir.join(format!("{control}.exit-code")))
+                .unwrap()
+                .trim(),
             "1"
         );
         for strict in [false, true] {
@@ -479,9 +489,16 @@ fn first_letter_case_twins_merge_unless_an_example_of_the_earlier_fails() {
             }
             let result = command.output().unwrap();
             let stderr = String::from_utf8_lossy(&result.stderr);
-            assert_eq!(result.status.code(), Some(1), "{control}: {stderr}");
-            assert!(stderr.contains(diagnostic), "{control} (strict {strict}): {stderr}");
-            assert!(!target.exists());
+            assert_eq!(
+                result.status.code(),
+                Some(0),
+                "{control} (strict {strict}): {stderr}"
+            );
+            let written = std::fs::read_to_string(target.join(file)).unwrap();
+            assert!(
+                written.contains(own_class),
+                "{control} (strict {strict}): {file} lacks {own_class:?}:\n{written}"
+            );
         }
     }
 }

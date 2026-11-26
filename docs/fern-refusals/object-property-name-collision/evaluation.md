@@ -1,5 +1,30 @@
 # object-property-name-collision
 
+## Narrowed at Fern CLI 5.216.0 / fern-python-sdk 5.42.0 (#985)
+
+Decision: **refuse**, narrowed. The pair generates Benchling's alpha
+description, whose `OligoCreate` is `allOf: [OligoBaseRequestForCreate,
+CreateEntityIntoRegistry]` with `folderId` declared by both parents and reached
+by the first through its own `$ref` parent: `OligoBaseRequestForCreate` is only
+`allOf: [$ref OligoBaseRequest, {required: [name]}]`. crozier refused it. What
+the pair refuses is narrower: the inheriting parent adds properties of its own
+beside its `$ref` (the probe's `CollectionResponse` adds `result`), or a second
+`$ref` there (SURFnet's eduXchange `Offering`, `allOf: [OfferingId,
+OfferingProperties]`: the [`two-reference-parent`](two-reference-parent-probe.yml)
+shape, refused). The
+[`wrapper-adds-property`](wrapper-adds-property-probe.yml) shape, Benchling's
+shape with one added property, is refused with `Object has multiple properties
+named "folderId"`; the [`required-only-wrapper`](required-only-wrapper-control.yml)
+shape, Benchling's, generates ([`shapes.tsv`](../../openapi-surface/fern-refusals/shapes.tsv)).
+crozier's detector now requires that added property, so it refuses the first
+in both modes and generates the second. Where the pair generates, it writes one
+field from the first declaration in `allOf` order, its type, description and
+position, whatever the later declarations say: the
+[`repeated-inherited-properties`](../../fern-measurements/naming-acceptance/repeated-inherited-properties/README.md)
+measurement holds crozier's SDK to the pair's tree in both modes. A repeated
+property a later parent marks `required` is another measured difference,
+recorded with that measurement and not part of this class.
+
 ## At Fern CLI 5.216.0 / fern-python-sdk 5.42.0
 
 Decision: **refuse**, unchanged. The Fern goldens run 44880783817

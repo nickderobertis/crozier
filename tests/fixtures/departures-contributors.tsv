@@ -404,6 +404,8 @@ docs/fern-measurements/naming-acceptance/recursive-alias-dependents/expected-lit
 docs/fern-measurements/naming-acceptance/recursive-alias-dependents/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_repairs_match_the_certified_pair
 docs/fern-measurements/naming-acceptance/relative-response-ref/expected-literals/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_repairs_match_the_certified_pair
 docs/fern-measurements/naming-acceptance/relative-response-ref/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_repairs_match_the_certified_pair
+docs/fern-measurements/naming-acceptance/repeated-inherited-properties/expected-literals/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_documents_generate_as_the_certified_pair_does
+docs/fern-measurements/naming-acceptance/repeated-inherited-properties/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_documents_generate_as_the_certified_pair_does
 docs/fern-measurements/naming-acceptance/request-local-union-payloads/expected-literals/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_repairs_match_the_certified_pair
 docs/fern-measurements/naming-acceptance/request-local-union-payloads/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_repairs_match_the_certified_pair
 docs/fern-measurements/naming-acceptance/root-import-order/expected-literals/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_repairs_match_the_certified_pair

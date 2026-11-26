@@ -313,9 +313,20 @@ refuses. Both keep Fern's logs under
   redeclaring a property of its one `allOf` parent, or two parents sharing one,
   generates (`object-property-name-collision-generates`; Mistral's
   conversations). `object-property-name-collision` remains for an `allOf` of
-  two `$ref` parents that share a property one of them inherits (the class's
-  probe; Cloudflare's error bodies), and `request-property-name-collision` for
-  an inline body's own property beside a parent's.
+  two `$ref` parents that share a property one of them inherits beside
+  properties of its own (the class's probe; Cloudflare's error bodies); a
+  parent that only requires a name beside its `$ref` generates, one field from
+  the first declaration (#985, Benchling's `OligoCreate`).
+  `request-property-name-collision` remains for an inline body's own property
+  beside a parent's.
+- **Two components Fern names alike are no refusal** (#991). Fern validates
+  its example of the earlier against the later and refuses with
+  `example-unexpected-property`, `example-missing-required-property` or
+  `example-not-enum-value`; crozier gives each its own class
+  (`colliding-component-own-class`), so the document is valid and the refusal
+  only Fern's limitation. braille-dev's integrations document is now a
+  `fern-limitation` disposition; every other population document crozier
+  refused that way still refuses with another class its Fern log carries.
 - **`appng-rest-api`** does not fail after a passing check at the pin: its
   `fern check` exits 1 with `Service requires auth, but no auth is defined.`,
   because its only security scheme is an `apiKey` in a cookie, which Fern does

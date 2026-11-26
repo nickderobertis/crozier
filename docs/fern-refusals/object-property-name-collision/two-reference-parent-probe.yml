@@ -1,0 +1,43 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /offerings:
+    get:
+      operationId: getOffering
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseOffering'
+components:
+  schemas:
+    OfferingId:
+      type: object
+      properties:
+        offeringId:
+          type: string
+    OfferingProperties:
+      type: object
+      properties:
+        name:
+          type: string
+        offeringType:
+          type: string
+    Offering:
+      allOf:
+      - $ref: '#/components/schemas/OfferingId'
+      - $ref: '#/components/schemas/OfferingProperties'
+    CourseOfferingProperties:
+      properties:
+        offeringType:
+          type: string
+        level:
+          type: string
+    CourseOffering:
+      allOf:
+      - $ref: '#/components/schemas/Offering'
+      - $ref: '#/components/schemas/CourseOfferingProperties'
