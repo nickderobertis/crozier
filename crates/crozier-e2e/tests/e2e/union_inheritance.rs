@@ -848,8 +848,10 @@ fn slash_named_components_resolve_from_every_reference_spelling() {
     // every pointer names its own component's.
     let tags = read("src/fern/types/get_tags_response.py");
     for (field, class) in [
-        ("first", "TagsABC2"),
-        ("second", "TagsABC"),
+        // `a/b-c`'s one-letter words are one class word (#992, the
+        // `naming-acceptance/single-letter-component-words` measurement).
+        ("first", "TagsAbc2"),
+        ("second", "TagsAbc"),
         ("slashed", "DraftsNote2"),
         ("declared", "DraftsNote"),
     ] {
@@ -861,8 +863,8 @@ fn slash_named_components_resolve_from_every_reference_spelling() {
     for (file, declaration) in [
         ("drafts_note.py", "DraftsNote = int"),
         ("drafts_note2.py", "DraftsNote2 = str"),
-        ("tags_abc.py", "TagsABC = int"),
-        ("tags_abc2.py", "TagsABC2 = str"),
+        ("tags_abc.py", "TagsAbc = int"),
+        ("tags_abc2.py", "TagsAbc2 = str"),
     ] {
         let text = read(&format!("src/fern/types/{file}"));
         assert!(text.contains(declaration), "{file}: {text}");
