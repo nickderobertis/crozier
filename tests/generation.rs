@@ -149,9 +149,23 @@ fn narrowed_enum_defaults_respect_the_pattern_without_changing_the_type() {
         );
     }
     // A composition on the enum is discarded at load; its constraints still
-    // bind the value, so the correction declines whatever they say.
+    // bind the value. A discarded `allOf` is read member by member (#541): one
+    // `recording` satisfies keeps the correction, one it fails leaves no valid
+    // member. A discarded alternative cannot be decided, so the correction
+    // declines whatever it says.
+    for (target, member) in [
+        ("allOf: [{ type: string }]", "RECORDING"),
+        ("allOf: [{ minLength: 1 }]", "RECORDING"),
+        ("allOf: [{ maxLength: 3 }]", "PREPARATION"),
+        ("allOf: [{ type: integer }]", "PREPARATION"),
+    ] {
+        let expected = format!("phase=MeasurementPhase.{member},");
+        assert!(
+            render(&constrained("target", target))["README.md"].contains(&expected),
+            "target {target}: expected {expected}"
+        );
+    }
     for target in [
-        "allOf: [{ type: string }]",
         "anyOf: [{ minLength: 1 }]",
         "oneOf: [{ maxLength: 20 }]",
     ] {
