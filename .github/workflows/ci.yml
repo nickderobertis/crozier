@@ -21,15 +21,16 @@ permissions:
   contents: read
 
 env:
-  # Nx's task parallelism for the measured step (Nx's default, 3, unless a run says otherwise).
-  NX_PARALLEL: "3"
+  # Nx's task parallelism for the measured step: run 45840622476 measured Nx's default, 3;
+  # this run measures 4 on the same 4-processor runners.
+  NX_PARALLEL: "4"
 
 jobs:
   test-windows:
     runs-on: windows-latest
     timeout-minutes: 240
     env:
-      SWEEP_STEP_MINUTES: "190"
+      SWEEP_STEP_MINUTES: "175"
     steps:
       - name: Enable Git long paths
         run: git config --global core.longpaths true
@@ -106,29 +107,26 @@ jobs:
           echo "{\"step\":\"sweep\",\"seconds\":$(( $(date +%s) - start )),\"exit\":$status}" > "$SPIKE_OUT/step-sweep.json"
           mkdir -p .nx/logs/sweep && mv .nx/logs/gate-* .nx/logs/sweep/ 2>/dev/null || true
           exit $status
-      # The SDK environments' replays (sdk-env, runtime, ...), which the lanes run next.
-      - name: Test the SDK environments (sweep)
+      # The golden replays with one `ruff format` per generation: the goldens' own byte
+      # comparison proves the output unchanged, and the profiles give the formatting saving.
+      - name: crozier-e2e with one ruff process per generation
         if: ${{ !cancelled() }}
-        timeout-minutes: 30
+        timeout-minutes: 45
         shell: bash
         env:
-          CROZIER_PROFILE: ${{ runner.temp }}/crozier-profile/sdk-env
-          CROZIER_SPIKE_STREAM: ${{ github.workspace }}/.nx/logs/sdk-env.stream.log
-          PYTEST_ADDOPTS: --durations=0 --durations-min=0
+          CROZIER_PROFILE: ${{ runner.temp }}/crozier-profile/e2e-batch
+          CROZIER_SPIKE_RUFF_BATCH: "1"
+          CROZIER_SPIKE_STREAM: ${{ github.workspace }}/.nx/logs/e2e-batch.stream.log
           NEXTEST_HIDE_PROGRESS_BAR: "1"
+          NX_PARALLEL: "3"
         run: |
           mkdir -p .nx/logs "$CROZIER_PROFILE"
           start=$(date +%s)
           status=0
-          just lane-test --sweep --projects=tag:lane:sdk-env || status=$?
-          echo "{\"step\":\"sdk-env\",\"seconds\":$(( $(date +%s) - start )),\"exit\":$status}" > "$SPIKE_OUT/step-sdk-env.json"
-          mkdir -p .nx/logs/sdk-env && mv .nx/logs/gate-* .nx/logs/sdk-env/ 2>/dev/null || true
+          node tools/ci/gate.mjs --sweep --projects=crozier-e2e -- nx run-many --targets=test || status=$?
+          echo "{\"step\":\"e2e-batch\",\"seconds\":$(( $(date +%s) - start )),\"exit\":$status}" > "$SPIKE_OUT/step-e2e-batch.json"
+          mkdir -p .nx/logs/e2e-batch && mv .nx/logs/gate-* .nx/logs/e2e-batch/ 2>/dev/null || true
           exit $status
-      - name: One ruff process per generation, against one per file
-        if: ${{ !cancelled() }}
-        timeout-minutes: 30
-        shell: bash
-        run: bash tools/ci-profile/spike/ruff-batch-experiment.sh "$SPIKE_OUT/ruff-batch" 2
       - name: What one spawn costs here
         if: ${{ !cancelled() }}
         timeout-minutes: 10
@@ -138,7 +136,7 @@ jobs:
         if: always()
         shell: bash
         run: |
-          for step in sweep sdk-env; do
+          for step in sweep sdk-env e2e-batch; do
             dir="$RUNNER_TEMP/crozier-profile/$step"
             if [ -d "$dir" ]; then find "$dir" -name '*.json' -exec cat {} + > "$SPIKE_OUT/crozier-profile-$step.jsonl"; fi
           done
@@ -167,7 +165,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 240
     env:
-      SWEEP_STEP_MINUTES: "190"
+      SWEEP_STEP_MINUTES: "175"
     steps:
       # Full history, as the test lanes check out.
       - uses: actions/checkout@v4
@@ -238,29 +236,26 @@ jobs:
           echo "{\"step\":\"sweep\",\"seconds\":$(( $(date +%s) - start )),\"exit\":$status}" > "$SPIKE_OUT/step-sweep.json"
           mkdir -p .nx/logs/sweep && mv .nx/logs/gate-* .nx/logs/sweep/ 2>/dev/null || true
           exit $status
-      # The SDK environments' replays (sdk-env, runtime, ...), which the lanes run next.
-      - name: Test the SDK environments (sweep)
+      # The golden replays with one `ruff format` per generation: the goldens' own byte
+      # comparison proves the output unchanged, and the profiles give the formatting saving.
+      - name: crozier-e2e with one ruff process per generation
         if: ${{ !cancelled() }}
-        timeout-minutes: 30
+        timeout-minutes: 45
         shell: bash
         env:
-          CROZIER_PROFILE: ${{ runner.temp }}/crozier-profile/sdk-env
-          CROZIER_SPIKE_STREAM: ${{ github.workspace }}/.nx/logs/sdk-env.stream.log
-          PYTEST_ADDOPTS: --durations=0 --durations-min=0
+          CROZIER_PROFILE: ${{ runner.temp }}/crozier-profile/e2e-batch
+          CROZIER_SPIKE_RUFF_BATCH: "1"
+          CROZIER_SPIKE_STREAM: ${{ github.workspace }}/.nx/logs/e2e-batch.stream.log
           NEXTEST_HIDE_PROGRESS_BAR: "1"
+          NX_PARALLEL: "3"
         run: |
           mkdir -p .nx/logs "$CROZIER_PROFILE"
           start=$(date +%s)
           status=0
-          just lane-test --sweep --projects=tag:lane:sdk-env || status=$?
-          echo "{\"step\":\"sdk-env\",\"seconds\":$(( $(date +%s) - start )),\"exit\":$status}" > "$SPIKE_OUT/step-sdk-env.json"
-          mkdir -p .nx/logs/sdk-env && mv .nx/logs/gate-* .nx/logs/sdk-env/ 2>/dev/null || true
+          node tools/ci/gate.mjs --sweep --projects=crozier-e2e -- nx run-many --targets=test || status=$?
+          echo "{\"step\":\"e2e-batch\",\"seconds\":$(( $(date +%s) - start )),\"exit\":$status}" > "$SPIKE_OUT/step-e2e-batch.json"
+          mkdir -p .nx/logs/e2e-batch && mv .nx/logs/gate-* .nx/logs/e2e-batch/ 2>/dev/null || true
           exit $status
-      - name: One ruff process per generation, against one per file
-        if: ${{ !cancelled() }}
-        timeout-minutes: 30
-        shell: bash
-        run: bash tools/ci-profile/spike/ruff-batch-experiment.sh "$SPIKE_OUT/ruff-batch" 2
       - name: What one spawn costs here
         if: ${{ !cancelled() }}
         timeout-minutes: 10
@@ -270,7 +265,7 @@ jobs:
         if: always()
         shell: bash
         run: |
-          for step in sweep sdk-env; do
+          for step in sweep sdk-env e2e-batch; do
             dir="$RUNNER_TEMP/crozier-profile/$step"
             if [ -d "$dir" ]; then find "$dir" -name '*.json' -exec cat {} + > "$SPIKE_OUT/crozier-profile-$step.jsonl"; fi
           done
