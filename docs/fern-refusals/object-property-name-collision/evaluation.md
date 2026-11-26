@@ -8,7 +8,10 @@ CreateEntityIntoRegistry]` with `folderId` declared by both parents and reached
 by the first through its own `$ref` parent: `OligoBaseRequestForCreate` is only
 `allOf: [$ref OligoBaseRequest, {required: [name]}]`. crozier refused it. What
 the pair refuses is narrower: the inheriting parent adds properties of its own
-beside its `$ref` (the probe's `CollectionResponse` adds `result`). The
+beside its `$ref` (the probe's `CollectionResponse` adds `result`), or a second
+`$ref` there (SURFnet's eduXchange `Offering`, `allOf: [OfferingId,
+OfferingProperties]`: the [`two-reference-parent`](two-reference-parent-probe.yml)
+shape, refused). The
 [`wrapper-adds-property`](wrapper-adds-property-probe.yml) shape, Benchling's
 shape with one added property, is refused with `Object has multiple properties
 named "folderId"`; the [`required-only-wrapper`](required-only-wrapper-control.yml)

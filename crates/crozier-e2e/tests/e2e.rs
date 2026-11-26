@@ -27449,6 +27449,11 @@ fn two_parents_sharing_an_inherited_property_are_refused_on_a_component_and_a_re
             "wrapper-adds-property-probe.yml",
             "#/components/schemas/OligoCreate property \"folderId\"",
         ),
+        // …or a second `$ref` (SURFnet's `Offering`).
+        (
+            "two-reference-parent-probe.yml",
+            "#/components/schemas/CourseOffering property \"offeringType\"",
+        ),
     ] {
         for strict in [false, true] {
             let run = refusal_run(&crozier, &class.join(probe), strict).unwrap();
