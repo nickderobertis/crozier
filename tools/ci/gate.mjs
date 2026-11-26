@@ -46,7 +46,7 @@
 import { taskTimings } from "./gate-timing.mjs";
 import { serveResults } from "./result-cache.mjs";
 import { execFileSync, spawn, spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -288,14 +288,26 @@ function ensureRustToolchain() {
   return output;
 }
 
+// SPIKE ONLY (spike-windows-lane-breakdown): when CROZIER_SPIKE_STREAM names a file, every
+// chunk Nx prints is appended there as it arrives, each line prefixed with the seconds since
+// the gate started, so a step cut off by its time limit still leaves what it ran.
+const SPIKE_STREAM = process.env.CROZIER_SPIKE_STREAM;
+const SPIKE_START = Date.now();
+function spikeStream(chunk) {
+  if (!SPIKE_STREAM) return;
+  const at = ((Date.now() - SPIKE_START) / 1000).toFixed(3);
+  const text = chunk.toString("utf8").replace(/\r?\n$/, "");
+  appendFileSync(SPIKE_STREAM, text.split(/\r?\n/).map((line) => `${at}\t${line}\n`).join(""));
+}
+
 /** What a child printed and how it ended, with this process's event loop still running. */
 function runCaptured(command, args, options) {
   return new Promise((done) => {
     const child = spawn(command, args, { ...options, stdio: ["ignore", "pipe", "pipe"] });
     const out = [];
     const err = [];
-    child.stdout.on("data", (chunk) => out.push(chunk));
-    child.stderr.on("data", (chunk) => err.push(chunk));
+    child.stdout.on("data", (chunk) => { out.push(chunk); spikeStream(chunk); });
+    child.stderr.on("data", (chunk) => { err.push(chunk); spikeStream(chunk); });
     child.on("error", (error) => done({ status: 1, stdout: "", stderr: `${error.message}\n` }));
     child.on("close", (status) => done({ status, stdout: Buffer.concat(out).toString("utf8"), stderr: Buffer.concat(err).toString("utf8") }));
   });
