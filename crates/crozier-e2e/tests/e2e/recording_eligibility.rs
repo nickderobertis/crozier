@@ -38,7 +38,11 @@ const PERTURBED: &str = "recording_eligibility::a_perturbed_comparison";
 /// recording as a recording run's comparisons do. `perturbed` plants a line at
 /// the top of crozier's `README.md` first, shifting every departure under it,
 /// and compares inside [`departures_ledger::perturbed`]; it must still report
-/// the planted difference. An ordinary comparison must pass.
+/// the planted difference. An ordinary comparison must pass. `nested` makes a
+/// planted comparison inside a perturbed closure nested in another, then a
+/// second one in the outer closure after the inner returns, then an ordinary
+/// comparison once both have; `unwound` makes an ordinary comparison after a
+/// perturbed closure that panicked.
 #[test]
 #[ignore = "a recording comparison the recording_eligibility tests run as a subprocess"]
 fn recording_probe() {
@@ -59,24 +63,50 @@ fn recording_probe() {
             &sdk,
         )
     };
+    let readme = sdk.join("README.md");
+    let text = std::fs::read_to_string(&readme).expect("crozier's README.md");
+    let ordinary = || {
+        std::fs::write(&readme, &text).expect("restore");
+        let failures = compare();
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+    };
+    let planted = || {
+        std::fs::write(&readme, format!("A planted line.\n{text}")).expect("perturb");
+        let failures = compare();
+        assert!(
+            failures
+                .iter()
+                .any(|failure| failure.contains("README.md differs")),
+            "the planted line was not reported: {failures:?}"
+        );
+    };
     match std::env::var(PROBE_ENV).as_deref() {
-        Ok("ordinary") => {
-            let failures = compare();
-            assert!(failures.is_empty(), "{}", failures.join("\n"));
+        Ok("ordinary") => ordinary(),
+        Ok("perturbed") => departures_ledger::perturbed(planted),
+        Ok("nested") => {
+            departures_ledger::perturbed(|| {
+                departures_ledger::perturbed(planted);
+                assert!(
+                    !departures_ledger::recording_eligible(),
+                    "an inner closure's end made its outer one eligible"
+                );
+                planted();
+            });
+            assert!(departures_ledger::recording_eligible());
+            ordinary();
         }
-        Ok("perturbed") => {
-            let readme = sdk.join("README.md");
-            let text = std::fs::read_to_string(&readme).expect("crozier's README.md");
-            std::fs::write(&readme, format!("A planted line.\n{text}")).expect("perturb");
-            let failures = departures_ledger::perturbed(compare);
+        Ok("unwound") => {
+            let unwound = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                departures_ledger::perturbed(|| panic!("a perturbed comparison panicked"))
+            }));
+            assert!(unwound.is_err(), "the perturbed closure did not panic");
             assert!(
-                failures
-                    .iter()
-                    .any(|failure| failure.contains("README.md differs")),
-                "the planted line was not reported: {failures:?}"
+                departures_ledger::recording_eligible(),
+                "unwinding out of a perturbed closure left the thread ineligible"
             );
+            ordinary();
         }
-        other => panic!("set {PROBE_ENV} to ordinary or perturbed, not {other:?}"),
+        other => panic!("set {PROBE_ENV} to ordinary, perturbed, nested or unwound, not {other:?}"),
     }
 }
 
@@ -129,6 +159,19 @@ fn files(dir: &Path) -> Vec<String> {
     }
     found.sort();
     found
+}
+
+/// Link `link` to the directory `target`, where the platform lets a test do so
+/// unprivileged (Windows needs Developer Mode for a symlink); whether it did.
+#[cfg(unix)]
+fn symlink_dir(target: &Path, link: &Path) -> bool {
+    std::os::unix::fs::symlink(target, link).expect("a symlink");
+    true
+}
+
+#[cfg(not(unix))]
+fn symlink_dir(target: &Path, link: &Path) -> bool {
+    std::os::windows::fs::symlink_dir(target, link).is_ok()
 }
 
 /// The three recording directories a run keeps in scratch.
@@ -218,12 +261,64 @@ fn a_perturbed_comparison_records_nothing_beside_an_ordinary_one() {
     );
 }
 
-/// Issue #989: each recorder destination — ledger, contributor and example
-/// inventory — pointed inside the source checkout or at a relative path is
-/// refused with the remedy, and nothing is written anywhere; all three in
-/// scratch outside the checkout record, and the scratch goes with its owner.
+/// Issue #988's contract holds across nesting and unwinding: a planted
+/// comparison inside a nested perturbed closure, and another in its outer
+/// closure after the inner one returns, record nothing, while an ordinary one
+/// after both records the golden's complete rows; and after a perturbed
+/// closure panics and is caught, an ordinary comparison records again.
 #[test]
-fn a_recorder_destination_inside_a_checkout_or_relative_is_refused_before_writing() {
+fn eligibility_survives_nested_and_unwound_perturbed_comparisons() {
+    let root = crate::repo_root();
+    let committed = |rel: &str| std::fs::read_to_string(root.join(rel)).expect("committed");
+    for (kind, test) in [
+        (
+            "nested",
+            "recording_eligibility::nested_perturbed_comparisons",
+        ),
+        (
+            "unwound",
+            "recording_eligibility::an_unwound_perturbed_comparison",
+        ),
+    ] {
+        let scratch = Scratch::new();
+        let cwd = tempfile::tempdir().expect("probe working directory");
+        let output = probe(kind, test, &scratch.destinations(), cwd.path());
+        assert!(output.status.success(), "{kind}: {}", said(&output));
+        let directory = GOLDEN.replace('/', "%");
+        let records = files(scratch.ledger.path());
+        assert!(
+            !records.is_empty()
+                && records
+                    .iter()
+                    .all(|record| record.starts_with(&format!("{directory}/"))),
+            "{kind}: the ordinary comparison recorded nothing: {records:?}"
+        );
+        assert_eq!(
+            departures_ledger::merge_records(root, scratch.ledger.path()).expect("merge"),
+            committed(departures_ledger::LEDGER),
+            "{kind}: a perturbed comparison's shifted departures reached the ledger"
+        );
+        assert_eq!(
+            departure_contributors::recorded(scratch.noted.path()).expect("the notes"),
+            [Contributor {
+                golden: GOLDEN.to_owned(),
+                binary: BINARY.to_owned(),
+                test: test.to_owned(),
+            }]
+            .into(),
+            "{kind}: the ordinary comparison is noted once"
+        );
+    }
+}
+
+/// Issue #989: each recorder destination — ledger, contributor and example
+/// inventory — pointed inside the source checkout, at a relative path, at an
+/// absolute path that does not exist, at a regular file, or at a symlink
+/// outside the checkout resolving into it is refused with the remedy, and
+/// nothing is written anywhere; all three in scratch outside the checkout
+/// record, and the scratch goes with its owner.
+#[test]
+fn a_recorder_destination_that_is_no_scratch_directory_is_refused_before_writing() {
     let root = crate::repo_root();
     for variable in [RECORD_ENV, CONTRIBUTOR_ENV, EXAMPLE_INVENTORY_ENV] {
         let inside = tempfile::Builder::new()
@@ -233,10 +328,23 @@ fn a_recorder_destination_inside_a_checkout_or_relative_is_refused_before_writin
         let cwd = tempfile::tempdir().expect("probe working directory");
         let relative = Path::new("records");
         std::fs::create_dir(cwd.path().join(relative)).expect("an existing relative directory");
-        for (bad, says) in [
+        let outside = tempfile::tempdir().expect("scratch outside the checkout");
+        let missing = outside.path().join("missing");
+        let file = outside.path().join("a-file");
+        std::fs::write(&file, "").expect("a regular file");
+        // Outside the checkout by its own path, inside it once resolved.
+        let link = outside.path().join("into-the-checkout");
+        let linked = symlink_dir(inside.path(), &link);
+        let cases: Vec<(&Path, &str)> = [
             (inside.path(), "is inside the source checkout"),
             (relative, "is a relative path"),
-        ] {
+            (missing.as_path(), "is no directory to record into"),
+            (file.as_path(), "is not a directory"),
+        ]
+        .into_iter()
+        .chain(linked.then_some((link.as_path(), "is inside the source checkout")))
+        .collect();
+        for (bad, says) in cases {
             let scratch = Scratch::new();
             let destinations: Vec<(&str, &Path)> = scratch
                 .destinations()
@@ -269,6 +377,12 @@ fn a_recorder_destination_inside_a_checkout_or_relative_is_refused_before_writin
                     dir.display()
                 );
             }
+            assert!(!missing.exists(), "{variable}={bad:?} created {missing:?}");
+            assert_eq!(
+                std::fs::read(&file).expect("the regular file"),
+                b"",
+                "{variable}={bad:?} wrote into {file:?}"
+            );
         }
     }
 
