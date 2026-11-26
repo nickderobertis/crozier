@@ -109,10 +109,8 @@ pub fn format_batch(items: &[(String, String)], width: usize) -> Result<Vec<Stri
     // Staged outside the caller's tree and formatted `--isolated`: staged under the working
     // directory, ruff applied the repository's own `force-exclude` list (`templates`) and left
     // a generated `templates/` package unformatted (run 45863948064, letta and maif-otoroshi).
-    let stage = std::env::temp_dir().join(format!(
-        "crozier-spike-ruff-{}-{nanos}",
-        std::process::id()
-    ));
+    let stage =
+        std::env::temp_dir().join(format!("crozier-spike-ruff-{}-{nanos}", std::process::id()));
     let result = (|| {
         for (path, source) in items {
             let full = stage.join(path);
