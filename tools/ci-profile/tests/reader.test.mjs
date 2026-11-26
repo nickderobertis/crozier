@@ -80,6 +80,33 @@ test("the reader turns an artifact tree into per-target, per-case, slot and croz
   assert.deepEqual(lane.spike.ruff_batch.runs.map((r) => [r.mode, r.seconds]), [["per-file", 10], ["batch", 4]]);
 });
 
+test("the reader sums several processes by command, phase, program and Nx task", () => {
+  const compare = { ...PROFILE, command: "compare", total_seconds: 1, phases: [], subprocesses: [{ program: "git", spawns: 2, seconds: 0.5 }], spike: { ...PROFILE.spike, nx_project: null, nx_target: null } };
+  const sweep = report(artifactTree({ profiles: [PROFILE, PROFILE, compare] })).lanes[0].crozier_profile.sweep;
+  assert.equal(sweep.processes, 3);
+  assert.deepEqual(sweep.by_command, { generate: { seconds: 4, count: 2 }, compare: { seconds: 1, count: 1 } });
+  assert.deepEqual(sweep.subprocesses, { ruff: { seconds: 3, count: 6 }, git: { seconds: 0.5, count: 2 } });
+  assert.deepEqual(sweep.generate.ruff_spawns_per_generation.sum, 6);
+  assert.equal(sweep.by_nx_task["(no Nx task)"].processes, 1);
+  assert.equal(report(artifactTree({ profiles: [] })).lanes[0].crozier_profile.sweep.processes, 0);
+});
+
+test("a run is read from its cache with no fetch, its targets from the job log when no Nx profile was kept", () => {
+  const cache = scratch();
+  const job = { databaseId: 7, name: "test-windows", startedAt: "2026-11-26T10:00:00Z", completedAt: "2026-11-26T11:00:00Z", steps: [{ name: "Test", startedAt: "2026-11-26T10:00:00Z", completedAt: "2026-11-26T10:30:00Z" }] };
+  writeFileSync(join(cache, "run.json"), JSON.stringify({ databaseId: 9, headSha: "abc", status: "completed", jobs: [job] }));
+  writeFileSync(join(cache, "job-7.log"), ["2026-11-26T10:00:00.0Z ##[group]Run just ci-test", "2026-11-26T10:29:00.0Z gate: task a:test: 12.500s (success)", "2026-11-26T10:29:00.0Z gate: task b:test: 0.100s (local-cache)", ""].join("\n"));
+  mkdirSync(join(cache, "artifacts"));
+  // gh is not on this PATH: a fetch would fail, so success proves the cache was read.
+  const result = spawnSync(process.execPath, [READER, "run", "9", "--cache-dir", cache], { cwd: ROOT, encoding: "utf8", env: { ...process.env, PATH: dirname(process.execPath) } });
+  assert.equal(result.status, 0, result.stderr);
+  const [lane] = JSON.parse(result.stdout).lanes;
+  assert.equal(lane.seconds, 3600);
+  assert.deepEqual(lane.steps.map((s) => [s.name, s.seconds]), [["Test", 1800]]);
+  assert.deepEqual(lane.targets.map((t) => [t.target, t.seconds, t.cached, t.step]), [["a:test", 12.5, false, "just ci-test"], ["b:test", 0.1, true, "just ci-test"]]);
+  assert.ok(lane.missing.some((m) => m.includes("no gate logs")));
+});
+
 test("the reader refuses a bad invocation and records it cannot trust", () => {
   assert.equal(node([READER, "run", "1", "2"]).status, 2);
   assert.equal(node([READER, "run", "0"]).status, 2);
@@ -94,10 +121,20 @@ test("the reader refuses a bad invocation and records it cannot trust", () => {
   refused(artifactTree({ profiles: [{ ...PROFILE, phases: [{ name: "format", seconds: -1, count: 1 }] }] }), /not a schema_version 1 CROZIER_PROFILE record/);
   refused(artifactTree({ profiles: [{ ...PROFILE, subprocesses: [{ program: "ruff", spawns: 1.5, seconds: 1 }] }] }), /not a schema_version 1 CROZIER_PROFILE record/);
   refused(artifactTree({ runs: "round\tmode\n" }), /does not start with the header/);
+  const trace = artifactTree();
+  writeFileSync(join(trace, "test-timings-test-linux", "sweep", "gate-1.profile.json"), JSON.stringify([null]));
+  refused(trace, /not a trace event/);
+  writeFileSync(join(trace, "test-timings-test-linux", "sweep", "gate-1.profile.json"), JSON.stringify([{ name: "a:test", ph: "X", ts: 0 }]));
+  refused(trace, /not a timed task/);
+  const bench = artifactTree();
+  writeFileSync(join(bench, "spike-profile-test-linux", "spawn-bench.json"), JSON.stringify({ schema: "something-else", spawns: [] }));
+  refused(bench, /not the record the spike's workflow writes there/);
   refused(artifactTree({ runs: "mode\tround\tseconds\texit\nsideways\t1\t2\t0\n" }), /not mode, round, seconds, exit/);
   refused(artifactTree({ runs: "mode\tround\tseconds\texit\nbatch\t1\t\t0\n" }), /not mode, round, seconds, exit/);
 });
 
+// Structural on purpose: the artifacts these names reach exist only in a GitHub Actions run of
+// ci.yml, which no test can start; this holds the writer and the reader to one spelling.
 test("the workflow uploads the artifacts the reader reads, and the experiment writes the columns it parses", () => {
   const workflow = readFileSync(join(ROOT, ".github", "workflows", "ci.yml"), "utf8");
   const reader = readFileSync(READER, "utf8");

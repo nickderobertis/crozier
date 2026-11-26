@@ -54,9 +54,9 @@ fn run() -> ExitCode {
         // clap already printed help/version/usage; propagate its exit code.
         Err(e) => {
             let command = match e.kind() {
-                clap::error::ErrorKind::DisplayVersion => "version",
-                clap::error::ErrorKind::DisplayHelp => "help",
-                _ => "usage-error",
+                clap::error::ErrorKind::DisplayVersion => crozier::profile::Command::Version,
+                clap::error::ErrorKind::DisplayHelp => crozier::profile::Command::Help,
+                _ => crozier::profile::Command::UsageError,
             };
             crozier::profile::write(command, u8::try_from(e.exit_code()).unwrap_or(2));
             e.exit()

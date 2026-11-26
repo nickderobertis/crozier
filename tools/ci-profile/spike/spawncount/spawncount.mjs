@@ -14,21 +14,25 @@ if (dir) {
       appendFileSync(join(dir, `node-${process.pid}.jsonl`), `${JSON.stringify({ event, seconds, program: basename(String(program).split(" ")[0]).replace(/\.(exe|cmd)$/, ""), pid: process.pid, test: process.argv[1] ? basename(process.argv[1]) : null, nx: `${process.env.NX_TASK_TARGET_PROJECT}:${process.env.NX_TASK_TARGET_TARGET}` })}\n`);
     } catch {}
   };
+  // exec calls module.exports.execFile, so a call made inside a wrapped one is the same child.
+  let inside = 0;
   for (const name of ["spawn", "spawnSync", "execFile", "execFileSync", "exec", "execSync", "fork"]) {
     const original = childProcess[name];
     childProcess[name] = function (command, ...rest) {
+      if (inside) return original.call(this, command, ...rest);
       const program = name === "fork" ? "node" : name.startsWith("exec") && !name.startsWith("execFile") ? String(command).split(" ")[0] : command;
       write(program);
       const start = performance.now();
       const done = () => write(program, "child", (performance.now() - start) / 1000);
-      if (name.endsWith("Sync")) {
-        try {
-          return original.call(this, command, ...rest);
-        } finally {
-          done();
-        }
+      inside += 1;
+      let child;
+      try {
+        child = original.call(this, command, ...rest);
+      } finally {
+        inside -= 1;
+        if (name.endsWith("Sync")) done();
       }
-      const child = original.call(this, command, ...rest);
+      if (name.endsWith("Sync")) return child;
       child.once?.("close", done);
       return child;
     };

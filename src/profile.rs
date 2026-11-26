@@ -13,10 +13,62 @@ use std::path::PathBuf;
 use std::sync::{Mutex, OnceLock};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
+/// The command a profile is filed under: crozier's subcommands, and what clap
+/// answers itself (`--version`, `--help`, an invocation it refuses).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Command {
+    Generate,
+    Init,
+    Config,
+    Compare,
+    Schema,
+    InternalStrip,
+    Version,
+    Help,
+    UsageError,
+}
+
+impl Command {
+    fn as_str(self) -> &'static str {
+        match self {
+            Self::Generate => "generate",
+            Self::Init => "init",
+            Self::Config => "config",
+            Self::Compare => "compare",
+            Self::Schema => "schema",
+            Self::InternalStrip => "internal-strip",
+            Self::Version => "version",
+            Self::Help => "help",
+            Self::UsageError => "usage-error",
+        }
+    }
+}
+
+/// One phase's or one program's running total.
+struct Total {
+    name: &'static str,
+    elapsed: Duration,
+    count: u64,
+}
+
+fn add(totals: &mut Vec<Total>, name: &'static str, elapsed: Duration) {
+    match totals.iter_mut().find(|t| t.name == name) {
+        Some(total) => {
+            total.elapsed += elapsed;
+            total.count += 1;
+        }
+        None => totals.push(Total {
+            name,
+            elapsed,
+            count: 1,
+        }),
+    }
+}
+
 #[derive(Default)]
 struct Totals {
-    phases: Vec<(&'static str, Duration, u64)>,
-    spawns: Vec<(String, Duration, u64)>,
+    phases: Vec<Total>,
+    spawns: Vec<Total>,
 }
 
 struct State {
@@ -67,27 +119,29 @@ impl Drop for Phase {
 }
 
 fn add_phase(state: &State, name: &'static str, elapsed: Duration) {
-    let mut totals = state.totals.lock().unwrap_or_else(|e| e.into_inner());
-    match totals.phases.iter_mut().find(|(n, _, _)| *n == name) {
-        Some(entry) => {
-            entry.1 += elapsed;
-            entry.2 += 1;
-        }
-        None => totals.phases.push((name, elapsed, 1)),
-    }
+    add(
+        &mut state
+            .totals
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .phases,
+        name,
+        elapsed,
+    );
 }
 
 /// Record one finished child process of `program` that took `elapsed`.
-pub fn spawned(program: &str, elapsed: Duration) {
+pub fn spawned(program: &'static str, elapsed: Duration) {
     let Some(state) = state() else { return };
-    let mut totals = state.totals.lock().unwrap_or_else(|e| e.into_inner());
-    match totals.spawns.iter_mut().find(|(p, _, _)| p == program) {
-        Some(entry) => {
-            entry.1 += elapsed;
-            entry.2 += 1;
-        }
-        None => totals.spawns.push((program.to_string(), elapsed, 1)),
-    }
+    add(
+        &mut state
+            .totals
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .spawns,
+        program,
+        elapsed,
+    );
 }
 
 /// Start a timer for a child of `program`; the returned closure records it.
@@ -143,29 +197,31 @@ fn env_or_null(name: &str) -> String {
 
 /// Write this process's profile, if profiling is on. Never fails the run: a
 /// profile that cannot be written is reported on stderr and dropped.
-pub fn write(command: &str, exit_code: u8) {
+pub fn write(command: Command, exit_code: u8) {
     let Some(state) = state() else { return };
     let total = state.start.elapsed().as_secs_f64();
     let totals = state.totals.lock().unwrap_or_else(|e| e.into_inner());
     let phases: Vec<String> = totals
         .phases
         .iter()
-        .map(|(name, d, n)| {
+        .map(|t| {
             format!(
-                "{{\"name\":{},\"seconds\":{:.6},\"count\":{n}}}",
-                json_string(name),
-                d.as_secs_f64()
+                "{{\"name\":{},\"seconds\":{:.6},\"count\":{}}}",
+                json_string(t.name),
+                t.elapsed.as_secs_f64(),
+                t.count
             )
         })
         .collect();
     let spawns: Vec<String> = totals
         .spawns
         .iter()
-        .map(|(program, d, n)| {
+        .map(|t| {
             format!(
-                "{{\"program\":{},\"spawns\":{n},\"seconds\":{:.6}}}",
-                json_string(program),
-                d.as_secs_f64()
+                "{{\"program\":{},\"spawns\":{},\"seconds\":{:.6}}}",
+                json_string(t.name),
+                t.count,
+                t.elapsed.as_secs_f64()
             )
         })
         .collect();
@@ -177,7 +233,7 @@ pub fn write(command: &str, exit_code: u8) {
     // started the process, so a profile can be attributed to its suite.
     let body = format!(
         "{{\"schema_version\":1,\"command\":{},\"total_seconds\":{total:.6},\"phases\":[{}],\"subprocesses\":[{}],\"spike\":{{\"exit_code\":{exit_code},\"nx_project\":{},\"nx_target\":{},\"pytest_test\":{},\"nextest_test\":{},\"args\":[{}]}}}}\n",
-        json_string(command),
+        json_string(command.as_str()),
         phases.join(","),
         spawns.join(","),
         env_or_null("NX_TASK_TARGET_PROJECT"),

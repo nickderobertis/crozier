@@ -62,7 +62,9 @@ function fetchRun(runId, cacheDir) {
     run = JSON.parse(gh(["run", "view", String(runId), "--repo", REPOSITORY, "--json", "databaseId,headSha,status,conclusion,createdAt,updatedAt,jobs,event,headBranch"]));
     writeFileSync(runPath, JSON.stringify(run, null, 2));
   }
-  const jobOk = (job) => Number.isSafeInteger(job?.databaseId) && typeof job.name === "string" && Array.isArray(job.steps);
+  const when = (v) => v === null || v === undefined || (typeof v === "string" && Number.isFinite(Date.parse(v)));
+  const stepOk = (step) => typeof step?.name === "string" && when(step.startedAt) && when(step.completedAt);
+  const jobOk = (job) => Number.isSafeInteger(job?.databaseId) && typeof job.name === "string" && when(job.startedAt) && when(job.completedAt) && Array.isArray(job.steps) && job.steps.every(stepOk);
   if (String(run?.databaseId) !== String(runId) || typeof run.headSha !== "string" || !Array.isArray(run.jobs) || !run.jobs.every(jobOk)) {
     die(`run ${runId}'s metadata is not a run with jobs (${runPath})`, `delete ${runPath} and rerun to fetch it again`);
   }
@@ -170,7 +172,8 @@ export function parseCases(gateLog, knownTasks) {
 /** Each task's start, end and slot from an Nx profile, with slot utilisation over the run. */
 export function schedule(events) {
   if (!Array.isArray(events)) throw new Error("an Nx profile is a JSON array of trace events");
-  for (const e of events.filter((x) => x?.ph === "X")) {
+  if (!events.every((e) => e !== null && typeof e === "object")) throw new Error("an Nx profile holds an entry that is not a trace event");
+  for (const e of events.filter((x) => x.ph === "X")) {
     if (typeof e.name !== "string" || ![e.ts, e.dur].every(Number.isFinite) || e.dur < 0) throw new Error(`an Nx trace event is not a timed task: ${JSON.stringify(e).slice(0, 200)}`);
   }
   const tasks = events.filter((e) => e.ph === "X").map((e) => ({ target: e.name, start: e.ts / 1e6, end: (e.ts + e.dur) / 1e6, seconds: e.dur / 1e6, slot: e.tid, status: e.args?.status }));
@@ -213,7 +216,8 @@ export function aggregateProfiles(lines) {
   for (const p of profiles) {
     const seconds = (v) => Number.isFinite(v) && v >= 0;
     const timed = (list, key, count) => Array.isArray(list) && list.every((x) => typeof x?.[key] === "string" && seconds(x.seconds) && Number.isSafeInteger(x[count]) && x[count] >= 0);
-    if (p?.schema_version !== 1 || typeof p.command !== "string" || !seconds(p.total_seconds) || !timed(p.phases, "name", "count") || !timed(p.subprocesses, "program", "spawns")) {
+    const named = (v) => v === null || v === undefined || typeof v === "string";
+    if (p?.schema_version !== 1 || typeof p.command !== "string" || !named(p.spike?.nx_project) || !named(p.spike?.nx_target) || !seconds(p.total_seconds) || !timed(p.phases, "name", "count") || !timed(p.subprocesses, "program", "spawns")) {
       throw new Error(`not a schema_version 1 CROZIER_PROFILE record: ${JSON.stringify(p).slice(0, 200)}`);
     }
   }
@@ -275,7 +279,18 @@ function walk(dir) {
   });
 }
 
-const readJson = (path) => (existsSync(path) ? JSON.parse(readFileSync(path, "utf8")) : undefined);
+/** An artifact's JSON file, refused unless `valid` holds for it; undefined when it is absent. */
+function readJson(path, valid) {
+  if (!existsSync(path)) return undefined;
+  const value = JSON.parse(readFileSync(path, "utf8"));
+  if (!valid(value)) throw new Error(`${path} is not the record the spike's workflow writes there`);
+  return value;
+}
+const object = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
+const RUNNER = (v) => object(v) && Number.isSafeInteger(v.cpus);
+const STEP = (v) => object(v) && typeof v.step === "string" && Number.isSafeInteger(v.seconds) && Number.isSafeInteger(v.exit);
+// spawn-bench.mjs writes this schema: a timed spawn has n and median, a failed one an error.
+const SPAWN_BENCH = (v) => object(v) && v.schema === "spike-spawn-bench-1" && Array.isArray(v.spawns) && v.spawns.every((s) => typeof s?.label === "string" && (typeof s.error === "string" || (Number.isSafeInteger(s.n) && Number.isFinite(s.median)))) && object(v.fs);
 
 /** One lane's figures from its job (if read from a run) and its two artifacts. */
 function lane(job, jobLog, artifacts) {
@@ -316,14 +331,15 @@ function lane(job, jobLog, artifacts) {
     if (header !== "mode\tround\tseconds\texit") throw new Error(`${runsTsv} does not start with the header ruff-batch-experiment.sh writes`);
     const rows = lines.map((l) => l.split("\t"));
     const MODES = new Set(["per-file", "batch", "verify"]);
-    const count = (v) => /^\d+$/.test(v);
-    if (!rows.every((r) => r.length === 4 && MODES.has(r[0]) && count(r[1]) && /^\d+(\.\d+)?$/.test(r[2]) && count(r[3]))) throw new Error(`${runsTsv} has a row that is not mode, round, seconds, exit`);
+    const count = (v) => /^\d+$/.test(v) && Number.isSafeInteger(Number(v));
+    const secs = (v) => /^\d+(\.\d+)?$/.test(v) && Number.isFinite(Number(v));
+    if (!rows.every((r) => r.length === 4 && MODES.has(r[0]) && count(r[1]) && secs(r[2]) && count(r[3]))) throw new Error(`${runsTsv} has a row that is not mode, round, seconds, exit`);
     ruffBatch.runs = rows.map(([mode, round, secs, exit]) => ({ mode, round: Number(round), seconds: Number(secs), exit: Number(exit) }));
     for (const f of walk(join(spike, "ruff-batch")).filter((f) => f.endsWith(".jsonl"))) {
       ruffBatch[basename(f, ".jsonl")] = aggregateProfiles(readFileSync(f, "utf8").split("\n"));
     }
   }
-  const stepFiles = walk(spike).filter((f) => /step-.*\.json$/.test(f)).map((f) => readJson(f));
+  const stepFiles = walk(spike).filter((f) => /step-.*\.json$/.test(f)).map((f) => readJson(f, STEP));
   return {
     job: name,
     os: job ? (name.includes("windows") ? "windows" : name.includes("macos") ? "macos" : "linux") : process.platform,
@@ -335,9 +351,9 @@ function lane(job, jobLog, artifacts) {
     schedule: Object.fromEntries(Object.entries(gateSteps).map(([k, g]) => [k, g.schedule && { ...g.schedule, tasks: undefined, parallel: g.parallel }])),
     crozier_profile: crozier,
     spike: {
-      runner: readJson(join(spike, "runner.json")),
+      runner: readJson(join(spike, "runner.json"), RUNNER),
       gate_steps: stepFiles,
-      spawn_bench: readJson(join(spike, "spawn-bench.json")),
+      spawn_bench: readJson(join(spike, "spawn-bench.json"), SPAWN_BENCH),
       ruff_batch: ruffBatch,
     },
   };

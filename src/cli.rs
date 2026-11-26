@@ -52,14 +52,15 @@ impl Cli {
     /// SPIKE ONLY (`spike-windows-lane-breakdown`): the subcommand a
     /// `CROZIER_PROFILE` file is filed under; bare `crozier` generates.
     #[must_use]
-    pub fn command_name(&self) -> &'static str {
+    pub fn command_name(&self) -> crate::profile::Command {
+        use crate::profile::Command as Profiled;
         match self.command {
-            None | Some(Command::Generate(_)) => "generate",
-            Some(Command::Init(_)) => "init",
-            Some(Command::Config(_)) => "config",
-            Some(Command::Compare(_)) => "compare",
-            Some(Command::Schema) => "schema",
-            Some(Command::InternalStrip { .. }) => "internal-strip",
+            None | Some(Command::Generate(_)) => Profiled::Generate,
+            Some(Command::Init(_)) => Profiled::Init,
+            Some(Command::Config(_)) => Profiled::Config,
+            Some(Command::Compare(_)) => Profiled::Compare,
+            Some(Command::Schema) => Profiled::Schema,
+            Some(Command::InternalStrip { .. }) => Profiled::InternalStrip,
         }
     }
 }

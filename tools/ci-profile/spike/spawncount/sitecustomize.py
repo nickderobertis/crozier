@@ -19,7 +19,7 @@ import time
 from dataclasses import asdict, dataclass, field
 from typing import Literal
 
-_DIR = os.environ.get("SPIKE_SPAWN_LOG")
+_DIR = os.environ.get("SPIKE_SPAWN_LOG", "")
 
 
 @dataclass(frozen=True)

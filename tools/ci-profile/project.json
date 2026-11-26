@@ -9,6 +9,21 @@
     "lang:bash"
   ],
   "targets": {
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ruff format --check tools/ci-profile"
+      },
+      "configurations": {
+        "write": {
+          "command": "uv run --locked --all-packages ruff format tools/ci-profile"
+        }
+      },
+      "cache": true,
+      "inputs": [
+        "default"
+      ]
+    },
     "test": {
       "executor": "nx:run-commands",
       "options": {
@@ -31,7 +46,6 @@
           "node --check tools/ci-profile/tests/reader.test.mjs",
           "bash -n tools/ci-profile/spike/ruff-batch-experiment.sh",
           "uv run --locked --all-packages ruff check tools/ci-profile",
-          "uv run --locked --all-packages ruff format --check tools/ci-profile",
           "node scripts/check-project-boundaries.mjs ci-profile"
         ],
         "parallel": false
@@ -40,6 +54,16 @@
       "inputs": [
         "default",
         "boundaries"
+      ]
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ty check tools/ci-profile"
+      },
+      "cache": true,
+      "inputs": [
+        "default"
       ]
     }
   }

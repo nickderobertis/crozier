@@ -79,6 +79,13 @@ test("crozier writes one schema-1 profile per process only when CROZIER_PROFILE 
     assert.deepEqual(profilesIn(where).map((p) => [p.command, p.spike.exit_code]), [[command, code]]);
   }
   assert.equal(profilesIn(profile)[0].spike.args[0], "generate", "the arguments are recorded");
+  // A destination that cannot be a directory loses the profile, never the run.
+  const blocked = join(dir, "a-file");
+  writeFileSync(blocked, "");
+  const kept = run(CROZIER, ["--version"], { CROZIER_PROFILE: blocked });
+  assert.equal(kept.status, 0);
+  assert.match(kept.stdout, /^crozier /);
+  assert.match(kept.stderr, /could not write the profile/);
   const failed = run(CROZIER, ["generate", "--spec", join(dir, "missing.yml"), "--output", join(dir, "x"), "--package-name", "t", "--project-name", "t", "--no-config"], { CROZIER_PROFILE: join(dir, "f") });
   assert.equal(failed.status, 1);
   assert.deepEqual(profilesIn(join(dir, "f")).map((p) => [p.command, p.spike.exit_code]), [["generate", 1]]);
@@ -138,6 +145,19 @@ function artifactTree(profiles) {
   return dir;
 }
 
+test("a generation of a thousand files is formatted in several batched ruff processes to the same bytes", () => {
+  requireCrozier();
+  const dir = scratch();
+  const spec = join(ROOT, "tests", "fixtures", "corpus-sources", "zulip", "openapi.yaml");
+  const generateZulip = (out, env) => run(CROZIER, ["generate", "--spec", spec, "--output", join(dir, out), "--package-name", "zulip", "--project-name", "zulip", "--no-config"], env);
+  assert.equal(generateZulip("plain", {}).status, 0);
+  const batched = generateZulip("batched", { CROZIER_SPIKE_RUFF_BATCH: "1", CROZIER_PROFILE: join(dir, "p") });
+  assert.equal(batched.status, 0, batched.stderr);
+  assert.deepEqual(tree(join(dir, "batched")), tree(join(dir, "plain")));
+  const spawns = profilesIn(join(dir, "p"))[0].subprocesses.find((s) => s.program === "ruff").spawns;
+  assert.ok(spawns > 1 && spawns < 100, `the command line is split into a few processes, not one per file (${spawns})`);
+});
+
 test("the reader reads the profiles crozier really writes", () => {
   requireCrozier();
   const dir = scratch();
@@ -166,7 +186,18 @@ test("the spawn hooks charge each child and tree copy to the test that started i
   const env = { SPIKE_SPAWN_LOG: dir, PYTHONPATH: hooks, PYTEST_CURRENT_TEST: "t.py::case (call)", NODE_OPTIONS: `--import ${new URL(`file://${join(hooks, "spawncount.mjs")}`).href}` };
   const py = run(process.platform === "win32" ? "python" : "python3", ["-c", "import shutil, subprocess, sys, tempfile; subprocess.run([sys.executable, '-c', 'pass']); d = tempfile.mkdtemp(); shutil.copytree(sys.argv[1], d + '/c'); shutil.rmtree(d)", hooks], env);
   assert.equal(py.status, 0, py.stderr);
-  const nodeRun = run("node", ["-e", "const c = require('node:child_process'); c.spawnSync(process.execPath, ['-e', '0']); c.execFile(process.execPath, ['-e', '0'], () => {}); c.fork('-e', [], { execArgv: ['-e', '0'] }).on('exit', () => {});"], env);
+  const failing = run(process.platform === "win32" ? "python" : "python3", ["-c", "import subprocess, sys; subprocess.run([sys.executable, '-c', 'raise SystemExit(3)'])"], env);
+  assert.equal(failing.status, 0, failing.stderr);
+  const forms = [
+    "c.spawnSync(process.execPath, ['-e', '0'])",
+    "c.execFileSync(process.execPath, ['-e', '0'])",
+    "c.execSync(JSON.stringify(process.execPath) + ' -e 0')",
+    "c.execFile(process.execPath, ['-e', '0'], () => {})",
+    "c.exec(JSON.stringify(process.execPath) + ' -e 0', () => {})",
+    "c.spawn(process.execPath, ['-e', '0'])",
+    "c.fork('-e', [], { execArgv: ['-e', '0'] })",
+  ];
+  const nodeRun = run("node", ["-e", `const c = require('node:child_process'); ${forms.join("; ")};`], env);
   assert.equal(nodeRun.status, 0, nodeRun.stderr);
   const records = readdirSync(dir).flatMap((f) => readFileSync(join(dir, f), "utf8").trim().split("\n").map((l) => JSON.parse(l)));
   const events = (kind) => records.filter((r) => r.event === kind);
@@ -174,13 +205,24 @@ test("the spawn hooks charge each child and tree copy to the test that started i
   assert.ok(events("child").every((r) => Number.isFinite(r.seconds)));
   assert.equal(events("copytree").length, 1, "one outermost copy, however deep the tree");
   assert.equal(events("rmtree").length, 1);
+  assert.ok(records.some((r) => r.event === "child" && r.pid === failing.pid), "a child that fails is still timed");
   const nodeChildren = records.filter((r) => r.event === "child" && r.pid === nodeRun.pid);
-  assert.equal(nodeChildren.length, 3, "spawnSync, execFile and fork each record their child once it closes");
+  assert.equal(nodeChildren.length, forms.length, "every child_process form records its child once it closes");
   assert.ok(nodeChildren.every((r) => Number.isFinite(r.seconds)));
+  const off = scratch();
+  const quiet = run("node", ["-e", forms[0].replace("c.", "require('node:child_process').")], { ...env, SPIKE_SPAWN_LOG: "", SPIKE_SPAWN_OFF: "1" });
+  assert.equal(quiet.status, 0);
+  const quietPy = run(process.platform === "win32" ? "python" : "python3", ["-c", "import subprocess, sys; subprocess.run([sys.executable, '-c', 'pass'])"], { ...env, SPIKE_SPAWN_LOG: off, SPIKE_SPAWN_OFF: "1" });
+  assert.equal(quietPy.status, 0);
+  assert.deepEqual(readdirSync(off), [], "switched off, the hooks write nothing");
 });
 
-test("the spawn bench writes per-program samples and refuses a bad repeat count", () => {
-  const out = join(scratch(), "bench.json");
+test("the spawn bench writes per-program samples the reader accepts, records a missing program, and refuses a bad repeat count", () => {
+  const artifacts = scratch();
+  const spike = join(artifacts, "spike-profile-test-linux");
+  mkdirSync(join(artifacts, "test-timings-test-linux"), { recursive: true });
+  mkdirSync(spike);
+  const out = join(spike, "spawn-bench.json");
   const result = run("node", [join(ROOT, "tools/ci-profile/spike/spawn-bench.mjs"), out, "1"]);
   assert.equal(result.status, 0, result.stderr);
   const bench = JSON.parse(readFileSync(out, "utf8"));
@@ -188,6 +230,14 @@ test("the spawn bench writes per-program samples and refuses a bad repeat count"
   assert.equal(git.n, 1);
   assert.ok(git.median > 0);
   assert.ok(bench.fs["write and remove 1000 small files"].median > 0);
+  const read = run("node", [READER, "local", artifacts]);
+  assert.equal(read.status, 0, read.stderr);
+  assert.equal(JSON.parse(read.stdout).lanes[0].spike.spawn_bench.spawns.length, bench.spawns.length);
+  // With only node on PATH, every other program fails to start and is recorded as an error.
+  const missing = join(scratch(), "bench.json");
+  assert.equal(run(process.execPath, [join(ROOT, "tools/ci-profile/spike/spawn-bench.mjs"), missing, "1"], { PATH: dirname(process.execPath) }).status, 0);
+  const ruff = JSON.parse(readFileSync(missing, "utf8")).spawns.find((s) => s.label === "ruff --version");
+  assert.match(ruff.error, /ENOENT/);
   assert.equal(run("node", [join(ROOT, "tools/ci-profile/spike/spawn-bench.mjs"), out, "0"]).status, 2);
 });
 

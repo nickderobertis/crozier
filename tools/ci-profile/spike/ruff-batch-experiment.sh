@@ -40,7 +40,7 @@ run() {
   if [ "$status" -ne 0 ]; then
     failed+=("$mode round $round (exit $status; output in $dir.log)")
     echo "ruff-batch-experiment: $mode round $round failed; the end of its output:" >&2
-    tail -n 25 "$dir.log" >&2
+    tail -n 25 "$dir.log" >&2 || echo "ruff-batch-experiment: (could not read $dir.log)" >&2
   fi
 }
 for ((round = 1; round <= rounds; round++)); do
