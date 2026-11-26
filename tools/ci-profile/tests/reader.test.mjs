@@ -36,13 +36,19 @@ function artifactTree({ profiles = [PROFILE], runs = "mode\tround\tseconds\texit
     "::group::✅ > nx run a:test",
     "        PASS [   1.500s] (1/2) crate::bin first_case",
     "        PASS [   0.250s] crate::bin second_case",
+    "        FAIL [   3.000s] crate::bin failing_case",
+    "       FLAKY [   0.500s] crate::bin flaky_case",
     "::endgroup::",
     "> nx run b:test",
     "2.00s call     tools/b_test.py::Case::test_one",
     "0.50s setup    tools/b_test.py::Case::test_one",
+    "0.25s teardown tools/b_test.py::Case::test_one",
     "ok 1 - a node case",
     "  ---",
     "  duration_ms: 750.5",
+    "    not ok 1 - a failing subtest",
+    "      ---",
+    "      duration_ms: 20",
     "\u001b[32m✔ a spec case \u001b[90m(125ms)\u001b[39m\r",
     "> nx run not-a-task-of-this-run",
     "        PASS [   9.000s] nested::bin a_nested_gates_case",
@@ -68,7 +74,10 @@ test("the reader turns an artifact tree into per-target, per-case, slot and croz
   assert.deepEqual(lane.targets.map((t) => [t.target, t.seconds, t.slot]), [["a:test", 4, 0], ["b:test", 2, 1], ["c:test", 1, 1]]);
   const cases = Object.fromEntries(lane.cases.map((c) => [`${c.kind}:${c.case}`, [c.target, c.seconds]]));
   assert.deepEqual(cases["nextest:crate::bin first_case"], ["a:test", 1.5]);
-  assert.deepEqual(cases["pytest:tools/b_test.py::Case::test_one"], ["b:test", 2.5]);
+  assert.deepEqual(cases["nextest:crate::bin failing_case"], ["a:test", 3], "a failure keeps its time");
+  assert.deepEqual(lane.cases.find((c) => c.case === "crate::bin flaky_case").outcome, "FLAKY");
+  assert.deepEqual(cases["pytest:tools/b_test.py::Case::test_one"], ["b:test", 2.75], "setup, call and teardown are one case");
+  assert.deepEqual(lane.cases.filter((c) => c.case === "a failing subtest").map((c) => [c.depth, c.seconds]), [[1, 0.02]], "a nested TAP failure keeps its depth and time");
   assert.deepEqual(cases["node:a node case"], ["b:test", 0.7505]);
   assert.deepEqual(cases["node:a spec case"], ["b:test", 0.125], "colour and a carriage return are stripped");
   assert.deepEqual(cases["nextest:nested::bin a_nested_gates_case"], ["b:test", 9], "a header naming no task of this run stays in the open section");
@@ -131,6 +140,24 @@ test("the reader refuses a bad invocation and records it cannot trust", () => {
   refused(bench, /not the record the spike's workflow writes there/);
   refused(artifactTree({ runs: "mode\tround\tseconds\texit\nsideways\t1\t2\t0\n" }), /not mode, round, seconds, exit/);
   refused(artifactTree({ runs: "mode\tround\tseconds\texit\nbatch\t1\t\t0\n" }), /not mode, round, seconds, exit/);
+});
+
+test("the gate's stream keeps each line whole across chunks, flushes the last one, and survives a failed write", () => {
+  const dir = scratch();
+  // The gate reads CROZIER_SPIKE_STREAM when it loads, so each child imports it with the variable set.
+  const script = `
+    const { spikeStream } = await import(${JSON.stringify(join(ROOT, "tools", "ci", "gate.mjs"))});
+    const out = spikeStream(), err = spikeStream();
+    const bytes = Buffer.from("café line\\nsecond", "utf8");
+    out.push(bytes.subarray(0, 4)); err.push(Buffer.from("err one\\n")); out.push(bytes.subarray(4)); out.end(); err.end();`;
+  const stream = (path) => spawnSync(process.execPath, ["--input-type=module", "-e", script], { cwd: ROOT, encoding: "utf8", env: { ...process.env, CROZIER_SPIKE_STREAM: path } });
+  const path = join(dir, "stream.log");
+  const result = stream(path);
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(readFileSync(path, "utf8").trim().split("\n").map((l) => l.split("\t")[1]), ["err one", "café line", "second"]);
+  const blocked = stream(dir);
+  assert.equal(blocked.status, 0, "a stream that cannot be written never fails the run");
+  assert.equal(blocked.stderr.match(/could not append to CROZIER_SPIKE_STREAM/g)?.length, 1, "it says so once");
 });
 
 // Structural on purpose: the artifacts these names reach exist only in a GitHub Actions run of

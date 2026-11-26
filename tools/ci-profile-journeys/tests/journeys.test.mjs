@@ -33,7 +33,9 @@ components:
 // The target depends on crozier:build; run by hand, a missing binary fails here, never skips.
 const requireCrozier = () => assert.ok(existsSync(CROZIER), `${CROZIER} is missing: run \`just nx run crozier:build\` first`);
 const scratch = () => mkdtempSync(join(tmpdir(), "ci-profile-test-"));
-const run = (program, args, env = {}, cwd = ROOT) => spawnSync(program, args, { cwd, encoding: "utf8", env: { ...process.env, ...env } });
+// NODE_TEST_CONTEXT would make a nested `node --test` (a suite Nx starts) skip its files.
+const { NODE_TEST_CONTEXT: _testContext, ...parentEnv } = process.env;
+const run = (program, args, env = {}, cwd = ROOT) => spawnSync(program, args, { cwd, encoding: "utf8", env: { ...parentEnv, ...env } });
 
 function generate(dir, env) {
   const spec = join(dir, "spec.yml");
@@ -73,12 +75,20 @@ test("crozier writes one schema-1 profile per process only when CROZIER_PROFILE 
   const ruff = one.subprocesses.find((s) => s.program === "ruff");
   assert.equal(ruff.spawns, phases.format.count, "one ruff spawn per formatted file");
   assert.equal(one.spike.exit_code, 0);
-  for (const [args, command, code] of [[["--version"], "version", 0], [["--help"], "help", 0], [["--no-such-flag"], "usage-error", 2], [["schema"], "schema", 0]]) {
+  for (const [args, command, code] of [[["--version"], "version", 0], [["--help"], "help", 0], [["--no-such-flag"], "usage-error", 2], [["schema"], "schema", 0], [["config", "--no-config"], "config", 0]]) {
     const where = join(dir, command);
     assert.equal(run(CROZIER, args, { CROZIER_PROFILE: where }).status, code, args.join(" "));
     assert.deepEqual(profilesIn(where).map((p) => [p.command, p.spike.exit_code]), [[command, code]]);
   }
   assert.equal(profilesIn(profile)[0].spike.args[0], "generate", "the arguments are recorded");
+  // Bare `crozier` runs every configured generator, and `init` writes a starter config.
+  const project = scratch();
+  writeFileSync(join(project, "spec.yml"), SPEC);
+  assert.equal(run(CROZIER, ["init"], { CROZIER_PROFILE: join(dir, "init") }, project).status, 0);
+  writeFileSync(join(project, "crozier.yml"), "spec: spec.yml\noutput: out\npackage-name: tiny\nproject-name: tiny\n");
+  assert.equal(run(CROZIER, [], { CROZIER_PROFILE: join(dir, "bare") }, project).status, 0);
+  assert.deepEqual(profilesIn(join(dir, "init")).map((p) => p.command), ["init"]);
+  assert.deepEqual(profilesIn(join(dir, "bare")).map((p) => p.command), ["generate"]);
   // A destination that cannot be a directory loses the profile, never the run.
   const blocked = join(dir, "a-file");
   writeFileSync(blocked, "");
@@ -209,6 +219,13 @@ test("the spawn hooks charge each child and tree copy to the test that started i
   const nodeChildren = records.filter((r) => r.event === "child" && r.pid === nodeRun.pid);
   assert.equal(nodeChildren.length, forms.length, "every child_process form records its child once it closes");
   assert.ok(nodeChildren.every((r) => Number.isFinite(r.seconds)));
+  // A log that cannot be written loses records, never the measured call.
+  const blockedLog = join(scratch(), "a-file");
+  writeFileSync(blockedLog, "");
+  const blockedPy = run(process.platform === "win32" ? "python" : "python3", ["-c", "import subprocess, sys; raise SystemExit(subprocess.run([sys.executable, '-c', 'raise SystemExit(4)']).returncode)"], { ...env, SPIKE_SPAWN_LOG: blockedLog });
+  assert.equal(blockedPy.status, 4, blockedPy.stderr);
+  const blockedNode = run("node", ["-e", "process.exit(require('node:child_process').spawnSync(process.execPath, ['-e', 'process.exit(5)']).status)"], { ...env, SPIKE_SPAWN_LOG: blockedLog });
+  assert.equal(blockedNode.status, 5, blockedNode.stderr);
   const off = scratch();
   const quiet = run("node", ["-e", forms[0].replace("c.", "require('node:child_process').")], { ...env, SPIKE_SPAWN_LOG: "", SPIKE_SPAWN_OFF: "1" });
   assert.equal(quiet.status, 0);
@@ -245,6 +262,30 @@ test("the experiment script refuses a bad round count before running anything", 
   const result = run("bash", [join(ROOT, "tools/ci-profile/spike/ruff-batch-experiment.sh"), scratch(), "x"]);
   assert.equal(result.status, 2);
   assert.match(result.stderr, /rounds must be a positive integer/);
+});
+
+test("the reader and the replay read what the pinned Nx really writes: its trace and its task graph", () => {
+  const dir = scratch();
+  const gate = run("node", [join(ROOT, "tools/ci/gate.mjs"), "--sweep", "--projects=workspace,gate-timing", "--", "nx", "run-many", "--targets=test"]);
+  assert.equal(gate.status, 0, gate.stdout + gate.stderr);
+  const log = /output in (\S+)\)/.exec(gate.stdout)[1];
+  const artifacts = join(dir, "artifacts");
+  const timings = join(artifacts, "test-timings-test-linux", "sweep");
+  mkdirSync(timings, { recursive: true });
+  writeFileSync(join(timings, "gate-1.log"), readFileSync(log, "utf8"));
+  writeFileSync(join(timings, "gate-1.profile.json"), readFileSync(log.replace(/\.log$/, ".profile.json"), "utf8"));
+  const out = join(dir, "report.json");
+  assert.equal(run("node", [READER, "local", artifacts, "--out", out]).status, 0);
+  const [lane] = JSON.parse(readFileSync(out, "utf8")).lanes;
+  assert.deepEqual(lane.targets.map((t) => t.target).sort(), ["gate-timing:test", "workspace:test"]);
+  assert.ok(lane.targets.every((t) => t.seconds > 0 && t.end > t.start && Number.isInteger(t.slot)));
+  assert.ok(lane.cases.some((c) => c.kind === "node" && c.target === "workspace:test"), "Node's cases are attributed to their task");
+  const graph = join(dir, "tasks.json");
+  assert.equal(run(join(ROOT, "node_modules", ".bin", `nx${process.platform === "win32" ? ".cmd" : ""}`), ["run-many", "--targets=test", "--projects=workspace,gate-timing", `--graph=${graph}`], { NX_DAEMON: "false", NX_TUI: "false" }).status, 0);
+  const replay = run("node", [join(ROOT, "tools/ci-profile/spike/schedule.mjs"), out, "test-linux", "sweep", graph]);
+  assert.equal(replay.status, 0, replay.stderr);
+  const wall = JSON.parse(replay.stdout).simulated.alone.observed[3];
+  assert.ok(Math.abs(wall - lane.schedule.sweep.wall_seconds) < 0.5, `the replay of a real run reproduces its wall (${wall} against ${lane.schedule.sweep.wall_seconds})`);
 });
 
 test("the gate streams Nx's output, line by line with its seconds, when CROZIER_SPIKE_STREAM is set", () => {

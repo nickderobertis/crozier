@@ -132,6 +132,7 @@ jobs:
         timeout-minutes: 10
         shell: bash
         run: node tools/ci-profile/spike/spawn-bench.mjs "$SPIKE_OUT/spawn-bench.json" 20
+      # llmlint: ignore[changed_behavior_has_e2e] SPIKE ONLY: runs only on GitHub's runners; runs 45840622476 and 45863948064 packed 27,781 and 34,807 profiles here, and ci-profile.mjs reading those JSONL artifacts is the proof (ci-profile-journeys feeds it real crozier profiles).
       - name: Pack the crozier profiles
         if: always()
         shell: bash
@@ -261,6 +262,7 @@ jobs:
         timeout-minutes: 10
         shell: bash
         run: node tools/ci-profile/spike/spawn-bench.mjs "$SPIKE_OUT/spawn-bench.json" 20
+      # llmlint: ignore[changed_behavior_has_e2e] SPIKE ONLY: runs only on GitHub's runners; runs 45840622476 and 45863948064 packed 27,781 and 34,807 profiles here, and ci-profile.mjs reading those JSONL artifacts is the proof (ci-profile-journeys feeds it real crozier profiles).
       - name: Pack the crozier profiles
         if: always()
         shell: bash

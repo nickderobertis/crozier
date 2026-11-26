@@ -13,6 +13,7 @@
 # its output in <out-dir>/<mode>-<round>.log, and its wall seconds and exit
 # status in <out-dir>/runs.tsv (header: mode, round, seconds, exit).
 # Exits 1, naming each failed invocation and its log, when any test run failed.
+# llmlint: ignore[changed_behavior_has_e2e] SPIKE ONLY: one execution runs three of the largest golden e2e tests five times (about 4 minutes on Linux, 11 on Windows); it ran in run 45840622476 on both platforms and its runs.tsv and profiles are the report's A/B. ci-profile-journeys proves its refusal path and the reader proves its output columns.
 set -euo pipefail
 out=${1:?usage: ruff-batch-experiment.sh <out-dir> [rounds]}
 rounds=${2:-2}

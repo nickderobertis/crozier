@@ -307,7 +307,7 @@ function spikeStreamWrite(lines) {
     console.error(`${TOOL}: could not append to CROZIER_SPIKE_STREAM (${error.message}); the run goes on without it`);
   }
 }
-function spikeStream() {
+export function spikeStream() {
   const decoder = new StringDecoder("utf8");
   let pending = "";
   return {

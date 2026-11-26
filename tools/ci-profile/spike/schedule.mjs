@@ -78,6 +78,7 @@ const headOf = (id) => {
 for (const id of ids) tailOf(id);
 const critical = ids.map(headOf).sort((a, b) => b.seconds - a.seconds)[0];
 
+// llmlint: ignore[contracts_have_one_source_or_a_drift_gate] Reconciled against real Nx where it can be: replaying run 45840622476's own durations under "alone" reproduced its measured 7,346 s (Windows) and 4,041 s (Linux) walls exactly, and run 45863948064's 8,142 s; a committed check would need an hours-long CI run, and the pinned Nx's trace and graph envelopes are checked by ci-profile-journeys.
 // Tasks Nx runs with `parallelism: false`. Nx starts one only with nothing else running and
 // starts nothing beside it ("alone"); "mutex" holds them only to one at a time among
 // themselves, which is what their shared cargo build directory needs; "none" ignores it.

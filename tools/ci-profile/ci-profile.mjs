@@ -52,6 +52,7 @@ function cached(path, fetch) {
   return body;
 }
 
+// llmlint: ignore[changed_behavior_has_e2e] SPIKE ONLY: fetching needs GitHub, its quota and a finished run, which no committed test may spend; this path read runs 45840622476 and 45863948064 (jobs, logs, artifacts) for the report, and the cache-read half is proved offline in reader.test.mjs.
 function fetchRun(runId, cacheDir) {
   mkdirSync(cacheDir, { recursive: true });
   const runPath = join(cacheDir, "run.json");
@@ -287,10 +288,12 @@ function readJson(path, valid) {
   return value;
 }
 const object = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
-const RUNNER = (v) => object(v) && Number.isSafeInteger(v.cpus);
-const STEP = (v) => object(v) && typeof v.step === "string" && Number.isSafeInteger(v.seconds) && Number.isSafeInteger(v.exit);
+const natural = (v) => Number.isSafeInteger(v) && v >= 0;
+const RUNNER = (v) => object(v) && Number.isSafeInteger(v.cpus) && v.cpus > 0;
+const STEP = (v) => object(v) && typeof v.step === "string" && natural(v.seconds) && natural(v.exit);
+const timing = (s) => object(s) && Number.isSafeInteger(s.n) && s.n > 0 && [s.median, s.mean, s.min, s.max].every((x) => Number.isFinite(x) && x >= 0);
 // spawn-bench.mjs writes this schema: a timed spawn has n and median, a failed one an error.
-const SPAWN_BENCH = (v) => object(v) && v.schema === "spike-spawn-bench-1" && Array.isArray(v.spawns) && v.spawns.every((s) => typeof s?.label === "string" && (typeof s.error === "string" || (Number.isSafeInteger(s.n) && Number.isFinite(s.median)))) && object(v.fs);
+const SPAWN_BENCH = (v) => object(v) && v.schema === "spike-spawn-bench-1" && Array.isArray(v.spawns) && v.spawns.every((s) => typeof s?.label === "string" && (typeof s.error === "string" || timing(s))) && object(v.fs) && Object.values(v.fs).every(timing);
 
 /** One lane's figures from its job (if read from a run) and its two artifacts. */
 function lane(job, jobLog, artifacts) {
@@ -375,7 +378,7 @@ function main() {
   }
   if (positional.length !== 1) die(`expected one ${verb === "local" ? "artifact directory" : "run id"}, got ${positional.length}`, USAGE, 2);
   let report;
-  if (verb === "run" && /^[1-9]\d{0,15}$/.test(positional[0])) {
+  if (verb === "run" && /^[1-9]\d{0,15}$/.test(positional[0]) && Number.isSafeInteger(Number(positional[0]))) {
     const runId = positional[0];
     const cacheDir = flags["cache-dir"] ?? join(process.env.XDG_CACHE_HOME || join(homedir(), ".cache"), "crozier", "ci-profile", runId);
     const { run, artifacts } = fetchRun(runId, cacheDir);

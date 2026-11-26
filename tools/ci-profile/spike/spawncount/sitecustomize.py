@@ -54,8 +54,13 @@ def _write(record: Record) -> None:
 
 
 def _program(argv) -> str:
-    first = argv if isinstance(argv, (str, bytes)) else (argv[0] if argv else "?")
-    return os.path.basename(os.fsdecode(first).split()[0]).removesuffix(".exe") if first else "?"
+    """The program a Popen argument names, or "?"; it never raises inside the measured call."""
+    try:
+        first = argv if isinstance(argv, (str, bytes, os.PathLike)) else next(iter(argv), "?")
+        words = os.fsdecode(first).split()
+    except (TypeError, ValueError):
+        return "?"
+    return os.path.basename(words[0]).removesuffix(".exe") if words else "?"
 
 
 def _hook(event: str, args: tuple) -> None:
