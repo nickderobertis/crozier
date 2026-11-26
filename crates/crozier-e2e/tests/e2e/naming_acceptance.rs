@@ -191,22 +191,25 @@ fn enum_failures(case: &str, out: &Path) -> Vec<String> {
 
 /// [`enum_failures`] over a tree a test tampered with on purpose: every
 /// difference no departure explains still fails, but no departure it applies is
-/// held to, or recorded into, the golden's ledger rows. Under `just
-/// departures-ledger` a tampered tree's shifted lines would otherwise become
-/// rows the untouched tree never applies.
+/// held to the golden's ledger rows, and as a
+/// [`super::departures_ledger::perturbed`] comparison it records nothing under
+/// `just departures-ledger`, where a tampered tree's shifted lines would
+/// otherwise become rows the untouched tree never applies.
 fn tampered_enum_failures(case: &str, out: &Path) -> Vec<String> {
     let golden = golden(case);
     let ledger = departure_ledger()
         .golden(&golden, &[])
         .unwrap_or_else(|failures| panic!("{}", failures.join("\n")));
-    golden_tree_failures_in(
-        &format!("{case} (python-enums, tampered)"),
-        &spec(case).display().to_string(),
-        &ledger,
-        &repo_root().join(&golden),
-        out,
-        &|_| false,
-    )
+    super::departures_ledger::perturbed(|| {
+        golden_tree_failures_in(
+            &format!("{case} (python-enums, tampered)"),
+            &spec(case).display().to_string(),
+            &ledger,
+            &repo_root().join(&golden),
+            out,
+            &|_| false,
+        )
+    })
 }
 
 /// The removed base files a literals overlay's manifest names.

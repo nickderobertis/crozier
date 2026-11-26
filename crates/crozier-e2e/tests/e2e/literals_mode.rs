@@ -301,7 +301,8 @@ fn a_literals_case_refuses_python_enums_output() {
             && !alias.contains("How rough"),
         "{alias}"
     );
-    let failures = case_failures(&case, tree.path(), "python-enums");
+    let failures =
+        super::departures_ledger::perturbed(|| case_failures(&case, tree.path(), "python-enums"));
     assert!(
         failures
             .iter()
@@ -325,7 +326,8 @@ fn an_unexplained_literal_mismatch_fails() {
         text.replace(r#""back\\room","#, r#""back\\rooms","#),
     )
     .expect("perturb the tree");
-    let failures = case_failures(&case, tree.path(), "literals");
+    let failures =
+        super::departures_ledger::perturbed(|| case_failures(&case, tree.path(), "literals"));
     assert!(
         failures
             .iter()
