@@ -38,6 +38,7 @@ from __future__ import annotations
 import argparse
 import contextlib
 import os
+import re
 import signal
 import subprocess
 import sys
@@ -66,13 +67,22 @@ def holder_path() -> Path:
     return lock_path().with_name(LOCK_NAME + ".holder")
 
 
+PID = re.compile(r"[1-9][0-9]{0,9}")
+
+
+def parse_pid(text: str) -> int | None:
+    """A pid written as plain ASCII decimal, or None for anything else."""
+    text = text.strip()
+    return int(text) if PID.fullmatch(text) else None
+
+
 def recorded_holder() -> int | None:
     """The pid the current holder recorded, or None when no crozier entry point holds the lock."""
     try:
-        text = holder_path().read_text(encoding="utf-8").strip()
-    except OSError:
+        text = holder_path().read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
         return None
-    return int(text) if text.isdigit() else None
+    return parse_pid(text)
 
 
 def parent_of(pid: int) -> int | None:
@@ -91,8 +101,7 @@ def parent_of(pid: int) -> int | None:
         )
     except (OSError, subprocess.TimeoutExpired):
         return None
-    text = shown.stdout.strip()
-    return int(text) if text.isdigit() else None
+    return parse_pid(shown.stdout)
 
 
 def is_self_or_ancestor(pid: int) -> bool:
@@ -113,10 +122,9 @@ def is_self_or_ancestor(pid: int) -> bool:
 
 def held() -> bool:
     """Whether this process runs inside a crozier entry point's hold of the lock."""
-    named = os.environ.get(HOLDER_ENV, "")
-    if not named.isdigit():
+    pid = parse_pid(os.environ.get(HOLDER_ENV, ""))
+    if pid is None:
         return False
-    pid = int(named)
     return recorded_holder() == pid and is_self_or_ancestor(pid)
 
 

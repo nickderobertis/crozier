@@ -178,33 +178,41 @@ class Case:
     needs_just: bool = False
 
 
-def corpus_row(root: Path, decision: str = "committed") -> None:
-    """One CORPUS.md row, `alpha`, whose source is committed beside its fixture."""
+def corpus_row(root: Path, decision: str = "committed", names: tuple[str, ...] = ("alpha",)) -> None:
+    """CORPUS.md rows (`alpha` alone by default), each source committed beside its fixture."""
     fixtures = root / "tests" / "fixtures"
-    (fixtures / "alpha").mkdir(parents=True, exist_ok=True)
-    (fixtures / "alpha" / "openapi.yml").write_text(DOCUMENT, encoding="utf-8")
+    rows, sources = [], []
+    digest = hashlib.sha256(DOCUMENT.encode()).hexdigest()
+    for number, name in enumerate(names, start=1):
+        (fixtures / name).mkdir(parents=True, exist_ok=True)
+        (fixtures / name / "openapi.yml").write_text(DOCUMENT, encoding="utf-8")
+        url = f"https://example.test/{name}/openapi.yml"
+        rows.append(f"| {number} | `{name}` | test | {url} | `1` | MIT | {decision} | {name} |\n")
+        source = fixtures / "corpus-sources" / name / "openapi.yml"
+        source.parent.mkdir(parents=True, exist_ok=True)
+        source.write_text(DOCUMENT, encoding="utf-8")
+        sources.append(f"{name}\ttests/fixtures/corpus-sources/{name}/openapi.yml\t{url}\t{digest}\n")
     (fixtures / "CORPUS.md").write_text(
         "# Corpus\n\n"
         "| # | name | method | source | pinned ref | license | decision | shapes |\n"
-        "|---:|---|---|---|---|---|---|---|\n"
-        f"| 1 | `alpha` | test | https://example.test/alpha/openapi.yml | `1` | MIT | {decision} | alpha |\n",
+        "|---:|---|---|---|---|---|---|---|\n" + "".join(rows),
         encoding="utf-8",
     )
-    source = fixtures / "corpus-sources" / "alpha" / "openapi.yml"
-    source.parent.mkdir(parents=True, exist_ok=True)
-    source.write_text(DOCUMENT, encoding="utf-8")
-    digest = hashlib.sha256(DOCUMENT.encode()).hexdigest()
     (fixtures / "corpus-sources.tsv").write_text(
-        "# corpus_name\tpath\tsource_url\tsha256\n"
-        f"alpha\ttests/fixtures/corpus-sources/alpha/openapi.yml\thttps://example.test/alpha/openapi.yml\t{digest}\n",
-        encoding="utf-8",
+        "# corpus_name\tpath\tsource_url\tsha256\n" + "".join(sources), encoding="utf-8"
     )
 
 
-def authored_probe(root: Path) -> None:
-    case = root / "docs" / "openapi-surface" / "authored-probes" / "lock-probe"
-    case.mkdir(parents=True)
-    (case / "openapi.yml").write_text(DOCUMENT, encoding="utf-8")
+# Two items, for the entry points that run Fern once per item.
+TWO = ("alpha", "beta")
+PROBES = ("lock-probe", "lock-probe-2")
+
+
+def authored_probe(root: Path, names: tuple[str, ...] = ("lock-probe",)) -> None:
+    for name in names:
+        case = root / "docs" / "openapi-surface" / "authored-probes" / name
+        case.mkdir(parents=True)
+        (case / "openapi.yml").write_text(DOCUMENT, encoding="utf-8")
 
 
 def just(root: Path, *recipe: str) -> list[str]:
@@ -229,27 +237,21 @@ def prepare_overlay(root: Path) -> list[str]:
 
 
 def prepare_corpus_fixtures(root: Path) -> list[str]:
-    corpus_row(root)
-    return [str(root / "tools" / "fern-goldens" / "generate-corpus-fixtures.sh"), "--only", "alpha"]
+    corpus_row(root, names=TWO)
+    return [str(root / "tools" / "fern-goldens" / "generate-corpus-fixtures.sh"), "--committed"]
 
 
 def prepare_fern_goldens(command: str) -> Callable[[Path], list[str]]:
     def prepare(root: Path) -> list[str]:
-        corpus_row(root, decision="link-ok")
-        return [
-            str(root / "tools" / "fern-goldens" / "fern-goldens"),
-            command,
-            "--version",
-            GENERATOR,
-            "--fixture",
-            "alpha",
-        ]
+        corpus_row(root, decision="link-ok", names=TWO)
+        fixtures = [argument for name in TWO for argument in ("--fixture", name)]
+        return [str(root / "tools" / "fern-goldens" / "fern-goldens"), command, "--version", GENERATOR, *fixtures]
 
     return prepare
 
 
 def prepare_fern_references(root: Path) -> list[str]:
-    authored_probe(root)
+    authored_probe(root, PROBES)
     return [sys.executable, str(root / "tools" / "fern-goldens" / "fern-references.py"), "generate", "authored-probes"]
 
 
@@ -342,25 +344,25 @@ def git(root: Path, *args: str) -> None:
 
 
 def prepare_weekly_shard(root: Path) -> list[str]:
-    """One shard of a plan holding one authored probe, over a committed checkout."""
-    authored_probe(root)
+    """One shard of a plan holding two authored probes, over a committed checkout."""
+    authored_probe(root, PROBES)
     git(root, "init", "-q")
     git(root, "add", "-A")
     git(root, "commit", "-q", "-m", "scratch checkout")
     weekly = load_tool("weekly_under_lock_test", root / "tools" / "fern-goldens" / "weekly.py")
-    item = weekly.PlannedItem("authored-probes", "lock-probe", 1.0)
+    items = tuple(weekly.PlannedItem("authored-probes", name, 1.0) for name in PROBES)
     plan = weekly.Plan(
         complete=False,
-        items="authored-probes/lock-probe",
+        items=",".join(f"authored-probes/{name}" for name in PROBES),
         base=None,
         pair=weekly.Pair(CLI, GENERATOR),
         budget_minutes=weekly.BUDGET_MINUTES,
         shard_limit_minutes=94.5,
         default_seconds=1.0,
-        families={"authored-probes": weekly.FamilyTotal(1, 1.0)},
-        units=1,
-        shards=(weekly.PlannedJob(0, 1.0, 4.02, (item,)),),
-        estimate=weekly.wall_clock([1.0]),
+        families={"authored-probes": weekly.FamilyTotal(len(items), float(len(items)))},
+        units=len(items),
+        shards=(weekly.PlannedJob(0, float(len(items)), 4.02, items),),
+        estimate=weekly.wall_clock([float(len(items))]),
     )
     (root.parent / "plan.json").write_text(json.dumps(plan.to_json()), encoding="utf-8")
     script = root / "tools" / "fern-goldens" / "weekly.py"
@@ -637,7 +639,12 @@ class EveryFernEntryPointHoldsTheHostLock(unittest.TestCase):
             # Still held a moment after it says it waits: it must keep waiting.
             time.sleep(0.3)
             release()
+        # A competitor asks for the lock throughout the run: it must never get it
+        # between the entry point's first Fern run and its last, items included.
+        competing = threading.Thread(target=self.compete, args=(process,), daemon=True)
+        competing.start()
         output = self.finish(process, log)
+        competing.join(timeout=HANG_GUARD_SECONDS)
         events = self.recorded()
         self.assert_ran_fern(events, output)
         kinds = [event["event"] for event in events]
@@ -646,6 +653,23 @@ class EveryFernEntryPointHoldsTheHostLock(unittest.TestCase):
             kinds.index("fern-start"),
             f"{case.name} started Fern while another process held the host lock:\n{events}\n{output}",
         )
+        first, last = kinds.index("fern-start"), len(kinds) - 1 - kinds[::-1].index("fern-end")
+        self.assertNotIn(
+            "intruded",
+            kinds[first:last],
+            f"{case.name} let another process take the host lock between its Fern runs:\n{events}\n{output}",
+        )
+
+    def compete(self, process: subprocess.Popen[bytes]) -> None:
+        """Take and drop the lock whenever it is free until `process` ends, noting each time."""
+        path = LOCK.lock_path()
+        while process.poll() is None:
+            with path.open("a+", encoding="utf-8") as handle:
+                if LOCK._try_lock(handle):
+                    with self.events.open("a", encoding="utf-8") as events:
+                        events.write(json.dumps({"event": "intruded"}) + "\n")
+                    LOCK._unlock(handle)
+            time.sleep(0.02)
 
     def shares(self, case: Case) -> None:
         argv = self.checkout(case)
@@ -708,35 +732,80 @@ class NestingIsVerifiedNotTrusted(unittest.TestCase):
         lock = Path(self.environment["XDG_CACHE_HOME"]) / "crozier" / "fern-generation.lock"
         return subprocess.run([sys.executable, "-c", probe, str(lock)], check=False).returncode == 0
 
-    @unittest.skipIf(os.name == "nt", "SIGTERM and flock are POSIX")
-    def test_a_terminated_run_ends_its_command_and_frees_the_lock(self) -> None:
-        """`run` hands SIGTERM to its command, exits as the signal asked, and leaves
-        neither the lock held nor a holder recorded."""
+    def until(self, path: Path) -> None:
+        deadline = time.monotonic() + HANG_GUARD_SECONDS
+        while not path.exists() and time.monotonic() < deadline:
+            time.sleep(0.05)
+        self.assertTrue(path.exists(), f"{path.name} never appeared")
+
+    def held_command(self, name: str) -> tuple[subprocess.Popen[bytes], Path, Path]:
+        """`run` over a command that marks it started, then waits for `<name>.go`,
+        exiting 0, or ends on SIGTERM or SIGHUP noting which in `<name>.ended`."""
         scratch = Path(self.environment["XDG_CACHE_HOME"])
-        started, ended = scratch / "started", scratch / "ended"
+        started, go, ended = (scratch / f"{name}.{suffix}" for suffix in ("started", "go", "ended"))
         child = (
             "import pathlib, signal, sys, time\n"
             "def stop(signum, frame):\n"
             f"    pathlib.Path({str(ended)!r}).write_text(str(signum))\n"
             "    sys.exit(128 + signum)\n"
-            "signal.signal(signal.SIGTERM, stop)\n"
+            "for name in ('SIGTERM', 'SIGHUP'):\n"
+            "    if hasattr(signal, name):\n"
+            "        signal.signal(getattr(signal, name), stop)\n"
             f"pathlib.Path({str(started)!r}).write_text('')\n"
-            "time.sleep(60)\n"
+            f"while not pathlib.Path({str(go)!r}).exists():\n"
+            "    time.sleep(0.05)\n"
         )
         wrapper = subprocess.Popen(
-            [sys.executable, str(LOCK_SCRIPT), "run", "--label", "probe", "--", sys.executable, "-c", child],
+            [sys.executable, str(LOCK_SCRIPT), "run", "--label", name, "--", sys.executable, "-c", child],
             env=self.environment,
         )
-        deadline = time.monotonic() + HANG_GUARD_SECONDS
-        while not started.exists() and time.monotonic() < deadline:
-            time.sleep(0.05)
-        self.assertTrue(started.exists(), "the command never started")
-        self.assertFalse(self.lock_is_free(), "the command ran outside the lock")
-        wrapper.send_signal(signal.SIGTERM)
-        self.assertEqual(128 + signal.SIGTERM, wrapper.wait(timeout=HANG_GUARD_SECONDS))
-        self.assertEqual(str(int(signal.SIGTERM)), ended.read_text(), "the command was not handed the signal")
+        self.addCleanup(lambda: wrapper.poll() is None and wrapper.kill())
+        return wrapper, started, go
+
+    def test_a_second_run_waits_for_the_first_to_finish(self) -> None:
+        """Two `run`s contend across processes, on every OS: the second's command
+        starts only once the first's has ended and the lock is released."""
+        first, first_started, first_go = self.held_command("first")
+        self.until(first_started)
+        second, second_started, second_go = self.held_command("second")
+        time.sleep(1.0)
+        self.assertFalse(second_started.exists(), "the second command started while the first held the lock")
+        second_go.write_text("", encoding="utf-8")
+        first_go.write_text("", encoding="utf-8")
+        self.assertEqual(0, first.wait(timeout=HANG_GUARD_SECONDS))
+        self.until(second_started)
+        self.assertEqual(0, second.wait(timeout=HANG_GUARD_SECONDS))
+
+    @unittest.skipIf(os.name == "nt", "SIGTERM, SIGHUP and flock are POSIX")
+    def test_a_terminated_or_hung_up_run_ends_its_command_and_frees_the_lock(self) -> None:
+        """`run` hands SIGTERM and SIGHUP to its command, exits as the signal asked,
+        and leaves neither the lock held nor a holder recorded."""
+        scratch = Path(self.environment["XDG_CACHE_HOME"])
+        for signum in (signal.SIGTERM, signal.SIGHUP):
+            with self.subTest(signal=signum.name):
+                wrapper, started, _go = self.held_command(signum.name)
+                self.until(started)
+                self.assertFalse(self.lock_is_free(), "the command ran outside the lock")
+                wrapper.send_signal(signum)
+                self.assertEqual(128 + signum, wrapper.wait(timeout=HANG_GUARD_SECONDS))
+                ended = scratch / f"{signum.name}.ended"
+                self.assertEqual(str(int(signum)), ended.read_text(), "the command was not handed the signal")
+                self.assertTrue(self.lock_is_free())
+                self.assertFalse((scratch / "crozier" / "fern-generation.lock.holder").exists())
+
+    @unittest.skipIf(os.name == "nt", "SIGINT to one process and flock are POSIX")
+    def test_an_interrupt_leaves_the_command_to_finish_and_then_frees_the_lock(self) -> None:
+        """A terminal interrupt reaches the command itself; `run` only waits, so an
+        interrupt sent to it alone ends nothing and the command's status stands."""
+        wrapper, started, go = self.held_command("interrupted")
+        self.until(started)
+        wrapper.send_signal(signal.SIGINT)
+        time.sleep(0.5)
+        self.assertIsNone(wrapper.poll(), "the interrupt ended the run before its command finished")
+        self.assertFalse(self.lock_is_free())
+        go.write_text("", encoding="utf-8")
+        self.assertEqual(0, wrapper.wait(timeout=HANG_GUARD_SECONDS))
         self.assertTrue(self.lock_is_free())
-        self.assertFalse((scratch / "crozier" / "fern-generation.lock.holder").exists())
 
     @unittest.skipIf(os.name == "nt", "flock is POSIX")
     def test_a_hold_left_by_an_error_restores_its_variable_and_frees_the_lock(self) -> None:
