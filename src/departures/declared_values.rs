@@ -32,6 +32,10 @@ use serde_json::Value;
 const FERN_DATETIME: &str = "datetime.datetime.fromisoformat(\"2024-01-15T09:30:00+00:00\")";
 /// The same placeholder as a wrapped docstring call's string line.
 const FERN_DATETIME_WRAPPED: &str = "\"2024-01-15 09:30:00+00:00\",";
+/// The certified pair's placeholder for a `format: date` value.
+const FERN_DATE: &str = "datetime.date.fromisoformat(\"2023-01-15\")";
+/// The same placeholder as a wrapped docstring call's string line.
+const FERN_DATE_WRAPPED: &str = "\"2023-01-15\",";
 
 /// Whether `value` is the placeholder the certified pair writes for an argument
 /// whose wire name is `wire`: the wire name itself, or a numeric placeholder.
@@ -984,6 +988,35 @@ fn timestamp_properties(source: &OpenApi) -> Vec<(String, String)> {
     out
 }
 
+/// Every `format: date` property a schema-level object example gives an
+/// unquoted YAML date, which YAML reads as a date and the certified pair as no
+/// example: its wire name and the declared value. No date is excepted: crozier
+/// keeps every one it reads, `2000-01-23` included (#937, cjavdev's believe
+/// `date_of_birth: 1977-03-15` and update examples' `2000-01-23`).
+fn date_properties(source: &OpenApi) -> Vec<(String, String)> {
+    let Some(unquoted) = source.yaml_unquoted_timestamps.as_ref() else {
+        return Vec::new();
+    };
+    let mut out = Vec::new();
+    visit_source_schemas(Some(source), &mut |schema| {
+        let Some(example) = schema.example.as_ref().and_then(Value::as_object) else {
+            return;
+        };
+        for (wire, property) in &schema.properties {
+            let Some(value) = example.get(wire).and_then(Value::as_str) else {
+                continue;
+            };
+            if resolve(source, property).format.as_deref() == Some("date")
+                && unquoted.contains(value)
+                && crate::example_values::full_date(value)
+            {
+                out.push((wire.clone(), value.to_string()));
+            }
+        }
+    });
+    out
+}
+
 /// `declared-timestamp-property-example`: Fern's date-time placeholder beside
 /// crozier's line passing the timestamp a schema-level object example declares
 /// for that same date-time property, as a keyword argument or as the string
@@ -999,6 +1032,23 @@ pub(super) fn declared_timestamp_property_example(
     let Some(source) = pair.context.source_document.as_ref() else {
         return false;
     };
+    let dates = date_properties(source);
+    if fern.trim_start() == FERN_DATE_WRAPPED {
+        let indent = &fern[..fern.len() - fern.trim_start().len()];
+        return dates
+            .iter()
+            .any(|(_, value)| crozier == format!("{indent}{value:?},"));
+    }
+    if let (Some((fern_indent, fern_name, FERN_DATE)), Some((indent, name, value))) =
+        (keyword_argument_line(fern), keyword_argument_line(crozier))
+    {
+        return fern_indent == indent
+            && fern_name == name
+            && dates.iter().any(|(wire, declared)| {
+                argument_names(wire, name)
+                    && value == format!("datetime.date.fromisoformat({declared:?})")
+            });
+    }
     let properties = timestamp_properties(source);
     if fern.trim_start() == FERN_DATETIME_WRAPPED {
         let indent = &fern[..fern.len() - fern.trim_start().len()];

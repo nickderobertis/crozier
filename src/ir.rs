@@ -2060,6 +2060,11 @@ pub struct PathParam {
     /// pattern rejected the parameter-name placeholder; 5.41.3 documents the
     /// placeholder regardless, so no writer reads this today.
     pub pattern_constrained: bool,
+    /// Whether [`Self::example`] is a quoted `format: date` value, which the
+    /// certified pair's worked call passes as the date it names: NWS's `Date`
+    /// component (`"2025-02-23"`). An unquoted YAML date is no example to it
+    /// (the UniCourt `dailyUsage` `date`, `2023-02-21`, is its placeholder).
+    pub quoted_date_example: bool,
     /// Whether the value serializes through `convert_and_respect_annotation_metadata`
     /// inside the URL f-string — true for an object/union type carrying field
     /// aliases, as Fern wraps an object-typed *path* parameter exactly as it wraps
@@ -2597,6 +2602,19 @@ pub struct ObjectType {
     /// The schema's OpenAPI XML Object, when it declares one: the model then
     /// also reads and writes itself as an XML element (`to_xml`/`from_xml`).
     pub xml: Option<XmlEncoding>,
+    /// Where the schema is an `allOf` of two or more `$ref`s, the properties
+    /// only its inline members declare, in their order; `None` for any other
+    /// schema. The certified pair's docstring examples then list the later
+    /// members' fields first (paypal's `Configuration`, `allOf: [$ref
+    /// TemplateConfiguration, $ref ConfigurationAllOf2]`, opens with the second
+    /// member's `template_id`) and these inline properties last; its Markdown
+    /// writers keep declaration order.
+    pub reference_composition: Option<Vec<String>>,
+    /// The literal this schema's own example gives each field it inherits from
+    /// a base class, by wire name: a model worked from that example passes its
+    /// inherited fields' values too (#935, epilot's `EventCatalogTrigger`
+    /// example sets `AutomationTrigger`'s `id`).
+    pub inherited_examples: std::collections::BTreeMap<String, String>,
 }
 
 /// An XML model's element: what an object schema's `xml` declares.
@@ -2657,6 +2675,14 @@ pub struct Field {
     pub spec_required: bool,
     /// Optional field docstring (from the property `description`).
     pub docstring: Option<String>,
+    /// The blank lines the property's description ends on: its trailing line
+    /// breaks less the one that closes its last line (a YAML keep-chomped `|+`
+    /// block ending on a blank line ends `\n\n`, one). Fern trims a model
+    /// field's docstring whole but keeps these where the field is the argument
+    /// of a body schema used only as that body, in its docstring and
+    /// `reference.md` entry (SeequentEvo block models' `QueryCriteria.bbox`;
+    /// docs/fern-measurements/worked-examples/kept-blank-descriptions/).
+    pub doc_tail_blank_lines: usize,
     /// The property's `example` as a Python literal, shown in a worked snippet
     /// instead of a synthesized placeholder (`example_literal`).
     pub example: Option<String>,
@@ -2943,12 +2969,43 @@ fn build_enum(
             })
         })
         .collect();
-    EnumType {
+    let mut declaration = EnumType {
         name: name.to_string(),
         module: naming::module_name(name),
         members,
         docstring,
+    };
+    if let Some(value) = self_constrained_enum_example(schema, &declaration) {
+        declaration.select_example_member(&value);
     }
+    declaration
+}
+
+/// The first member valid against the string constraints an enum's own node
+/// declares beside its `enum` (`pattern`, `minLength`, `maxLength`, `not`),
+/// where the first member is not: an inline `enum` whose `pattern` excludes its
+/// first value documents another one (#960), as a scalar-narrowed reference
+/// does ([`narrowed_enum_example`]). `None` when the node declares none of
+/// them, the first member is valid, no member is, or a constraint cannot be
+/// decided; the members themselves never change.
+fn self_constrained_enum_example(schema: &Schema, declaration: &EnumType) -> Option<String> {
+    if schema.pattern.is_none()
+        && schema.min_length.is_none()
+        && schema.max_length.is_none()
+        && schema.not_schema.is_none()
+    {
+        return None;
+    }
+    let first = declaration.members.first()?;
+    if string_node_admits(schema, &first.value)? {
+        return None;
+    }
+    for member in &declaration.members {
+        if string_node_admits(schema, &member.value)? {
+            return Some(member.value.clone());
+        }
+    }
+    None
 }
 
 /// The name Fern's importer gives an enum value before any casing, which is what
@@ -3261,6 +3318,19 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
                 .is_some_and(|name| replaced_body_sources.contains(&name))
         {
             endpoint.reference_body_type = None;
+        }
+        // A body schema kept as a model documents each argument by the model
+        // field's docstring, trimmed whole; only one used solely as this body
+        // keeps a description's trailing blank lines (`Field::doc_tail_blank_lines`).
+        if !endpoint.body_schema_dropped {
+            if let Some(RequestBody::Inline(fields)) = &mut endpoint.request_body {
+                for doc in fields
+                    .iter_mut()
+                    .filter_map(|field| field.docstring.as_mut())
+                {
+                    doc.truncate(doc.trim_end_matches('\n').len());
+                }
+            }
         }
         if endpoint.body_schema_dropped {
             let source = body_schema
@@ -4203,10 +4273,12 @@ fn build_endpoint(
                 example: if fern_imports_no_endpoint_example(doc, op) {
                     own_path_parameter_example(doc, p)
                         .or_else(|| schema_level_parameter_example(p))
+                        .or_else(|| referenced_date_parameter_example(doc, p))
                         .or_else(|| ir_fallback_parameter_example(p))
                 } else {
                     parameter_example(doc, p)
                 },
+                quoted_date_example: quoted_date_example(doc, p),
                 // Only a *named* type's pattern is checked against the
                 // placeholder: discord's `guild_id: SnowflakeType` loses the
                 // example, while CloudPDF's inline `pageKey` pattern
@@ -4261,6 +4333,7 @@ fn build_endpoint(
             docstring: None,
             example: None,
             pattern_constrained: false,
+            quoted_date_example: false,
             convert: false,
         });
     }
@@ -4345,6 +4418,27 @@ fn build_endpoint(
                 }
                 string_enum_values(schema).is_some()
             });
+            // So is an optional array of them, its items inline or a `$ref`
+            // (#932): epilot's `token_type`, an array of `$ref AccessTokenType`
+            // whose enum declares the example `api`, is left out of the certified
+            // pair's `list_access_tokens` call. An array of plain strings keeps
+            // its item example (svix's `event_types=["user.signup"]`).
+            let optional_enum_array = !required
+                && p.schema.as_ref().is_some_and(|schema| {
+                    let schema = schema
+                        .reference
+                        .as_deref()
+                        .and_then(|reference| resolve_ref(doc, reference))
+                        .unwrap_or(schema);
+                    schema.items.as_deref().is_some_and(|items| {
+                        let items = items
+                            .reference
+                            .as_deref()
+                            .and_then(|reference| resolve_ref(doc, reference))
+                            .unwrap_or(items);
+                        string_enum_values(items).is_some()
+                    })
+                });
             // An optional parameter whose declared example Fern discards (a
             // numeric example on a `type: string` parameter) leaves the call
             // rather than taking a synthesized sample: OpenAIRE's `size`, exampled
@@ -4367,6 +4461,7 @@ fn build_endpoint(
                 !required && referenced_examples_entry_is_unquoted_timestamp(doc, p);
             let example = if omit_synthesized_example
                 || string_enum
+                || optional_enum_array
                 || discarded_optional_example
                 || optional_array_example
                 || unquoted_timestamp_schema_example
@@ -6259,6 +6354,58 @@ fn schema_level_parameter_example(parameter: &crate::openapi::Parameter) -> Opti
         .as_ref()
         .filter(|schema| schema.reference.is_none())?;
     bounded_example_literal(typed_schema_example(schema)?, declares_int64(schema))
+}
+
+/// Whether the example a path parameter's worked call would pass is a quoted
+/// `format: date` value ([`PathParam::quoted_date_example`]).
+fn quoted_date_example(doc: &OpenApi, parameter: &crate::openapi::Parameter) -> bool {
+    let Some(schema) = parameter.schema.as_ref() else {
+        return false;
+    };
+    let target = schema
+        .reference
+        .as_deref()
+        .and_then(|reference| resolve_ref(doc, reference))
+        .unwrap_or(schema);
+    if target.format.as_deref() != Some("date") {
+        return false;
+    }
+    let declared = parameter
+        .example
+        .as_ref()
+        .or_else(|| typed_schema_example(schema))
+        .or_else(|| typed_schema_example(target));
+    declared
+        .and_then(serde_json::Value::as_str)
+        .is_some_and(|text| {
+            crate::example_values::full_date(text)
+                && !doc
+                    .yaml_unquoted_timestamps
+                    .as_ref()
+                    .is_some_and(|unquoted| unquoted.contains(text))
+        })
+}
+
+/// The quoted example a `format: date` component a path parameter names by
+/// `$ref` declares, which the certified pair passes where it imports no
+/// endpoint example: NWS's `get_taf` (answering XML) passes its `Date`
+/// component's `"2025-02-23"`, where a plain string component's example is
+/// passed over (npq-registration's `IDAttribute`, above).
+fn referenced_date_parameter_example(
+    doc: &OpenApi,
+    parameter: &crate::openapi::Parameter,
+) -> Option<String> {
+    let target = resolve_ref(doc, parameter.schema.as_ref()?.reference.as_deref()?)?;
+    if target.format.as_deref() != Some("date")
+        || target.ty.as_ref().and_then(TypeField::primary) != Some("string")
+    {
+        return None;
+    }
+    let value = typed_schema_example(target)?;
+    let text = value.as_str()?;
+    crate::example_values::full_date(text)
+        .then(|| example_literal(value))
+        .flatten()
 }
 
 /// The value Fern's IR example generator gives a string query parameter with no
@@ -9057,7 +9204,13 @@ fn hoist_inline_object(
                             .then(|| described_all_of_ref(prop_schema).and_then(|(_, doc)| doc))
                             .flatten()
                     })
-                    .or(prop_schema.description.as_deref())
+                    // A required typeless property is Fern's bare unknown type,
+                    // which carries no docs, as on a model field
+                    // ([`property_description`]): CrowdStrike AI Guard's
+                    // `unredact` body documents `redacted_data` with nothing.
+                    .or((optional || !is_unknown(prop_schema))
+                        .then_some(prop_schema.description.as_deref())
+                        .flatten())
                     // An annotating `allOf` member documents the argument, as it
                     // documents a model field: the `617-annotated-inherited-union`
                     // measurement's `recoatPot` body declares `coat: allOf: [$ref
@@ -9417,6 +9570,8 @@ impl InlineHoister<'_> {
                 .unwrap_or_default(),
             docstring,
             xml,
+            reference_composition: None,
+            inherited_examples: std::collections::BTreeMap::new(),
         }));
     }
 
@@ -9865,6 +10020,7 @@ impl InlineHoister<'_> {
                     })
                     .flatten(),
                 ),
+                doc_tail_blank_lines: doc_tail_blank_lines(prop_schema),
                 example: resolved_schema_example_literal(prop_schema, self.schemas).or_else(|| {
                     let reference = prop_schema.reference.as_deref().or_else(|| {
                         described_all_of_ref(prop_schema).map(|(reference, _)| reference)
@@ -12078,40 +12234,47 @@ fn append_request_fields(
     if !seen.insert(obj.name.clone()) {
         return;
     }
-    out.extend(obj.fields.iter().map(|f| BodyField {
-        constraints: f.constraints.clone(),
-        wire_name: f.wire_name.clone(),
-        py_name: naming::request_field_name(f.declared_name.as_deref().unwrap_or(&f.wire_name)),
-        type_ref: f.type_ref.clone(),
-        optional: f.optional,
-        // The *property* is what makes an inlined body field nullable, not the
-        // alias its type resolves to: braintrust's `PatchProjectAutomation.config`
-        // is a union whose last member is `{nullable: true}`, and Fern's convert
-        // wrapper annotates the bare `PatchProjectAutomationConfig`.
-        nullable: f.nullable,
-        spec_required: f.spec_required,
-        docstring: f.docstring.clone(),
-        convert: type_needs_convert(&f.type_ref, types),
-        is_file: false,
-        form_json: false,
-        form_content_type: None,
-        collision_prefix: Some(naming::field_name(request_class)),
-        inline_object: false,
-        example: match (&f.example_source, component_examples) {
-            (
-                FieldExampleSource::Object { property },
-                ComponentExamplePolicy::PropertyFallbacksOnly,
-            ) => property.clone(),
-            _ => f.example.clone(),
-        },
-        media_example: false,
-        schema_body_example: false,
-        reference_order: 0,
-        deprecated: f.deprecated,
-        declaration_order: 0,
-        markdown_order: 0,
-        union_member_example: f.union_member_example,
-        admits_only_empty_object: f.admits_only_empty_object,
+    out.extend(obj.fields.iter().map(|f| {
+        BodyField {
+            constraints: f.constraints.clone(),
+            wire_name: f.wire_name.clone(),
+            py_name: naming::request_field_name(f.declared_name.as_deref().unwrap_or(&f.wire_name)),
+            type_ref: f.type_ref.clone(),
+            optional: f.optional,
+            // The *property* is what makes an inlined body field nullable, not the
+            // alias its type resolves to: braintrust's `PatchProjectAutomation.config`
+            // is a union whose last member is `{nullable: true}`, and Fern's convert
+            // wrapper annotates the bare `PatchProjectAutomationConfig`.
+            nullable: f.nullable,
+            spec_required: f.spec_required,
+            // The parameter keeps the blank lines the description ended on, which
+            // the model field's docstring drops (`Field::doc_tail_blank_lines`).
+            docstring: f
+                .docstring
+                .as_ref()
+                .map(|doc| format!("{doc}{}", "\n".repeat(f.doc_tail_blank_lines))),
+            convert: type_needs_convert(&f.type_ref, types),
+            is_file: false,
+            form_json: false,
+            form_content_type: None,
+            collision_prefix: Some(naming::field_name(request_class)),
+            inline_object: false,
+            example: match (&f.example_source, component_examples) {
+                (
+                    FieldExampleSource::Object { property },
+                    ComponentExamplePolicy::PropertyFallbacksOnly,
+                ) => property.clone(),
+                _ => f.example.clone(),
+            },
+            media_example: false,
+            schema_body_example: false,
+            reference_order: 0,
+            deprecated: f.deprecated,
+            declaration_order: 0,
+            markdown_order: 0,
+            union_member_example: f.union_member_example,
+            admits_only_empty_object: f.admits_only_empty_object,
+        }
     }));
     for base in &obj.bases {
         if let Some(base_obj) = types.iter().find_map(|decl| match decl {
@@ -14825,6 +14988,7 @@ fn append_member_fields(
             // loonfs's `FilesystemOperationAppendFile.path` is an annotated `$ref`
             // to `AbsolutePath`, exampled `/docs/report.txt`, and Fern's variant
             // constructor passes it.
+            doc_tail_blank_lines: 0,
             example: resolved_schema_example_literal(prop_schema, Some(schemas)).or_else(|| {
                 let reference = prop_schema.reference.as_deref()?;
                 referenced_example_literal(resolve_ref_from_schemas(schemas, reference)?, schemas)
@@ -14994,6 +15158,7 @@ fn wrapped_value_field(type_ref: TypeRef) -> Field {
         nullable: false,
         spec_required: true,
         docstring: None,
+        doc_tail_blank_lines: 0,
         example: None,
         declared_name: None,
         read_only: false,
@@ -16365,10 +16530,16 @@ impl Builder<'_> {
                         // `GroomingTask_allOf`, which restates `Task.action`
                         // with a description, and the certified field is
                         // `Task`'s undocumented `action: str` (#909).
+                        // Nor does a restatement that is a bare `$ref`, which
+                        // Fern documents by its own (absent) description: the
+                        // NWS API's `PointJsonLd` restates `Point.geometry` as
+                        // `$ref: GeometryString`, and its certified field is
+                        // the undocumented `geometry: Optional[GeometryString]`.
                         if existing.docstring.is_none()
                             && !existing.inherited_from_flattened_parent
                             && !is_unknown_type_ref(&existing.type_ref)
                             && !branch_fields.contains(&existing.wire_name)
+                            && !restated_by_reference(schema, &existing.wire_name)
                         {
                             existing.docstring.clone_from(&field.docstring);
                         }
@@ -16472,6 +16643,16 @@ impl Builder<'_> {
         if xml.is_some() {
             annotate_xml_fields(schema, &mut fields, Some(schemas));
         }
+        let inherited_examples = schema_example(schema)
+            .and_then(serde_json::Value::as_object)
+            .map(|example| {
+                example
+                    .iter()
+                    .filter(|(wire, _)| !fields.iter().any(|field| field.wire_name == **wire))
+                    .filter_map(|(wire, value)| Some((wire.clone(), example_literal(value)?)))
+                    .collect()
+            })
+            .unwrap_or_default();
         self.types.push(TypeDecl::Object(ObjectType {
             reach_refs: base_refs
                 .iter()
@@ -16492,6 +16673,8 @@ impl Builder<'_> {
                 .unwrap_or_default(),
             docstring,
             xml,
+            reference_composition: reference_composition(schema, schemas),
+            inherited_examples,
         }));
         self.building_types.remove(name);
     }
@@ -16750,6 +16933,7 @@ impl Builder<'_> {
                         })
                         .flatten(),
                 ),
+                doc_tail_blank_lines: doc_tail_blank_lines(prop_schema),
                 example: first_union_member_example(prop_schema)
                     .or_else(|| resolved_schema_example_literal(prop_schema, Some(self.schemas)))
                     .or_else(|| {
@@ -17384,6 +17568,7 @@ impl Builder<'_> {
                         nullable: false,
                         spec_required: true,
                         docstring: None,
+                        doc_tail_blank_lines: 0,
                         example: None,
                         declared_name: None,
                         read_only: false,
@@ -19670,6 +19855,21 @@ fn is_map(schema: &Schema) -> bool {
         )
 }
 
+/// Whether `schema` restates `property` as a bare `$ref` — in its own
+/// `properties` or an inline `allOf` member's — rather than inline.
+fn restated_by_reference(schema: &Schema, property: &str) -> bool {
+    std::iter::once(schema)
+        .chain(
+            schema
+                .all_of
+                .iter()
+                .flatten()
+                .filter(|member| member.reference.is_none()),
+        )
+        .filter_map(|holder| holder.properties.get(property))
+        .any(|declared| declared.reference.is_some() && declared.description.is_none())
+}
+
 /// `member` with each undescribed `enum` property a base describes given that
 /// base's description, or `None` when no property needs one. Only a redeclared
 /// enum is measured to take it — the description documents the enum type it
@@ -20834,6 +21034,55 @@ fn flattened_example_orders(
     }
 }
 
+/// The properties only the inline members of `schema` declare, in order, where
+/// it is an `allOf` of two or more `$ref`s with no properties beside it
+/// ([`ObjectType::reference_composition`]). Its inline members are the measured
+/// kinds: one restating the referenced members' own properties (paypal's
+/// `PhoneDetail` requiring `phone_type`), or a last one adding properties none
+/// of them declares (`Lessee`'s `deck`). Any other inline member leaves
+/// declaration order, as the certified pair keeps it for nexmo's
+/// `allOf: [$ref Text, {text}, $ref channelOptionsSms]`.
+fn reference_composition(
+    schema: &Schema,
+    schemas: &IndexMap<String, Schema>,
+) -> Option<Vec<String>> {
+    let members = schema.all_of.as_deref()?;
+    let referenced: Vec<&Schema> = members
+        .iter()
+        .filter_map(|member| member.reference.as_deref())
+        .filter_map(|reference| resolve_ref_from_schemas(schemas, reference))
+        .collect();
+    let declared = |name: &String| {
+        referenced
+            .iter()
+            .any(|target| target.properties.contains_key(name))
+    };
+    let measured = |(at, member): (usize, &Schema)| {
+        member.reference.is_some()
+            || member.all_of.is_none()
+                && member.one_of.is_none()
+                && member.any_of.is_none()
+                && member.additional_properties.is_none()
+                && (member.properties.keys().all(declared)
+                    || at + 1 == members.len() && !member.properties.keys().any(declared))
+    };
+    if !schema.properties.is_empty()
+        || referenced.len() < 2
+        || !members.iter().enumerate().all(measured)
+    {
+        return None;
+    }
+    Some(
+        members
+            .iter()
+            .filter(|member| member.reference.is_none())
+            .flat_map(|member| member.properties.keys())
+            .filter(|name| !declared(name))
+            .cloned()
+            .collect(),
+    )
+}
+
 /// An inline `type: object` that declares `properties: {}` and nothing else. A
 /// union member written so is an empty model to Fern, not a map: Timely's
 /// `V1.Project.cost` offers a cost object or one, and Fern declares
@@ -21612,7 +21861,8 @@ fn scalar_narrowed_enum_type(
 /// the enum, the scalar member, and the enclosing schema's own keywords beside
 /// its `allOf`. Fern's first member stands whenever it is valid, no member is,
 /// or any constraint cannot be decided here — one this validator does not
-/// read, or one load normalization dropped (`discarded_composition`).
+/// read, or a `oneOf`/`anyOf` load normalization dropped
+/// (`discarded_alternatives`); a dropped `allOf` is decided member by member.
 fn narrowed_enum_example(schema: &Schema, schemas: &IndexMap<String, Schema>) -> Option<String> {
     let (target, member) = scalar_narrowed_enum_ref(schema, schemas)?;
     // The enclosing schema keeps its `allOf` only when it is not string-typed,
@@ -21650,8 +21900,26 @@ fn narrowed_enum_example(schema: &Schema, schemas: &IndexMap<String, Schema>) ->
 /// `None` when that cannot be decided: a dropped composition, a dropped
 /// conditional, a `format`, an unreadable pattern or an unread `not` keyword.
 fn string_node_admits(node: &Schema, value: &str) -> Option<bool> {
-    if node.discarded_composition || node.drops_applicator() || node.format.is_some() {
+    if node.discarded_alternatives || node.drops_applicator() || node.format.is_some() {
         return None;
+    }
+    // A discarded `allOf` still binds the value: each member is decided as a
+    // node of its own, and one this validator cannot read declines (#541).
+    for member in node.discarded_all_of.iter().flatten() {
+        if member.reference.is_some()
+            || member.all_of.is_some()
+            || member.one_of.is_some()
+            || member.any_of.is_some()
+            || member
+                .ty
+                .as_ref()
+                .is_some_and(|ty| ty.primary() != Some("string"))
+        {
+            return None;
+        }
+        if !string_node_admits(member, value)? {
+            return Some(false);
+        }
     }
     let mut admitted = string_keywords_admit(
         value,
@@ -22926,6 +23194,17 @@ fn parameter_doc(p: &crate::openapi::Parameter) -> Option<String> {
     }))
 }
 
+/// The blank lines a description ends on: see [`Field::doc_tail_blank_lines`].
+fn doc_tail_blank_lines(schema: &Schema) -> usize {
+    schema.description.as_deref().map_or(0, |text| {
+        let breaks = text.len() - text.trim_end_matches(['\r', '\n']).len();
+        text[text.len() - breaks..]
+            .matches('\n')
+            .count()
+            .saturating_sub(1)
+    })
+}
+
 fn declared_doc(desc: Option<&str>) -> Option<String> {
     // Preserve the description verbatim (Fern does not trim it — a trailing space in
     // `"The URL to visit to "` survives into the docstring), but terminal line breaks
@@ -23150,6 +23429,7 @@ mod tests {
             nullable: false,
             spec_required: required,
             docstring: None,
+            doc_tail_blank_lines: 0,
             example: None,
             declared_name: None,
             read_only: false,
@@ -23313,6 +23593,8 @@ mod tests {
                 example_fields: std::collections::HashSet::new(),
                 docstring: None,
                 xml: None,
+                reference_composition: None,
+                inherited_examples: std::collections::BTreeMap::new(),
             }),
             TypeDecl::Object(ObjectType {
                 reach_refs: Vec::new(),
@@ -23326,6 +23608,8 @@ mod tests {
                 example_fields: std::collections::HashSet::new(),
                 docstring: None,
                 xml: None,
+                reference_composition: None,
+                inherited_examples: std::collections::BTreeMap::new(),
             }),
             TypeDecl::Object(ObjectType {
                 reach_refs: Vec::new(),
@@ -23336,6 +23620,8 @@ mod tests {
                 example_fields: std::collections::HashSet::new(),
                 docstring: None,
                 xml: None,
+                reference_composition: None,
+                inherited_examples: std::collections::BTreeMap::new(),
             }),
         ];
 

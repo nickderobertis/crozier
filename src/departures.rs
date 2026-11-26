@@ -765,6 +765,27 @@ struct RequestExampleContext {
     /// Methods whose raw request sends the literal `json={}`.
     empty_json_methods: BTreeSet<MethodKey>,
     wire_fields: std::collections::BTreeMap<MethodKey, std::collections::BTreeMap<String, String>>,
+    /// Every raw-client method parameter annotated `bytes`, directly, as an
+    /// `Optional` of it, or through an alias chain ending in it (`FormFile`).
+    bytes_parameters: BTreeSet<String>,
+    /// Every module-level alias crozier writes (`StringList = typing.List[str]`),
+    /// by name, to its target.
+    aliases: std::collections::BTreeMap<String, String>,
+}
+
+impl RequestExampleContext {
+    /// `annotation` with each alias it names followed to a non-alias target.
+    fn resolve_alias<'a>(&'a self, annotation: &'a str) -> &'a str {
+        let mut current = annotation;
+        let mut seen = BTreeSet::new();
+        while seen.insert(current) {
+            match self.aliases.get(current) {
+                Some(next) => current = next,
+                None => break,
+            }
+        }
+        current
+    }
 }
 
 #[derive(Debug, Default)]
@@ -894,7 +915,13 @@ fn request_example_context<'a>(
         .filter_map(|line| line.split_once(" = "))
         .filter(|(name, _)| python_identifier(name))
         .collect();
-    let mut out = RequestExampleContext::default();
+    let mut out = RequestExampleContext {
+        aliases: aliases
+            .iter()
+            .map(|(name, target)| ((*name).to_string(), (*target).to_string()))
+            .collect(),
+        ..RequestExampleContext::default()
+    };
     let mut model_fields: std::collections::BTreeMap<String, BTreeSet<String>> =
         std::collections::BTreeMap::new();
     let mut model_bases: std::collections::BTreeMap<String, Vec<String>> =
@@ -983,11 +1010,34 @@ fn request_example_context<'a>(
     let mut bytes_methods = BTreeSet::new();
     let mut json_methods = BTreeSet::new();
     let mut json_headers = BTreeSet::new();
+    let resolves_to_bytes = |annotation: &str| {
+        let mut current = annotation
+            .strip_prefix("typing.Optional[")
+            .and_then(|inner| inner.strip_suffix(']'))
+            .unwrap_or(annotation);
+        let mut seen = BTreeSet::new();
+        while seen.insert(current) {
+            if current == "bytes" {
+                return true;
+            }
+            let Some(next) = aliases.get(current) else {
+                return false;
+            };
+            current = next;
+        }
+        false
+    };
     for (rel, text) in sources
         .iter()
         .filter(|(rel, _)| *rel == "raw_client.py" || rel.ends_with("/raw_client.py"))
     {
         for (method, fields) in generated_method_parameters(text) {
+            out.bytes_parameters.extend(
+                fields
+                    .iter()
+                    .filter(|(_, parameter)| resolves_to_bytes(&parameter.annotation))
+                    .map(|(name, _)| name.clone()),
+            );
             out.method_parameters.insert(
                 MethodKey {
                     raw_client_path: (*rel).to_string(),
@@ -1462,6 +1512,34 @@ fn binary_json_body_example(pair: &Pair<'_>) -> Result<Option<Region>, String> {
 /// `binary-json-body-example` on one line, in a file other departures also touch
 /// where the whole-file form cannot hold: Fern's `request="string",` beside
 /// crozier's `request=b"string",`, in a document with a binary JSON body method.
+/// `binary-form-part-example`: a worked call's argument for a form part the
+/// method annotates `bytes` (`file: FormFile`, `FormFile = bytes`), where Fern
+/// passes its string sample (`file="file",`) and crozier the same sample as
+/// bytes (`file=b"file",`).
+fn binary_form_part_example_line(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    if !(DOCS_FILES.contains(&pair.rel) || pair.rel.ends_with("client.py")) {
+        return false;
+    }
+    let argument = crozier.trim_start();
+    let indent = &crozier[..crozier.len() - argument.len()];
+    let Some((name, value)) = argument
+        .strip_suffix(',')
+        .and_then(|argument| argument.split_once("=b\""))
+    else {
+        return false;
+    };
+    name != "request"
+        && python_identifier(name)
+        && value.ends_with('"')
+        && !value[..value.len() - 1].contains(['"', '\\'])
+        && fern == format!("{indent}{name}=\"{value},")
+        && pair
+            .context
+            .request_examples()
+            .bytes_parameters
+            .contains(name)
+}
+
 fn binary_json_body_example_line(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
     let (Some(fern_value), Some(crozier_value)) = (
         fern.trim_start().strip_prefix("request="),
@@ -1696,9 +1774,30 @@ fn alias_reference_parameters(pair: &Pair<'_>) -> Result<Option<Region>, String>
             }
             if valid && seen.union(&path_shared).cloned().collect::<BTreeSet<_>>() == *fields {
                 if let Some(crozier) = range {
+                    // Fern documents its required `request` ahead of the
+                    // optional parameter blocks the method takes before the
+                    // flattened fields (observantio's `update_dashboard`:
+                    // `uid`, `request`, `visibility`, `shared_group_ids`), so
+                    // those unchanged blocks move with the region (#934).
+                    let moved = actual
+                        .iter()
+                        .rev()
+                        .map(|&(first, _)| first)
+                        .filter(|&first| first < crozier.start)
+                        .take_while(|&first| {
+                            reference_parameter_block(pair.crozier, first)
+                                .is_some_and(|(name, _, _, _)| !fields.contains(name))
+                        })
+                        .map(|first| crozier.start - first)
+                        .filter(|&len| {
+                            pair.fern.get(end..end + len)
+                                == pair.crozier.get(crozier.start - len..crozier.start)
+                        })
+                        .last()
+                        .unwrap_or(0);
                     return Ok(Some(Region {
-                        fern: start..end,
-                        crozier,
+                        fern: start..end + moved,
+                        crozier: crozier.start - moved..crozier.end,
                     }));
                 }
             }
@@ -2054,8 +2153,9 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 60] = [
+pub const RULE_IDS: [&str; 63] = [
     "anyof-path-param-schema-example",
+    "binary-form-part-example",
     "binary-json-body-example",
     "body-query-parameter-value",
     "bracket-query-parameter-call-keyword",
@@ -2070,6 +2170,7 @@ pub const RULE_IDS: [&str; 60] = [
     "declared-timestamp-property-example",
     "digit-leading-method-reference-identifiers",
     "digit-leading-property-example-keyword",
+    "docstring-example-escapes",
     "docstring-literal-dollar-escape",
     "emoji-tag-reference-identifiers",
     "empty-namespace-package",
@@ -2113,6 +2214,7 @@ pub const RULE_IDS: [&str; 60] = [
     "sdk-variable-docs-examples",
     "stream-reference-return-type",
     "text-response-optional-query-examples",
+    "typeless-body-required-arguments",
     "unquoted-timestamp-parameter-example",
     "wrapped-union-member-docs-example",
 ];
@@ -2185,6 +2287,10 @@ pub fn rule(id: &str) -> Option<Rule> {
             added_at: Some(required_null_union_field_example),
             ..none
         },
+        "typeless-body-required-arguments" => Rule {
+            region: Some(typeless_body_required_arguments),
+            ..none
+        },
         "text-response-optional-query-examples" => Rule {
             added: Some(text_response_optional_query_examples),
             ..none
@@ -2233,6 +2339,10 @@ pub fn rule(id: &str) -> Option<Rule> {
             region: Some(date_header_constructor_example),
             ..none
         },
+        "docstring-example-escapes" => Rule {
+            line: Some(docstring_example_escapes),
+            ..none
+        },
         "docstring-literal-dollar-escape" => Rule {
             line: Some(docstring_literal_dollar_escape),
             ..none
@@ -2268,6 +2378,10 @@ pub fn rule(id: &str) -> Option<Rule> {
             region: Some(metadata_generator_config),
             ..none
         },
+        "binary-form-part-example" => Rule {
+            line: Some(binary_form_part_example_line),
+            ..none
+        },
         "binary-json-body-example" => Rule {
             region: Some(binary_json_body_example),
             line: Some(binary_json_body_example_line),
@@ -2299,8 +2413,8 @@ pub fn rule(id: &str) -> Option<Rule> {
             ..none
         },
         "list-path-parameter-example" => Rule {
-            region: Some(list_path_parameter_call),
-            line: Some(list_path_parameter_docstring_value),
+            region: Some(composite_path_parameter_region),
+            line: Some(container_path_parameter_docstring_value),
             ..none
         },
         "readme-abbreviated-call-arguments" => Rule {
@@ -3398,6 +3512,17 @@ fn differing_integer<'a>(fern: &'a str, crozier: &'a str) -> Option<(&'a str, &'
         .flatten()
 }
 
+/// `docstring-example-escapes`: a client docstring's worked-example line where
+/// crozier writes Fern's line with every backslash doubled, and nothing else
+/// changed.
+fn docstring_example_escapes(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    high_level_client(pair.rel)
+        && fern.contains('\\')
+        && crozier == fern.replace('\\', "\\\\")
+        && documented_example_line(pair.rel, pair.fern, fern)
+        && documented_example_line(pair.rel, pair.crozier, crozier)
+}
+
 /// `docstring-literal-dollar-escape`: a client docstring example line passing a
 /// keyword a string `const` the parsed source document declares, where Fern's
 /// literal is crozier's with every `$` preceded by an escaped backslash
@@ -4209,10 +4334,39 @@ fn readme_environment_constructor_arguments(pair: &Pair<'_>) -> Result<Option<Re
     }))
 }
 
+/// The container annotations a path parameter may take: a list, a set or a map.
+const CONTAINER_ANNOTATIONS: [&str; 5] = [
+    "typing.Sequence[",
+    "typing.List[",
+    "typing.Set[",
+    "typing.Dict[",
+    "typing.Mapping[",
+];
+
 /// The positional parameters of every method crozier's client modules define
-/// that are typed as lists (`id: typing.Sequence[int]`): its list-typed path
-/// parameters, each with its annotation.
-fn list_path_parameters(context: &Context) -> BTreeMap<String, String> {
+/// that are typed as containers (`id: typing.Sequence[int]`, `values:
+/// typing.Dict[str, str]`, or an alias of one): its container-typed path
+/// parameters, each with its resolved annotation.
+fn container_path_parameters(context: &Context) -> BTreeMap<String, String> {
+    positional_parameters(context, |annotation| {
+        CONTAINER_ANNOTATIONS
+            .iter()
+            .any(|list| annotation.starts_with(list))
+    })
+}
+
+/// The positional (path) parameters whose annotation resolves to a union
+/// (`dynamic_value: DynamicCompositeValue`, `DynamicCompositeValue =
+/// typing.Union[EntityType, FlexibleValue, CompositeEntity]`), each with it.
+fn union_path_parameters(context: &Context) -> BTreeMap<String, String> {
+    positional_parameters(context, |annotation| {
+        annotation.starts_with("typing.Union[")
+    })
+}
+
+/// The positional parameters of the methods crozier's client modules define
+/// whose annotation, every alias it names followed, `kind` accepts.
+fn positional_parameters(context: &Context, kind: fn(&str) -> bool) -> BTreeMap<String, String> {
     let mut found = BTreeMap::new();
     for text in context.client_modules().crozier.values() {
         let mut rest = text.as_str();
@@ -4238,11 +4392,11 @@ fn list_path_parameters(context: &Context) -> BTreeMap<String, String> {
                         break;
                     }
                     if let Some((name, annotation)) = trimmed.split_once(": ") {
-                        if ["typing.Sequence[", "typing.List[", "typing.Set["]
-                            .iter()
-                            .any(|list| annotation.starts_with(list))
-                            && !annotation.contains('=')
-                        {
+                        // A container reached through an alias is one too:
+                        // tonik's `string_list: StringList`, `StringList =
+                        // typing.List[str]` (#945).
+                        let annotation = context.request_examples().resolve_alias(annotation);
+                        if kind(annotation) && !annotation.contains('=') {
                             found.insert(name.to_string(), annotation.to_string());
                         }
                     }
@@ -4259,7 +4413,7 @@ fn list_path_parameters(context: &Context) -> BTreeMap<String, String> {
 /// `list-path-parameter-example` in a client docstring: the line passing a
 /// list-typed path parameter whose items are not strings, where Fern passes
 /// its string placeholder (`id="ID",`) and crozier a list (`id=[1],`).
-fn list_path_parameter_docstring_value(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+fn container_path_parameter_docstring_value(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
     if !pair.rel.ends_with("client.py") || fern == crozier {
         return false;
     }
@@ -4277,24 +4431,33 @@ fn list_path_parameter_docstring_value(pair: &Pair<'_>, fern: &str, crozier: &st
     else {
         return false;
     };
-    value.starts_with('[')
-        && value.ends_with(']')
+    // A `str` is a `typing.Sequence[str]`, so Fern's placeholder stands there
+    // and crozier writes it too; a list of anything else, a `typing.List[str]`
+    // alias, or a map rejects it.
+    let container = (value.starts_with('[') && value.ends_with(']'))
+        || (value.starts_with('{') && value.ends_with('}'));
+    container
         && fern_value.starts_with('"')
         && fern_value.ends_with('"')
-        && list_path_parameters(pair.context)
+        && container_path_parameters(pair.context)
             .get(name)
-            .is_some_and(|annotation| !annotation.ends_with("[str]"))
+            .is_some_and(|annotation| annotation != "typing.Sequence[str]")
 }
 
 /// `list-path-parameter-example` in `README.md` and `reference.md`: a call that
-/// passes a list-typed path parameter where Fern's passes nothing. Crozier's
+/// passes a container-typed path parameter where Fern's passes nothing. Crozier's
 /// call, without that argument's lines (and closed on its opening line when
 /// nothing else is left, `client.probe()`), is Fern's call at the nearest place.
-fn list_path_parameter_call(pair: &Pair<'_>) -> Result<Option<Region>, String> {
-    if !DOCS_FILES.contains(&pair.rel) {
+/// In a `client.py` docstring, a container argument laid out over several lines
+/// (`values={` … `},`) stands where Fern passes its one-line string placeholder
+/// (`values="values",`). Either way, an `import datetime` only the argument
+/// used goes with it.
+fn container_path_parameter_call(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    let markdown = DOCS_FILES.contains(&pair.rel);
+    if !markdown && !pair.rel.ends_with("client.py") {
         return Ok(None);
     }
-    let names = list_path_parameters(pair.context);
+    let names = container_path_parameters(pair.context);
     if names.is_empty() {
         return Ok(None);
     }
@@ -4305,7 +4468,14 @@ fn list_path_parameter_call(pair: &Pair<'_>) -> Result<Option<Region>, String> {
         let Some((name, value)) = argument.split_once('=') else {
             continue;
         };
-        if indent == 0 || !names.contains_key(name) {
+        let Some(annotation) = names.get(name) else {
+            continue;
+        };
+        if indent == 0 {
+            continue;
+        }
+        // A docstring's one-line argument is the line rule's.
+        if !markdown && (value.ends_with(',') || annotation == "typing.Sequence[str]") {
             continue;
         }
         let Some(opener) = (0..at).rev().find(|index| lines[*index].ends_with('(')) else {
@@ -4318,7 +4488,7 @@ fn list_path_parameter_call(pair: &Pair<'_>) -> Result<Option<Region>, String> {
         if indent != opener_indent + 4 {
             continue;
         }
-        // The argument's own lines: one, or a list laid out over several.
+        // The argument's own lines: one, or a value laid out over several.
         let argument_end = if value.ends_with(',') {
             at
         } else {
@@ -4337,14 +4507,41 @@ fn list_path_parameter_call(pair: &Pair<'_>) -> Result<Option<Region>, String> {
         else {
             continue;
         };
-        let mut reduced: Vec<String> = lines[opener..at]
-            .iter()
-            .chain(&lines[argument_end + 1..=close])
-            .map(|line| (*line).to_string())
-            .collect();
-        if reduced.len() == 2 && reduced[1].trim_start() == ")" {
-            reduced = vec![format!("{}){}", reduced[0], &reduced[1].trim_start()[1..])];
-        }
+        let (start, reduced) = if markdown {
+            let mut reduced: Vec<String> = lines[opener..at]
+                .iter()
+                .chain(&lines[argument_end + 1..=close])
+                .map(|line| (*line).to_string())
+                .collect();
+            if reduced.len() == 2 && reduced[1].trim_start() == ")" {
+                reduced = vec![format!("{}){}", reduced[0], &reduced[1].trim_start()[1..])];
+            }
+            (opener, reduced)
+        } else {
+            // Fern's placeholder is the one line at the argument's place.
+            let Some(placeholder) = pair.fern.iter().find(|fern| {
+                fern.strip_prefix(&line[..indent])
+                    .and_then(|rest| rest.strip_prefix(name))
+                    .and_then(|rest| rest.strip_prefix("=\""))
+                    .is_some_and(|rest| {
+                        rest.strip_suffix("\",")
+                            .is_some_and(|text| !text.contains(['"', '\\']))
+                    })
+            }) else {
+                continue;
+            };
+            let reduced: Vec<String> = lines[opener..at]
+                .iter()
+                .map(|line| (*line).to_string())
+                .chain([(*placeholder).to_string()])
+                .chain(
+                    lines[argument_end + 1..=close]
+                        .iter()
+                        .map(|line| (*line).to_string()),
+                )
+                .collect();
+            (opener, reduced)
+        };
         let fern_start = pair
             .fern
             .iter()
@@ -4364,12 +4561,307 @@ fn list_path_parameter_call(pair: &Pair<'_>) -> Result<Option<Region>, String> {
         let Some(fern_start) = fern_start else {
             continue;
         };
+        let (crozier_start, fern_from) =
+            orphaned_datetime_import(pair, start, fern_start, at..argument_end + 1, close);
         return Ok(Some(Region {
-            fern: fern_start..fern_start + reduced.len(),
-            crozier: opener..close + 1,
+            fern: fern_from..fern_start + reduced.len(),
+            crozier: crozier_start..close + 1,
         }));
     }
     Ok(None)
+}
+
+/// Each client method's parameters that take no default (`data: typing.Any`,
+/// `session_id: str`), by method name, each mapped to whether it is typeless
+/// (`typing.Any`): one map per module declaring the method.
+fn required_method_parameters(context: &Context) -> BTreeMap<String, Vec<BTreeMap<String, bool>>> {
+    let mut found: BTreeMap<String, Vec<BTreeMap<String, bool>>> = BTreeMap::new();
+    for text in context.client_modules().crozier.values() {
+        let mut rest = text.as_str();
+        while let Some(start) = rest.find("def ") {
+            rest = &rest[start + 4..];
+            let (Some(open), Some(close)) = (rest.find('('), signature_close(rest)) else {
+                break;
+            };
+            if close < open {
+                continue;
+            }
+            let name = rest[..open].trim();
+            let mut depth = 0usize;
+            let mut parameter = String::new();
+            let mut required = BTreeMap::new();
+            for character in rest[open + 1..close].chars().chain([',']) {
+                match character {
+                    '[' | '(' => depth += 1,
+                    ']' | ')' => depth = depth.saturating_sub(1),
+                    _ => {}
+                }
+                if character == ',' && depth == 0 {
+                    if let Some((name, annotation)) = parameter.trim().split_once(": ") {
+                        if !annotation.contains(" = ") && python_identifier(name) {
+                            required.insert(name.to_string(), annotation.trim() == "typing.Any");
+                        }
+                    }
+                    parameter.clear();
+                } else {
+                    parameter.push(character);
+                }
+            }
+            if python_identifier(name) {
+                found.entry(name.to_string()).or_default().push(required);
+            }
+        }
+    }
+    found
+}
+
+/// `typeless-body-required-arguments`: a worked call passing only arguments
+/// its method requires, one of them a typeless (`typing.Any`) body value, where
+/// Fern writes the bare call (Aether's
+/// `client.knowledge_state_post()` for `def knowledge_state_post(self, *,
+/// data: typing.Any, ...)`), in a docstring or the Markdown.
+fn typeless_body_required_arguments(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    if !DOCS_FILES.contains(&pair.rel) && !pair.rel.ends_with("client.py") {
+        return Ok(None);
+    }
+    let lines = pair.crozier;
+    let mut required = None;
+    for (at, line) in lines.iter().enumerate() {
+        let call = line.trim_start();
+        let indent = &line[..line.len() - call.len()];
+        let bare = call.strip_prefix("await ").unwrap_or(call);
+        let Some(head) = bare.strip_suffix('(') else {
+            continue;
+        };
+        let Some(method) = head
+            .strip_prefix("client.")
+            .map(|path| path.rsplit('.').next().unwrap_or(path))
+        else {
+            continue;
+        };
+        let Some(close) = (at + 1..lines.len()).find(|index| lines[*index] == format!("{indent})"))
+        else {
+            continue;
+        };
+        let arguments: Option<Vec<&str>> = lines[at + 1..close]
+            .iter()
+            .map(|argument| {
+                argument
+                    .strip_prefix(indent)
+                    .and_then(|argument| argument.strip_prefix("    "))
+                    .filter(|argument| !argument.starts_with(' ') && argument.ends_with(','))
+                    .and_then(|argument| argument.split_once('='))
+                    .map(|(name, _)| name)
+            })
+            .collect();
+        let Some(arguments) = arguments.filter(|arguments| !arguments.is_empty()) else {
+            continue;
+        };
+        let required = required.get_or_insert_with(|| required_method_parameters(pair.context));
+        // Only a call passing a typeless body value is one Fern writes bare.
+        if !required.get(method).is_some_and(|sets| {
+            sets.iter().any(|set| {
+                arguments.iter().all(|argument| set.contains_key(*argument))
+                    && arguments
+                        .iter()
+                        .any(|argument| set.get(*argument) == Some(&true))
+            })
+        }) {
+            continue;
+        }
+        let fern_call = format!("{indent}{call})");
+        let Some(fern) = pair
+            .fern
+            .iter()
+            .enumerate()
+            .filter(|(_, fern)| **fern == fern_call)
+            .map(|(index, _)| index)
+            .min_by_key(|index| index.abs_diff(at))
+        else {
+            continue;
+        };
+        return Ok(Some(Region {
+            fern: fern..fern + 1,
+            crozier: at..close + 1,
+        }));
+    }
+    Ok(None)
+}
+
+/// `list-path-parameter-example`'s regions: a container argument Fern leaves
+/// out or passes as a string, then a union argument it writes no example for.
+fn composite_path_parameter_region(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    if let Some(region) = container_path_parameter_call(pair)? {
+        return Ok(Some(region));
+    }
+    Ok(union_path_parameter_example(pair))
+}
+
+/// A worked example of a method whose path parameter is a union, which Fern
+/// writes none of: tonik's `test_any_of_composite_in_path(dynamic_value:
+/// DynamicCompositeValue)`. Fern's docstring ends at its `Returns` section
+/// where crozier's goes on into `Examples`, and its Markdown snippet is the
+/// bare `client.<path>.<method>(...)` where crozier's constructs the client
+/// and passes a member (`dynamic_value=EntityType_Person(...)`).
+fn union_path_parameter_example(pair: &Pair<'_>) -> Option<Region> {
+    let markdown = DOCS_FILES.contains(&pair.rel);
+    if !markdown && !pair.rel.ends_with("client.py") {
+        return None;
+    }
+    let names = union_path_parameters(pair.context);
+    if names.is_empty() {
+        return None;
+    }
+    let lines = pair.crozier;
+    for (at, line) in lines.iter().enumerate() {
+        let call = line.trim_start();
+        let call = call.strip_prefix("await ").unwrap_or(call);
+        if !call.starts_with("client.") || !call.ends_with('(') {
+            continue;
+        }
+        let Some(name) = lines
+            .get(at + 1)
+            .and_then(|argument| argument.trim_start().split_once('='))
+            .map(|(name, _)| name)
+        else {
+            continue;
+        };
+        if !names.contains_key(name) {
+            continue;
+        }
+        if markdown {
+            let (Some(open), Some(close)) = (
+                (0..at).rev().find(|index| lines[*index] == "```python"),
+                (at..lines.len()).find(|index| lines[*index] == "```"),
+            ) else {
+                continue;
+            };
+            let bare = format!("{}...)", call);
+            let Some(fern) = pair
+                .fern
+                .iter()
+                .enumerate()
+                .filter(|(index, fern)| {
+                    **fern == bare
+                        && index
+                            .checked_sub(1)
+                            .and_then(|previous| pair.fern.get(previous))
+                            == Some(&"```python")
+                        && pair.fern.get(index + 1) == Some(&"```")
+                })
+                .map(|(index, _)| index)
+                .min_by_key(|index| index.abs_diff(at))
+            else {
+                continue;
+            };
+            return Some(Region {
+                fern: fern..fern + 1,
+                crozier: open + 1..close,
+            });
+        }
+        // The docstring's `Examples` section, from the blank line before its
+        // heading to the line before the closing quotes.
+        let Some(heading) = (0..at)
+            .rev()
+            .find(|index| lines[*index].trim() == "Examples")
+        else {
+            continue;
+        };
+        let Some(end) = (at..lines.len()).find(|index| lines[*index].trim() == "\"\"\"") else {
+            continue;
+        };
+        if heading == 0 || !lines[heading - 1].trim().is_empty() {
+            continue;
+        }
+        let start = heading - 1;
+        // The same method's docstring in Fern's module: its `def` line, at the
+        // same occurrence (sync, then async), then its docstring's closing quotes.
+        let Some(def) = (0..heading)
+            .rev()
+            .find(|index| python_method_name(lines[*index]).is_some())
+        else {
+            continue;
+        };
+        let occurrence = lines[..def]
+            .iter()
+            .filter(|line| **line == lines[def])
+            .count();
+        let Some(fern_def) = pair
+            .fern
+            .iter()
+            .enumerate()
+            .filter(|(_, line)| **line == lines[def])
+            .map(|(index, _)| index)
+            .nth(occurrence)
+        else {
+            continue;
+        };
+        let Some(fern) = (fern_def + 1..pair.fern.len())
+            .filter(|index| pair.fern[*index].trim() == "\"\"\"")
+            .nth(1)
+            .filter(|index| {
+                pair.fern[*index] == lines[end] && pair.fern[*index - 1] == lines[start - 1]
+            })
+        else {
+            continue;
+        };
+        return Some(Region {
+            fern: fern..fern,
+            crozier: start..end,
+        });
+    }
+    None
+}
+
+/// Where a removed argument was the only user of its snippet's `import
+/// datetime` (and, ahead of the other imports, the blank line after it), the
+/// region starts there instead:
+/// `(crozier start, Fern start)`, both unchanged when it does not apply. Fern's
+/// lines between the import and the call are crozier's unchanged.
+fn orphaned_datetime_import(
+    pair: &Pair<'_>,
+    start: usize,
+    fern_start: usize,
+    removed: std::ops::Range<usize>,
+    close: usize,
+) -> (usize, usize) {
+    let lines = pair.crozier;
+    if !lines[removed.clone()]
+        .iter()
+        .any(|line| line.contains("datetime."))
+    {
+        return (start, fern_start);
+    }
+    // The snippet's opening: the Markdown fence or the docstring's `--------`.
+    let Some(opening) = (0..start)
+        .rev()
+        .find(|index| lines[*index] == "```python" || lines[*index].trim() == "--------")
+    else {
+        return (start, fern_start);
+    };
+    let Some(import) = (opening + 1..start).find(|index| lines[*index].trim() == "import datetime")
+    else {
+        return (start, fern_start);
+    };
+    // Ahead of the package's imports (a docstring) it takes its blank line
+    // with it; after them (the Markdown) it leaves the shared one.
+    let taken = if import == opening + 1 { 2 } else { 1 };
+    let kept = &lines[import + taken..start];
+    let still_used = lines[opening..=close]
+        .iter()
+        .enumerate()
+        .any(|(offset, line)| {
+            let index = opening + offset;
+            line.contains("datetime.") && !removed.contains(&index)
+        });
+    if still_used
+        || (taken == 2 && !lines[import + 1].trim().is_empty())
+        || fern_start < kept.len()
+        || pair.fern[fern_start - kept.len()..fern_start] != *kept
+    {
+        return (start, fern_start);
+    }
+    (import, fern_start - kept.len())
 }
 
 /// Where the `def` signature `rest` starts with closes: its first `) ->` or
@@ -9137,6 +9629,307 @@ mod tests {
         assert!(!holds(&context, fern, "    request=b\"other\","));
     }
 
+    #[test]
+    fn the_binary_form_part_line_rule_needs_a_bytes_parameter_and_fern_s_own_sample() {
+        let holds = |context: &Context, rel: &str, fern: &str, crozier: &str| {
+            let (left, right) = ([fern], [crozier]);
+            binary_form_part_example_line(
+                &Pair {
+                    rel,
+                    fern: &left,
+                    crozier: &right,
+                    context,
+                },
+                fern,
+                crozier,
+            )
+        };
+        let fern = "    file=\"file\",";
+        let crozier = "    file=b\"file\",";
+        // Without a generated bytes parameter, nothing is excused.
+        assert!(!holds(&Context::default(), "README.md", fern, crozier));
+        let raw = "class RawUploadsClient:\n    def upload_log(\n        self,\n        *,\n        file: FormFile,\n        note: typing.Optional[str] = OMIT,\n    ) -> HttpResponse[None]:\n        pass\n";
+        let alias = "FormFile = bytes\n";
+        let context = Context::from_sources(
+            [],
+            [
+                ("src/fern/uploads/raw_client.py", raw),
+                ("src/fern/types/form_file.py", alias),
+            ],
+        );
+        assert!(context.request_examples().bytes_parameters.contains("file"));
+        assert!(!context.request_examples().bytes_parameters.contains("note"));
+        for rel in ["README.md", "reference.md", "src/fern/uploads/client.py"] {
+            assert!(holds(&context, rel, fern, crozier), "{rel}");
+        }
+        assert!(!holds(
+            &context,
+            "src/fern/types/form_file.py",
+            fern,
+            crozier
+        ));
+        // Only the bytes spelling of Fern's own sample, of a bytes parameter.
+        assert!(!holds(&context, "README.md", fern, "    file=b\"string\","));
+        assert!(!holds(
+            &context,
+            "README.md",
+            "    note=\"file\",",
+            "    note=b\"file\","
+        ));
+        assert!(!holds(
+            &context,
+            "README.md",
+            fern,
+            "        file=b\"file\","
+        ));
+        // A JSON binary body's `request` is `binary-json-body-example`'s.
+        let raw = raw.replace("file: FormFile", "request: bytes");
+        let context = Context::from_sources([], [("src/fern/uploads/raw_client.py", raw.as_str())]);
+        assert!(!holds(
+            &context,
+            "README.md",
+            "    request=\"file\",",
+            "    request=b\"file\","
+        ));
+    }
+
+    #[test]
+    fn a_bare_fern_call_stands_only_where_crozier_passes_required_arguments() {
+        let client = "class LockerClient:\n    def save_state(\n        self,\n        *,\n        data: typing.Any,\n        note: typing.Optional[str] = OMIT,\n        request_options: typing.Optional[RequestOptions] = None,\n    ) -> bool:\n        pass\n";
+        let context = Context::from_sources([], [("src/fern/locker/client.py", client)]);
+        let fern = ["x", "client.locker.save_state()", "y"];
+        let crozier = [
+            "x",
+            "client.locker.save_state(",
+            "    data={\"key\": \"value\"},",
+            ")",
+            "y",
+        ];
+        let pair = Pair {
+            rel: "reference.md",
+            fern: &fern,
+            crozier: &crozier,
+            context: &context,
+        };
+        assert_eq!(
+            typeless_body_required_arguments(&pair).unwrap(),
+            Some(Region {
+                fern: 1..2,
+                crozier: 1..4,
+            })
+        );
+        // An optional argument is a real difference.
+        let optional = [
+            "x",
+            "client.locker.save_state(",
+            "    data={\"key\": \"value\"},",
+            "    note=\"note\",",
+            ")",
+            "y",
+        ];
+        let pair = Pair {
+            crozier: &optional,
+            ..pair
+        };
+        assert_eq!(typeless_body_required_arguments(&pair).unwrap(), None);
+        // So is a Fern call passing anything.
+        let called = ["x", "client.locker.save_state(", "    data=1,", ")", "y"];
+        let pair = Pair {
+            fern: &called,
+            crozier: &crozier,
+            ..pair
+        };
+        assert_eq!(typeless_body_required_arguments(&pair).unwrap(), None);
+        // And a bare call beside a method whose required arguments are all
+        // typed: no typeless body, so Fern's call omits a real argument.
+        let typed = client.replace("data: typing.Any,", "data: str,");
+        let context = Context::from_sources([], [("src/fern/locker/client.py", typed.as_str())]);
+        let pair = Pair {
+            fern: &fern,
+            crozier: &crozier,
+            context: &context,
+            ..pair
+        };
+        assert_eq!(typeless_body_required_arguments(&pair).unwrap(), None);
+    }
+
+    #[test]
+    fn container_path_parameters_follow_aliases_and_maps() {
+        let client = "class ThingsClient:\n    def by_list(\n        self, string_list: StringList, *, request_options: typing.Optional[RequestOptions] = None\n    ) -> None:\n        pass\n\n    def by_map(\n        self, values: typing.Dict[str, str], *, request_options: typing.Optional[RequestOptions] = None\n    ) -> None:\n        pass\n\n    def by_union(\n        self, key: Key, *, request_options: typing.Optional[RequestOptions] = None\n    ) -> None:\n        pass\n";
+        let aliases = "StringList = typing.List[str]\nKey = typing.Union[SlipKey, BuoyKey]\n";
+        let context = Context::from_sources(
+            [],
+            [
+                ("src/fern/things/client.py", client),
+                ("src/fern/types/aliases.py", aliases),
+            ],
+        );
+        let lists = container_path_parameters(&context);
+        assert_eq!(
+            lists.get("string_list").map(String::as_str),
+            Some("typing.List[str]")
+        );
+        assert_eq!(
+            lists.get("values").map(String::as_str),
+            Some("typing.Dict[str, str]")
+        );
+        assert!(!lists.contains_key("key"));
+        let unions = union_path_parameters(&context);
+        assert_eq!(unions.keys().collect::<Vec<_>>(), ["key"]);
+        let docstring = |fern: &str, crozier: &str| {
+            let (left, right) = ([fern], [crozier]);
+            container_path_parameter_docstring_value(
+                &Pair {
+                    rel: "src/fern/things/client.py",
+                    fern: &left,
+                    crozier: &right,
+                    context: &context,
+                },
+                fern,
+                crozier,
+            )
+        };
+        // A `typing.List[str]` alias rejects the string placeholder, so does a map.
+        assert!(docstring(
+            "    string_list=\"stringList\",",
+            "    string_list=[\"stringList\"],"
+        ));
+        assert!(docstring(
+            "    values=\"values\",",
+            "    values={\"key\": \"value\"},"
+        ));
+        assert!(!docstring(
+            "    values=\"values\",",
+            "    values=\"other\","
+        ));
+    }
+
+    #[test]
+    fn a_union_path_parameter_example_stands_where_fern_writes_none() {
+        let client = "class ThingsClient:\n    def by_union(\n        self, key: Key, *, request_options: typing.Optional[RequestOptions] = None\n    ) -> None:\n        pass\n";
+        let context = Context::from_sources(
+            [],
+            [
+                ("src/fern/things/client.py", client),
+                (
+                    "src/fern/types/key.py",
+                    "Key = typing.Union[SlipKey, BuoyKey]\n",
+                ),
+            ],
+        );
+        let fern = ["```python", "client.things.by_union(...)", "```"];
+        let crozier = [
+            "```python",
+            "from fern import FernApi, SlipKey",
+            "",
+            "client = FernApi()",
+            "",
+            "client.things.by_union(",
+            "    key=SlipKey(",
+            "        slip=\"slip\",",
+            "    ),",
+            ")",
+            "",
+            "```",
+        ];
+        let pair = Pair {
+            rel: "reference.md",
+            fern: &fern,
+            crozier: &crozier,
+            context: &context,
+        };
+        assert_eq!(
+            union_path_parameter_example(&pair),
+            Some(Region {
+                fern: 1..2,
+                crozier: 1..11,
+            })
+        );
+        // Where Fern writes a call, the call is compared.
+        let called = ["```python", "client.things.by_union()", "```"];
+        let pair = Pair {
+            fern: &called,
+            ..pair
+        };
+        assert_eq!(union_path_parameter_example(&pair), None);
+        let docstring_fern = [
+            "    def by_union(",
+            "        \"\"\"",
+            "        None",
+            "        \"\"\"",
+        ];
+        let docstring_crozier = [
+            "    def by_union(",
+            "        \"\"\"",
+            "        None",
+            "",
+            "        Examples",
+            "        --------",
+            "        client.things.by_union(",
+            "            key=SlipKey(",
+            "                slip=\"slip\",",
+            "            ),",
+            "        )",
+            "        \"\"\"",
+        ];
+        let pair = Pair {
+            rel: "src/fern/things/client.py",
+            fern: &docstring_fern,
+            crozier: &docstring_crozier,
+            context: &context,
+        };
+        assert_eq!(
+            union_path_parameter_example(&pair),
+            Some(Region {
+                fern: 3..3,
+                crozier: 3..11,
+            })
+        );
+    }
+
+    #[test]
+    fn a_multi_line_container_argument_takes_its_orphaned_datetime_import() {
+        let client = "class ThingsClient:\n    def by_stamps(\n        self, stamps: typing.Dict[str, dt.datetime], *, request_options: typing.Optional[RequestOptions] = None\n    ) -> None:\n        pass\n";
+        let context = Context::from_sources([], [("src/fern/things/client.py", client)]);
+        let fern = [
+            "        --------",
+            "        from fern import FernApi",
+            "",
+            "        client = FernApi()",
+            "        client.things.by_stamps(",
+            "            stamps=\"stamps\",",
+            "        )",
+        ];
+        let crozier = [
+            "        --------",
+            "        import datetime",
+            "",
+            "        from fern import FernApi",
+            "",
+            "        client = FernApi()",
+            "        client.things.by_stamps(",
+            "            stamps={",
+            "                \"key\": datetime.datetime.fromisoformat(",
+            "                    \"2024-01-15 09:30:00+00:00\",",
+            "                )",
+            "            },",
+            "        )",
+        ];
+        let pair = Pair {
+            rel: "src/fern/things/client.py",
+            fern: &fern,
+            crozier: &crozier,
+            context: &context,
+        };
+        assert_eq!(
+            container_path_parameter_call(&pair).unwrap(),
+            Some(Region {
+                fern: 1..7,
+                crozier: 1..13,
+            })
+        );
+    }
+
     const NULLABLE_FERN: &str = "client.beds.list_beds(\n    rows=[\n        None\n    ],\n)\n\n**rows:** `typing.Optional[typing.Union[typing.Optional[int], typing.Sequence[typing.Optional[int]]]]` \n";
     const NULLABLE_CROZIER: &str = "client.beds.list_beds(\n    rows=[\n        1\n    ],\n)\n\n**rows:** `typing.Optional[typing.Union[int, typing.Sequence[int]]]` \n";
 
@@ -11142,7 +11935,7 @@ mod tests {
     fn a_list_path_parameter_departs_only_where_crozier_passes_that_parameter() {
         let client = "class UsersClient:\n    def get_users_id(\n        self, id: typing.Sequence[int], *, request_options: typing.Optional[RequestOptions] = None\n    ) -> None:\n        pass\n    def probe(\n        self, probe_param: typing.Sequence[str], *, request_options: typing.Optional[RequestOptions] = None\n    ) -> None:\n        pass\n";
         let context = Context::from_sources([], [("src/fern/users/client.py", client)]);
-        let call: RegionRule = list_path_parameter_call;
+        let call: RegionRule = container_path_parameter_call;
         let fern = "# Reference\nclient.users.get_users_id()\nafter";
         let crozier =
             "# Reference\nclient.users.get_users_id(\n    id=[\n        1\n    ],\n)\nafter";
@@ -11178,7 +11971,7 @@ mod tests {
         )
         .is_none());
 
-        let line: LineRule = list_path_parameter_docstring_value;
+        let line: LineRule = container_path_parameter_docstring_value;
         let rel = "src/fern/users/client.py";
         assert!(line_holds(
             line,

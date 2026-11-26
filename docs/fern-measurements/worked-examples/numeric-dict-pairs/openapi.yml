@@ -1,0 +1,53 @@
+openapi: 3.0.3
+info:
+  title: Lighthouse
+  version: 1.0.0
+servers:
+  - url: https://lighthouse.example.com
+paths:
+  /beacons:
+    post:
+      operationId: placeBeacon
+      tags: [beacons]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [position, labels, toggles, offset]
+              properties:
+                position:
+                  description: Two numeric pairs.
+                  type: object
+                  additionalProperties:
+                    type: number
+                  example:
+                    lat: 41.5
+                    lon: -70.25
+                labels:
+                  description: Two string pairs.
+                  type: object
+                  additionalProperties:
+                    type: string
+                  example:
+                    north: tall
+                    south: squat
+                toggles:
+                  description: Two boolean pairs.
+                  type: object
+                  additionalProperties:
+                    type: boolean
+                  example:
+                    lamp: true
+                    horn: false
+                offset:
+                  description: One numeric pair (control).
+                  type: object
+                  additionalProperties:
+                    type: integer
+                  example:
+                    dx: 3
+      responses:
+        "204":
+          description: Placed

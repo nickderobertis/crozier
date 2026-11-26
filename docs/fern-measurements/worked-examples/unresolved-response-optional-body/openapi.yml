@@ -1,0 +1,71 @@
+openapi: 3.1.0
+info:
+  title: Kiln Ledger
+  version: 1.0.0
+servers:
+  - url: https://ledger.example.com
+paths:
+  /firings/plan:
+    post:
+      operationId: planFiring
+      tags: [firings]
+      summary: An optional body beside a success response that names a nested pointer.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FiringNote'
+      responses:
+        '200':
+          description: The planned firing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/#/components/schemas/FiringNote'
+  /firings/record:
+    post:
+      operationId: recordFiring
+      tags: [firings]
+      summary: The same optional body beside a success response that resolves.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FiringNote'
+      responses:
+        '200':
+          description: The recorded firing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FiringNote'
+  /firings/seal:
+    post:
+      operationId: sealFiring
+      tags: [firings]
+      summary: A required body beside a success response that names a nested pointer.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SealRequest'
+      responses:
+        '200':
+          description: The sealed firing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/#/components/schemas/FiringNote'
+components:
+  schemas:
+    FiringNote:
+      type: [object, 'null']
+      additionalProperties: true
+      description: A free-form firing note.
+    SealRequest:
+      type: object
+      additionalProperties: true
+      description: A free-form seal request.

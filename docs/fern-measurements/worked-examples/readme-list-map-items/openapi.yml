@@ -1,0 +1,43 @@
+openapi: 3.0.3
+info:
+  title: Relay
+  version: 1.0.0
+servers:
+  - url: https://relay.example.com
+paths:
+  /dispatches:
+    post:
+      operationId: sendDispatch
+      tags: [dispatches]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Dispatch"
+      responses:
+        "200":
+          description: Queued
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Receipt"
+components:
+  schemas:
+    Dispatch:
+      type: object
+      required: [channel, notes]
+      properties:
+        channel:
+          type: string
+        notes:
+          description: Free-form note objects; each item is a placeholder map.
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+    Receipt:
+      type: object
+      properties:
+        id:
+          type: string

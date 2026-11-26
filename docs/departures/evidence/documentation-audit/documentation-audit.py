@@ -2,8 +2,8 @@
 """Audit the Python examples of generated SDK trees against the trees' own code.
 
 For each TREE: every ```python block of README.md and reference.md, and every
-numpydoc `Examples` section of a client.py docstring, read as the file writes
-it, is checked for
+numpydoc `Examples` section of a client.py docstring, read as Python evaluates
+the docstring, is checked for
   syntax      the block does not compile (a repeated keyword is a SyntaxError);
               `yield` or `await` outside a function is how Fern lays out a
               streaming example and is not a finding
@@ -353,21 +353,22 @@ def audit_block(package: Package, block: Block) -> list[Finding]:
 
 
 def docstring_examples(source: str, module: ast.Module, file: str) -> list[Block]:
-    """Each docstring `Examples` section of the client module `file`, as its
-    source writes it. Fern's docstrings are not raw, so evaluating one would
-    turn a backslash-n inside an example's string literal into a line break."""
+    """Each docstring `Examples` section of the client module `file`, as Python
+    evaluates the docstring: what `help()` and an IDE show the reader. Neither
+    side's docstrings are raw, so an example whose source writes a single
+    backslash-n reaches the reader as a line break inside its string literal,
+    which this reading reports (the `docstring-example-escapes` departure)."""
     sections: list[Block] = []
     for node in ast.walk(module):
         if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
             continue
         match node.body:
-            case [ast.Expr(value=ast.Constant(value=str()) as literal), *_]:
+            case [ast.Expr(value=ast.Constant(value=str() as text) as literal), *_]:
                 segment = ast.get_source_segment(source, literal) or ""
             case _:
                 continue
         if segment[:3] not in QUOTES:
             continue
-        text = segment[3:-3]
         if (header := EXAMPLES.search(text)) is None:
             continue
         start = literal.lineno + text[: header.end()].count("\n")

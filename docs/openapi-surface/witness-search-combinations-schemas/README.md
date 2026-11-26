@@ -42,6 +42,16 @@ again at Fern CLI 5.216.0 / fern-python-sdk 5.42.0 in both enum modes after the
 naming-acceptance repairs (#919–#924, #940, #955, #956); each row's detail ends
 with that screen's result, and the counts below are the original screen's.
 
+The rows of twelve candidates whose rows named a worked-example or
+documentation cause (tickets #891, #927–#937; `0d01bc91…`, `47ed73c7…`,
+`20d6b77f…`, `b626c717…`, `7cff4ee7…`, `f18aa510…`, `c455b68a…`, `f1016f1c…`,
+`f0f1b658…`, `b39e4f49…`, `74a8b9b2…`, `bcd84f84…`) were screened again at
+Fern CLI 5.216.0 / fern-python-sdk 5.42.0 in both enum modes after those
+repairs (#966), each tree published to the certified-tree store and compared
+whole with `crozier compare`. Seven match (`repaired-here`, three of them
+through a catalogued departure); five keep an `attributed-residual` whose
+`detail` records the ticket's cause as gone and names the cause that remains.
+
 ## Keys
 
 Nine keys are settled. Eight are interactions on a registered witness — the

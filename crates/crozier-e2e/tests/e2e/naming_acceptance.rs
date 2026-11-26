@@ -16,8 +16,8 @@ use std::path::{Path, PathBuf};
 use assert_cmd::Command;
 
 use super::{
-    crozier, departure_ledger, golden_tree_failures, probe_command, refusal_run, refused_failures,
-    repo_root, walk_files, FERN_REFUSALS_DIR,
+    crozier, departure_ledger, golden_tree_failures, golden_tree_failures_in, probe_command,
+    refusal_run, refused_failures, repo_root, walk_files, FERN_REFUSALS_DIR,
 };
 
 /// Where the measurements live; each case's `fern-expected/` is a compared golden.
@@ -186,6 +186,26 @@ fn enum_failures(case: &str, out: &Path) -> Vec<String> {
         &ledger,
         &repo_root().join(&golden),
         out,
+    )
+}
+
+/// [`enum_failures`] over a tree a test tampered with on purpose: every
+/// difference no departure explains still fails, but no departure it applies is
+/// held to, or recorded into, the golden's ledger rows. Under `just
+/// departures-ledger` a tampered tree's shifted lines would otherwise become
+/// rows the untouched tree never applies.
+fn tampered_enum_failures(case: &str, out: &Path) -> Vec<String> {
+    let golden = golden(case);
+    let ledger = departure_ledger()
+        .golden(&golden, &[])
+        .unwrap_or_else(|failures| panic!("{}", failures.join("\n")));
+    golden_tree_failures_in(
+        &format!("{case} (python-enums, tampered)"),
+        &spec(case).display().to_string(),
+        &ledger,
+        &repo_root().join(&golden),
+        out,
+        &|_| false,
     )
 }
 
@@ -644,7 +664,7 @@ fn the_colliding_component_departure_explains_only_the_renamed_class() {
         ),
     ] {
         std::fs::write(&client, &edit).expect("tamper");
-        let failures = enum_failures(case, &out);
+        let failures = tampered_enum_failures(case, &out);
         assert!(
             failures
                 .iter()
@@ -655,7 +675,7 @@ fn the_colliding_component_departure_explains_only_the_renamed_class() {
     std::fs::write(&client, &text).expect("restore");
     let extra = out.join("src/fern/types/kiln_glaze_coat9.py");
     std::fs::write(&extra, "KilnGlazeCoat9 = str\n").expect("an extra module");
-    let failures = enum_failures(case, &out);
+    let failures = tampered_enum_failures(case, &out);
     assert!(
         failures
             .iter()

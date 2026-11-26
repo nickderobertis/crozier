@@ -348,45 +348,48 @@ fn multipart_binary_references_are_sent_as_their_value() {
 }
 
 /// The same document with the plain part required: its transport matches, and
-/// the one standing difference is the required part's worked example, which
-/// the certified pair writes as `file="file"` against the `FormFile` (`bytes`)
-/// annotation. It is held exactly here so it stays observable until the
-/// worked-example rendering settles it.
+/// every worked call passes the required part as the `bytes` its `FormFile`
+/// annotation takes (`file=b"file"`), in `README.md`, `reference.md` and the
+/// client docstrings alike, where the certified pair passes the `str`
+/// `file="file"` (the `binary-form-part-example` departure, which the ledger
+/// pins at each of those lines). The untouched tree is held whole.
 #[test]
-fn required_binary_reference_part_differs_only_in_its_worked_example() {
+fn required_binary_reference_part_is_exampled_as_bytes() {
     let case = "multipart-binary-required-part";
-    let temp = tempfile::tempdir().expect("output tempdir");
-    let out = temp.path().join("sdk");
-    probe_command(&case_dir(case).join("openapi.yml"), &out)
-        .assert()
-        .success();
-    let golden = format!("{DIR}/{case}/fern-expected");
-    let differing: Vec<String> = failures(case, &golden, &out)
-        .iter()
-        .filter_map(|failure| {
-            ["README.md", "reference.md", "src/fern/uploads/client.py"]
-                .into_iter()
-                .find(|file| failure.contains(file))
-                .map(str::to_string)
-        })
-        .collect();
-    assert_eq!(
-        failures(case, &golden, &out).len(),
-        differing.len(),
-        "only the worked example differs"
-    );
-    for (file, crozier) in [
-        ("README.md", "file=b\"string\""),
-        ("reference.md", "file=\"string\""),
-        ("src/fern/uploads/client.py", "file=b\"string\""),
+    let (_temp, out) = matched(case);
+    for (file, calls) in [
+        ("README.md", 2),
+        ("reference.md", 1),
+        ("src/fern/uploads/client.py", 2),
     ] {
-        let path = out.join(file);
-        let text = read(&path);
-        assert!(text.contains(crozier), "{file}: no {crozier:?}");
-        std::fs::write(&path, text.replace(crozier, "file=\"file\"")).expect("rewrite");
+        let text = read(&out.join(file));
+        assert_eq!(
+            text.matches("file=b\"file\",\n").count(),
+            calls,
+            "{file}: {text}"
+        );
+        assert!(
+            !text.contains("file=\"file\"") && !text.contains("file=\"string\""),
+            "{file} passes a str for the bytes part: {text}"
+        );
     }
-    let unexplained = failures(case, &golden, &out);
-    assert!(unexplained.is_empty(), "{}", unexplained.join("\n\n"));
+    // The departure admits only the bytes spelling of Fern's own sample: the
+    // value crozier wrote before (`"string"`, which the annotation rejects)
+    // fails the comparison.
+    let reference = out.join("reference.md");
+    let text = read(&reference);
+    std::fs::write(
+        &reference,
+        text.replace("file=b\"file\",", "file=\"string\","),
+    )
+    .expect("rewrite");
+    let unexplained = failures(case, &format!("{DIR}/{case}/fern-expected"), &out);
+    assert!(
+        unexplained
+            .iter()
+            .any(|failure| failure.contains("reference.md")),
+        "{unexplained:?}"
+    );
 }
 
 /// #926: a body property sharing its argument name with a header is renamed in

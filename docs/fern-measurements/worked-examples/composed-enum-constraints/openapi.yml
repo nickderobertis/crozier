@@ -1,0 +1,41 @@
+openapi: 3.0.3
+info:
+  title: Parcel Registry
+  version: 1.0.0
+paths:
+  /parcels:
+    post:
+      operationId: register_parcel
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Parcel'
+      responses:
+        '204':
+          description: Registered
+components:
+  schemas:
+    ParcelState:
+      type: string
+      description: Where a parcel is in its journey.
+      enum:
+      - drafted
+      - stamped
+      - delivered
+      allOf:
+      - maxLength: 7
+    Parcel:
+      type: object
+      required:
+      - label
+      - state
+      properties:
+        label:
+          type: string
+        state:
+          allOf:
+          - $ref: '#/components/schemas/ParcelState'
+          - type: string
+            pattern: ^(?!drafted$).*$

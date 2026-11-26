@@ -1959,6 +1959,12 @@ pub struct Schema {
     /// constraints reads it.
     #[serde(skip)]
     pub(crate) discarded_all_of: Option<Vec<Schema>>,
+    /// Set when that normalization discarded a `oneOf` or `anyOf`, whose
+    /// alternatives are not kept: a correction must decline on such a node,
+    /// where a discarded `allOf` alone stays decidable through
+    /// [`Self::discarded_all_of`]. Not a wire field.
+    #[serde(skip)]
+    pub(crate) discarded_alternatives: bool,
     /// Whether the node declares an applicator crozier never reads — `if`, or a
     /// `$dynamicRef`/`$recursiveRef` — which can still constrain an instance.
     /// Only their presence is kept, so a correction that validates a value
@@ -3643,6 +3649,7 @@ fn normalize_empty_compositions(doc: &mut OpenApi) {
                 node.discarded_composition |= [&node.one_of, &node.any_of, &node.all_of]
                     .into_iter()
                     .any(Option::is_some);
+                node.discarded_alternatives |= node.one_of.is_some() || node.any_of.is_some();
                 node.one_of = None;
                 node.any_of = None;
                 if let Some(members) = node.all_of.take() {

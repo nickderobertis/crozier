@@ -1,0 +1,25 @@
+openapi: 3.0.3
+info:
+  title: Marina Logbook
+  version: 1.0.0
+paths:
+  /logbook:
+    post:
+      operationId: writeEntry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [entry]
+              properties:
+                entry:
+                  type: string
+                  example: "Moored at dawn.\nWind\tNE 12 kn, \"steady\""
+                skipper:
+                  type: string
+                  example: Ada
+      responses:
+        '204':
+          description: Written

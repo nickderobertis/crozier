@@ -5,7 +5,17 @@ Reads the keyword argument ARGUMENT from one line of Fern's committed tree and
 from the same place in crozier's generated tree, and validates each value
 against the schema at POINTER in the source document SOURCE with jsonschema
 (format assertions on): an OpenAPI 3.1 document under Draft 2020-12, a 3.0 one
-under Draft 4, whose `exclusiveMinimum: true` it shares. jsonschema asserts some
+under Draft 4, whose `exclusiveMinimum: true` it shares. Fern's place may be
+`-` where Fern writes no value there, which no schema accepts.
+
+A value is read as its wire JSON: a literal as it stands, bytes as the string of
+their octets, a `datetime` constructor as its RFC 3339 string, and a model
+constructor (`Name(field=…)`: a bare class name, keywords only) as an object of its keyword names,
+each nested value read the same way, so a value reached through `$ref`, `allOf`,
+`anyOf` or `oneOf` is validated whole. A line inside a docstring of a Python
+file is read as the docstring renders it, its escapes applied, as `help()` shows
+it and a reader copies it; a rendered line that is no Python is rejected.
+jsonschema asserts some
 formats only with optional packages installed; for the formats crozier's
 inventory reads (`date`, `date-time`, `time`, `uuid`, `email`, `uri`, `ipv4`,
 `ipv6`, `hostname`) any it cannot assert is asserted here with the standard
@@ -25,8 +35,9 @@ import json
 import re
 import sys
 import uuid
+import warnings
 from pathlib import Path
-from typing import Any
+from typing import Any, NamedTuple
 
 import jsonschema
 import referencing
@@ -77,28 +88,151 @@ def schema_at(document: dict[str, Any], pointer: str) -> object:
     return node
 
 
+TEMPORAL_CALLS = ("datetime.date.fromisoformat", "datetime.datetime.fromisoformat")
+
+
+def temporal_literal(node: ast.expr) -> str | None:
+    """The wire string a `datetime.date.fromisoformat("…")` or
+    `datetime.datetime.fromisoformat("…")` argument stands for, or `None` for
+    any other expression: a date as written, a date-time in its RFC 3339 `T` form."""
+    if not (
+        isinstance(node, ast.Call)
+        and ast.unparse(node.func) in TEMPORAL_CALLS
+        and len(node.args) == 1
+        and not node.keywords
+        and isinstance(node.args[0], ast.Constant)
+        and isinstance(node.args[0].value, str)
+    ):
+        return None
+    text = node.args[0].value
+    return text.replace(" ", "T", 1) if ast.unparse(node.func).endswith("datetime.fromisoformat") else text
+
+
+def wire_value(node: ast.expr) -> object:
+    """The JSON value the expression `node` stands for on the wire."""
+    if (temporal := temporal_literal(node)) is not None:
+        return temporal
+    match node:
+        case ast.Call(func=ast.Name(), args=[], keywords=keywords) if all(
+            keyword.arg is not None for keyword in keywords
+        ):
+            return {keyword.arg: wire_value(keyword.value) for keyword in keywords}
+        case ast.List(elts=items) | ast.Tuple(elts=items):
+            return [wire_value(item) for item in items]
+        case ast.Dict(keys=keys, values=values) if all(isinstance(key, ast.Constant) for key in keys):
+            return {ast.literal_eval(key): wire_value(value) for key, value in zip(keys, values, strict=True)}
+    value = ast.literal_eval(node)
+    return value.decode("latin-1") if isinstance(value, bytes) else value
+
+
+class Span(NamedTuple):
+    """A docstring's 0-based first and last source line, and whether it is raw."""
+
+    first: int
+    last: int
+    raw: bool
+
+
+def docstring_spans(text: str) -> list[Span]:
+    """The span of each docstring in the Python source `text`; none where
+    `text` is no Python."""
+    try:
+        tree = ast.parse(text)
+    except SyntaxError:
+        return []
+    lines = text.splitlines()
+    spans = []
+    for node in ast.walk(tree):
+        if (
+            isinstance(node, ast.Expr)
+            and isinstance(node.value, ast.Constant)
+            and isinstance(node.value.value, str)
+            and node.end_lineno is not None
+        ):
+            prefix = lines[node.lineno - 1][node.col_offset :].split('"', 1)[0].split("'", 1)[0]
+            spans.append(Span(node.lineno - 1, node.end_lineno - 1, "r" in prefix.lower()))
+    return spans
+
+
+def render_line(line: str) -> str:
+    """The interior docstring line `line` as a non-raw docstring renders it; a
+    line ending in a continuation backslash, which no single line renders, stays."""
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", SyntaxWarning)
+        try:
+            return ast.literal_eval('"""' + line.replace('"""', '\\"""') + '"""')
+        except (SyntaxError, ValueError):
+            return line
+
+
+def rendered(lines: list[str], text: str) -> list[str]:
+    """`lines` with each interior line of a non-raw docstring as that docstring
+    renders it. A rendered line keeps its place, so a `\\n` escape that renders a
+    newline leaves a line holding one, which parses as no Python."""
+    spans = docstring_spans(text)
+    return [
+        render_line(line)
+        if "\\" in line and any(span.first < index < span.last and not span.raw for span in spans)
+        else line
+        for index, line in enumerate(lines)
+    ]
+
+
+def argument_text(lines: list[str], index: int) -> str:
+    """The keyword argument opening on `lines[index]`, joined with the lines a
+    bracket it leaves open continues onto: the formatted docstring writes a date
+    as `day=datetime.date.fromisoformat(` with its string and `)` below it."""
+    text = lines[index].strip()
+    following = index + 1
+    while text.count("(") + text.count("[") + text.count("{") > (
+        text.count(")") + text.count("]") + text.count("}")
+    ) and following < len(lines):
+        text += lines[following].strip()
+        following += 1
+    return text.removesuffix(",")
+
+
 def line_value(place: str, argument: str) -> object:
-    """The value `argument=` takes on the 1-based line `FILE:LINE`."""
+    """The value `argument=` takes on the 1-based line `FILE:LINE`, the lines an
+    open bracket continues it onto included."""
     file, _, number = place.rpartition(":")
     if not file or not number.isdigit():
         raise InputError(f"{place} is not FILE:LINE")
-    lines = Path(file).read_text(encoding="utf-8").splitlines()
+    source = Path(file).read_text(encoding="utf-8")
+    lines = source.splitlines()
     index = int(number) - 1
     if not 0 <= index < len(lines):
         raise InputError(f"{place} is past the end of {file}")
-    text = lines[index].strip().removesuffix(",")
+    shown = rendered(lines, source)
+    text = argument_text(shown, index)
     try:
         call = ast.parse(f"f({text})", mode="eval").body
     except SyntaxError as error:
+        if shown[index] != lines[index]:
+            return Unrendered(shown[index])
         raise InputError(f"{place} holds no keyword argument: {lines[index]!r}") from error
     if isinstance(call, ast.Call):
         for keyword in call.keywords:
             if keyword.arg == argument:
                 try:
-                    return ast.literal_eval(keyword.value)
+                    return wire_value(keyword.value)
                 except (ValueError, SyntaxError) as error:
                     raise InputError(f"{place} passes {argument}= no literal value: {lines[index]!r}") from error
     raise InputError(f"{place} passes no {argument}=: {lines[index]!r}")
+
+
+class Absent:
+    """Fern writes no value at this place."""
+
+    def __repr__(self) -> str:
+        return "(no value)"
+
+
+class Unrendered(str):
+    """A docstring line whose escapes render it as no Python."""
+
+    def __repr__(self) -> str:
+        return f"(renders as {str(self)!r})"
 
 
 HOSTNAME_LABEL = re.compile(r"(?!-)[A-Za-z0-9-]{1,63}(?<!-)")
@@ -208,6 +342,10 @@ def format_checker(validator_class: type) -> jsonschema.FormatChecker:
 def verdict(document: dict[str, Any], pointer: str, value: object) -> str | None:
     """Why the schema at `pointer` rejects `value`, or `None` when it accepts it."""
     schema = schema_at(document, pointer)
+    if isinstance(value, Absent):
+        return "no value is written"
+    if isinstance(value, Unrendered):
+        return "its docstring renders it as no Python literal"
     version = str(document.get("openapi", ""))
     validator_class = (
         jsonschema.Draft202012Validator if version.startswith("3.1") else jsonschema.Draft4Validator
@@ -234,14 +372,14 @@ def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("source", type=Path, help="the OpenAPI document both trees were generated from")
     parser.add_argument("pointer", help="the JSON pointer of the value's schema, e.g. /components/schemas/Id")
-    parser.add_argument("fern", help="Fern's committed FILE:LINE")
+    parser.add_argument("fern", help="Fern's committed FILE:LINE, or - where Fern writes no value")
     parser.add_argument("crozier", help="crozier's generated FILE:LINE")
     parser.add_argument("argument", help="the keyword argument whose value is validated")
     arguments = parser.parse_args(argv)
     try:
         document = load_document(arguments.source)
         values = {
-            "fern": line_value(arguments.fern, arguments.argument),
+            "fern": Absent() if arguments.fern == "-" else line_value(arguments.fern, arguments.argument),
             "crozier": line_value(arguments.crozier, arguments.argument),
         }
         verdicts = {side: verdict(document, arguments.pointer, value) for side, value in values.items()}

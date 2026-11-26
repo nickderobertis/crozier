@@ -1001,6 +1001,108 @@
         ".crozier-overlay.json"
       ]
     },
+    "docs/fern-measurements/worked-examples/alias-body-reference-order/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/worked-examples/alias-body-reference-order/fern-expected": {},
+    "docs/fern-measurements/worked-examples/composed-enum-constraints/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/worked-examples/composed-enum-constraints/fern-expected": {},
+    "docs/fern-measurements/worked-examples/composed-reference-order/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/worked-examples/composed-reference-order/fern-expected": {},
+    "docs/fern-measurements/worked-examples/composite-path-parameters/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/worked-examples/composite-path-parameters/fern-expected": {},
+    "docs/fern-measurements/worked-examples/declared-date-examples/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/worked-examples/declared-date-examples/fern-expected": {},
+    "docs/fern-measurements/worked-examples/docstring-example-escapes/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/worked-examples/docstring-example-escapes/fern-expected": {},
+    "docs/fern-measurements/worked-examples/fenced-docstring-blanks/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/worked-examples/fenced-docstring-blanks/fern-expected": {},
+    "docs/fern-measurements/worked-examples/field-description-tabs/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/worked-examples/field-description-tabs/fern-expected": {},
+    "docs/fern-measurements/worked-examples/inline-enum-constraints/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/worked-examples/inline-enum-constraints/fern-expected": {},
+    "docs/fern-measurements/worked-examples/kept-blank-descriptions/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/worked-examples/kept-blank-descriptions/fern-expected": {},
+    "docs/fern-measurements/worked-examples/numeric-dict-pairs/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/worked-examples/numeric-dict-pairs/fern-expected": {},
+    "docs/fern-measurements/worked-examples/optional-enum-query-arrays/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/worked-examples/optional-enum-query-arrays/fern-expected": {},
+    "docs/fern-measurements/worked-examples/readme-list-map-items/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/worked-examples/readme-list-map-items/fern-expected": {},
+    "docs/fern-measurements/worked-examples/restated-reference-descriptions/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/worked-examples/restated-reference-descriptions/fern-expected": {},
+    "docs/fern-measurements/worked-examples/typeless-body-values/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/worked-examples/typeless-body-values/fern-expected": {},
+    "docs/fern-measurements/worked-examples/union-example-member/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/worked-examples/union-example-member/fern-expected": {},
+    "docs/fern-measurements/worked-examples/unresolved-response-optional-body/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/worked-examples/unresolved-response-optional-body/fern-expected": {},
     "docs/openapi-surface/authored-probes/353-method-optional-array/fern-expected": {},
     "docs/openapi-surface/authored-probes/353-method-required-array/fern-expected": {},
     "docs/openapi-surface/authored-probes/353-promoted-required-array/fern-expected": {},
@@ -1083,6 +1185,7 @@
     "docs/openapi-surface/handwritten/inline-oneof-variants/fern-expected": {},
     "docs/openapi-surface/handwritten/inline-property-unions/fern-expected": {},
     "docs/openapi-surface/handwritten/invoice-renderer/fern-expected": {},
+    "docs/openapi-surface/handwritten/json-binary-path/fern-expected": {},
     "docs/openapi-surface/handwritten/json-request-shapes/fern-expected": {},
     "docs/openapi-surface/handwritten/kiln-array-mode/fern-expected": {},
     "docs/openapi-surface/handwritten/kiln-array-variants/fern-expected": {},

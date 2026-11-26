@@ -150,24 +150,36 @@ fn the_audit_reports_each_defect_class_on_its_line_and_nothing_in_crozier_s_tree
     );
 }
 
-/// A docstring example is read as the file writes it: an escaped `\n` inside
-/// one of its string literals is not a line break, and a call it documents is
-/// checked against the method it documents. A module that does not parse is
-/// reported, not skipped.
+/// A docstring example is read as Python evaluates the docstring, which is
+/// what `help()` shows: a single-backslash `\n` inside one of its string
+/// literals (Fern's spelling) is a line break that leaves the literal
+/// unterminated, and the doubled one crozier writes
+/// (`docstring-example-escapes`) is the escape. A call it documents is checked
+/// against the method it documents. A module that does not parse is reported,
+/// not skipped.
 #[test]
-fn a_docstring_example_is_audited_as_the_client_module_writes_it() {
+fn a_docstring_example_is_audited_as_python_evaluates_it() {
     let scratch = tempfile::tempdir().unwrap();
     let document = handwritten_document_as_json("odometer-reading", scratch.path());
     let generated = scratch.path().join("crozier");
     probe_command(&document, &generated).assert().success();
     let client = generated.join("src/fern/client.py");
     let text = std::fs::read_to_string(&client).unwrap();
-    let escaped = text.replacen("vehicle=\"vehicle\",", "vehicle=\"a\\nb\",", 1);
-    assert_ne!(escaped, text, "the docstring passes `vehicle=\"vehicle\"`");
+    let single = text.replacen("vehicle=\"vehicle\",", "vehicle=\"a\\nb\",", 1);
+    assert_ne!(single, text, "the docstring passes `vehicle=\"vehicle\"`");
+    std::fs::write(&client, &single).unwrap();
+    let found = audit(&[&generated]);
+    assert_eq!(found.status, Some(1), "{}{}", found.stdout, found.stderr);
+    assert!(
+        found.stdout.lines().any(|row| row.contains("\tsyntax\t")),
+        "{}",
+        found.stdout
+    );
+    let escaped = text.replacen("vehicle=\"vehicle\",", "vehicle=\"a\\\\nb\",", 1);
     std::fs::write(&client, &escaped).unwrap();
     let found = audit(&[&generated]);
     assert_eq!(found.status, Some(0), "{}{}", found.stdout, found.stderr);
-    let unbound = escaped.replacen("vehicle=\"a\\nb\",", "vehicles=\"v\",", 1);
+    let unbound = escaped.replacen("vehicle=\"a\\\\nb\",", "vehicles=\"v\",", 1);
     std::fs::write(&client, &unbound).unwrap();
     let found = audit(&[&generated]);
     assert_eq!(found.status, Some(1), "{}{}", found.stdout, found.stderr);

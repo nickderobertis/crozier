@@ -56,3 +56,22 @@ README's Retries section and `.fern/metadata.json`, and the departure's rows in
 `tests/fixtures/departures-ledger.tsv` recur on the same lines of Fern's output
 (a README row after the Retries section ten lines earlier), so the defective
 lines the record shows failing are Fern's at that pair too.
+
+## At the certified pair
+
+The `swagger-petstore` flat golden was regenerated at Fern CLI 5.216.0 /
+fern-python-sdk 5.42.0 (its `.fern/metadata.json` records both). The defect
+stands there unchanged (#863): `reference.md` line 3 still links the packaged
+path, all 19 of its heading links do, and the tree still holds none of them.
+
+```text
+$ grep -m1 -n 'add_pet</a>' tests/fixtures/swagger-petstore/expected-flat/reference.md
+3:<details><summary><code>client.pet.<a href="src/fern/pet/client.py">add_pet</a>(...) -> Pet</code></summary>
+$ grep -c '<a href="src/' tests/fixtures/swagger-petstore/expected-flat/reference.md
+19
+$ test -e tests/fixtures/swagger-petstore/expected-flat/src/fern/pet/client.py || echo absent
+absent
+```
+
+`swagger_petstore_flat_matches_fern` holds crozier's flat tree to that golden
+through this departure, with its 19 ledger rows.

@@ -1,0 +1,14 @@
+.fern/metadata.json	5	fern-metadata-generator-config
+README.md	45	pattern-narrowed-enum-example
+README.md	49	pattern-narrowed-enum-example
+README.md	70	pattern-narrowed-enum-example
+README.md	74	pattern-narrowed-enum-example
+reference.md	23	pattern-narrowed-enum-example
+reference.md	27	pattern-narrowed-enum-example
+reference.md	125	pattern-narrowed-enum-example
+src/fern/client.py	152	pattern-narrowed-enum-example
+src/fern/client.py	156	pattern-narrowed-enum-example
+src/fern/client.py	190	pattern-narrowed-enum-example
+src/fern/client.py	349	pattern-narrowed-enum-example
+src/fern/client.py	353	pattern-narrowed-enum-example
+src/fern/client.py	395	pattern-narrowed-enum-example

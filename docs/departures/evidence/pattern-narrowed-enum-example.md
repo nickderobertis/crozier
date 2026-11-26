@@ -51,11 +51,13 @@ keywords beside its `allOf`. crozier decides `enum`, `const`, `pattern`,
 three. Fern's first member stands, byte for byte, whenever it is valid, no
 member is, or a constraint cannot be decided: a `format`, any other keyword
 inside `not`, a `type`, `$ref`, `oneOf` or `anyOf` beside the enclosing
-`allOf`, an `if`, `$dynamicRef` or `$recursiveRef`, or a composition load
-normalization discarded. Load normalization drops `allOf`, `anyOf` and `oneOf`
-from string-typed nodes, as Fern does when it generates the plain type, but the
-constraints inside them still bind the value, so the node records that it lost
-one.
+`allOf`, an `if`, `$dynamicRef` or `$recursiveRef`, or an `anyOf` or `oneOf`
+load normalization discarded. Load normalization drops `allOf`, `anyOf` and
+`oneOf` from string-typed nodes, as Fern does when it generates the plain type,
+but the constraints inside them still bind the value. A dropped `allOf` keeps
+its members' scalar constraints, each read like the node's own; a dropped
+`anyOf` or `oneOf`, or an `allOf` member holding a `$ref`, a composition or a
+non-string `type`, is recorded as lost, and the correction declines.
 
 ### An enclosing constraint
 
@@ -125,7 +127,33 @@ Without the composition, crozier corrects the example to `sealed`. Moving
 moving it into `anyOf` discards it; both keep Fern's member. The comparison
 accepts the replacement only against the composition-free source.
 
-**This is a known limitation, not a parity claim.** Declining is conservative.
-Where a dropped composition would still admit some enum member, for example
-`maxLength: 6` above, crozier keeps Fern's first member, which the pattern
-rejects, rather than select that valid member.
+### A dropped `allOf` and an inline enum, at the certified pair
+
+The [Parcel Registry document](../../fern-measurements/worked-examples/composed-enum-constraints/openapi.yml)
+(#541) declares `ParcelState` (`drafted`, `stamped`, `delivered`) with
+`maxLength: 7` inside an `allOf`, which load normalization drops, and the
+`Parcel.state` use site adds `^(?!drafted$).*$`. The
+[Canal Locks document](../../fern-measurements/worked-examples/inline-enum-constraints/openapi.yml)
+(#960) declares an inline enum (`slack`, `flood`, `ebb`, `neap`) whose own
+`pattern` excludes `slack` and whose `maxLength: 4` excludes `flood`, on a model
+property (`Passage.window`) and on an inline body property (`tide`). Fern CLI 5.216.0 with
+`fernapi/fern-python-sdk` 5.42.0 generated both documents in both enum modes;
+it writes the first member each time. crozier writes `stamped` and `ebb`.
+`validate.py` with jsonschema 4.26.0, over each literals tree and crozier's
+literals SDK, exited 0 for each:
+
+```text
+fern state='drafted': rejected: 'drafted' does not match '^(?!drafted$).*$'
+crozier state='stamped': accepted
+fern window='slack': rejected: 'slack' does not match '^(?!slack$).*$'
+crozier window='ebb': accepted
+fern tide='slack': rejected: 'slack' does not match '^(?!slack$).*$'
+crozier tide='ebb': accepted
+```
+
+`worked_examples::narrowed_enum_examples_take_a_member_the_constraints_admit`
+holds both trees to the certified pair's through this departure in both enum
+modes, and
+`worked_examples::sdk_env_worked_examples_bind_and_their_repaired_values_validate`
+runs the validation above. The `dossier-status` measurement is unchanged: its
+`maxLength: 5` admits no member the pattern admits, so Fern's member stands.

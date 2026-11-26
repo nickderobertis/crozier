@@ -1,0 +1,79 @@
+openapi: 3.0.3
+info:
+  title: Tide Almanac
+  version: 1.0.0
+paths:
+  /almanac/{day}:
+    get:
+      operationId: get_almanac
+      parameters:
+      - $ref: '#/components/parameters/Day'
+      - name: since
+        in: query
+        schema:
+          $ref: '#/components/schemas/Day'
+      responses:
+        '204':
+          description: Read
+  /charts/{day}:
+    get:
+      operationId: get_chart
+      parameters:
+      - $ref: '#/components/parameters/Day'
+      responses:
+        '200':
+          description: The chart
+          content:
+            application/xml:
+              schema: {}
+  /voyages:
+    post:
+      operationId: log_voyage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Voyage'
+      responses:
+        '204':
+          description: Logged
+components:
+  parameters:
+    Day:
+      name: day
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Day'
+  schemas:
+    Day:
+      type: string
+      format: date
+      example: "2031-06-21"
+    Voyage:
+      type: object
+      required:
+      - vessel
+      - sailed_on
+      properties:
+        vessel:
+          type: string
+        sailed_on:
+          type: string
+          format: date
+        returned_on:
+          type: string
+          format: date
+        logged_on:
+          type: string
+          format: date
+        checked_on:
+          type: string
+          format: date
+      example:
+        vessel: Kestrel
+        sailed_on: 2031-04-02
+        returned_on: 2031-04-09
+        logged_on: "2031-04-10"
+        checked_on: 2000-01-23
