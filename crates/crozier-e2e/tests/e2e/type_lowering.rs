@@ -1,7 +1,7 @@
 //! The type-lowering tickets of #965 (#438, #539, #889, #893–#902, #904–#912,
-//! #925, #949), each settled against a from-scratch document under [`DIR`] and
-//! the certified pair's complete tree for it (Fern CLI 5.216.0,
-//! fern-python-sdk 5.42.0), in both enum modes.
+//! #925, #949) and of #994 (#982, #984), each settled against a from-scratch
+//! document under [`DIR`] and the certified pair's complete tree for it (Fern
+//! CLI 5.216.0, fern-python-sdk 5.42.0), in both enum modes.
 //!
 //! Every case runs the real binary, compares its SDK with the certified tree
 //! file for file under the departures ledger, and asserts the bytes each ticket
