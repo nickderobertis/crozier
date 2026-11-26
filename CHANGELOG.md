@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.175](https://github.com/nickderobertis/crozier/compare/v0.0.174...v0.0.175) - 2026-11-26
+
+### Fixed
+
+- *(parity)* emit valid worked examples and the certified docstring, README and description rendering ([#977](https://github.com/nickderobertis/crozier/pull/977))
+
 ## [0.0.174](https://github.com/nickderobertis/crozier/compare/v0.0.173...v0.0.174) - 2026-11-25
 
 ### Fixed
