@@ -1,0 +1,37 @@
+// SPIKE ONLY (spike-windows-lane-breakdown): the Node half of sitecustomize.py, loaded
+// through NODE_OPTIONS=--import. Each process appends one JSON line per child it starts to
+// <SPIKE_SPAWN_LOG>/node-<pid>.jsonl, tagged with its Nx task and the script it runs (Node's
+// test runner starts one process per test file).
+import childProcess from "node:child_process";
+import { appendFileSync } from "node:fs";
+import { syncBuiltinESMExports } from "node:module";
+import { basename, join } from "node:path";
+
+const dir = process.env.SPIKE_SPAWN_LOG;
+if (dir) {
+  const write = (program, event = "spawn", seconds = undefined) => {
+    try {
+      appendFileSync(join(dir, `node-${process.pid}.jsonl`), `${JSON.stringify({ event, seconds, program: basename(String(program).split(" ")[0]).replace(/\.(exe|cmd)$/, ""), pid: process.pid, test: process.argv[1] ? basename(process.argv[1]) : null, nx: `${process.env.NX_TASK_TARGET_PROJECT}:${process.env.NX_TASK_TARGET_TARGET}` })}\n`);
+    } catch {}
+  };
+  for (const name of ["spawn", "spawnSync", "execFile", "execFileSync", "exec", "execSync", "fork"]) {
+    const original = childProcess[name];
+    childProcess[name] = function (command, ...rest) {
+      const program = name === "fork" ? "node" : name.startsWith("exec") && !name.startsWith("execFile") ? String(command).split(" ")[0] : command;
+      write(program);
+      const start = performance.now();
+      const done = () => write(program, "child", (performance.now() - start) / 1000);
+      if (name.endsWith("Sync")) {
+        try {
+          return original.call(this, command, ...rest);
+        } finally {
+          done();
+        }
+      }
+      const child = original.call(this, command, ...rest);
+      child.once?.("close", done);
+      return child;
+    };
+  }
+  syncBuiltinESMExports();
+}

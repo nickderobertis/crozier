@@ -93,9 +93,7 @@ fn format_source_inner(file: &str, source: &str, width: usize) -> Result<String>
 
 /// SPIKE ONLY (`spike-windows-lane-breakdown`): format every `(path, source)`
 /// with as few `ruff format` processes as the platform's command line allows,
-/// instead of one process per file. The files are staged under the working
-/// directory, at their generated relative paths, so ruff discovers the same
-/// configuration it does for `--stdin-filename <path>` there.
+/// instead of one process per file, staged at their generated relative paths.
 ///
 /// # Errors
 ///
@@ -108,8 +106,11 @@ pub fn format_batch(items: &[(String, String)], width: usize) -> Result<Vec<Stri
     let nanos = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .map_or(0, |d| d.as_nanos());
-    let stage = std::path::PathBuf::from(format!(
-        ".crozier-spike-ruff-{}-{nanos}",
+    // Staged outside the caller's tree and formatted `--isolated`: staged under the working
+    // directory, ruff applied the repository's own `force-exclude` list (`templates`) and left
+    // a generated `templates/` package unformatted (run 45863948064, letta and maif-otoroshi).
+    let stage = std::env::temp_dir().join(format!(
+        "crozier-spike-ruff-{}-{nanos}",
         std::process::id()
     ));
     let result = (|| {
@@ -136,6 +137,7 @@ pub fn format_batch(items: &[(String, String)], width: usize) -> Result<Vec<Stri
             let done = crate::profile::spawn_timer("ruff");
             let output = Command::new("ruff")
                 .arg("format")
+                .arg("--isolated")
                 .arg("--no-cache")
                 .arg("--line-length")
                 .arg(width.to_string())
