@@ -10,7 +10,7 @@
 // `nx run-many ... --graph=<tasks.json>` writes for the same selection. Each task
 // keeps its measured duration (times an optional factor, for projecting a repair);
 // tasks Nx ran but the graph lacks (none, normally) are scheduled with no edges.
-// Prints JSON: the critical path, and the simulated wall for each order at 2–6 slots.
+// Prints JSON: the critical path, and the simulated wall for each exclusivity mode and order at 2–6 slots.
 import { readFileSync } from "node:fs";
 
 const [reportPath, job, step, graphPath, ...rest] = process.argv.slice(2);
@@ -56,8 +56,13 @@ const headOf = (id) => {
 };
 const critical = ids.map(headOf).sort((a, b) => b.seconds - a.seconds)[0];
 
-/** List scheduling: whenever a slot frees, start the ready task the order ranks first. */
-function simulate(slots, rank) {
+// Tasks Nx runs with `parallelism: false`. Nx starts one only with nothing else running and
+// starts nothing beside it ("alone"); "mutex" holds them only to one at a time among
+// themselves, which is what their shared cargo build directory needs; "none" ignores it.
+const exclusive = new Set(Object.entries(graph.tasks).filter(([, t]) => t.parallelism === false).map(([id]) => id));
+
+/** List scheduling: whenever a slot frees, start the ready tasks the order ranks first. */
+function simulate(slots, rank, mode) {
   const done = new Map();
   const running = [];
   const pending = new Set(ids);
@@ -65,10 +70,16 @@ function simulate(slots, rank) {
   while (pending.size || running.length) {
     const ready = [...pending].filter((id) => (deps[id] ?? []).every((d) => !duration.has(d) || (done.has(d) && done.get(d) <= now)));
     ready.sort((a, b) => rank(a) - rank(b));
-    while (running.length < slots && ready.length) {
-      const id = ready.shift();
+    for (const id of ready) {
+      if (running.length >= slots) break;
+      const runningExclusive = running.some((r) => exclusive.has(r.id));
+      if (mode === "alone") {
+        if (runningExclusive) break;
+        if (exclusive.has(id) && running.length > 0) continue;
+      } else if (mode === "mutex" && exclusive.has(id) && runningExclusive) continue;
       pending.delete(id);
       running.push({ id, end: now + duration.get(id) });
+      if (mode === "alone" && exclusive.has(id)) break;
     }
     running.sort((a, b) => a.end - b.end);
     const next = running.shift();
@@ -95,7 +106,8 @@ const result = {
   measured_wall_seconds: lane.schedule?.[step]?.wall_seconds ?? null,
   task_seconds: [...duration.values()].reduce((a, b) => a + b, 0),
   critical_path: critical,
-  simulated: Object.fromEntries(Object.entries(orders).map(([name, rank]) => [name, Object.fromEntries([2, 3, 4, 5, 6].map((p) => [p, simulate(p, rank)]))])),
+  exclusive: [...exclusive],
+  simulated: Object.fromEntries(["alone", "mutex", "none"].map((mode) => [mode, Object.fromEntries(Object.entries(orders).map(([name, rank]) => [name, Object.fromEntries([2, 3, 4, 5, 6].map((p) => [p, Math.round(simulate(p, rank, mode))]))]))])),
   scaled: Object.fromEntries(scale),
 };
 console.log(JSON.stringify(result, null, 2));
