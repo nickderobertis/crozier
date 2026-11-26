@@ -310,3 +310,28 @@ declarer their region's search reached: `dollar-anchor` on
 `format-relative-json-pointer` on `geo-engine/BioIS`, and `http-hoba`,
 `http-scram-sha-1` and `http-scram-sha-256` on the one SwaggerHub `Auth Test`
 document. No widening of a licence rule can move those.
+
+## Whole-tree byte matches screened for registration (issue #952)
+
+Two handed-off documents byte-match the certified pair whole in both enum modes
+([`documents.tsv`](fern-measurements/handed-off/documents.tsv)) and were screened
+for registration as corpus rows. Neither declares an `info.license`, so each rests
+on an aggregation's grant alone. Corpus rows 223 and 224 were withdrawn under the
+standard that such a grant is no publisher grant
+([`openapi-surface/withdrawn-witnesses/nexmo-conversation.md`](openapi-surface/withdrawn-witnesses/nexmo-conversation.md)).
+Whether an aggregation's grant is enough is a question the user has not yet
+answered for the rows already registered on one
+([the list](openapi-surface/witness-search-combination-populations/README.md#registered-rows-on-an-aggregations-grant-alone)).
+Manager ruling a11 holds this screen to the withdrawal standard. Both refusals are
+revisited if the user rules an aggregation's grant sufficient.
+
+GitHub was read through `tools/witness-search/rate_limit_guard.py` and the shared
+response cache on 2026-11-26. The Fern generation ran through
+`tools/fern-goldens/generate-fern-fixture.sh` at Fern CLI 5.216.0 /
+`fernapi/fern-python-sdk` 5.42.0, under the host's `fern-generation.lock`.
+
+| document | bytes | grant | publisher-grant search | outcome |
+|---|---|---|---|---|
+| Vercel, `APIs-guru/openapi-directory` `APIs/vercel.com/0.0.1/openapi.yaml` at `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | 929,083 bytes, sha256 `65e9c34eefc5925ec44f6a375912deabcd7354f9e15d1af94533cf98b7bb2b48`, MD5 `d5173d7ce1d026c29e5a4cc26541446e` | CC0-1.0, the aggregation's `LICENSE` at the pinned commit; no `info.license` | Vercel publishes its own description in `vercel/sdk` (Apache-2.0), as `vercel-spec.json`. That is a different, later document (OpenAPI 3.0.3, 356 paths), not these bytes | **refused**: no publisher grant covers these bytes. The publisher's copy was screened below instead |
+| Vercel's own copy, `vercel/sdk` `vercel-spec.json` at `63203c0fc1faacca29eb6f397c8d795a5708b5e2` | 12,475,363 bytes, sha256 `90e0be28b869ea8b2c735a0342e9d16ef5ce6319a4a251d1157572a63c3c513a`, MD5 `b92bcb747cdb5aef6ce03d4b05beaafd` | Apache-2.0, the repository's `LICENSE` at the pinned commit; no `info.license` | the publisher's own repository | admissible, but **Fern refuses it**: the `python_enums` generation exits 1 with `Found 2 errors and 17 warnings`. `GET /v1/env` declares query parameters `exclude_ids` and `exclude-ids`, and `exclude_projectId` and `exclude-projectId`, which `resolve to the same generated name ... after camelCase normalization` ([log](fern-measurements/handed-off/licence-screen-952/vercel-sdk-63203c0f.python-enums.log)). crozier refuses the same bytes with its `request-property-camelcase-collision` class, so the refusals match. No literals generation ran, and no corpus row is registered |
+| Hookdeck, `jentic/jentic-public-apis` `apis/openapi/hookdeck.com/main/1.0.0/meta/import/input-bundle.json` at `cafc4b51eda877963654dd2794afec34c39f6876` | 821,166 bytes, sha256 `62844bc1320077d8476be3eff02fb0b252a19913541ecc262e70386c8925558e`, MD5 `75f78043e201a78da6f1854229d6b065` | CC0-1.0, the aggregation's; no `info.license` | Hookdeck's API-definition repository, `hookdeck/hookdeck-api-schema` (archived), grants nothing: GitHub's licence endpoint answers 404. No other repository `GET /orgs/hookdeck/repos` lists is described as the API's definition, and the code search `org:hookdeck "Hookdeck Admin REST API"` finds only `hookdeck/hermes-hookdeck`'s `hookdeck/api.py`, which is no specification | **refused**: no publisher grant |

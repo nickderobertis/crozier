@@ -51,15 +51,18 @@ scoped-out screen candidates: `area` starts with `combinations-`, the sha256 is 
 and root cause; a refusal on either side is one row per document with `file` `-`.
 
 The five disjoint outcomes are **104 registered**,
-**37 decided** (26 `refused-by-ruling`, 11 `byte-matches-not-admissible`),
+**39 decided** (26 `refused-by-ruling`, 13 `byte-matches-not-admissible`),
 **2 listed residuals** (2 `differs`, 0 `registration-incomplete`),
-**2 byte-matches** (Hookdeck and Vercel, each measured byte-identical to the
-certified pair in both enum modes after the union member repair, with no
-residual row and no corpus row: their registration is not yet decided, under
-manager ruling a16, and they count as no registered golden), and
+**0 byte-matches**, and
 **1 could-not-check** (lolesports' evaluated valid-OpenAPI exception: its useful
 crozier SDK cannot byte-match the certified pair's empty scaffold). They sum to
-146. Each comparison record names the exact command and source digest; refusals
+146. Hookdeck and Vercel, each measured byte-identical to the certified pair in
+both enum modes after the union member repair, are two of the 13
+`byte-matches-not-admissible`: each carries only an aggregation's grant, and
+issue #952's licence screen refused both under the publisher-grant standard
+corpus rows 223 and 224 were withdrawn under, pending the user's decision on
+aggregation grants ([the screen](../../licence-rescreening.md#whole-tree-byte-matches-screened-for-registration-issue-952)).
+Each comparison record names the exact command and source digest; refusals
 include both crozier modes and the certified pair's diagnostic. License evidence
 is retained beside the measurement, with the rule stated only in
 [`docs/corpus-licensing.md`](../../corpus-licensing.md).
