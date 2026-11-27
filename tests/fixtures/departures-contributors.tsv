@@ -745,7 +745,6 @@ docs/openapi-surface/handwritten/inline-oneof-variants/fern-expected	crozier-e2e
 docs/openapi-surface/handwritten/inline-property-unions/fern-expected	crozier-e2e::e2e	handwritten_fixtures_match_fern_goldens
 docs/openapi-surface/handwritten/invoice-renderer/fern-expected	crozier-e2e::e2e	handwritten_fixtures_match_fern_goldens
 docs/openapi-surface/handwritten/invoice-renderer/fern-expected	crozier-e2e::e2e	literals_mode::literals_mode_measurements_match_fern
-docs/openapi-surface/handwritten/json-binary-path/fern-expected	crozier-e2e::e2e	handwritten_fixtures_match_fern_goldens
 docs/openapi-surface/handwritten/json-request-shapes/fern-expected	crozier-e2e::e2e	handwritten_fixtures_match_fern_goldens
 docs/openapi-surface/handwritten/json-request-shapes/fern-expected	crozier-e2e::e2e	json_request_shapes_match_certified_output_in_both_enum_modes
 docs/openapi-surface/handwritten/kiln-array-mode/fern-expected	crozier-e2e::e2e	handwritten_fixtures_match_fern_goldens
@@ -1110,6 +1109,10 @@ tests/fixtures/azure-databox-management/expected	crozier-e2e::e2e	azure_databox_
 tests/fixtures/azure-databox-management/expected	crozier-e2e::e2e	overlay_goldens::overlay_goldens_match_fern_output
 tests/fixtures/azure-databox-management/expected-literals	crozier-e2e::e2e	overlay_goldens::overlay_goldens_match_fern_output
 tests/fixtures/basic-auth/expected	crozier-e2e::e2e	basic_auth_matches_fern_output
+tests/fixtures/benchling-api-v2-alpha/expected	crozier-e2e::e2e	benchling_api_v2_alpha_matches_fern_output
+tests/fixtures/benchling-api-v2-alpha/expected	crozier-e2e::e2e	overlay_goldens::overlay_goldens_match_fern_output
+tests/fixtures/benchling-api-v2-alpha/expected-literals	crozier-e2e::e2e	benchling_api_v2_alpha_matches_fern_output
+tests/fixtures/benchling-api-v2-alpha/expected-literals	crozier-e2e::e2e	overlay_goldens::overlay_goldens_match_fern_output
 tests/fixtures/billie-entry/expected	crozier-e2e::e2e	billie_entry_matches_fern_output
 tests/fixtures/billie/expected	crozier-e2e::e2e	billie_matches_fern_output
 tests/fixtures/bintable.com/expected	crozier-e2e::e2e	bintable_matches_fern_output

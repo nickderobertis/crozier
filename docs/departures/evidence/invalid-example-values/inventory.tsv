@@ -980,6 +980,18 @@ tests/fixtures/audiobookshelf/expected	src/fern/authors/client.py	614	id	"id"	fo
 tests/fixtures/audiobookshelf/expected	src/fern/authors/client.py	672	id	"id"	format=uuid	schema-rejected-name-example	repaired
 tests/fixtures/audiobookshelf/expected	src/fern/authors/client.py	673	request	"string"	format=uri	schema-rejected-placeholder-string-example	repaired
 tests/fixtures/audiobookshelf/expected	src/fern/authors/client.py	793	id	"id"	format=uuid	schema-rejected-name-example	repaired
+tests/fixtures/benchling-api-v2-alpha/expected	reference.md	344	bins	[AssemblySpecSharedBinsItem_Constant(id="id", name="name", residues="residues")]	minItems=2	schema-rejected-array-length-example	repaired
+tests/fixtures/benchling-api-v2-alpha/expected	reference.md	512	bins	[AssemblySpecSharedBinsItem_Constant(id="id", name="name", residues="residues")]	minItems=2	schema-rejected-array-length-example	repaired
+tests/fixtures/benchling-api-v2-alpha/expected	src/fern/assemblies/client.py	153	bins	[AssemblySpecSharedBinsItem_Constant(id="id", name="name", residues="residues")]	minItems=2	schema-rejected-array-length-example	repaired
+tests/fixtures/benchling-api-v2-alpha/expected	src/fern/assemblies/client.py	260	bins	[AssemblySpecSharedBinsItem_Constant(id="id", name="name", residues="residues")]	minItems=2	schema-rejected-array-length-example	repaired
+tests/fixtures/benchling-api-v2-alpha/expected	src/fern/assemblies/client.py	444	bins	[AssemblySpecSharedBinsItem_Constant(id="id", name="name", residues="residues")]	minItems=2	schema-rejected-array-length-example	repaired
+tests/fixtures/benchling-api-v2-alpha/expected	src/fern/assemblies/client.py	559	bins	[AssemblySpecSharedBinsItem_Constant(id="id", name="name", residues="residues")]	minItems=2	schema-rejected-array-length-example	repaired
+tests/fixtures/benchling-api-v2-alpha/expected-literals	reference.md	344	bins	[AssemblySpecSharedBinsItem_Constant(id="id", name="name", residues="residues")]	minItems=2	schema-rejected-array-length-example	repaired
+tests/fixtures/benchling-api-v2-alpha/expected-literals	reference.md	512	bins	[AssemblySpecSharedBinsItem_Constant(id="id", name="name", residues="residues")]	minItems=2	schema-rejected-array-length-example	repaired
+tests/fixtures/benchling-api-v2-alpha/expected-literals	src/fern/assemblies/client.py	149	bins	[AssemblySpecSharedBinsItem_Constant(id="id", name="name", residues="residues")]	minItems=2	schema-rejected-array-length-example	repaired
+tests/fixtures/benchling-api-v2-alpha/expected-literals	src/fern/assemblies/client.py	252	bins	[AssemblySpecSharedBinsItem_Constant(id="id", name="name", residues="residues")]	minItems=2	schema-rejected-array-length-example	repaired
+tests/fixtures/benchling-api-v2-alpha/expected-literals	src/fern/assemblies/client.py	432	bins	[AssemblySpecSharedBinsItem_Constant(id="id", name="name", residues="residues")]	minItems=2	schema-rejected-array-length-example	repaired
+tests/fixtures/benchling-api-v2-alpha/expected-literals	src/fern/assemblies/client.py	543	bins	[AssemblySpecSharedBinsItem_Constant(id="id", name="name", residues="residues")]	minItems=2	schema-rejected-array-length-example	repaired
 tests/fixtures/billie-entry/expected	reference.md	332	id	"id"	format=uuid	schema-rejected-name-example	repaired
 tests/fixtures/billie-entry/expected	reference.md	391	id	"id"	format=uuid	schema-rejected-name-example	repaired
 tests/fixtures/billie-entry/expected	reference.md	482	id	"id"	format=uuid	schema-rejected-name-example	repaired
