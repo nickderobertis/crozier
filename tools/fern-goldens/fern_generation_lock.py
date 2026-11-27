@@ -47,7 +47,7 @@ import sys
 import tempfile
 from collections.abc import Generator
 from pathlib import Path
-from typing import IO
+from typing import IO, NewType
 
 HOLDER_ENV = "CROZIER_FERN_GENERATION_LOCK_HOLDER"
 LOCK_NAME = "fern-generation.lock"
@@ -69,16 +69,23 @@ def holder_path() -> Path:
     return lock_path().with_name(LOCK_NAME + ".holder")
 
 
+# A process id read from outside this process (the inherited variable, the holder
+# record, `/proc` or `ps`), only ever made by `parse_pid` or `own_pid`.
+Pid = NewType("Pid", int)
 PID = re.compile(r"[1-9][0-9]{0,9}")
 
 
-def parse_pid(text: str) -> int | None:
+def own_pid() -> Pid:
+    return Pid(os.getpid())
+
+
+def parse_pid(text: str) -> Pid | None:
     """A pid written as plain ASCII decimal, or None for anything else."""
     text = text.strip()
-    return int(text) if PID.fullmatch(text) else None
+    return Pid(int(text)) if PID.fullmatch(text) else None
 
 
-def recorded_holder() -> int | None:
+def recorded_holder() -> Pid | None:
     """The pid the current holder recorded, or None when no crozier entry point holds the lock."""
     try:
         text = holder_path().read_text(encoding="utf-8")
@@ -87,14 +94,14 @@ def recorded_holder() -> int | None:
     return parse_pid(text)
 
 
-def parent_of(pid: int) -> int | None:
+def parent_of(pid: Pid) -> Pid | None:
     """`pid`'s parent, read from /proc where there is one and from `ps` elsewhere."""
     stat = Path("/proc") / str(pid) / "stat"
     if stat.parent.parent.is_dir():
         try:
             # `pid (comm) state ppid …`: comm may hold spaces and parentheses.
             fields = stat.read_text(encoding="utf-8", errors="replace").rsplit(")", 1)[1].split()
-            return int(fields[1])
+            return parse_pid(fields[1])
         except (OSError, IndexError, ValueError):
             return None
     try:
@@ -106,8 +113,8 @@ def parent_of(pid: int) -> int | None:
     return parse_pid(shown.stdout)
 
 
-def is_self_or_ancestor(pid: int) -> bool:
-    current: int | None = os.getpid()
+def is_self_or_ancestor(pid: Pid) -> bool:
+    current: Pid | None = own_pid()
     for _ in range(MAX_DEPTH):
         if current is None or current <= 0:
             return False
@@ -175,7 +182,7 @@ def _unlock(handle: IO[str]) -> None:
     fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
 
 
-def _record_holder(pid: int) -> None:
+def _record_holder(pid: Pid) -> None:
     path = holder_path()
     descriptor, staged = tempfile.mkstemp(prefix=path.name + ".", dir=path.parent)
     with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
@@ -219,10 +226,10 @@ def hold(label: str) -> Generator[None]:
         previous = os.environ.get(HOLDER_ENV)
         try:
             try:
-                _record_holder(os.getpid())
+                _record_holder(own_pid())
             except OSError as error:
                 raise unavailable(label, holder_path(), error) from None
-            os.environ[HOLDER_ENV] = str(os.getpid())
+            os.environ[HOLDER_ENV] = str(own_pid())
             yield
         finally:
             if previous is None:
