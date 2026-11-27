@@ -4,6 +4,12 @@
     "docs/fern-measurements/bodies-responses/body-requiredness-shapes/fern-expected": {},
     "docs/fern-measurements/bodies-responses/byte-text-response-literals/fern-expected": {},
     "docs/fern-measurements/bodies-responses/composed-form-body/fern-expected": {},
+    "docs/fern-measurements/bodies-responses/composed-reference-body/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/bodies-responses/composed-reference-body/fern-expected": {},
     "docs/fern-measurements/bodies-responses/error-body-shapes-literals/fern-expected": {},
     "docs/fern-measurements/bodies-responses/header-body-collision/fern-expected": {},
     "docs/fern-measurements/bodies-responses/inline-body-readonly-own-overlap-literals/fern-expected": {},

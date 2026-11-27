@@ -3244,6 +3244,21 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
             }
         }
     }
+    // …and so is each parent a body composes of `$ref`s alone, which Fern keeps
+    // as a model beside the method it lays out ([`composed_reference_body`]).
+    for item in doc.paths.values() {
+        for (_, op) in item.operations() {
+            let parents = op
+                .request_body
+                .as_ref()
+                .and_then(selected_json_request_media)
+                .and_then(|(_, media)| media.schema.as_ref())
+                .and_then(composed_reference_body);
+            for reference in parents.into_iter().flatten() {
+                referenced.insert(ref_to_class(reference));
+            }
+        }
+    }
     let inline_sources = inline_body_source_names(doc, &endpoints);
     let urlencoded_sources = urlencoded_body_source_names(doc);
     // A `stream-condition` operation sends its body from two methods, and Fern
@@ -6659,6 +6674,14 @@ fn referenced_example_literal(
     target: &Schema,
     schemas: &IndexMap<String, Schema>,
 ) -> Option<String> {
+    // A discriminated union's own example names no member of a field typed by
+    // it: the certified pair works the field as the union's first member
+    // whatever the example's tag (the `bodies-responses/composed-reference-body`
+    // measurement's `Knot.bead`, `BeadRef_Glass` beside an example naming
+    // `WOOD`; Benchling's `AssemblyFragmentShared.polymer`).
+    if target.one_of.is_some() && target.discriminator.is_some() {
+        return None;
+    }
     if target.one_of.is_some()
         && schema_example(target).is_some_and(|example| {
             crate::openapi::example_validation::matches(schemas, target, example, 0) == Some(false)
@@ -6709,6 +6732,17 @@ fn request_body_composition(doc: &OpenApi, op: &Operation) -> BodyComposition {
                 .and_then(parents_with_inline_members)
                 .is_some()
     }) {
+        return BodyComposition::AllOf;
+    }
+    // So does an inline body composed of `$ref`s alone ([`composed_reference_body`]).
+    if op
+        .request_body
+        .as_ref()
+        .and_then(selected_json_request_media)
+        .and_then(|(_, media)| media.schema.as_ref())
+        .and_then(composed_reference_body)
+        .is_some()
+    {
         return BodyComposition::AllOf;
     }
     let reference = op
@@ -8679,6 +8713,34 @@ fn resolve_request_body(
     // document-acceptance/never-compared-request-property-name-collision/,
     // FOSSology's `PUT /users/{id}`). Without this the body lowered to nothing
     // and the operation was dropped as unemittable.
+    if let Some(parents) = composed_reference_body(schema) {
+        if parents
+            .iter()
+            .all(|reference| hoist_fields(&ref_to_class(reference), types).is_some())
+        {
+            let mut fields = Vec::new();
+            append_parent_body_fields(schema, types, &mut fields);
+            // The docstring's worked call lists the later parent's fields first,
+            // as it does a model composed of `$ref`s (#933); the signature and
+            // the Markdown writers keep member order.
+            let mut order = 0;
+            for reference in parents.iter().rev() {
+                for parent_field in
+                    hoist_fields(&ref_to_class(reference), types).unwrap_or_default()
+                {
+                    if let Some(field) = fields
+                        .iter_mut()
+                        .find(|field| field.wire_name == parent_field.wire_name)
+                    {
+                        field.declaration_order = order;
+                        order += 1;
+                    }
+                }
+            }
+            apply_body_example(&mut fields, media_example(doc, media), true);
+            return Some(RequestBody::Inline(fields));
+        }
+    }
     let parents_and_inline;
     let schema = match parents_with_inline_members(schema) {
         Some(merged) => {
@@ -11231,6 +11293,37 @@ fn reserved_body_property_names(
 /// `never-compared-request-property-name-collision` (a plain member) and
 /// `crozier-invalid-duplicate-parameter` (an `anyOf` member whose branches
 /// redeclare the parent's properties, which crozier passed twice).
+/// The `$ref` parents of an inline body that is nothing but an `allOf` of two
+/// or more bare `$ref`s to objects. Fern lays it out as their fields in member
+/// order, each parent's own resolved types, and keeps each parent as a model:
+/// Benchling's `CreateAndFinalizeAssembly` posts `allOf: [$ref
+/// AssemblySpecShared, $ref AssemblySpecFinalized]` and takes
+/// `assembly_parameters` through `output_location` (measured at Fern CLI
+/// 5.216.0 / fern-python-sdk 5.42.0 in
+/// `docs/fern-measurements/bodies-responses/composed-reference-body/`).
+fn composed_reference_body(schema: &Schema) -> Option<Vec<&str>> {
+    if schema.reference.is_some()
+        || !schema.properties.is_empty()
+        || schema.one_of.is_some()
+        || schema.any_of.is_some()
+    {
+        return None;
+    }
+    let members = schema
+        .all_of
+        .as_deref()
+        .filter(|members| members.len() > 1)?;
+    members
+        .iter()
+        .map(|member| {
+            member
+                .reference
+                .as_deref()
+                .filter(|_| member.properties.is_empty() && member.all_of.is_none())
+        })
+        .collect()
+}
+
 fn parents_with_inline_members(schema: &Schema) -> Option<Schema> {
     if schema.reference.is_some() || !schema.properties.is_empty() {
         return None;

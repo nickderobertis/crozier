@@ -39,6 +39,13 @@ docs/fern-measurements/bodies-responses/composed-form-body/fern-expected	src/fer
 docs/fern-measurements/bodies-responses/composed-form-body/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/bodies-responses/composed-form-body/fern-expected	src/fern/core/pydantic_utilities.py	294	discriminated-union-v1-wire-keys
 docs/fern-measurements/bodies-responses/composed-form-body/fern-expected	src/fern/documents/client.py	61	multipart-object-required-file-example
+docs/fern-measurements/bodies-responses/composed-reference-body/expected-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
+docs/fern-measurements/bodies-responses/composed-reference-body/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/bodies-responses/composed-reference-body/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/bodies-responses/composed-reference-body/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/bodies-responses/composed-reference-body/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/bodies-responses/composed-reference-body/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/bodies-responses/composed-reference-body/fern-expected	src/fern/core/pydantic_utilities.py	294	discriminated-union-v1-wire-keys
 docs/fern-measurements/bodies-responses/error-body-shapes-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
 docs/fern-measurements/bodies-responses/error-body-shapes-literals/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/bodies-responses/error-body-shapes-literals/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix

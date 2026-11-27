@@ -578,3 +578,5 @@ worked-examples/binary-body-examples	docs/fern-measurements/worked-examples/bina
 worked-examples/binary-body-examples/expected-literals	docs/fern-measurements/worked-examples/binary-body-examples/openapi.yml	literals	packaged	fern-expected:docs/fern-measurements/worked-examples/binary-body-examples/fern-expected
 worked-examples/nested-argument-widths	docs/fern-measurements/worked-examples/nested-argument-widths/openapi.yml	python-enums	packaged	-
 worked-examples/nested-argument-widths/expected-literals	docs/fern-measurements/worked-examples/nested-argument-widths/openapi.yml	literals	packaged	fern-expected:docs/fern-measurements/worked-examples/nested-argument-widths/fern-expected
+bodies-responses/composed-reference-body	docs/fern-measurements/bodies-responses/composed-reference-body/openapi.yml	python-enums	packaged	-
+bodies-responses/composed-reference-body/expected-literals	docs/fern-measurements/bodies-responses/composed-reference-body/openapi.yml	literals	packaged	fern-expected:docs/fern-measurements/bodies-responses/composed-reference-body/fern-expected

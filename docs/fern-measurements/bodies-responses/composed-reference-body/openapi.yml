@@ -1,0 +1,215 @@
+openapi: 3.0.3
+info:
+  title: Loom Works
+  version: 1.0.0
+paths:
+  /weaves/{weave_id}:
+    get:
+      operationId: GetWeave
+      tags:
+      - Weaves
+      parameters:
+      - name: weave_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The weave
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Weave'
+  /weaves:start:
+    post:
+      operationId: StartWeave
+      tags:
+      - Weaves
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/WeavePlan'
+              - $ref: '#/components/schemas/WeaveFinish'
+      responses:
+        '202':
+          description: Started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Weave'
+  /weaves:check:
+    post:
+      operationId: CheckWeave
+      tags:
+      - Weaves
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WeavePlan'
+      responses:
+        '200':
+          description: Checked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Weave'
+components:
+  schemas:
+    Weave:
+      type: object
+      properties:
+        id:
+          type: string
+    PlainPattern:
+      type: object
+      required:
+      - kind
+      properties:
+        kind:
+          type: string
+          enum:
+          - PLAIN
+        rows:
+          type: integer
+    TwillPattern:
+      type: object
+      required:
+      - kind
+      properties:
+        kind:
+          type: string
+          enum:
+          - TWILL
+        angle:
+          type: integer
+    WarpThread:
+      type: object
+      required:
+      - threadType
+      properties:
+        threadType:
+          type: string
+          enum:
+          - WARP
+        colour:
+          type: string
+    WeftThread:
+      type: object
+      required:
+      - threadType
+      properties:
+        threadType:
+          type: string
+          enum:
+          - WEFT
+        count:
+          type: integer
+    WeavePlan:
+      description: What a weave is made of.
+      type: object
+      required:
+      - pattern
+      - threads
+      - finish
+      - knots
+      properties:
+        pattern:
+          description: The weave's pattern.
+          discriminator:
+            propertyName: kind
+            mapping:
+              PLAIN: '#/components/schemas/PlainPattern'
+              TWILL: '#/components/schemas/TwillPattern'
+          oneOf:
+          - $ref: '#/components/schemas/PlainPattern'
+          - $ref: '#/components/schemas/TwillPattern'
+        threads:
+          description: The threads, in order.
+          type: array
+          items:
+            discriminator:
+              propertyName: threadType
+              mapping:
+                WARP: '#/components/schemas/WarpThread'
+                WEFT: '#/components/schemas/WeftThread'
+            oneOf:
+            - $ref: '#/components/schemas/WarpThread'
+            - $ref: '#/components/schemas/WeftThread'
+        knots:
+          description: The knots tied along the selvedge.
+          type: array
+          items:
+            $ref: '#/components/schemas/Knot'
+        finish:
+          description: How the cloth is finished.
+          type: string
+          enum:
+          - MATTE
+          - GLOSS
+    GlassBead:
+      type: object
+      required:
+      - beadType
+      - glassId
+      properties:
+        beadType:
+          type: string
+          enum:
+          - GLASS
+        glassId:
+          type: string
+    WoodBead:
+      type: object
+      required:
+      - beadType
+      - woodId
+      properties:
+        beadType:
+          type: string
+          enum:
+          - WOOD
+        woodId:
+          type: string
+    BeadRef:
+      discriminator:
+        propertyName: beadType
+        mapping:
+          GLASS: '#/components/schemas/GlassBead'
+          WOOD: '#/components/schemas/WoodBead'
+      example:
+        beadType: WOOD
+        woodId: w-1
+      oneOf:
+      - $ref: '#/components/schemas/WoodBead'
+      - $ref: '#/components/schemas/GlassBead'
+    Knot:
+      type: object
+      required:
+      - bead
+      properties:
+        bead:
+          $ref: '#/components/schemas/BeadRef'
+    WeaveFinish:
+      description: Where a started weave is filed.
+      type: object
+      required:
+      - shelfId
+      - label
+      - delivery
+      properties:
+        shelfId:
+          description: The shelf the cloth goes to.
+          type: string
+        label:
+          description: The cloth's label.
+          type: string
+        delivery:
+          additionalProperties: false
+          type: object
+          properties:
+            bayId:
+              type: string
