@@ -2417,9 +2417,14 @@ docs/fern-measurements/naming-acceptance/request-local-union-payloads/fern-expec
 docs/fern-measurements/naming-acceptance/request-local-union-payloads/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/naming-acceptance/request-local-union-payloads/fern-expected	src/fern/core/pydantic_utilities.py	294	discriminated-union-v1-wire-keys
 docs/fern-measurements/naming-acceptance/request-options-body-property/expected-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
-docs/fern-measurements/naming-acceptance/request-options-body-property/fern-expected	README.md	128	renamed-request-options-docs
-docs/fern-measurements/naming-acceptance/request-options-body-property/fern-expected	README.md	143	renamed-request-options-docs
+docs/fern-measurements/naming-acceptance/request-options-body-property/fern-expected	README.md	150	renamed-request-options-docs
+docs/fern-measurements/naming-acceptance/request-options-body-property/fern-expected	README.md	165	renamed-request-options-docs
 docs/fern-measurements/naming-acceptance/request-options-body-property/fern-expected	reference.md	65	renamed-request-options-docs
+docs/fern-measurements/naming-acceptance/request-options-body-property/fern-expected	reference.md	198	renamed-request-options-docs
+docs/fern-measurements/naming-acceptance/request-options-body-property/fern-expected	reference.md	254	renamed-request-options-docs
+docs/fern-measurements/naming-acceptance/request-options-body-property/fern-expected	reference.md	319	renamed-request-options-docs
+docs/fern-measurements/naming-acceptance/request-options-body-property/fern-expected	reference.md	353	renamed-request-options-docs
+docs/fern-measurements/naming-acceptance/request-options-body-property/fern-expected	reference.md	434	renamed-request-options-docs
 docs/fern-measurements/naming-acceptance/request-options-body-property/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/naming-acceptance/request-options-body-property/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/fern-measurements/naming-acceptance/request-options-body-property/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
