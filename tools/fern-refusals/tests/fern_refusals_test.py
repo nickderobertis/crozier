@@ -2470,6 +2470,11 @@ class FernRunTree(unittest.TestCase):
 
     def test_a_run_past_its_bound_returns_with_its_descendants_ended(self) -> None:
         module = load_script("fern_refusals_run_tree")
+        # `fern_run` takes the Fern lock for the rest of the command, which ends
+        # only when `main` returns; in process that is this case's end, so release
+        # it here, before the module's teardown removes the cache whose open lock
+        # file Windows will not delete.
+        self.addCleanup(module.FERN_HOLD.close)
         with tempfile.TemporaryDirectory() as scratch:
             beat = Path(scratch) / "beat"
             results: list[tuple[str, str]] = []

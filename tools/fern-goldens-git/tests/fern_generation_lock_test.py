@@ -896,6 +896,18 @@ class NestingIsVerifiedNotTrusted(unittest.TestCase):
         starts only once the first's has ended and the lock is released."""
         first, first_started, first_go = self.held_command("first")
         self.until(first_started)
+        # The holder is the interpreter running the lock script, which is the
+        # spawned process itself off Windows; on Windows a venv's `python.exe` is a
+        # launcher that starts that interpreter as its child, so the pid the
+        # waiting line names is the one the first run recorded, not `first.pid`.
+        holder = LOCK.parse_pid(
+            (Path(self.environment["XDG_CACHE_HOME"]) / "crozier" / "fern-generation.lock.holder").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertIsNotNone(holder, "the first run recorded no holder")
+        if sys.platform != "win32":
+            self.assertEqual(first.pid, holder, "the recorded holder is not the run holding the lock")
         said = Path(self.environment["XDG_CACHE_HOME"]) / "second.stderr"
         second, second_started, second_go = self.held_command("second", said)
         time.sleep(1.0)
@@ -909,7 +921,7 @@ class NestingIsVerifiedNotTrusted(unittest.TestCase):
         lines = said.read_text(encoding="utf-8").splitlines()
         self.assertEqual(2, len(lines), lines)
         self.assertTrue(lines[0].startswith(f"second: {WAITING} "), lines)
-        self.assertIn(f"(pid {first.pid} holds it;", lines[0])
+        self.assertIn(f"(pid {holder} holds it;", lines[0])
         self.assertEqual("second: took the host Fern generation lock", lines[1])
 
     def test_a_command_killed_by_a_signal_is_reported_as_the_shell_reports_it(self) -> None:
@@ -960,7 +972,9 @@ class NestingIsVerifiedNotTrusted(unittest.TestCase):
 
     @unittest.skipIf(os.name == "nt", "a directory's write bit and root's bypass of it are POSIX")
     def test_a_lock_that_cannot_be_taken_names_its_directory_and_runs_nothing(self) -> None:
-        if os.geteuid() == 0:
+        # Spelled as a platform check, not only the decorator, so the type checker
+        # reading this module for Windows sees `os.geteuid` only where it exists.
+        if sys.platform == "win32" or os.geteuid() == 0:
             self.skipTest("root writes into a read-only directory")
         cache = Path(self.environment["XDG_CACHE_HOME"])
         cache.chmod(0o555)
@@ -1006,6 +1020,8 @@ class NestingIsVerifiedNotTrusted(unittest.TestCase):
     def test_a_terminated_or_hung_up_run_ends_its_command_and_frees_the_lock(self) -> None:
         """`run` hands SIGTERM and SIGHUP to its command, exits as the signal asked,
         and leaves neither the lock held nor a holder recorded."""
+        if sys.platform == "win32":  # the decorator's skip, spelled so the type checker sees SIGHUP's platform
+            self.skipTest("SIGTERM, SIGHUP and flock are POSIX")
         scratch = Path(self.environment["XDG_CACHE_HOME"])
         for signum in (signal.SIGTERM, signal.SIGHUP):
             with self.subTest(signal=signum.name):
