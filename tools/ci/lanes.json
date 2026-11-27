@@ -501,6 +501,11 @@
       "linux",
       "macos",
       "windows"
+    ],
+    "fern-goldens-git:test-generation-lock": [
+      "linux",
+      "macos",
+      "windows"
     ]
   },
   "nonCheckWorkflows": {
