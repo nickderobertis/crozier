@@ -155,7 +155,8 @@ class FernReferencesTests(unittest.TestCase):
             # The certified-tree store this run publishes into, never the host's.
             "XDG_CACHE_HOME": str(self.root / "cache"),
         }
-        # The tool loads golden_overlay.py, certified_tree.py and fern_generation_lock.py from beside itself.
+        # The tool resolves its sibling modules beside its own path, not this checkout's,
+        # so the scratch copy carries each one it loads.
         self.tool = self.root / "tools/fern-goldens/fern-references.py"
         self.tool.parent.mkdir(parents=True)
         shutil.copy2(TOOL, self.tool)
