@@ -701,4 +701,48 @@ fn enum_components_keep_their_own_description() {
         ],
     );
 }
+
+/// Benchling (#994): a property's discriminated `oneOf` whose mapping names a
+/// schema of another document is the certified pair's bare `typing.Any`, no
+/// union hoisted. Fern reads the mapping in order and stops at that target: a
+/// member mapped locally ahead of it loses its `type` tag (`PersonHolder`),
+/// and every member from it on keeps one (`RobotHolder`, and `Rental.renter`'s
+/// `CarHolder` and `BikeHolder` after `VanHolder`). An inheritance union's variant writes its tag once,
+/// as the wrapper's `Literal`, even where its subtype, also a member of a plain
+/// `oneOf`, keeps the tag as a standalone model.
+#[test]
+fn discriminator_tags_reach_only_the_members_fern_resolves() {
+    holds(
+        "discriminator-tag-reach",
+        &[
+            ("#994", "src/fern/types/share.py", "    holder: typing.Any\n"),
+            ("#994", "src/fern/types/rental.py", "    renter: typing.Any\n"),
+            (
+                "#994",
+                "src/fern/types/car_holder.py",
+                "    type: typing.Optional[CarHolderType] = None\n",
+            ),
+            (
+                "#994",
+                "src/fern/types/bike_holder.py",
+                "    type: typing.Optional[BikeHolderType] = None\n",
+            ),
+            (
+                "#994",
+                "src/fern/types/robot_holder.py",
+                "    type: typing.Optional[RobotHolderType] = None\n",
+            ),
+            (
+                "#994",
+                "src/fern/types/part.py",
+                "class Part_Bolt(UniversalBaseModel):\n    type: typing.Literal[\"BOLT\"] = \"BOLT\"\n\n",
+            ),
+            (
+                "#994",
+                "src/fern/types/bolt_part.py",
+                "    type: typing.Optional[BoltPartType] = None\n",
+            ),
+        ],
+    );
+}
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]

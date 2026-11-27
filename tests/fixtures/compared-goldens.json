@@ -781,6 +781,12 @@
       ]
     },
     "docs/fern-measurements/type-lowering/const-discriminator-tags/fern-expected": {},
+    "docs/fern-measurements/type-lowering/discriminator-tag-reach/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/type-lowering/discriminator-tag-reach/fern-expected": {},
     "docs/fern-measurements/type-lowering/enum-use-site-descriptions/expected-literals/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"

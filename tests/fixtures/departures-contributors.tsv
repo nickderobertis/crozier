@@ -507,6 +507,8 @@ docs/fern-measurements/type-lowering/anyof-discriminators/expected-literals/fern
 docs/fern-measurements/type-lowering/anyof-discriminators/fern-expected	crozier-e2e::e2e	type_lowering::any_of_mappings_and_lone_references_match_the_certified_pair
 docs/fern-measurements/type-lowering/const-discriminator-tags/expected-literals/fern-expected	crozier-e2e::e2e	type_lowering::const_tags_are_stripped_and_discriminated_by_the_schema
 docs/fern-measurements/type-lowering/const-discriminator-tags/fern-expected	crozier-e2e::e2e	type_lowering::const_tags_are_stripped_and_discriminated_by_the_schema
+docs/fern-measurements/type-lowering/discriminator-tag-reach/expected-literals/fern-expected	crozier-e2e::e2e	type_lowering::discriminator_tags_reach_only_the_members_fern_resolves
+docs/fern-measurements/type-lowering/discriminator-tag-reach/fern-expected	crozier-e2e::e2e	type_lowering::discriminator_tags_reach_only_the_members_fern_resolves
 docs/fern-measurements/type-lowering/enum-use-site-descriptions/expected-literals/fern-expected	crozier-e2e::e2e	type_lowering::enum_components_keep_their_own_description
 docs/fern-measurements/type-lowering/enum-use-site-descriptions/fern-expected	crozier-e2e::e2e	type_lowering::enum_components_keep_their_own_description
 docs/fern-measurements/type-lowering/inferred-discriminator-tags/expected-literals/fern-expected	crozier-e2e::e2e	type_lowering::inferred_tags_discriminate_and_name_the_variant_field
