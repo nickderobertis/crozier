@@ -314,7 +314,7 @@ when the two differ.
 ### `dangling-mapping-variant-fields`
 
 - **Kind:** `fern-defect`
-- **Trigger:** A discriminated `oneOf` whose `discriminator.mapping` names, for one value, a target that is no component schema, beside targets that are, and one `oneOf` member no mapping target names tags itself with that value: the union's types module.
+- **Trigger:** A discriminated `oneOf` whose `discriminator.mapping` names, for one value, a target that is no component schema, beside targets that are, and one `oneOf` member no mapping target names tags itself with that value; or an inheritance base (a `discriminator` with a mapping and no `oneOf`) whose mapping names such a target for a value one subtype extending the base tags itself with: the union's types module.
 - **Fern writes:** The value's wrapper holds a required `value: typing.Any` ahead of its `Literal` tag, so a payload of that variant, which carries the member's properties beside the tag and no `value`, fails to parse, and the only payload the wrapper can send nests them under `value`.
 - **crozier writes:** The wrapper carries the member's fields beside the tag, as every other wrapper of the union carries its member's, with the imports and the `update_forward_refs` call those fields need. Every other line, the member's own model with its tag enum included, is Fern's.
 - **Why:** The certified SDK cannot exchange the payload its own OpenAPI document declares for that variant: through its real client, a response carrying the variant raises a parsing error on the missing `value`, and the request it sends nests the variant's properties under `value`. crozier's wrapper parses the response and sends it back in the shape the member schema declares.

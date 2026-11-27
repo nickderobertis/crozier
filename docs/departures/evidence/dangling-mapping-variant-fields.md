@@ -127,6 +127,39 @@ names a component, and exactly one member the mapping leaves out tags itself
 with the value. Every other dangling mapping keeps the output crozier wrote
 before.
 
+## An inheritance base (Benchling's `InstanceProvider`)
+
+Measured at Fern CLI 5.216.0 / `fernapi/fern-python-sdk` 5.42.0, in both enum
+modes, on
+[`type-lowering/inheritance-dangling-target`](../../fern-measurements/type-lowering/inheritance-dangling-target/openapi.yml):
+`Gadget` is a `type: object` carrying only a discriminator, whose mapping sends
+`DIAL` to `#/components/schemas/DialGadget` while the subtype extending it and
+tagging itself `DIAL` is `DialControlGadget`. This is the shape of Benchling's
+`InstanceProvider` (`ENTITY_SEARCH` to `EntitySearchInstanceProvider`, the
+subtype `EntitySearchFormInstanceProvider`). The pair writes `Gadget` as the
+discriminated union of `Gadget_Lamp`, `Gadget_Fan` and `Gadget_Dial`, and
+`Gadget_Dial` holds `value: typing.Any` beside its `Literal`. Parsing the
+document's own `DIAL` payload, `{"main": {"kind": "DIAL", "notches": 3}}`,
+through each tree's `parse_obj_as(Panel, …)`:
+
+```text
+fern (pydantic>=2,<3): ValidationError: 1 validation error for Panel | main.DIAL.value | Field required [type=missing, input_value={'kind': 'DIAL', 'notches': 3}, input_type=dict]
+crozier (pydantic>=2,<3): parsed Gadget_Dial Gadget_Dial(kind='DIAL', notches=3)
+fern (pydantic>=1.10,<2): parsed Gadget_Dial Gadget_Dial(value=None, kind='DIAL')
+crozier (pydantic>=1.10,<2): parsed Gadget_Dial Gadget_Dial(kind='DIAL', notches=3)
+```
+
+Under Pydantic v2 the certified SDK refuses the payload; under v1 it parses it
+and discards `notches`. crozier's `Gadget_Dial` carries the subtype's own
+fields (`notches`, its tag left to the `Literal`), as `Gadget_Lamp` carries
+`watts`. The rule reads it through the same
+`crate::ir::dangling_mapping_wrappers`, which lists an inheritance base's
+wrapper only where exactly one subtype extends the base and tags itself with the
+value; with none, crozier writes Fern's `value: typing.Any`. Every other line,
+and the subtype's standalone model with its tag, is Fern's.
+`type_lowering::an_inheritance_base_with_a_dangling_target_is_a_union_of_wrappers`
+holds both trees under the ledger.
+
 **Historical.** This record was measured at Fern CLI 5.163.1 /
 `fernapi/fern-python-sdk` 5.41.3, the pair certified when it was taken; where it
 says "the certified pair" it means that pair. It has not been re-measured at
