@@ -109,6 +109,27 @@ def document(title: str, **info: str) -> dict[str, object]:
     return {"openapi": "3.0.3", "info": {"title": title, "version": "1", **info}, "paths": {}}
 
 
+_CACHE: list[tuple[tempfile.TemporaryDirectory[str], str | None]] = []
+
+
+def setUpModule() -> None:
+    """The script's Fern runs, through a stand-in `fern`, hold the Fern generation
+    lock under `XDG_CACHE_HOME`: this suite's own scratch, never the host's, so no
+    case waits on a real Fern run on the same host."""
+    cache = tempfile.TemporaryDirectory(prefix="fern-lock-cache-")
+    _CACHE.append((cache, os.environ.get("XDG_CACHE_HOME")))
+    os.environ["XDG_CACHE_HOME"] = cache.name
+
+
+def tearDownModule() -> None:
+    cache, previous = _CACHE.pop()
+    if previous is None:
+        os.environ.pop("XDG_CACHE_HOME", None)
+    else:
+        os.environ["XDG_CACHE_HOME"] = previous
+    cache.cleanup()
+
+
 def load(name: str, path: Path) -> ModuleType:
     spec = importlib.util.spec_from_file_location(name, path)
     assert spec is not None and spec.loader is not None
@@ -266,6 +287,10 @@ class RemeasureTests(unittest.TestCase):
                 copies.mkdir()
                 for module in SCRIPT.parent.glob("*.py"):
                     (copies / module.name).write_bytes(module.read_bytes())
+                # The Fern generation lock it loads from its sibling project.
+                lock = self.root / "fern-goldens" / "fern_generation_lock.py"
+                lock.parent.mkdir(exist_ok=True)
+                lock.write_bytes((REPO / "tools/fern-goldens/fern_generation_lock.py").read_bytes())
                 self.assertEqual(1, script.count(measured), measured)
                 (copies / SCRIPT.name).write_text(script.replace(measured, changed), encoding="utf-8")
                 result = subprocess.run(

@@ -79,6 +79,27 @@ FERN = """\
     """
 
 
+_CACHE: list[tuple[tempfile.TemporaryDirectory[str], str | None]] = []
+
+
+def setUpModule() -> None:
+    """Every Fern run these suites start, through a stand-in `fern`, holds the
+    Fern generation lock under `XDG_CACHE_HOME`: this suite's own scratch, never
+    the host's, so no case waits on a real Fern run on the same host."""
+    cache = tempfile.TemporaryDirectory(prefix="fern-lock-cache-")
+    _CACHE.append((cache, os.environ.get("XDG_CACHE_HOME")))
+    os.environ["XDG_CACHE_HOME"] = cache.name
+
+
+def tearDownModule() -> None:
+    cache, previous = _CACHE.pop()
+    if previous is None:
+        os.environ.pop("XDG_CACHE_HOME", None)
+    else:
+        os.environ["XDG_CACHE_HOME"] = previous
+    cache.cleanup()
+
+
 def load(name: str, path: Path):
     spec = importlib.util.spec_from_file_location(name, path)
     assert spec and spec.loader
@@ -1375,6 +1396,7 @@ class HistoricalPairTests(unittest.TestCase):
             *(path.relative_to(REPO) for path in (REPO / "tools" / "corpus").glob("*.py")),
             Path("tools/surface-census/openapi-surface-census.py"),
             Path("tools/surface-census/witness-search-region-keys.py"),
+            Path("tools/fern-goldens/fern_generation_lock.py"),
             Path("docs/corpus-licensing.md"),
         ):
             (self.later / relative).parent.mkdir(parents=True, exist_ok=True)

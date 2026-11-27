@@ -8,10 +8,11 @@ name = "crozier-fern-refusals"
 version = "0.0.0"
 description = "The fern-refusals classes, probes and gate tooling."
 requires-python = ">=3.11"
-dependencies = ["crozier-witness-search", "pyyaml>=6"]
+dependencies = ["crozier-fern-goldens", "crozier-witness-search", "pyyaml>=6"]
 
 [tool.uv]
 package = false
 
 [tool.uv.sources]
+crozier-fern-goldens = { workspace = true }
 crozier-witness-search = { workspace = true }

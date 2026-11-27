@@ -8,12 +8,13 @@ name = "crozier-surface-census"
 version = "0.0.0"
 description = "The OpenAPI surface census, golden reach and fixture-coverage tooling."
 requires-python = ">=3.11"
-dependencies = ["PyYAML>=6", "crozier-corpus", "crozier-llmlint-tooling", "crozier-witness-search"]
+dependencies = ["PyYAML>=6", "crozier-corpus", "crozier-fern-goldens", "crozier-llmlint-tooling", "crozier-witness-search"]
 
 [tool.uv]
 package = false
 
 [tool.uv.sources]
 crozier-corpus = { workspace = true }
+crozier-fern-goldens = { workspace = true }
 crozier-llmlint-tooling = { workspace = true }
 crozier-witness-search = { workspace = true }

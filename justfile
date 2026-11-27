@@ -232,6 +232,8 @@ fetch-corpus *args:
 
 # Legacy local reproduction for issue #77 goldens. Routine generation belongs to
 # fern-goldens-generate and fern-references (docs/fern-goldens.md). Needs Docker + fern.
+# Every recipe that reaches Fern holds the host's Fern generation lock itself
+# (tools/fern-goldens/fern_generation_lock.py): run it unwrapped, never in `flock`.
 fixtures-generate-corpus *args:
     ./tools/fern-goldens/generate-corpus-fixtures.sh {{args}}
 
@@ -248,7 +250,8 @@ fern-goldens-generate *args:
 
 # Needs Docker and the Fern CLI; see docs/fern-goldens.md. `--version` and
 # `--cli-version` name a pair other than assets/scaffolding/metadata.json's.
-# Regenerate a Fern reference family (all items, or the named ones), one Fern run at a time.
+# Regenerate a Fern reference family (all items, or the named ones), one Fern run
+# at a time, holding the host's Fern generation lock for the whole family.
 fern-references *args:
     python3 tools/fern-goldens/fern-references.py generate "$@"
 
@@ -276,8 +279,9 @@ test-fern-goldens:
 
 # Live Fern measurement for the witness-supply probe Fern refuses. Separate
 # from `check`: Fern's pinned Python generator runs in Docker and needs network.
+# Its Nx run holds the host's Fern generation lock, as every Fern recipe does.
 test-fern-probe-refusal:
-    @just nx run crozier-e2e:fern-probe-refusal
+    @python3 tools/fern-goldens/fern_generation_lock.py run --label test-fern-probe-refusal -- just nx run crozier-e2e:fern-probe-refusal
 
 # Process/filesystem/test-selection-boundary coverage for `fixtures-coverage`.
 # Drives the real recipe under a SCOPE so it measures a handful of tests instead
@@ -517,7 +521,8 @@ test-fern-refusals:
 
 # Measure the Fern refusal population (docs/fern-refusals/): fetch each document,
 # run Fern and crozier over it. Rebuilds the release binary first, so crozier's
-# counts come from the current tree. Network + Fern (`just setup-fern`).
+# counts come from the current tree. Network + Fern (`just setup-fern`). Its Fern
+# runs hold the host's Fern generation lock from the first to the end.
 fern-refusals-measure *args:
     cargo build --release --locked --bin crozier
     python3 tools/fern-refusals/fern-refusals.py measure {{args}}
@@ -636,7 +641,8 @@ test-population-screen:
     @just nx run witness-search:test-population-screen
 
 # Take one legacy witness-search candidate's licence, ref and Fern screens, measured.
-# Network (the guarded raw route) and Fern (`just setup-fern`).
+# Network (the guarded raw route) and Fern (`just setup-fern`); the Fern screen
+# holds the host's Fern generation lock.
 witness-screen *args:
     @"$(bash ./scripts/census-python.sh)" ./tools/witness-search/witness_screen.py "$@"
 

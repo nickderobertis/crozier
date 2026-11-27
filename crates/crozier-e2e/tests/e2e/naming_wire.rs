@@ -355,9 +355,9 @@ fn naming_wire_shapes_fail_on_an_unexplained_byte() {
         let check = |tree: &Path| tree_failures(case, &spec, &golden, tree);
         assert_eq!(check(tree.path()), Vec::<String>::new(), "{case}");
         for (rel, from, to) in perturbations {
-            let (perturbed, _, _) = copy(case);
-            perturb(perturbed.path(), rel, from, to);
-            let failures = check(perturbed.path());
+            let (tree, _, _) = copy(case);
+            perturb(tree.path(), rel, from, to);
+            let failures = super::departures_ledger::perturbed(|| check(tree.path()));
             assert!(
                 failures.iter().any(|failure| failure.contains(rel)),
                 "{case}: perturbing {rel} ({from:?}) was not reported: {failures:?}"

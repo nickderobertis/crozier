@@ -351,7 +351,14 @@ class FernOverlayGoldensTests(unittest.TestCase):
         self.root = Path(temporary.name) / "repo"
         scripts = self.root / "scripts"
         scripts.mkdir(parents=True)
-        mirror(self.root, "tools/fern-goldens/fern-overlay-goldens.sh", "scripts/lib.sh")
+        mirror(
+            self.root,
+            "tools/fern-goldens/fern-overlay-goldens.sh",
+            "tools/fern-goldens/fern_generation_lock.py",
+            "scripts/lib.sh",
+        )
+        # The run holds the Fern generation lock: this suite's own, never the host's.
+        self.cache = Path(temporary.name) / "cache"
         pin = {"fern_python_sdk_version": STAND_IN}
         for fixture in ("eos.local", "alpha", "beta"):
             expected = self.root / "tests" / "fixtures" / fixture / "expected"
@@ -391,7 +398,13 @@ class FernOverlayGoldensTests(unittest.TestCase):
                 "literals",
                 *fixtures,
             ],
-            env={**os.environ, "FAIL_INSTALL": fail_install, "FAIL_GENERATE": fail_generate, **extra},
+            env={
+                **os.environ,
+                "XDG_CACHE_HOME": str(self.cache),
+                "FAIL_INSTALL": fail_install,
+                "FAIL_GENERATE": fail_generate,
+                **extra,
+            },
             capture_output=True,
             text=True,
             encoding="utf-8",
@@ -582,6 +595,7 @@ class OverlayCertifiedTreeTests(unittest.TestCase):
             "tools/fern-goldens/generate-fern-fixture.sh",
             "tools/fern-goldens/golden_overlay.py",
             "tools/fern-goldens/certified_tree.py",
+            "tools/fern-goldens/fern_generation_lock.py",
             "scripts/lib.sh",
         )
         metadata = self.root / "assets" / "scaffolding" / "metadata.json"

@@ -28,6 +28,9 @@
 #   - fern CLI:  npm i -g fern-api    (invoked as `fern`)
 #   - crozier built (for the comment stripper):  cargo build --release
 #
+# Fern runs holding the host's Fern generation lock, so a caller never wraps
+# this script in `flock` (docs/fern-goldens.md#one-fern-run-at-a-time-on-a-host).
+#
 # Usage:  tools/fern-goldens/generate-fern-fixture.sh [--layout packaged|flat] [--enum-type python-enums|literals] [--default-max-retries N] [FIXTURE] [FERN_PYTHON_VERSION] [SPEC_PATH] [DEST_PATH]
 #   --layout            `packaged` (default) installs expected/; `flat` installs
 #                       expected-flat/ from Fern's local-file-system output.
@@ -304,6 +307,11 @@ fi
 
 need() { command -v "$1" >/dev/null 2>&1 || { echo "generate-fern-fixture: '$1' not found — $2" >&2; exit 1; }; }
 need fern "install it: npm i -g fern-api"
+[ -r "$repo_root/tools/fern-goldens/fern_generation_lock.py" ] || {
+  echo "generate-fern-fixture: missing $repo_root/tools/fern-goldens/fern_generation_lock.py — restore it" \
+       "with git checkout -- tools/fern-goldens/fern_generation_lock.py, then re-run" >&2
+  exit 1
+}
 need docker "start Docker; Fern runs its generator as a local container"
 [ -f "$spec" ] || {
   echo "generate-fern-fixture: missing spec $spec — restore it (git checkout -- <path>)," \
@@ -509,10 +517,12 @@ docker_route=""
 setup_docker_shim
 
 # Fern's own exit status is kept: `fern-goldens` matches a known upstream
-# failure on it.
+# failure on it. Fern runs inside the host's Fern generation lock, sharing the
+# hold of a caller that already has it (tools/fern-goldens/fern_generation_lock.py).
 run_fern() {
   local status=0
-  ( cd "$workdir/fern" && fern generate --group python-sdk "$@" ) || status=$?
+  ( cd "$workdir/fern" && python3 "$repo_root/tools/fern-goldens/fern_generation_lock.py" run \
+      --label generate-fern-fixture -- fern generate --group python-sdk "$@" ) || status=$?
   [ "$status" -ne 0 ] || return 0
   echo "generate-fern-fixture: fern generate ($run_detail) exited $status — fix the cause" \
        "Fern printed above, then re-run${docker_route}" >&2
