@@ -1,15 +1,15 @@
 # The committed source document of every registered corpus row, one record per
-# file. `tools/corpus/corpus_sources.py` is the validator (`check`, offline) and the
-# only writer (`vendor`, which fetches); see its docstring.
+
 #
-# corpus_name	path	source_url	sha256
 #
+#                pins, of its root as published with the pins substituted
 #   corpus_name  a canonical CORPUS.md numbered row name (its third cell)
 #   path         the committed copy, repository-relative
-#   source_url   the pinned URL its bytes were fetched from
 #   sha256       lowercase hex SHA-256 of those bytes; for a row with remote-ref
-#                pins, of its root as published with the pins substituted
-
+#   source_url   the pinned URL its bytes were fetched from
+# corpus_name	path	source_url	sha256
+# file. `tools/corpus/corpus_sources.py` is the validator (`check`, offline) and the
+# only writer (`vendor`, which fetches); see its docstring.
 6-dot-authentiqio.appspot.com	tests/fixtures/corpus-sources/6-dot-authentiqio.appspot.com/openapi.json	https://api.apis.guru/v2/specs/6-dot-authentiqio.appspot.com/6/openapi.json	c80f55a97519b0b77838e17d309a1dea17c9659a3316c17b9b084c4ed7037a82
 ably-sdk-test-proxy	tests/fixtures/corpus-sources/ably-sdk-test-proxy/openapi.yaml	https://raw.githubusercontent.com/ably/sdk-test-proxy/03cf24a09ff0d12c877d08be2fb588c7cd441a07/openapi.yaml	d05fa24c9c341fb120bc15971a8d6f41d86e0bc0bd6e81819ee16d29b71ba2e1
 adyen-acs-notification	tests/fixtures/corpus-sources/adyen-acs-notification/openapi.json	https://raw.githubusercontent.com/Adyen/adyen-openapi/f82d1fe674e536cc2c6b0d7946e0e827873a4fbf/json/BalancePlatformAcsNotification-v1.json	6e09e9b5342ecc02e846cd9b6f40681538ce733fca61f46571bdc5241c8495ea
@@ -62,6 +62,7 @@ aws-mobileanalytics	tests/fixtures/corpus-sources/aws-mobileanalytics/openapi.ya
 axesso.de	tests/fixtures/corpus-sources/axesso.de/openapi.json	https://api.apis.guru/v2/specs/axesso.de/1.0.0/openapi.json	307c6e927629b42d44e878d11379bc894715f2ac095698cfb549898a79497c8a
 azure-databox-management	tests/fixtures/corpus-sources/azure-databox-management/openapi.json	https://raw.githubusercontent.com/jentic/jentic-public-apis/047e4ec2befca70c4bcdd05f162b2c005fc7cdfe/apis/openapi/azure.com/databoxmanagementclient/2019-09-01/openapi.json	d56abdd7985040e5a8ad2a935d548fc46066e6680c79a4dd9399fbb275514e0c
 bbci.co.uk	tests/fixtures/corpus-sources/bbci.co.uk/openapi.json	https://api.apis.guru/v2/specs/bbci.co.uk/1.0/openapi.json	0da4e53dce293a52c24dcea2234834f8513df08d05772851323a885a43981f8f
+benchling-api-v2-alpha	tests/fixtures/corpus-sources/benchling-api-v2-alpha/openapi.yaml	https://raw.githubusercontent.com/fern-demo/benchling-api-client/77fb25d34079c2658f5b2467d5155ffe74cfee6a/benchling_api_client/v2/alpha/openapi.yaml	58d3c068292d7530a3a18bca668300cbe96e3ef357655b65262162aee9f0df15
 billie	tests/fixtures/corpus-sources/billie/openapi.json	https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/billie.io/main/2.0.0/openapi.json	734fbf82986de7d1641af3c5a059454d9170b096cb0740d50c8d8547c366bfc9
 billie-entry	tests/fixtures/corpus-sources/billie-entry/openapi.json	https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/billie.io/main/2.0.0/meta/import/input-entry.json	bcf3e8832ac584a1da5bd70c0a95a5eb2d66d92803ea7bdde5387682a12cd193
 bintable.com	tests/fixtures/corpus-sources/bintable.com/openapi.json	https://api.apis.guru/v2/specs/bintable.com/1.0.0-oas3/openapi.json	4a46e7bd8a611d6bfcda22fa155eb12ce6881cdd1cfbfccb6734340b88aea9bd

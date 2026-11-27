@@ -701,4 +701,84 @@ fn enum_components_keep_their_own_description() {
         ],
     );
 }
+
+/// Benchling (#994): a property's discriminated `oneOf` whose mapping names a
+/// schema of another document is the certified pair's bare `typing.Any`, no
+/// union hoisted. Fern reads the mapping in order and stops at that target: a
+/// member mapped locally ahead of it loses its `type` tag (`PersonHolder`),
+/// and every member from it on keeps one (`RobotHolder`, and `Rental.renter`'s
+/// `CarHolder` and `BikeHolder` after `VanHolder`). An inheritance union's variant writes its tag once,
+/// as the wrapper's `Literal`, even where its subtype, also a member of a plain
+/// `oneOf`, keeps the tag as a standalone model.
+#[test]
+fn discriminator_tags_reach_only_the_members_fern_resolves() {
+    holds(
+        "discriminator-tag-reach",
+        &[
+            ("#994", "src/fern/types/share.py", "    holder: typing.Any\n"),
+            ("#994", "src/fern/types/rental.py", "    renter: typing.Any\n"),
+            (
+                "#994",
+                "src/fern/types/car_holder.py",
+                "    type: typing.Optional[CarHolderType] = None\n",
+            ),
+            (
+                "#994",
+                "src/fern/types/bike_holder.py",
+                "    type: typing.Optional[BikeHolderType] = None\n",
+            ),
+            (
+                "#994",
+                "src/fern/types/robot_holder.py",
+                "    type: typing.Optional[RobotHolderType] = None\n",
+            ),
+            (
+                "#994",
+                "src/fern/types/part.py",
+                "class Part_Bolt(UniversalBaseModel):\n    type: typing.Literal[\"BOLT\"] = \"BOLT\"\n\n",
+            ),
+            (
+                "#994",
+                "src/fern/types/bolt_part.py",
+                "    type: typing.Optional[BoltPartType] = None\n",
+            ),
+        ],
+    );
+}
+
+/// Benchling's `InstanceProvider`: an inheritance base whose mapping names a
+/// target that is no component (`DIAL` to `DialGadget`, the subtype being
+/// `DialControlGadget`) is still the certified pair's discriminated union, a
+/// wrapper per mapping value. The dangling value's wrapper carries the fields of
+/// the subtype tagging itself with it (`dangling-mapping-variant-fields`), and
+/// no wrapper repeats the tag a subtype referenced on its own keeps
+/// (`LampGadget.kind`).
+#[test]
+fn an_inheritance_base_with_a_dangling_target_is_a_union_of_wrappers() {
+    holds(
+        "inheritance-dangling-target",
+        &[
+            (
+                "Benchling",
+                "src/fern/types/gadget.py",
+                "class Gadget_Lamp(UniversalBaseModel):\n    kind: typing.Literal[\"LAMP\"] = \"LAMP\"\n    watts: typing.Optional[int] = None\n",
+            ),
+            (
+                "Benchling",
+                "src/fern/types/gadget.py",
+                "class Gadget_Dial(UniversalBaseModel):\n    kind: typing.Literal[\"DIAL\"] = \"DIAL\"\n    notches: typing.Optional[int] = None\n",
+            ),
+            (
+                "Benchling",
+                "src/fern/types/gadget.py",
+                "typing.Union[Gadget_Lamp, Gadget_Fan, Gadget_Dial], pydantic.Field(discriminator=\"kind\")",
+            ),
+            (
+                "Benchling",
+                "src/fern/types/lamp_gadget.py",
+                "    kind: typing.Optional[LampGadgetKind] = None\n",
+            ),
+        ],
+    );
+}
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]

@@ -3244,6 +3244,21 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
             }
         }
     }
+    // …and so is each parent a body composes of `$ref`s alone, which Fern keeps
+    // as a model beside the method it lays out ([`composed_reference_body`]).
+    for item in doc.paths.values() {
+        for (_, op) in item.operations() {
+            let parents = op
+                .request_body
+                .as_ref()
+                .and_then(selected_json_request_media)
+                .and_then(|(_, media)| media.schema.as_ref())
+                .and_then(composed_reference_body);
+            for reference in parents.into_iter().flatten() {
+                referenced.insert(ref_to_class(reference));
+            }
+        }
+    }
     let inline_sources = inline_body_source_names(doc, &endpoints);
     let urlencoded_sources = urlencoded_body_source_names(doc);
     // A `stream-condition` operation sends its body from two methods, and Fern
@@ -6659,6 +6674,14 @@ fn referenced_example_literal(
     target: &Schema,
     schemas: &IndexMap<String, Schema>,
 ) -> Option<String> {
+    // A discriminated union's own example names no member of a field typed by
+    // it: the certified pair works the field as the union's first member
+    // whatever the example's tag (the `bodies-responses/composed-reference-body`
+    // measurement's `Knot.bead`, `BeadRef_Glass` beside an example naming
+    // `WOOD`; Benchling's `AssemblyFragmentShared.polymer`).
+    if target.one_of.is_some() && target.discriminator.is_some() {
+        return None;
+    }
     if target.one_of.is_some()
         && schema_example(target).is_some_and(|example| {
             crate::openapi::example_validation::matches(schemas, target, example, 0) == Some(false)
@@ -6709,6 +6732,17 @@ fn request_body_composition(doc: &OpenApi, op: &Operation) -> BodyComposition {
                 .and_then(parents_with_inline_members)
                 .is_some()
     }) {
+        return BodyComposition::AllOf;
+    }
+    // So does an inline body composed of `$ref`s alone ([`composed_reference_body`]).
+    if op
+        .request_body
+        .as_ref()
+        .and_then(selected_json_request_media)
+        .and_then(|(_, media)| media.schema.as_ref())
+        .and_then(composed_reference_body)
+        .is_some()
+    {
         return BodyComposition::AllOf;
     }
     let reference = op
@@ -8679,6 +8713,42 @@ fn resolve_request_body(
     // document-acceptance/never-compared-request-property-name-collision/,
     // FOSSology's `PUT /users/{id}`). Without this the body lowered to nothing
     // and the operation was dropped as unemittable.
+    if let Some(parents) = composed_reference_body(schema) {
+        if parents
+            .iter()
+            .all(|reference| hoist_fields(&ref_to_class(reference), types).is_some())
+        {
+            let mut fields = Vec::new();
+            append_parent_body_fields(schema, types, &mut fields);
+            // A property two parents declare is one argument, the first
+            // parent's, at its place (the measurement's `BlendWeave` `gauge`).
+            let mut seen = std::collections::HashSet::new();
+            fields.retain(|field| seen.insert(field.wire_name.clone()));
+            // The docstring's worked call lists the later parent's fields first,
+            // as it does a model composed of `$ref`s (#933); the signature and
+            // the Markdown writers keep member order.
+            let mut order = 0;
+            let mut ordered = std::collections::HashSet::new();
+            for reference in parents.iter().rev() {
+                for parent_field in
+                    hoist_fields(&ref_to_class(reference), types).unwrap_or_default()
+                {
+                    if !ordered.insert(parent_field.wire_name.clone()) {
+                        continue;
+                    }
+                    if let Some(field) = fields
+                        .iter_mut()
+                        .find(|field| field.wire_name == parent_field.wire_name)
+                    {
+                        field.declaration_order = order;
+                        order += 1;
+                    }
+                }
+            }
+            apply_body_example(&mut fields, media_example(doc, media), true);
+            return Some(RequestBody::Inline(fields));
+        }
+    }
     let parents_and_inline;
     let schema = match parents_with_inline_members(schema) {
         Some(merged) => {
@@ -11231,6 +11301,37 @@ fn reserved_body_property_names(
 /// `never-compared-request-property-name-collision` (a plain member) and
 /// `crozier-invalid-duplicate-parameter` (an `anyOf` member whose branches
 /// redeclare the parent's properties, which crozier passed twice).
+/// The `$ref` parents of an inline body that is nothing but an `allOf` of two
+/// or more bare `$ref`s to objects. Fern lays it out as their fields in member
+/// order, each parent's own resolved types, and keeps each parent as a model:
+/// Benchling's `CreateAndFinalizeAssembly` posts `allOf: [$ref
+/// AssemblySpecShared, $ref AssemblySpecFinalized]` and takes
+/// `assembly_parameters` through `output_location` (measured at Fern CLI
+/// 5.216.0 / fern-python-sdk 5.42.0 in
+/// `docs/fern-measurements/bodies-responses/composed-reference-body/`).
+fn composed_reference_body(schema: &Schema) -> Option<Vec<&str>> {
+    if schema.reference.is_some()
+        || !schema.properties.is_empty()
+        || schema.one_of.is_some()
+        || schema.any_of.is_some()
+    {
+        return None;
+    }
+    let members = schema
+        .all_of
+        .as_deref()
+        .filter(|members| members.len() > 1)?;
+    members
+        .iter()
+        .map(|member| {
+            member
+                .reference
+                .as_deref()
+                .filter(|_| member.properties.is_empty() && member.all_of.is_none())
+        })
+        .collect()
+}
+
 fn parents_with_inline_members(schema: &Schema) -> Option<Schema> {
     if schema.reference.is_some() || !schema.properties.is_empty() {
         return None;
@@ -14447,7 +14548,7 @@ fn collect_discriminant_strips(
                 || discriminator
                     .mapping
                     .values()
-                    .all(|target| target.contains('/'))
+                    .all(|target| target.contains('/') && !maps_another_document(target))
         });
         if resolvable && (schema.one_of.is_some() || honoured || is_inheritance_union_base(schema))
         {
@@ -14460,6 +14561,16 @@ fn collect_discriminant_strips(
                     // keeps its tag, as ingef/conquery's `SecondaryIdQuery.type`
                     // does in Fern's tree. Any other dangling mapping strips as it
                     // always did.
+                    // Fern reads the mapping in order and stops at a target in
+                    // another document: it and every later target strip nothing.
+                    // The `type-lowering/discriminator-tag-reach` measurement's
+                    // `PersonHolder`, mapped locally ahead of `RobotHolder`'s
+                    // other document, loses `type`; `Rental.renter`'s `CarHolder`
+                    // and `BikeHolder`, mapped after `VanHolder`'s, keep theirs
+                    // (Benchling's `Collaboration.collaborator`).
+                    if maps_another_document(reference) {
+                        break;
+                    }
                     if !reference.contains('/')
                         || resolve_ref_from_schemas(schemas, reference).is_none()
                             && schema.one_of.as_deref().is_some_and(|variants| {
@@ -14551,17 +14662,39 @@ fn is_inheritance_union_base(schema: &Schema) -> bool {
 }
 
 /// Whether a discriminated union — a `oneOf` or an inheritance base — maps a
-/// value to a bare schema name rather than a reference. Fern cannot resolve
-/// that target, so the union is its unknown type and it never reads the
-/// discriminant at all.
+/// value to a bare schema name rather than a reference, or to a schema of
+/// another document. Fern cannot resolve that target, so the union is its
+/// unknown type and it never reads the discriminant at all: the
+/// `type-lowering/discriminator-tag-reach` measurement's `Share.holder`, whose
+/// `ROBOT` names `robots/openapi.yaml#/components/schemas/RobotHolder`, is
+/// `typing.Any` (Benchling's `Collaboration.collaborator`, #994).
 pub(crate) fn bare_name_mapped_union(schema: &Schema) -> bool {
     (schema.one_of.is_some() || is_inheritance_union_base(schema))
         && schema.discriminator.as_ref().is_some_and(|discriminator| {
             discriminator
                 .mapping
                 .values()
-                .any(|target| !target.contains('/'))
+                .any(|target| !target.contains('/') || maps_another_document(target))
         })
+}
+
+/// Whether `schema` is a discriminated `oneOf` one of whose mapping targets
+/// names a schema of another document ([`maps_another_document`]).
+fn another_document_mapped_union(schema: &Schema) -> bool {
+    schema.one_of.is_some()
+        && schema.discriminator.as_ref().is_some_and(|discriminator| {
+            discriminator
+                .mapping
+                .values()
+                .any(|target| maps_another_document(target))
+        })
+}
+
+/// Whether a discriminator mapping target names a schema of another document
+/// (`robots/openapi.yaml#/components/schemas/RobotHolder`), not one of this
+/// document's (`#/components/schemas/RobotHolder`).
+fn maps_another_document(target: &str) -> bool {
+    target.contains('/') && !target.starts_with('#')
 }
 
 /// Whether an error body is a union whose mapping Fern cannot resolve: a bare
@@ -14741,6 +14874,10 @@ pub(crate) fn dangling_mapping_wrappers(
     let schemas = &doc.components.schemas;
     let mut wrappers = Vec::new();
     for (name, schema) in schemas {
+        if is_inheritance_union_base(schema) {
+            wrappers.extend(inheritance_dangling_wrappers(name, schema, schemas));
+            continue;
+        }
         let (Some(discriminator), Some(variants)) = (&schema.discriminator, &schema.one_of) else {
             continue;
         };
@@ -14778,6 +14915,49 @@ pub(crate) fn dangling_mapping_wrappers(
     wrappers
 }
 
+/// [`dangling_mapping_wrappers`] for an inheritance base: each wrapper of a
+/// mapping value whose target names no component and which one subtype tags,
+/// with that subtype's own fields' Python names in the order
+/// [`Builder::variant_own_fields`] collects them, the tag left out.
+fn inheritance_dangling_wrappers(
+    key: &str,
+    schema: &Schema,
+    schemas: &IndexMap<String, Schema>,
+) -> Vec<(String, String, Vec<String>)> {
+    let Some(discriminator) = &schema.discriminator else {
+        return Vec::new();
+    };
+    let name = naming::class_name(key);
+    let property = &discriminator.property_name;
+    let mut wrappers = Vec::new();
+    for (value, reference) in &discriminator.mapping {
+        if !names_no_component(reference, schemas) {
+            continue;
+        }
+        let Some((_, subtype)) =
+            inheritance_dangling_member(&name, &discriminator.mapping, property, value, schemas)
+        else {
+            continue;
+        };
+        let fields = subtype
+            .all_of
+            .iter()
+            .flatten()
+            .filter(|member| member.reference.is_none())
+            .chain(std::iter::once(subtype))
+            .flat_map(|member| member.properties.keys())
+            .filter(|wire| *wire != property)
+            .map(|wire| naming::field_name(wire))
+            .collect();
+        wrappers.push((
+            format!("{name}_{}", discriminant_class_name(value)),
+            value.clone(),
+            fields,
+        ));
+    }
+    wrappers
+}
+
 /// The `oneOf` member a discriminator mapping entry whose target names no
 /// component stands for: a `$ref` member no mapping target names, whose own
 /// discriminant property is `value`. Its class name and schema; `None` when no
@@ -14800,6 +14980,45 @@ fn dangling_target_member<'a>(
             .get(property)
             .and_then(discriminant_value)?;
         (tag == value).then(|| (ref_to_class(reference), member))
+    });
+    let first = found.next()?;
+    found.next().is_none().then_some(first)
+}
+
+/// The subtype an inheritance base's mapping entry whose target names no
+/// component stands for: a component extending the base `name` through an
+/// `allOf` `$ref`, named by no mapping target, whose own discriminant property
+/// is `value`. Its class name and schema; `None` when none, or more than one,
+/// fits.
+fn inheritance_dangling_member<'a>(
+    name: &str,
+    mapping: &IndexMap<String, String>,
+    property: &str,
+    value: &str,
+    schemas: &'a IndexMap<String, Schema>,
+) -> Option<(String, &'a Schema)> {
+    let mut found = schemas.iter().filter_map(|(key, schema)| {
+        let class = naming::class_name(key);
+        let extends = schema
+            .all_of
+            .iter()
+            .flatten()
+            .filter_map(|member| member.reference.as_deref())
+            .any(|reference| ref_to_class(reference) == name);
+        if !extends || mapping.values().any(|target| ref_to_class(target) == class) {
+            return None;
+        }
+        // The subtype declares its tag beside the `$ref`, in an inline `allOf`
+        // member or its own `properties`.
+        let tag = schema
+            .all_of
+            .iter()
+            .flatten()
+            .filter(|member| member.reference.is_none())
+            .chain(std::iter::once(schema))
+            .find_map(|member| member.properties.get(property))
+            .and_then(discriminant_value)?;
+        (tag == value).then_some((class, schema))
     });
     let first = found.next()?;
     found.next().is_none().then_some(first)
@@ -16946,7 +17165,11 @@ impl Builder<'_> {
                 || described_all_of_ref(prop_schema)
                     .and_then(|(reference, _)| resolve_ref_from_schemas(self.schemas, reference))
                     .is_some_and(|target| schema_accepts_none(target, self.schemas));
-            let optional = is_optional(prop_schema) || referenced_nullable || !spec_required;
+            // Fern's unknown type for a union mapping into another document is
+            // written bare, `holder: typing.Any`, required or not (the
+            // `discriminator-tag-reach` measurement's `Share.holder`).
+            let optional = (is_optional(prop_schema) || referenced_nullable || !spec_required)
+                && !another_document_mapped_union(prop_schema);
             let type_ref = self.field_type_ref(owner, prop, prop_schema);
             // Only an unwrapped field: an optional one's wrapper carries the
             // property's own description, as LiveBuildings' `refMap` shows.
@@ -17657,11 +17880,69 @@ impl Builder<'_> {
                 variant_targets.push(target_class);
                 continue;
             }
+            // A target naming no component still names a variant, as it does
+            // under a `oneOf`: Benchling's `InstanceProvider` maps `ENTITY_SEARCH`
+            // to `EntitySearchInstanceProvider` where the subtype is
+            // `EntitySearchFormInstanceProvider`, and the certified pair writes
+            // `InstanceProvider_EntitySearch` holding `value: typing.Any` (the
+            // `union-modelling/inheritance-dangling-target` measurement's
+            // `Gadget_Dial`). crozier's wrapper carries the fields of the one
+            // subtype extending the base whose own tag is that value (the
+            // `dangling-mapping-variant-fields` departure); only a value no
+            // subtype tags keeps Fern's `value`.
+            if names_no_component(reference, self.schemas) {
+                let member = match inheritance_dangling_member(
+                    name,
+                    &discriminator.mapping,
+                    &property_name,
+                    value,
+                    self.schemas,
+                ) {
+                    Some((class, subtype)) => {
+                        let subtype = subtype.clone();
+                        let mut fields = self.variant_own_fields(&class, &subtype);
+                        fields.retain(|field| field.wire_name != property_name);
+                        variant_targets.push(class.clone());
+                        UnionMember {
+                            class_name,
+                            discriminant: value.clone(),
+                            fields,
+                            declared_discriminant: member_declared_discriminant(
+                                &subtype,
+                                &property_name,
+                                self.schemas,
+                                DiscriminantContext::RecoveredMapping,
+                            ),
+                            source: Some(class),
+                            docstring: docstring.clone(),
+                            layout: crate::ir::UnionMemberLayout::Flattened,
+                        }
+                    }
+                    None => UnionMember {
+                        class_name,
+                        discriminant: value.clone(),
+                        fields: vec![wrapped_value_field(TypeRef::Primitive(Prim::Any))],
+                        declared_discriminant: None,
+                        source: None,
+                        docstring: None,
+                        layout: crate::ir::UnionMemberLayout::Wrapped,
+                    },
+                };
+                members.push(member);
+                continue;
+            }
             let target = resolve_ref_from_schemas(self.schemas, reference)?.clone();
+            // The wrapper's `Literal` is the tag, so a subtype the document also
+            // references on its own, whose standalone model keeps its tag field,
+            // lends the wrapper every field but that one (the
+            // `inheritance-dangling-target` measurement's `Gadget_Lamp` beside
+            // `LampGadget.kind`).
+            let mut fields = self.variant_own_fields(&target_class, &target);
+            fields.retain(|field| field.wire_name != property_name);
             members.push(UnionMember {
                 class_name,
                 discriminant: value.clone(),
-                fields: self.variant_own_fields(&target_class, &target),
+                fields,
                 declared_discriminant: member_declared_discriminant(
                     &target,
                     &property_name,
@@ -17838,6 +18119,13 @@ impl Builder<'_> {
     /// The type of a property, hoisting an inline string enum to a named
     /// `enum.Enum` class `{Owner}{Prop}` (as Fern does for `typesAnimal`).
     fn field_type_ref(&mut self, owner: &str, prop: &str, prop_schema: &Schema) -> TypeRef {
+        // A property's discriminated `oneOf` mapping a value into another
+        // document is Fern's unknown type, no union hoisted: the
+        // `type-lowering/discriminator-tag-reach` measurement's `Share.holder`
+        // is `typing.Any` (Benchling's `Collaboration.collaborator`).
+        if another_document_mapped_union(prop_schema) {
+            return TypeRef::Primitive(Prim::Any);
+        }
         // A component property's `oneOf` of bare `const`s is a union of its
         // members, as a component's is (see [`Builder::add_named_shape`]): the
         // `type-lowering/union-member-lowering` measurement's `Session.shutter`
@@ -35280,6 +35568,55 @@ components:
             strips(beside_gone).get("MeteorReading").map(String::as_str),
             Some("kind")
         );
+    }
+
+    #[test]
+    fn an_inheritance_base_s_dangling_target_takes_the_one_subtype_tagging_it() {
+        // The `type-lowering/inheritance-dangling-target` measurement's shape:
+        // `DIAL` maps to `DialGadget`, and `DialControlGadget` tags itself `DIAL`.
+        let schemas = |dial_tag: &str, twice: bool| {
+            let subtype = serde_json::json!({ "allOf": [
+                { "$ref": "#/components/schemas/Gadget" },
+                { "type": "object", "properties": {
+                    "kind": { "type": "string", "enum": [dial_tag] },
+                    "notches": { "type": "integer" }
+                } }
+            ] });
+            let mut schemas = serde_json::json!({
+                "Gadget": { "type": "object", "discriminator": {
+                    "propertyName": "kind",
+                    "mapping": {
+                        "LAMP": "#/components/schemas/LampGadget",
+                        "DIAL": "#/components/schemas/DialGadget"
+                    }
+                } },
+                "LampGadget": { "allOf": [
+                    { "$ref": "#/components/schemas/Gadget" },
+                    { "type": "object", "properties": {
+                        "kind": { "type": "string", "enum": ["LAMP"] }
+                    } }
+                ] },
+                "DialControlGadget": subtype.clone()
+            });
+            if twice {
+                schemas["KnobGadget"] = subtype;
+            }
+            let document: OpenApi =
+                serde_json::from_value(observed_document(schemas, serde_json::json!({})))
+                    .expect("document deserializes");
+            document
+        };
+        assert_eq!(
+            dangling_mapping_wrappers(&schemas("DIAL", false)),
+            [(
+                "Gadget_Dial".to_string(),
+                "DIAL".to_string(),
+                vec!["notches".to_string()]
+            )]
+        );
+        // No subtype tagging the value, or two, keep Fern's `value` wrapper.
+        assert!(dangling_mapping_wrappers(&schemas("KNOB", false)).is_empty());
+        assert!(dangling_mapping_wrappers(&schemas("DIAL", true)).is_empty());
     }
 
     #[test]

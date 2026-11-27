@@ -4,6 +4,12 @@
     "docs/fern-measurements/bodies-responses/body-requiredness-shapes/fern-expected": {},
     "docs/fern-measurements/bodies-responses/byte-text-response-literals/fern-expected": {},
     "docs/fern-measurements/bodies-responses/composed-form-body/fern-expected": {},
+    "docs/fern-measurements/bodies-responses/composed-reference-body/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/bodies-responses/composed-reference-body/fern-expected": {},
     "docs/fern-measurements/bodies-responses/error-body-shapes-literals/fern-expected": {},
     "docs/fern-measurements/bodies-responses/header-body-collision/fern-expected": {},
     "docs/fern-measurements/bodies-responses/inline-body-readonly-own-overlap-literals/fern-expected": {},
@@ -787,6 +793,12 @@
       ]
     },
     "docs/fern-measurements/type-lowering/const-discriminator-tags/fern-expected": {},
+    "docs/fern-measurements/type-lowering/discriminator-tag-reach/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/type-lowering/discriminator-tag-reach/fern-expected": {},
     "docs/fern-measurements/type-lowering/enum-use-site-descriptions/expected-literals/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
@@ -799,6 +811,12 @@
       ]
     },
     "docs/fern-measurements/type-lowering/inferred-discriminator-tags/fern-expected": {},
+    "docs/fern-measurements/type-lowering/inheritance-dangling-target/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/type-lowering/inheritance-dangling-target/fern-expected": {},
     "docs/fern-measurements/type-lowering/inherited-discriminator-tags/expected-literals/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
@@ -1239,7 +1257,6 @@
     "docs/openapi-surface/handwritten/inline-oneof-variants/fern-expected": {},
     "docs/openapi-surface/handwritten/inline-property-unions/fern-expected": {},
     "docs/openapi-surface/handwritten/invoice-renderer/fern-expected": {},
-    "docs/openapi-surface/handwritten/json-binary-path/fern-expected": {},
     "docs/openapi-surface/handwritten/json-request-shapes/fern-expected": {},
     "docs/openapi-surface/handwritten/kiln-array-mode/fern-expected": {},
     "docs/openapi-surface/handwritten/kiln-array-variants/fern-expected": {},
@@ -1560,6 +1577,12 @@
       ]
     },
     "tests/fixtures/basic-auth/expected": {},
+    "tests/fixtures/benchling-api-v2-alpha/expected": {},
+    "tests/fixtures/benchling-api-v2-alpha/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/billie-entry/expected": {},
     "tests/fixtures/billie/expected": {},
     "tests/fixtures/bintable.com/expected": {},

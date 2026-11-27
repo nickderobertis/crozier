@@ -588,6 +588,19 @@ fn sdk_env_worked_examples_bind_and_their_repaired_values_validate() {
     // calls, the reference usage and the README's sync and async calls all pass
     // `file=b"file"` to its `FormFile` (bytes) annotation.
     let multipart = "docs/fern-measurements/bodies-responses";
+    // A body composed of two `$ref`s alone: every worked call passes both
+    // parents' fields and the union field's first member, and binds.
+    for mode in ["python-enums", "literals"] {
+        let out = temp.path().join(format!("composed-reference-body-{mode}"));
+        generate_in(multipart, "composed-reference-body", mode, &out);
+        let run = check(&out);
+        assert!(
+            run.status.success(),
+            "composed-reference-body ({mode}): {}{}",
+            String::from_utf8_lossy(&run.stdout),
+            String::from_utf8_lossy(&run.stderr)
+        );
+    }
     for mode in ["python-enums", "literals"] {
         let out = temp
             .path()

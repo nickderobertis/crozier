@@ -540,4 +540,53 @@ fn unresolved_non_component_body_reference_is_any() {
         "self, *, request: FeatureFlag, request_options",
     );
 }
+
+/// Benchling's `CreateAndFinalizeAssembly`: a JSON body that is an `allOf` of
+/// two `$ref`s alone is laid out as both parents' fields in member order, its
+/// operation and its tag's siblings keep their client, each parent stays a root
+/// model, the docstring's worked call passes the later parent's fields first,
+/// a field typed by a discriminated union is worked as its first member
+/// whatever the union's own example names, and a property both parents
+/// declare is one argument.
+#[test]
+fn composed_reference_bodies_spread_both_parents() {
+    let case = "composed-reference-body";
+    let (_temp, out) = matched(case);
+    decides(
+        case,
+        &out,
+        "src/fern/weaves/client.py",
+        "        pattern: WeavePlanPattern,\n        threads: typing.Sequence[WeavePlanThreadsItem],\n        knots: typing.Sequence[Knot],\n        finish: WeavePlanFinish,\n        shelf_id: str,\n        label: str,\n        delivery: WeaveFinishDelivery,\n",
+        "",
+    );
+    decides(
+        case,
+        &out,
+        "src/fern/weaves/client.py",
+        "            shelf_id=\"shelfId\",\n            label=\"label\",\n            delivery=WeaveFinishDelivery(),\n            pattern=WeavePlanPattern_Plain(),\n",
+        "            pattern=WeavePlanPattern_Plain(),\n",
+    );
+    decides(
+        case,
+        &out,
+        "src/fern/weaves/client.py",
+        "bead=BeadRef_Glass(\n",
+        "bead=BeadRef_Wood(\n",
+    );
+    // A property both parents declare is one argument, the first parent's.
+    decides(
+        case,
+        &out,
+        "src/fern/weaves/client.py",
+        "        gauge : typing.Optional[int]\n            The yarn's gauge.\n",
+        "        gauge : typing.Optional[int]\n            The dye bath's gauge.\n",
+    );
+    for root_model in ["weave_plan.py", "weave_plan_pattern.py", "weave_finish.py"] {
+        assert!(
+            out.join("src/fern/types").join(root_model).is_file(),
+            "{case}: no root types/{root_model}"
+        );
+    }
+    literals_match(case);
+}
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]

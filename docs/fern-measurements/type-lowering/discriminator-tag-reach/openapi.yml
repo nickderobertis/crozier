@@ -1,0 +1,225 @@
+openapi: 3.0.3
+info:
+  title: Workshop Ledger
+  version: 1.0.0
+paths:
+  /shares/{share_id}:
+    get:
+      operationId: get_share
+      parameters:
+      - name: share_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The share
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Share'
+  /bins/{bin_id}:
+    get:
+      operationId: get_bin
+      parameters:
+      - name: bin_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The bin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bin'
+  /parts/{part_id}:
+    get:
+      operationId: get_part
+      parameters:
+      - name: part_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The part
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Part'
+  /loans/{loan_id}:
+    get:
+      operationId: get_loan
+      parameters:
+      - name: loan_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The loan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Loan'
+  /rentals/{rental_id}:
+    get:
+      operationId: get_rental
+      parameters:
+      - name: rental_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The rental
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rental'
+components:
+  schemas:
+    Person:
+      type: object
+      properties:
+        name:
+          type: string
+    PersonHolder:
+      allOf:
+      - properties:
+          type:
+            type: string
+            enum:
+            - PERSON
+      - $ref: '#/components/schemas/Person'
+    RobotHolder:
+      allOf:
+      - properties:
+          type:
+            type: string
+            enum:
+            - ROBOT
+      - $ref: '#/components/schemas/Person'
+    Share:
+      type: object
+      properties:
+        holder:
+          discriminator:
+            propertyName: type
+            mapping:
+              PERSON: '#/components/schemas/PersonHolder'
+              ROBOT: 'robots/openapi.yaml#/components/schemas/RobotHolder'
+          oneOf:
+          - $ref: '#/components/schemas/PersonHolder'
+          - $ref: '#/components/schemas/RobotHolder'
+    Part:
+      type: object
+      additionalProperties: false
+      discriminator:
+        propertyName: type
+        mapping:
+          BOLT: '#/components/schemas/BoltPart'
+          NUT: '#/components/schemas/NutPart'
+    BoltPart:
+      allOf:
+      - $ref: '#/components/schemas/Part'
+      - type: object
+        properties:
+          type:
+            type: string
+            enum:
+            - BOLT
+    NutPart:
+      allOf:
+      - $ref: '#/components/schemas/Part'
+      - type: object
+        properties:
+          type:
+            type: string
+            enum:
+            - NUT
+          size:
+            type: string
+    Bin:
+      type: object
+      properties:
+        contents:
+          type: array
+          items:
+            oneOf:
+            - $ref: '#/components/schemas/BoltPart'
+            - $ref: '#/components/schemas/NutPart'
+    TenantHolder:
+      allOf:
+      - properties:
+          type:
+            type: string
+            enum:
+            - TENANT
+      - $ref: '#/components/schemas/Person'
+    DroneHolder:
+      allOf:
+      - properties:
+          type:
+            type: string
+            enum:
+            - DRONE
+      - $ref: '#/components/schemas/Person'
+    Loan:
+      allOf:
+      - properties:
+          borrower:
+            discriminator:
+              propertyName: type
+              mapping:
+                TENANT: '#/components/schemas/TenantHolder'
+                DRONE: 'drones/openapi.yaml#/components/schemas/DroneHolder'
+            oneOf:
+            - $ref: '#/components/schemas/TenantHolder'
+            - $ref: '#/components/schemas/DroneHolder'
+          note:
+            type: string
+    VanHolder:
+      allOf:
+      - properties:
+          type:
+            type: string
+            enum:
+            - VAN
+      - $ref: '#/components/schemas/Person'
+    CarHolder:
+      allOf:
+      - properties:
+          type:
+            type: string
+            enum:
+            - CAR
+      - $ref: '#/components/schemas/Person'
+    BikeHolder:
+      properties:
+        type:
+          type: string
+          enum:
+          - BICYCLE
+        gears:
+          type: integer
+    Rental:
+      type: object
+      properties:
+        renter:
+          discriminator:
+            propertyName: type
+            mapping:
+              VAN: 'vans/openapi.yaml#/components/schemas/VanHolder'
+              CAR: '#/components/schemas/CarHolder'
+              BIKE: '#/components/schemas/BikeHolder'
+          oneOf:
+          - $ref: '#/components/schemas/CarHolder'
+          - $ref: '#/components/schemas/BikeHolder'
+          - $ref: '#/components/schemas/VanHolder'
