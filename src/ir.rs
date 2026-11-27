@@ -14831,6 +14831,10 @@ pub(crate) fn dangling_mapping_wrappers(
     let schemas = &doc.components.schemas;
     let mut wrappers = Vec::new();
     for (name, schema) in schemas {
+        if is_inheritance_union_base(schema) {
+            wrappers.extend(inheritance_dangling_wrappers(name, schema, schemas));
+            continue;
+        }
         let (Some(discriminator), Some(variants)) = (&schema.discriminator, &schema.one_of) else {
             continue;
         };
@@ -14868,6 +14872,49 @@ pub(crate) fn dangling_mapping_wrappers(
     wrappers
 }
 
+/// [`dangling_mapping_wrappers`] for an inheritance base: each wrapper of a
+/// mapping value whose target names no component and which one subtype tags,
+/// with that subtype's own fields' Python names in the order
+/// [`Builder::variant_own_fields`] collects them, the tag left out.
+fn inheritance_dangling_wrappers(
+    key: &str,
+    schema: &Schema,
+    schemas: &IndexMap<String, Schema>,
+) -> Vec<(String, String, Vec<String>)> {
+    let Some(discriminator) = &schema.discriminator else {
+        return Vec::new();
+    };
+    let name = naming::class_name(key);
+    let property = &discriminator.property_name;
+    let mut wrappers = Vec::new();
+    for (value, reference) in &discriminator.mapping {
+        if !names_no_component(reference, schemas) {
+            continue;
+        }
+        let Some((_, subtype)) =
+            inheritance_dangling_member(&name, &discriminator.mapping, property, value, schemas)
+        else {
+            continue;
+        };
+        let fields = subtype
+            .all_of
+            .iter()
+            .flatten()
+            .filter(|member| member.reference.is_none())
+            .chain(std::iter::once(subtype))
+            .flat_map(|member| member.properties.keys())
+            .filter(|wire| *wire != property)
+            .map(|wire| naming::field_name(wire))
+            .collect();
+        wrappers.push((
+            format!("{name}_{}", discriminant_class_name(value)),
+            value.clone(),
+            fields,
+        ));
+    }
+    wrappers
+}
+
 /// The `oneOf` member a discriminator mapping entry whose target names no
 /// component stands for: a `$ref` member no mapping target names, whose own
 /// discriminant property is `value`. Its class name and schema; `None` when no
@@ -14890,6 +14937,45 @@ fn dangling_target_member<'a>(
             .get(property)
             .and_then(discriminant_value)?;
         (tag == value).then(|| (ref_to_class(reference), member))
+    });
+    let first = found.next()?;
+    found.next().is_none().then_some(first)
+}
+
+/// The subtype an inheritance base's mapping entry whose target names no
+/// component stands for: a component extending the base `name` through an
+/// `allOf` `$ref`, named by no mapping target, whose own discriminant property
+/// is `value`. Its class name and schema; `None` when none, or more than one,
+/// fits.
+fn inheritance_dangling_member<'a>(
+    name: &str,
+    mapping: &IndexMap<String, String>,
+    property: &str,
+    value: &str,
+    schemas: &'a IndexMap<String, Schema>,
+) -> Option<(String, &'a Schema)> {
+    let mut found = schemas.iter().filter_map(|(key, schema)| {
+        let class = naming::class_name(key);
+        let extends = schema
+            .all_of
+            .iter()
+            .flatten()
+            .filter_map(|member| member.reference.as_deref())
+            .any(|reference| ref_to_class(reference) == name);
+        if !extends || mapping.values().any(|target| ref_to_class(target) == class) {
+            return None;
+        }
+        // The subtype declares its tag beside the `$ref`, in an inline `allOf`
+        // member or its own `properties`.
+        let tag = schema
+            .all_of
+            .iter()
+            .flatten()
+            .filter(|member| member.reference.is_none())
+            .chain(std::iter::once(schema))
+            .find_map(|member| member.properties.get(property))
+            .and_then(discriminant_value)?;
+        (tag == value).then_some((class, schema))
     });
     let first = found.next()?;
     found.next().is_none().then_some(first)
@@ -17731,11 +17817,69 @@ impl Builder<'_> {
                 variant_targets.push(target_class);
                 continue;
             }
+            // A target naming no component still names a variant, as it does
+            // under a `oneOf`: Benchling's `InstanceProvider` maps `ENTITY_SEARCH`
+            // to `EntitySearchInstanceProvider` where the subtype is
+            // `EntitySearchFormInstanceProvider`, and the certified pair writes
+            // `InstanceProvider_EntitySearch` holding `value: typing.Any` (the
+            // `union-modelling/inheritance-dangling-target` measurement's
+            // `Gadget_Dial`). crozier's wrapper carries the fields of the one
+            // subtype extending the base whose own tag is that value (the
+            // `dangling-mapping-variant-fields` departure); only a value no
+            // subtype tags keeps Fern's `value`.
+            if names_no_component(reference, self.schemas) {
+                let member = match inheritance_dangling_member(
+                    name,
+                    &discriminator.mapping,
+                    &property_name,
+                    value,
+                    self.schemas,
+                ) {
+                    Some((class, subtype)) => {
+                        let subtype = subtype.clone();
+                        let mut fields = self.variant_own_fields(&class, &subtype);
+                        fields.retain(|field| field.wire_name != property_name);
+                        variant_targets.push(class.clone());
+                        UnionMember {
+                            class_name,
+                            discriminant: value.clone(),
+                            fields,
+                            declared_discriminant: member_declared_discriminant(
+                                &subtype,
+                                &property_name,
+                                self.schemas,
+                                DiscriminantContext::RecoveredMapping,
+                            ),
+                            source: Some(class),
+                            docstring: docstring.clone(),
+                            layout: crate::ir::UnionMemberLayout::Flattened,
+                        }
+                    }
+                    None => UnionMember {
+                        class_name,
+                        discriminant: value.clone(),
+                        fields: vec![wrapped_value_field(TypeRef::Primitive(Prim::Any))],
+                        declared_discriminant: None,
+                        source: None,
+                        docstring: None,
+                        layout: crate::ir::UnionMemberLayout::Wrapped,
+                    },
+                };
+                members.push(member);
+                continue;
+            }
             let target = resolve_ref_from_schemas(self.schemas, reference)?.clone();
+            // The wrapper's `Literal` is the tag, so a subtype the document also
+            // references on its own, whose standalone model keeps its tag field,
+            // lends the wrapper every field but that one (the
+            // `inheritance-dangling-target` measurement's `Gadget_Lamp` beside
+            // `LampGadget.kind`).
+            let mut fields = self.variant_own_fields(&target_class, &target);
+            fields.retain(|field| field.wire_name != property_name);
             members.push(UnionMember {
                 class_name,
                 discriminant: value.clone(),
-                fields: self.variant_own_fields(&target_class, &target),
+                fields,
                 declared_discriminant: member_declared_discriminant(
                     &target,
                     &property_name,
@@ -35182,6 +35326,55 @@ components:
             strips(beside_gone).get("MeteorReading").map(String::as_str),
             Some("kind")
         );
+    }
+
+    #[test]
+    fn an_inheritance_base_s_dangling_target_takes_the_one_subtype_tagging_it() {
+        // The `type-lowering/inheritance-dangling-target` measurement's shape:
+        // `DIAL` maps to `DialGadget`, and `DialControlGadget` tags itself `DIAL`.
+        let schemas = |dial_tag: &str, twice: bool| {
+            let subtype = serde_json::json!({ "allOf": [
+                { "$ref": "#/components/schemas/Gadget" },
+                { "type": "object", "properties": {
+                    "kind": { "type": "string", "enum": [dial_tag] },
+                    "notches": { "type": "integer" }
+                } }
+            ] });
+            let mut schemas = serde_json::json!({
+                "Gadget": { "type": "object", "discriminator": {
+                    "propertyName": "kind",
+                    "mapping": {
+                        "LAMP": "#/components/schemas/LampGadget",
+                        "DIAL": "#/components/schemas/DialGadget"
+                    }
+                } },
+                "LampGadget": { "allOf": [
+                    { "$ref": "#/components/schemas/Gadget" },
+                    { "type": "object", "properties": {
+                        "kind": { "type": "string", "enum": ["LAMP"] }
+                    } }
+                ] },
+                "DialControlGadget": subtype.clone()
+            });
+            if twice {
+                schemas["KnobGadget"] = subtype;
+            }
+            let document: OpenApi =
+                serde_json::from_value(observed_document(schemas, serde_json::json!({})))
+                    .expect("document deserializes");
+            document
+        };
+        assert_eq!(
+            dangling_mapping_wrappers(&schemas("DIAL", false)),
+            [(
+                "Gadget_Dial".to_string(),
+                "DIAL".to_string(),
+                vec!["notches".to_string()]
+            )]
+        );
+        // No subtype tagging the value, or two, keep Fern's `value` wrapper.
+        assert!(dangling_mapping_wrappers(&schemas("KNOB", false)).is_empty());
+        assert!(dangling_mapping_wrappers(&schemas("DIAL", true)).is_empty());
     }
 
     #[test]

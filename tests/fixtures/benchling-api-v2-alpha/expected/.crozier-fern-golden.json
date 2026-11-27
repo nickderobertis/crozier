@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.42.0",
+  "corpus_spec_name": "benchling-api-v2-alpha",
+  "corpus_spec_ref": "77fb25d34079c2658f5b2467d5155ffe74cfee6a",
+  "corpus_spec_url": "https://raw.githubusercontent.com/fern-demo/benchling-api-client/77fb25d34079c2658f5b2467d5155ffe74cfee6a/benchling_api_client/v2/alpha/openapi.yaml"
+}

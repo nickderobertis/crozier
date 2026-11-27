@@ -10668,6 +10668,7 @@ const CORPORA: &[&Corpus] = &[
     &PINECONE_INFERENCE,
     &OPENAPI_CODE_GENERATOR_E2E,
     &KRATOS_BLOG,
+    &BENCHLING_V2_ALPHA,
     &LITERALS_HASHGRAPH_63BA2735,
     &LITERALS_SAMEPAGE_BEA1554A,
     &LITERALS_EASA_FC03FD3C,
@@ -33829,5 +33830,25 @@ const KRATOS_BLOG: Corpus = Corpus {
 fn go_kratos_examples_blog_matches_fern_output() {
     assert_committed_corpus_matches(&KRATOS_BLOG);
     overlay_goldens::assert_literals_match(&KRATOS_BLOG);
+}
+
+/// `benchling-api-v2-alpha`: corpus row 7000, Benchling's v2 alpha API — the
+/// specification #985 names, whose `OligoCreate` inherits `folderId` through two
+/// `allOf` parents, and which the certified pair generates in both enum modes.
+const BENCHLING_V2_ALPHA: Corpus = Corpus {
+    api: "benchling-api-v2-alpha",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn benchling_api_v2_alpha_matches_fern_output() {
+    assert_committed_corpus_matches(&BENCHLING_V2_ALPHA);
+    overlay_goldens::assert_literals_match(&BENCHLING_V2_ALPHA);
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]

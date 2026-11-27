@@ -580,3 +580,5 @@ worked-examples/nested-argument-widths	docs/fern-measurements/worked-examples/ne
 worked-examples/nested-argument-widths/expected-literals	docs/fern-measurements/worked-examples/nested-argument-widths/openapi.yml	literals	packaged	fern-expected:docs/fern-measurements/worked-examples/nested-argument-widths/fern-expected
 bodies-responses/composed-reference-body	docs/fern-measurements/bodies-responses/composed-reference-body/openapi.yml	python-enums	packaged	-
 bodies-responses/composed-reference-body/expected-literals	docs/fern-measurements/bodies-responses/composed-reference-body/openapi.yml	literals	packaged	fern-expected:docs/fern-measurements/bodies-responses/composed-reference-body/fern-expected
+type-lowering/inheritance-dangling-target	docs/fern-measurements/type-lowering/inheritance-dangling-target/openapi.yml	python-enums	packaged	-
+type-lowering/inheritance-dangling-target/expected-literals	docs/fern-measurements/type-lowering/inheritance-dangling-target/openapi.yml	literals	packaged	fern-expected:docs/fern-measurements/type-lowering/inheritance-dangling-target/fern-expected
