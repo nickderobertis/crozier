@@ -40,7 +40,7 @@ The handling sites are:
 - `src/ir.rs::append_parent_body_fields[let own_count = fields\.len\(\)]`
 - `src/ir.rs::inline_body_source_names[\&\& !is_optional\(target\)]`
 - `src/ir.rs::scalar_body[=Some\("binary"\)]`
-- `src/emit.rs::build_example_inner[if s\.type_ref == TypeRef::Primitive\(Prim::Bytes\)]`
+- `src/emit.rs::build_example_inner[if ctx\.resolves_to_bytes\(&s\.type_ref\)]`
 
 - `src/ir.rs::request_body_has_all_of[!schema\.properties\.is_empty\(\)]`
 

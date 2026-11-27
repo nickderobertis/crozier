@@ -471,7 +471,7 @@ separate from candidates awaiting their first certified screen.
 
 | key | kind | arm | verdict | result | outstanding entries |
 |---|---|---|---|---|---:|
-| `format-binary` | arm | `src/emit.rs::build_example_inner[if s\.type_ref == TypeRef::Primitive\(Prim::Bytes\)]` | `settled-at-base` | `see settled-at-base.tsv` | 0 |
+| `format-binary` | arm | `src/emit.rs::build_example_inner[if ctx\.resolves_to_bytes\(&s\.type_ref\)]` | `settled-at-base` | `see settled-at-base.tsv` | 0 |
 
 ### Target 45: format-binary
 
