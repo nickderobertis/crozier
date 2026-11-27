@@ -28155,7 +28155,9 @@ fn missing_discriminant_refusal_follows_fern_examples_and_recovers_with_a_mapped
 /// refuses and a `-control` one it generates from: crozier refuses each probe
 /// in both modes — exit 1, nothing written, one line naming a registry class
 /// and, only under `--fern-strict`, the strict cause — and generates each
-/// control with identical bytes in both modes.
+/// control with identical bytes in both modes. A probe of
+/// [`COMPONENT_COLLISION_SHAPES`], refused only by Fern's limitation (#991),
+/// generates as a control does.
 #[test]
 fn every_committed_shape_follows_its_measured_role_through_the_cli() {
     let registry = repo_root().join(FERN_REFUSALS_DIR);
@@ -28230,7 +28232,10 @@ fn shape_role_failures(classes: &[String], path: &Path) -> Vec<String> {
         } else {
             "default mode"
         };
-        if name.contains("-probe.") {
+        let fern_limitation = COMPONENT_COLLISION_SHAPES
+            .iter()
+            .any(|(class, shape)| path.ends_with(Path::new(class).join(shape)));
+        if name.contains("-probe.") && !fern_limitation {
             let line = run.stderr.trim();
             let names_class = classes
                 .iter()
