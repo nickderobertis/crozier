@@ -60,6 +60,117 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Dispatch'
+  /dispatches/{dispatch_id}/notes:
+    post:
+      operationId: addNote
+      tags:
+      - dispatches
+      x-fern-retries:
+        disabled: true
+      parameters:
+      - name: dispatch_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+              - request_options
+              properties:
+                request_options:
+                  type: string
+      responses:
+        '204':
+          description: noted
+  /dispatches/{dispatch_id}/manifest:
+    get:
+      operationId: downloadManifest
+      tags:
+      - dispatches
+      parameters:
+      - name: dispatch_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: request_options
+        in: query
+        schema:
+          type: string
+      responses:
+        '200':
+          description: the manifest
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+  /routes:
+    get:
+      operationId: listRoutes
+      tags:
+      - routes
+      x-fern-pagination:
+        offset: $request.page
+        results: $response.routes
+      parameters:
+      - name: page
+        in: query
+        schema:
+          type: integer
+      - name: request_options
+        in: query
+        schema:
+          type: string
+      responses:
+        '200':
+          description: a page of routes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoutePage'
+  /labels/{request_options}:
+    get:
+      operationId: getLabel
+      tags:
+      - labels
+      parameters:
+      - name: request_options
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: the label
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dispatch'
+  /labels:
+    get:
+      operationId: listLabels
+      tags:
+      - labels
+      parameters:
+      - name: Request-Options
+        in: header
+        schema:
+          type: string
+      responses:
+        '200':
+          description: every label
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Dispatch'
 components:
   schemas:
     Dispatch:
@@ -69,3 +180,10 @@ components:
           type: string
         request_options:
           type: string
+    RoutePage:
+      type: object
+      properties:
+        routes:
+          type: array
+          items:
+            type: string

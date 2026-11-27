@@ -22,6 +22,7 @@ import json
 import pkgutil
 import sys
 import threading
+import urllib.parse
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
@@ -31,17 +32,21 @@ MAX_BODY = 1 << 20
 
 
 class Server:
-    """A real HTTP server on a free local port, answering each path with its
-    configured JSON body and recording every request body it receives, and the
-    headers each request carried."""
+    """A real HTTP server on a free local port, answering each path (its query
+    string aside, where the whole target is not configured) with its configured
+    JSON body, or bytes as a binary body, and recording every request body it
+    receives (a form-encoded one as its fields), the headers each request
+    carried, and every request's method, target and headers."""
 
     def __init__(self, bodies: dict[str, object]) -> None:
         self.received: list[object] = []
         self.headers: list[dict[str, str]] = []
+        self.requests: list[tuple[str, str, dict[str, str]]] = []
         server = self
 
         class Handler(http.server.BaseHTTPRequestHandler):
             def do_GET(self) -> None:
+                self._record("GET")
                 self._answer()
 
             def do_POST(self) -> None:
@@ -50,19 +55,28 @@ class Server:
                 if not ascii_decimal or int(declared) > MAX_BODY:
                     self.send_error(400, f"Content-Length must be 0..{MAX_BODY}, not {declared!r}")
                     return
-                server.received.append(json.loads(self.rfile.read(int(declared)) or b"null"))
+                raw = self.rfile.read(int(declared))
+                if (self.headers.get("Content-Type") or "").startswith("application/x-www-form-urlencoded"):
+                    server.received.append(dict(urllib.parse.parse_qsl(raw.decode())))
+                else:
+                    server.received.append(json.loads(raw or b"null"))
                 server.headers.append({key.lower(): value for key, value in self.headers.items()})
+                self._record("POST")
                 self._answer()
 
+            def _record(self, method: str) -> None:
+                server.requests.append((method, self.path, {key.lower(): value for key, value in self.headers.items()}))
+
             def _answer(self) -> None:
-                body = bodies.get(self.path)
+                body = bodies.get(self.path, bodies.get(self.path.split("?", 1)[0]))
                 if body is None:
                     self.send_response(204)
                     self.end_headers()
                     return
-                payload = json.dumps(body).encode()
+                binary = isinstance(body, bytes)
+                payload = body if isinstance(body, bytes) else json.dumps(body).encode()
                 self.send_response(200)
-                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Type", "application/octet-stream" if binary else "application/json")
                 self.send_header("Content-Length", str(len(payload)))
                 self.end_headers()
                 self.wfile.write(payload)
@@ -203,6 +217,65 @@ def request_options_body_property() -> None:
         raise SystemExit(f"request-options-body-property: the options' header reached {traces!r}")
     if any(result.id != "d-1" or result.request_options != "express" for result in results):
         raise SystemExit(f"request-options-body-property: returned {results!r}")
+    other_sources(options)
+
+
+def other_sources(options: dict[str, Any]) -> None:
+    """The other places an argument can take the name: a query parameter (on a
+    paginated and on a binary-download operation), a header and a form field
+    beside disabled retries each rename the SDK's options `_request_options`,
+    while a path parameter is `request_options_` and leaves the SDK's options
+    `request_options`. Each argument reaches the wire under its own name, and
+    each operation's options reach it as options."""
+    from fern import FernApi
+
+    server = Server(
+        {
+            "/routes?page=1&request_options=by-query": {"routes": ["r-1"]},
+            "/routes": {"routes": []},
+            "/dispatches/d-1/manifest": b"manifest-bytes",
+            "/labels": [{"id": "l-1"}],
+            "/labels/express": {"id": "l-2"},
+        }
+    )
+    try:
+        api = FernApi(base_url=server.base_url)
+        routes = list(api.routes.list_routes(request_options="by-query", _request_options=options))
+        manifest = b"".join(
+            api.dispatches.download_manifest("d-1", request_options="by-query", _request_options=options)
+        )
+        api.dispatches.add_note("d-1", request_options="by-form", _request_options=options)
+        labels = api.labels.list_labels(request_options="by-header", _request_options=options)
+        label = api.labels.get_label(request_options_="express", request_options=options)
+    finally:
+        server.close()
+    if (
+        routes != ["r-1"]
+        or manifest != b"manifest-bytes"
+        or [item.id for item in labels] != ["l-1"]
+        or label.id != "l-2"
+    ):
+        raise SystemExit(f"request-options-body-property: returned {routes!r}, {manifest!r}, {labels!r}, {label!r}")
+    targets = [(method, target.split("?", 1)) for method, target, _ in server.requests]
+    expected = [
+        ("GET", ["/routes", "page=1&request_options=by-query"]),
+        ("GET", ["/routes", "page=2&request_options=by-query"]),
+        ("GET", ["/dispatches/d-1/manifest", "request_options=by-query"]),
+        ("POST", ["/dispatches/d-1/notes"]),
+        ("GET", ["/labels"]),
+        ("GET", ["/labels/express"]),
+    ]
+    if targets != expected:
+        raise SystemExit(f"request-options-body-property: requested {targets!r}")
+    if server.received != [{"request_options": "by-form"}]:
+        raise SystemExit(f"request-options-body-property: the form sent {server.received!r}")
+    headers = [headers for _, _, headers in server.requests]
+    (listed,) = [request for (_, target, request) in server.requests if target == "/labels"]
+    if listed.get("request-options") != "by-header":
+        raise SystemExit(f"request-options-body-property: the header went as {listed!r}")
+    traces = [request.get("x-courier-trace") for request in headers]
+    if traces != ["t-1"] * len(expected):
+        raise SystemExit(f"request-options-body-property: the options' header reached {traces!r}")
 
 
 JOURNEYS: dict[str, Callable[[], None]] = {

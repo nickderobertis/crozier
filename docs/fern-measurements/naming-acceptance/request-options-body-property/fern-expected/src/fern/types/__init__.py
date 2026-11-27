@@ -7,7 +7,8 @@ from importlib import import_module
 
 if typing.TYPE_CHECKING:
     from .dispatch import Dispatch
-_dynamic_imports: typing.Dict[str, str] = {"Dispatch": ".dispatch"}
+    from .route_page import RoutePage
+_dynamic_imports: typing.Dict[str, str] = {"Dispatch": ".dispatch", "RoutePage": ".route_page"}
 
 
 def __getattr__(attr_name: str) -> typing.Any:
@@ -31,4 +32,4 @@ def __dir__():
     return sorted(lazy_attrs)
 
 
-__all__ = ["Dispatch"]
+__all__ = ["Dispatch", "RoutePage"]

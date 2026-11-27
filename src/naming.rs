@@ -257,6 +257,24 @@ pub fn field_name(wire_name: &str) -> String {
     }
 }
 
+/// The Python argument name of a path parameter: its [`field_name`], with a
+/// `_` appended where it would take `request_options`, the name the SDK's own
+/// options argument keeps on that method. Measured at Fern CLI 5.216.0 /
+/// fern-python-sdk 5.42.0 on
+/// `docs/fern-measurements/naming-acceptance/request-options-body-property/`
+/// (#981): `GET /labels/{request_options}` is `get_label(self,
+/// request_options_: str, *, request_options: …)`, where a query, header or
+/// body argument of that name renames the SDK's option instead.
+#[must_use]
+pub fn path_param_name(wire_name: &str) -> String {
+    let name = field_name(wire_name);
+    if name == "request_options" {
+        format!("{name}_")
+    } else {
+        name
+    }
+}
+
 /// Python argument name for an inlined request-body property. Fern prefixes a
 /// digit-leading body argument with `_` (distinct from model fields' `f_`), and
 /// suffixes the two names a method's own signature already binds, `self` and

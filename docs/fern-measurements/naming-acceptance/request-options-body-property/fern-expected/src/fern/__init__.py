@@ -6,8 +6,8 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
-    from .types import Dispatch
-    from . import dispatches
+    from .types import Dispatch, RoutePage
+    from . import dispatches, labels, routes
     from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
     from .environment import FernApiEnvironment
@@ -19,8 +19,11 @@ _dynamic_imports: typing.Dict[str, str] = {
     "Dispatch": ".types",
     "FernApi": ".client",
     "FernApiEnvironment": ".environment",
+    "RoutePage": ".types",
     "__version__": ".version",
     "dispatches": ".dispatches",
+    "labels": ".labels",
+    "routes": ".routes",
 }
 
 
@@ -52,6 +55,9 @@ __all__ = [
     "Dispatch",
     "FernApi",
     "FernApiEnvironment",
+    "RoutePage",
     "__version__",
     "dispatches",
+    "labels",
+    "routes",
 ]

@@ -3359,7 +3359,7 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
                     // Only a collision's `_` comes off: a reserved name keeps its
                     // own (GravitLauncher's `uuid` is `uuid_` on every operation,
                     // a JSON body beside it or not).
-                    if path_param.py_name == naming::field_name(&path_param.wire_name) {
+                    if path_param.py_name == naming::path_param_name(&path_param.wire_name) {
                         continue;
                     }
                     if let Some(base) = path_param.py_name.strip_suffix('_') {
@@ -4238,7 +4238,7 @@ fn build_endpoint(
             PathParam {
                 constraints: crate::example_values::ValueConstraints::of_parameter(p, doc),
                 wire_name: p.name.clone(),
-                py_name: naming::field_name(p.sdk_name()),
+                py_name: naming::path_param_name(p.sdk_name()),
                 // A path value that reaches nothing but scalars is interpolated as
                 // text, the same guard the query arm applies. A string enum a `$ref`
                 // names is one of them: it is a plain `str` value, with no field
