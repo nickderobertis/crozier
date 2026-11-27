@@ -17,10 +17,13 @@ rather than taking the lock again, which would deadlock. The holder exports
 `CROZIER_FERN_GENERATION_LOCK_HOLDER=<its pid>` and records the same pid in
 `fern-generation.lock.holder` beside the lock for as long as it holds it. A
 process is inside that hold when the variable it inherited names that recorded
-pid and the pid is the process itself or one of its ancestors (on Windows, which has no
-parent lookup here, only the process itself), so a variable
+pid and the pid is the process itself or one of its ancestors, so a variable
 leaked into an unrelated process, or one left from a hold already released,
-never stands in for the lock. A hold made outside these entry points (a hand
+never stands in for the lock. Where the platform offers no parent lookup (no
+`/proc` and no `ps`, as on Windows), the ancestry cannot be read, so the
+inherited variable naming the recorded pid is the hold: a nested entry point
+there still shares its parent's hold rather than deadlocking on it, and one left
+from a released hold still is not one, because releasing removes the record. A hold made outside these entry points (a hand
 `flock` around a bare `fern` run) records no holder, so an entry point started
 under it waits for it rather than joining it.
 
@@ -96,7 +99,8 @@ def recorded_holder() -> Pid | None:
 
 
 def parent_of(pid: Pid) -> Pid | None:
-    """`pid`'s parent, read from /proc where there is one and from `ps` elsewhere."""
+    """`pid`'s parent, read from /proc where there is one and from `ps` elsewhere
+    off Windows; None where neither answers."""
     stat = Path("/proc") / str(pid) / "stat"
     if stat.parent.parent.is_dir():
         try:
@@ -105,6 +109,9 @@ def parent_of(pid: Pid) -> Pid | None:
             return parse_pid(fields[1])
         except (OSError, IndexError, ValueError):
             return None
+    if sys.platform == "win32":
+        # A `ps` on a Windows PATH is a POSIX layer's, naming its own pids.
+        return None
     try:
         shown = subprocess.run(
             ["ps", "-o", "ppid=", "-p", str(pid)], capture_output=True, text=True, check=False, timeout=10
@@ -115,18 +122,24 @@ def parent_of(pid: Pid) -> Pid | None:
 
 
 def is_self_or_ancestor(pid: Pid) -> bool:
-    current: Pid | None = own_pid()
+    """Whether `pid` is this process or one of its ancestors; True too where the
+    platform offers no parent lookup at all, so the recorded match is the proof."""
+    current = own_pid()
+    if current == pid:
+        return True
+    parent = parent_of(current)
+    if parent is None:
+        # Every process has a parent, so no answer for this one means no lookup.
+        return True
     for _ in range(MAX_DEPTH):
-        if current is None or current <= 0:
+        if parent <= 0:
             return False
-        if current == pid:
+        if parent == pid:
             return True
-        if os.name == "nt":
-            # Windows has no parent lookup here, so only the holder itself is
-            # verified there; Fern, and every entry point nesting another, runs
-            # on Linux and macOS.
+        next_parent = parent_of(parent)
+        if next_parent is None:
             return False
-        current = parent_of(current)
+        parent = next_parent
     return False
 
 

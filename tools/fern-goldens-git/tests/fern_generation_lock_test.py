@@ -724,7 +724,7 @@ class NestingIsVerifiedNotTrusted(unittest.TestCase):
             [sys.executable, str(LOCK_SCRIPT), "held"], env=dict(self.environment, **extra), check=False
         ).returncode
 
-    @unittest.skipIf(os.name == "nt", "Windows has no parent lookup, so only the holder itself is a hold there")
+    @unittest.skipIf(os.name == "nt", "Windows has no parent lookup, so the recorded match alone is the hold there")
     def test_a_variable_naming_no_recorded_holder_or_no_ancestor_is_not_a_hold(self) -> None:
         self.assertEqual(1, self.held())
         self.assertEqual(1, self.held(**{LOCK.HOLDER_ENV: str(os.getpid())}), "no holder recorded")
@@ -883,6 +883,57 @@ class NestingIsVerifiedNotTrusted(unittest.TestCase):
         self.assertIn("probe: cannot take the host Fern generation lock at", ran.stderr)
         self.assertIn("a writable directory (or point XDG_CACHE_HOME at one), then re-run", ran.stderr)
         self.assertNotIn("Traceback", ran.stderr)
+
+    def test_without_fcntl_or_a_parent_lookup_a_nested_run_shares_its_parents_hold(self) -> None:
+        """Where `fcntl` will not import and no parent lookup answers (no `/proc`
+        and no `ps`, as on Windows), an entry point started below a holder still
+        recognizes that hold and runs its command, rather than waiting on the lock
+        its own ancestor holds — which never ends."""
+        scratch = Path(self.environment["XDG_CACHE_HOME"])
+        site, empty_path = scratch / "non-posix", scratch / "no-ps"
+        site.mkdir()
+        empty_path.mkdir()
+        # A `None` in sys.modules is what the import system reads as "not
+        # available"; `/proc` answering no is a platform without it.
+        (site / "sitecustomize.py").write_text(
+            "import pathlib, sys\n"
+            "sys.modules['fcntl'] = None\n"
+            "_is_dir = pathlib.Path.is_dir\n"
+            "pathlib.Path.is_dir = lambda self, *a, **k: False if self == pathlib.Path('/proc') else _is_dir(self, *a, **k)\n",
+            encoding="utf-8",
+        )
+        self.environment["PYTHONPATH"] = str(site)
+        if os.name != "nt":
+            # Windows skips `ps` itself, and its Python wants its PATH.
+            self.environment["PATH"] = str(empty_path)
+        ran = scratch / "nested.ran"
+        nested = [
+            sys.executable, str(LOCK_SCRIPT), "run", "--label", "nested", "--",
+            sys.executable, "-c", f"import pathlib; pathlib.Path({str(ran)!r}).write_text('')",
+        ]  # fmt: skip
+        # The holder's command is a process of its own that starts the nested entry
+        # point, so the nested one is the holder's grandchild, not the holder.
+        parent = f"import subprocess, sys; sys.exit(subprocess.run({nested!r}).returncode)"
+        errors = scratch / "outer.stderr"
+        with errors.open("wb") as handle:
+            outer = subprocess.Popen(
+                [sys.executable, str(LOCK_SCRIPT), "run", "--label", "outer", "--", sys.executable, "-c", parent],
+                env=self.environment,
+                stderr=handle,
+                start_new_session=os.name != "nt",
+            )
+        if os.name != "nt":
+            # A nested run that waits forever is reaped with the whole tree.
+            self.addCleanup(lambda: outer.poll() is None and os.killpg(outer.pid, signal.SIGKILL))
+        try:
+            status = outer.wait(timeout=HANG_GUARD_SECONDS)
+        except subprocess.TimeoutExpired:
+            self.fail(f"the nested run deadlocked on its parent's hold:\n{errors.read_text(encoding='utf-8')}")
+        stderr = errors.read_text(encoding="utf-8")
+        self.assertEqual(0, status, stderr)
+        self.assertTrue(ran.exists(), f"the nested run never ran its command:\n{stderr}")
+        self.assertNotIn("nested: waiting", stderr)
+        self.assertFalse((scratch / "crozier" / "fern-generation.lock.held").exists(), "the hold outlived the run")
 
     @unittest.skipIf(os.name == "nt", "Windows takes msvcrt's lock, which needs no fallback")
     def test_without_fcntl_a_second_run_still_waits_for_the_first(self) -> None:

@@ -58,7 +58,10 @@ rather than taking the lock a second time. The holder exports
 `CROZIER_FERN_GENERATION_LOCK_HOLDER=<its pid>` and records that pid in
 `fern-generation.lock.holder` beside the lock while it holds it; a process is
 inside the hold when the variable it inherited names the recorded pid and that
-pid is the process or one of its ancestors. So `weekly.py shard` holds the lock
+pid is the process or one of its ancestors. Where the platform offers no
+parent lookup (no `/proc` and no `ps`, as on Windows), the inherited variable
+naming the recorded pid is the hold, so a nested entry point there shares its
+parent's hold too rather than deadlocking on it. So `weekly.py shard` holds the lock
 and each `fern-references.py generate` it starts, and each script that one
 delegates to, runs inside the same hold. A variable leaked into an unrelated
 process, or left over from a released hold, is not a hold. The one
