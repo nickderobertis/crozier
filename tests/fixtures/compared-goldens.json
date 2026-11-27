@@ -682,6 +682,12 @@
       ]
     },
     "docs/fern-measurements/naming-acceptance/request-options-body-property/fern-expected": {},
+    "docs/fern-measurements/naming-acceptance/required-only-members/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/naming-acceptance/required-only-members/fern-expected": {},
     "docs/fern-measurements/naming-acceptance/root-import-order/expected-literals/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"

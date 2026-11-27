@@ -767,4 +767,45 @@ fn single_letter_component_words_use_the_certified_casing() {
     }
     assert!(failures.is_empty(), "{}", failures.join("\n\n"));
 }
+
+/// What an `allOf` requires through a bare `{required: [...]}` member and
+/// across repeated parents, as the certified pair decides it: a trailing bare
+/// member requires the `$ref` parent's `name` and drops that parent's own
+/// `required` (`PacketForCreate`, Benchling's `OligoBaseRequestForCreate`), and
+/// so do models built on it (`PacketCreate`). It requires what an inline sibling
+/// declares where no `$ref` stands beside it (`TrialCreate`, Benchling's
+/// `StudyCreate`), and leaves optional a name two parents of the body declare
+/// (`create_packet`'s `bin_id`, Benchling's `create_dna_oligo_with_helm`'s
+/// `folder_id`). A property a later parent requires, which the earlier one
+/// declares optional, is required (`Harvest.crop`).
+#[test]
+fn required_only_members_and_repeated_parents_decide_the_certified_requiredness() {
+    let case = "required-only-members";
+    let temp = tempfile::tempdir().expect("output tempdir");
+    let mut failures = both_modes_failures(case, temp.path());
+    let sdk = temp.path().join("sdk");
+    for (file, certified) in [
+        ("src/fern/types/packet_for_create.py", "    name: str\n"),
+        (
+            "src/fern/types/packet_for_create.py",
+            "    grower: typing.Optional[str] = None\n",
+        ),
+        (
+            "src/fern/types/packet_create.py",
+            "    grower: typing.Optional[str] = None\n",
+        ),
+        ("src/fern/types/trial_create.py", "    title: str\n"),
+        ("src/fern/types/harvest.py", "    crop: str\n"),
+        (
+            "src/fern/client.py",
+            "        name: str,\n        label: typing.Optional[str] = OMIT,\n        \
+             bin_id: typing.Optional[str] = OMIT,\n        grower: typing.Optional[str] = OMIT,\n",
+        ),
+    ] {
+        if !read(&sdk.join(file)).contains(certified) {
+            failures.push(format!("#985 {case}: {file} lacks {certified:?}"));
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n\n"));
+}
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]

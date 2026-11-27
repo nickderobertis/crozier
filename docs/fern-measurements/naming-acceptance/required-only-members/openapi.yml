@@ -1,0 +1,115 @@
+openapi: 3.0.3
+info:
+  title: Seed Vault
+  version: 1.0.0
+paths:
+  /packets:
+    post:
+      operationId: create_packet
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PacketCreateLabelled'
+      responses:
+        '200':
+          description: The packet
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shelf'
+components:
+  schemas:
+    PacketBase:
+      type: object
+      properties:
+        name:
+          type: string
+        binId:
+          type: string
+        grower:
+          type: string
+      required:
+      - grower
+    PacketForCreate:
+      allOf:
+      - $ref: '#/components/schemas/PacketBase'
+      - required:
+        - name
+    StorageTarget:
+      type: object
+      properties:
+        binId:
+          type: string
+        vaultId:
+          type: string
+    PacketCreate:
+      allOf:
+      - $ref: '#/components/schemas/PacketForCreate'
+      - $ref: '#/components/schemas/StorageTarget'
+    PacketCreateLabelled:
+      allOf:
+      - $ref: '#/components/schemas/PacketCreate'
+      - properties:
+          label:
+            type: string
+      - required:
+        - binId
+        - name
+    HarvestBase:
+      type: object
+      properties:
+        crop:
+          type: string
+        yield:
+          type: integer
+    HarvestTarget:
+      type: object
+      properties:
+        crop:
+          type: string
+        plotId:
+          type: string
+      required:
+      - plotId
+      - crop
+    Harvest:
+      allOf:
+      - $ref: '#/components/schemas/HarvestBase'
+      - $ref: '#/components/schemas/HarvestTarget'
+    TrialCreate:
+      allOf:
+      - properties:
+          title:
+            type: string
+          plotId:
+            type: string
+          notes:
+            type: string
+      - required:
+        - title
+        - plotId
+    SampleBase:
+      type: object
+      properties:
+        sampleId:
+          type: string
+        origin:
+          type: string
+    Shelf:
+      type: object
+      properties:
+        samples:
+          type: array
+          items:
+            allOf:
+            - $ref: '#/components/schemas/SampleBase'
+            - required:
+              - origin
+              - sampleId
+            - properties:
+                sampleId:
+                  type: string
+                weight:
+                  type: number

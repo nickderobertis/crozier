@@ -410,6 +410,8 @@ docs/fern-measurements/naming-acceptance/request-local-union-payloads/expected-l
 docs/fern-measurements/naming-acceptance/request-local-union-payloads/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_repairs_match_the_certified_pair
 docs/fern-measurements/naming-acceptance/request-options-body-property/expected-literals/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_documents_generate_as_the_certified_pair_does
 docs/fern-measurements/naming-acceptance/request-options-body-property/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_documents_generate_as_the_certified_pair_does
+docs/fern-measurements/naming-acceptance/required-only-members/expected-literals/fern-expected	crozier-e2e::e2e	naming_acceptance::required_only_members_and_repeated_parents_decide_the_certified_requiredness
+docs/fern-measurements/naming-acceptance/required-only-members/fern-expected	crozier-e2e::e2e	naming_acceptance::required_only_members_and_repeated_parents_decide_the_certified_requiredness
 docs/fern-measurements/naming-acceptance/root-import-order/expected-literals/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_repairs_match_the_certified_pair
 docs/fern-measurements/naming-acceptance/root-import-order/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_repairs_match_the_certified_pair
 docs/fern-measurements/naming-acceptance/single-letter-component-words/expected-literals/fern-expected	crozier-e2e::e2e	naming_acceptance::single_letter_component_words_use_the_certified_casing

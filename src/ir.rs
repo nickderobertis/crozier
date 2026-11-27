@@ -8438,7 +8438,7 @@ fn resolve_request_body(
                     {
                         apply_sibling_properties_example_order(&class, types, &mut fields);
                     }
-                    promote_bare_required_members(target, &mut fields);
+                    promote_bare_required_members(&doc.components.schemas, target, &mut fields);
                     for field in &mut fields {
                         if field.example.is_none()
                             && target.is_beta == Some(true)
@@ -12031,14 +12031,24 @@ fn tightened_parent(schemas: &IndexMap<String, Schema>, schema: &Schema) -> Opti
 /// of its `allOf`, or through `required` beside it. In the type layer such a member
 /// is skipped (see [`is_object_all_of_member`]), but a flattened body honours it:
 /// Notehub's `CreateMonitor` is `allOf: [$ref Monitor, {required: [name, …]}]`, and
-/// the certified pair's method requires those arguments, listed first.
-fn promote_bare_required_members(target: &Schema, fields: &mut [BodyField]) {
-    let names: Vec<&String> = target
-        .all_of
+/// the certified pair's method requires those arguments, listed first. A name
+/// two components of the body's `$ref` ancestry declare is not promoted: the
+/// `naming-acceptance/required-only-members` measurement's `create_packet`
+/// keeps `bin_id` optional (see [`trailing_required_view`]).
+fn promote_bare_required_members(
+    schemas: &IndexMap<String, Schema>,
+    target: &Schema,
+    fields: &mut [BodyField],
+) {
+    let members = target.all_of.as_deref().unwrap_or_default();
+    let names: Vec<&String> = members
         .iter()
-        .flatten()
         .filter(|member| member.reference.is_none() && member.properties.is_empty())
         .flat_map(|member| member.required.iter())
+        .filter(|name| {
+            target.properties.contains_key(name.as_str())
+                || ancestry_declarers(schemas, members, name) < 2
+        })
         .collect();
     if names.is_empty() {
         return;
@@ -12105,6 +12115,25 @@ fn apply_sibling_properties_example_order(
     }
 }
 
+/// The model a body's base names, through any alias of it: Benchling's
+/// `OligoUpdateHelm` extends `OligoUpdate`, an alias of `OligoBaseRequest`
+/// (`allOf: [$ref OligoBaseRequest]`), and the certified pair's
+/// `update_dna_oligo_helm` takes `OligoBaseRequest`'s fields after `helm`.
+fn base_object<'a>(types: &'a [TypeDecl], base: &str) -> Option<&'a ObjectType> {
+    let mut name = base;
+    for _ in 0..8 {
+        match types.iter().find(|decl| decl.name() == name)? {
+            TypeDecl::Object(object) => return Some(object),
+            TypeDecl::Alias(alias) => match &alias.target {
+                TypeRef::Named(target) => name = target,
+                _ => return None,
+            },
+            _ => return None,
+        }
+    }
+    None
+}
+
 /// The order reference documentation lists a request body's fields in: the ones
 /// the generated signature makes mandatory first, then the rest, each in
 /// declaration order. That is the *emitted* optionality rather than the Schema
@@ -12121,10 +12150,7 @@ fn append_reference_field_names(
         return;
     }
     for base in &obj.bases {
-        if let Some(base_obj) = types.iter().find_map(|decl| match decl {
-            TypeDecl::Object(candidate) if candidate.name == *base => Some(candidate),
-            _ => None,
-        }) {
+        if let Some(base_obj) = base_object(types, base) {
             append_reference_base_field_names(base_obj, types, seen, out);
         }
     }
@@ -12149,10 +12175,7 @@ fn append_declaration_field_names(
         return;
     }
     for base in &obj.bases {
-        if let Some(base_obj) = types.iter().find_map(|decl| match decl {
-            TypeDecl::Object(candidate) if candidate.name == *base => Some(candidate),
-            _ => None,
-        }) {
+        if let Some(base_obj) = base_object(types, base) {
             append_declaration_field_names(base_obj, types, seen, out);
         }
     }
@@ -12164,10 +12187,7 @@ fn append_declaration_field_names(
 fn append_markdown_field_names(obj: &ObjectType, types: &[TypeDecl], out: &mut Vec<String>) {
     let mut seen = std::collections::HashSet::from([obj.name.clone()]);
     for base in &obj.bases {
-        if let Some(base_obj) = types.iter().find_map(|decl| match decl {
-            TypeDecl::Object(candidate) if candidate.name == *base => Some(candidate),
-            _ => None,
-        }) {
+        if let Some(base_obj) = base_object(types, base) {
             let mut base_fields = Vec::new();
             append_own_first_field_names(base_obj, types, &mut seen, &mut base_fields);
             out.extend(base_fields);
@@ -12188,10 +12208,7 @@ fn append_own_first_field_names(
     }
     out.extend(obj.fields.iter().map(|field| field.wire_name.clone()));
     for base in &obj.bases {
-        if let Some(base_obj) = types.iter().find_map(|decl| match decl {
-            TypeDecl::Object(candidate) if candidate.name == *base => Some(candidate),
-            _ => None,
-        }) {
+        if let Some(base_obj) = base_object(types, base) {
             append_own_first_field_names(base_obj, types, seen, out);
         }
     }
@@ -12214,10 +12231,7 @@ fn append_reference_base_field_names(
             .map(|field| field.wire_name.clone()),
     );
     for base in &obj.bases {
-        if let Some(base_obj) = types.iter().find_map(|decl| match decl {
-            TypeDecl::Object(candidate) if candidate.name == *base => Some(candidate),
-            _ => None,
-        }) {
+        if let Some(base_obj) = base_object(types, base) {
             append_reference_base_field_names(base_obj, types, seen, out);
         }
     }
@@ -12277,10 +12291,7 @@ fn append_request_fields(
         }
     }));
     for base in &obj.bases {
-        if let Some(base_obj) = types.iter().find_map(|decl| match decl {
-            TypeDecl::Object(candidate) if candidate.name == *base => Some(candidate),
-            _ => None,
-        }) {
+        if let Some(base_obj) = base_object(types, base) {
             append_request_fields(
                 base_obj,
                 request_class,
@@ -15849,7 +15860,15 @@ impl Builder<'_> {
                         // declares a flat model of `CodedError`'s fields.
                         || target.all_of.is_some())
                 {
-                    let target = with_annotation_xml(target, schema);
+                    let mut target = with_annotation_xml(target, schema);
+                    // A bare `{required: [...]}` annotation decides what the copy
+                    // requires (see [`trailing_required_view`]).
+                    if let Some(required) =
+                        trailing_required_view(self.schemas, schema).filter(|_| !union)
+                    {
+                        target = all_properties_of(self.schemas, &target, 0);
+                        target.required = required.into();
+                    }
                     self.use_site_copy(name, &target, description);
                     return;
                 }
@@ -16403,6 +16422,14 @@ impl Builder<'_> {
                     else {
                         continue;
                     };
+                    // A promoted field is the composition's own required
+                    // declaration, not a restatement of the base's optional one:
+                    // the `naming-acceptance/required-only-members` measurement's
+                    // `Harvest` requires `crop`, which only its later parent
+                    // `HarvestTarget` requires, and the base's copy is dropped.
+                    if promoted_owners.is_some_and(|owners| owners.contains_key(&field.wire_name)) {
+                        continue;
+                    }
                     let requires = base_required.contains(&field.wire_name.as_str());
                     let same_shape = local.type_ref == field.type_ref
                         || own_property(schema, &field.wire_name)
@@ -20726,9 +20753,148 @@ fn all_properties_of(schemas: &IndexMap<String, Schema>, schema: &Schema, depth:
     }
     required.extend(schema.required.iter().cloned());
     required.dedup();
+    if let Some(view) = trailing_required_view(schemas, schema) {
+        required = view;
+    }
     merged.properties = properties;
     merged.required = required.into();
     merged
+}
+
+/// Whether an `allOf` member only restates `required`: no `$ref`, `type`,
+/// properties or composition of its own.
+fn is_bare_required_member(member: &Schema) -> bool {
+    member.reference.is_none()
+        && member.ty.is_none()
+        && !member.properties.declared()
+        && member.all_of.is_none()
+        && member.one_of.is_none()
+        && member.any_of.is_none()
+        && !member.required.is_empty()
+}
+
+/// What a composition requires when it ends in bare `{required: [...]}`
+/// members, as the certified pair reads it (Fern CLI 5.216.0 /
+/// fern-python-sdk 5.42.0, the
+/// `naming-acceptance/required-only-members` measurement): the names such a
+/// member lists, its siblings' own `required` and the schema's, while its `$ref`
+/// parents' lists no longer apply. Benchling's `OligoBaseRequestForCreate` is
+/// `allOf: [$ref OligoBaseRequest, {required: [name]}]` and its `name` is
+/// required; the measurement's `PacketForCreate` drops `PacketBase`'s required
+/// `grower`. A listed name that two components of the composition's ancestry
+/// declare stays optional: Benchling's `OligoCreateHelm` requires `folderId`,
+/// which `OligoBaseRequest` and `CreateEntityIntoRegistry` both declare, and
+/// `create_dna_oligo_with_helm` takes it optional. Beside a `$ref` parent a
+/// listed name an inline member declares is not required either: Benchling's
+/// `ManifestBooleanScalarConfig` is `allOf: [$ref BaseManifestScalarConfig,
+/// {properties: {type}}, {required: [type]}]` and its `type` is optional, where
+/// `StudyCreate`, `allOf: [{properties}, {required}]`, requires what it lists.
+/// `None` for any other
+/// composition, and for one whose bare member a later member with properties
+/// follows, which skips it (TAMS's `StorageBackendsList` items, and the
+/// measurement's `Shelf.samples`).
+fn trailing_required_view(
+    schemas: &IndexMap<String, Schema>,
+    schema: &Schema,
+) -> Option<Vec<String>> {
+    let members = schema.all_of.as_deref()?;
+    let mut listed: Vec<String> = Vec::new();
+    for (index, member) in members.iter().enumerate() {
+        if !is_bare_required_member(member) {
+            continue;
+        }
+        let followed = members[index + 1..]
+            .iter()
+            .any(|later| later.reference.is_some() || later.properties.declared());
+        if followed {
+            continue;
+        }
+        for name in member.required.iter() {
+            if !listed.contains(name) {
+                listed.push(name.clone());
+            }
+        }
+    }
+    if listed.is_empty() {
+        return None;
+    }
+    let mut required: Vec<String> = Vec::new();
+    let push = |name: &String, required: &mut Vec<String>| {
+        if !required.contains(name) {
+            required.push(name.clone());
+        }
+    };
+    for member in members.iter().filter(|member| {
+        member.reference.is_none()
+            && !is_bare_required_member(member)
+            && is_object_all_of_member(member)
+    }) {
+        for name in member.required.iter() {
+            push(name, &mut required);
+        }
+    }
+    let has_parent = members.iter().any(|member| member.reference.is_some());
+    for name in &listed {
+        let declared_inline = schema.properties.contains_key(name)
+            || members
+                .iter()
+                .filter(|member| member.reference.is_none())
+                .any(|member| member.properties.contains_key(name));
+        let applies = if declared_inline {
+            !has_parent
+        } else {
+            ancestry_declarers(schemas, members, name) < 2
+        };
+        if applies {
+            push(name, &mut required);
+        }
+    }
+    for name in schema.required.iter() {
+        push(name, &mut required);
+    }
+    Some(required)
+}
+
+/// How many components (each once) of the `$ref` ancestry of `members` declare
+/// `key` among their own properties.
+fn ancestry_declarers(schemas: &IndexMap<String, Schema>, members: &[Schema], key: &str) -> usize {
+    fn walk<'a>(
+        schemas: &'a IndexMap<String, Schema>,
+        members: &'a [Schema],
+        key: &str,
+        visited: &mut std::collections::HashSet<&'a str>,
+        count: &mut usize,
+    ) {
+        for member in members {
+            let node = match member.reference.as_deref() {
+                Some(reference) => {
+                    if !visited.insert(reference) {
+                        continue;
+                    }
+                    let Some(node) = resolve_ref_from_schemas(schemas, reference) else {
+                        continue;
+                    };
+                    if node.properties.contains_key(key) {
+                        *count += 1;
+                    }
+                    node
+                }
+                None => member,
+            };
+            if let Some(inner) = node.all_of.as_deref() {
+                walk(schemas, inner, key, visited, count);
+            }
+        }
+    }
+    let mut count = 0;
+    walk(
+        schemas,
+        members,
+        key,
+        &mut std::collections::HashSet::new(),
+        &mut count,
+    );
+    count
 }
 
 /// Every name an `allOf` composition requires: what each member requires —
@@ -20739,6 +20905,9 @@ fn all_properties_of(schemas: &IndexMap<String, Schema>, schema: &Schema, depth:
 /// requiring it, `Feature` requires it, and the golden field is a required
 /// `id: str`.
 fn all_of_required(schemas: &IndexMap<String, Schema>, schema: &Schema) -> Vec<String> {
+    if let Some(required) = trailing_required_view(schemas, schema) {
+        return required;
+    }
     let mut required = Vec::new();
     if let Some(members) = schema.all_of.as_deref() {
         let objects: Vec<Schema> = members
@@ -20796,6 +20965,14 @@ fn required_through<'a>(
                 let Some(node) = resolve_ref_from_schemas(schemas, reference) else {
                     continue;
                 };
+                if let Some(view) = trailing_required_view(schemas, node) {
+                    for name in view {
+                        if !out.contains(&name) {
+                            out.push(name);
+                        }
+                    }
+                    continue;
+                }
                 node
             }
             None => member,

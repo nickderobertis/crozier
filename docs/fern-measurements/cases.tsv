@@ -578,3 +578,5 @@ worked-examples/binary-body-examples	docs/fern-measurements/worked-examples/bina
 worked-examples/binary-body-examples/expected-literals	docs/fern-measurements/worked-examples/binary-body-examples/openapi.yml	literals	packaged	fern-expected:docs/fern-measurements/worked-examples/binary-body-examples/fern-expected
 worked-examples/nested-argument-widths	docs/fern-measurements/worked-examples/nested-argument-widths/openapi.yml	python-enums	packaged	-
 worked-examples/nested-argument-widths/expected-literals	docs/fern-measurements/worked-examples/nested-argument-widths/openapi.yml	literals	packaged	fern-expected:docs/fern-measurements/worked-examples/nested-argument-widths/fern-expected
+naming-acceptance/required-only-members	docs/fern-measurements/naming-acceptance/required-only-members/openapi.yml	python-enums	packaged	-
+naming-acceptance/required-only-members/expected-literals	docs/fern-measurements/naming-acceptance/required-only-members/openapi.yml	literals	packaged	fern-expected:docs/fern-measurements/naming-acceptance/required-only-members/fern-expected
