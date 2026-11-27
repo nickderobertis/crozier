@@ -1,25 +1,16 @@
-# Prove each pull request from a clean checkout. Four lanes do the work, none needing
-# another so all start at once: `lint` once on Linux for everything platform-independent,
-# and one test lane per platform, each running the suites the change can reach (Nx
-# affected, from an explicit merge base) through the same gate the recipes run locally.
-# CI does not run on push to main: the squash commit's tree is what its pull request's
-# lanes proved. See docs/ci-lanes.md for which lane owns what, and tools/ci/lanes.json for
-# the executable inventory. The four job ids are the contexts branch protection requires,
-# declared in .github/governance.json.
+# SPIKE ONLY (spike-windows-lane-breakdown): a DO NOT MERGE draft's cut-down workflow,
+# never landed. Two jobs, one per platform the spike compares: each sets up exactly as
+# test-windows / test-linux do, then runs the test lane's offline targets over every
+# non-promoted project uncached (the gate's broader tier, standing in for a cold
+# whole-graph change), recording per-test durations (nextest's PASS lines, pytest's
+# --durations, Node's TAP), crozier's own phase profile (CROZIER_PROFILE) and a few
+# micro-measurements, all uploaded as artifacts. Read a run with
+# `node tools/ci-profile/ci-profile.mjs run <run-id>` (tools/ci-profile/AGENTS.md).
 
 name: ci
 
 on:
-  workflow_dispatch:
-    inputs:
-      macos-diagnostic:
-        description: Run the Mac test lane too
-        type: boolean
-        default: false
   pull_request:
-    # GitHub's default types, without `ready_for_review`: a draft's runs already
-    # report the required contexts on its head commit, and marking it ready
-    # changes no commit, so a run on the lift would only repeat them.
     types: [opened, synchronize, reopened]
 
 concurrency:
@@ -30,460 +21,277 @@ permissions:
   contents: read
 
 env:
-  CROZIER_RESULT_CACHE: .ci-results
+  # Nx's task parallelism for the measured step. Nx's default is 3; 4 asks whether a fourth
+  # slot pays on the runners' 4 processors.
+  NX_PARALLEL: "4"
 
+# llmlint: ignore[changed_behavior_has_e2e] SPIKE ONLY: these two jobs replace the four real lanes on a branch that never lands; the suites holding the real lanes' contract keep proving it, against the real ci.yml put back before they run (the "Put the real ci.yml in front of the suites" steps), and ci-profile's own drift test reads this file as committed.
 jobs:
-  # Everything platform-independent, once. On a release pull request it is the one lane
-  # that runs, and it holds that branch to the release tool's own edits.
-  lint:
-    runs-on: ubuntu-latest
-    # 60, not 30: setup reaches the judged diff tier about 23 minutes in, and each
-    # ~3 MB judge batch takes about 2.5 minutes, so a broad change (the Fern 5.200.0
-    # pair move needed 5 batches) cannot finish inside 30. The cap does not lengthen
-    # CI's critical path: test-linux already runs longer.
-    timeout-minutes: 60
-    permissions:
-      actions: write  # cancel this run when the judge gives no verdict (the last step below)
-      contents: write  # visual docs: push the pull request's gallery preview to gh-pages
-      pull-requests: write  # the suppressions and visual docs comments
-    steps:
-      # Full history: the affected tier's base is a merge base, which must be in the checkout.
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-      # The test lanes skip the release branch, which is sound only while its tree is a
-      # tested main plus release-plz's version and changelog edits. The guard reads each
-      # change by content and fails this required lane on anything else.
-      - name: Hold the release branch to the release tool's edits
-        id: release-guard
-        if: github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.head_ref, 'release-plz-')
-        shell: bash
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-        run: node scripts/release-branch-guard.mjs --base "$BASE_SHA" --head HEAD
-      # Under squash-merge the pull request title becomes the release-driving commit, so it
-      # must be a valid Conventional Commit.
-      - name: Lint the pull request title
-        if: github.event_name == 'pull_request'
-        uses: amannn/action-semantic-pull-request@v5
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      # A fork's pull request is granted a read-only token, so the comment upsert would fail
-      # on something the contributor has no way to fix. A review artifact, not a gate.
-      # `@v0` floats over 0.x releases and moves only once a release has published.
-      - name: Comment the suppressions this change adds
-        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
-        continue-on-error: true
-        uses: nickderobertis/notignored@v0
-      - uses: extractions/setup-just@v2
-        with:
-          just-version: "1.58.0"
-      # Nx, the orchestrator the gate runs through, is pinned in bun.lock; bootstrap
-      # installs it with bun, on Node.
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version-file: package.json
-      # `rustflags: ""` keeps the compiler flags every recipe builds with locally.
-      - uses: actions-rust-lang/setup-rust-toolchain@v1
-        with:
-          cache-key: ${{ github.job }}
-          rustflags: ""
-          matcher: false
-      # Prebuilt binaries, so `just bootstrap` finds them and skips building from source.
-      - name: Install cargo tools
-        uses: taiki-e/install-action@v2
-        with:
-          tool: cargo-nextest,cargo-llvm-cov,cargo-deny,cargo-machete
-      # uv provisions the locked Python workspace and the SDK venvs; its cache holds wheels only.
-      - uses: astral-sh/setup-uv@v8.3.2
-        with:
-          enable-cache: true
-          cache-dependency-glob: uv.lock
-      # An installer can report success without its executable on PATH; this names the tool
-      # before the gate does, as a late, misleading setup failure.
-      - name: Prove the installed tools run
-        run: node tools/ci/require-tools.mjs just@1.58.0 node bun cargo cargo-nextest cargo-llvm-cov cargo-deny cargo-machete uv
-      - name: Bootstrap
-        run: just bootstrap
-      # Results keyed on what Nx does not hash; see docs/ci-lanes.md.
-      - name: Key the results on this host
-        id: host
-        shell: bash
-        run: echo "key=$(node tools/ci/suite-cases/cache-key.mjs | node -e 'process.stdin.pipe(require("crypto").createHash("sha256")).on("finish",function(){console.log(this.digest("hex"))})')" >> "$GITHUB_OUTPUT"
-      - uses: actions/cache@v4
-        with:
-          path: .ci-results
-          key: nx-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ steps.host.outputs.key }}-${{ hashFiles('bun.lock', 'Cargo.lock', 'uv.lock', 'rust-toolchain.toml', '.cargo/config.toml', '.ruff-version', '.github/workflows/ci.yml') }}-${{ github.sha }}
-          restore-keys: nx-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ steps.host.outputs.key }}-${{ hashFiles('bun.lock', 'Cargo.lock', 'uv.lock', 'rust-toolchain.toml', '.cargo/config.toml', '.ruff-version', '.github/workflows/ci.yml') }}-
-      # github-workflows:lint runs the workflow syntax checker.
-      - uses: actions/setup-go@v5
-        with:
-          go-version: "1.26"
-          cache: false
-      - name: Install workflow syntax checker
-        run: |
-          go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
-          node tools/ci/require-tools.mjs actionlint@1.7.12
-      - name: Format, lint, type-check and audit the affected projects
-        run: just ci-lint
-      # The LLM-judge tier (llmlint): non-deterministic and harness-backed, so never inside
-      # the gate, and scoped to the merge-base diff. It REQUIRES its credential and fails
-      # fast without it; fork pull requests are gated by the repository's
-      # require-approval-for-fork-workflows setting. The rule plugins are vendored
-      # (llmlint-plugins/), so nothing is fetched at job time; docs/llmlint-plugins.md.
-      # llmlint.yml pins no harness; the committed fallback oneharness.toml tries codex, which
-      # is not on the runner, then claude-code, whose binary this installs.
-      - name: Install the judged tier's harness and llmlint
-        if: github.event_name == 'pull_request'
-        run: |
-          npm install -g @anthropic-ai/claude-code
-          just setup-llmlint
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-          PATH="$HOME/.local/bin:$PATH" node tools/ci/require-tools.mjs claude llmlint
-      # Prove the rule set still resolves with its origin unreachable. CROZIER_REQUIRE_LLMLINT
-      # turns the "llmlint absent" skip into a failure, so this cannot silently no-op.
-      - name: Plugin-resolution boundary tests
-        if: github.event_name == 'pull_request'
-        env:
-          CROZIER_REQUIRE_LLMLINT: "1"
-        run: just test-llmlint-plugins
-      - name: Validate llmlint config
-        if: github.event_name == 'pull_request'
-        run: just lint-llm-validate --diff-base origin/main
-      # The recipe retries a batch the judge left unanswered on this same tree and exits 2
-      # only once its retries are spent: that is no verdict, so this step records it rather
-      # than failing, and the last step of the lane withholds the lane's verdict.
-      - name: Judge the changed files
-        id: judge
-        if: github.event_name == 'pull_request'
-        env:
-          # oneharness drives the `claude` CLI, which reads CLAUDE_CODE_OAUTH_TOKEN for
-          # non-interactive auth. Sync it from Bitwarden with `gh-secrets sync`; see gh-secrets.json.
-          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-        run: |
-          if [ -z "${CLAUDE_CODE_OAUTH_TOKEN:-}" ]; then
-            echo "::error::llmlint needs a Claude Code credential. Add CLAUDE_CODE_OAUTH_TOKEN" \
-                 "(Settings → Secrets and variables → Actions; sync it via gh-secrets). Fork PRs" \
-                 "are gated by the require-approval-for-fork-workflows setting; see AGENTS.md." >&2
-            exit 1
-          fi
-          status=0
-          just lint-llm-diff origin/main || status=$?
-          if [ "$status" -eq 2 ]; then
-            echo "verdict=unavailable" >> "$GITHUB_OUTPUT"
-            echo "::warning::Judged lint unavailable: the judge gave no verdict after its retries, and no rule rejected this change."
-            exit 0
-          fi
-          exit "$status"
-      # The visual docs as steps of this lane, not screencomp's reusable workflow, whose
-      # jobs would each hold a slot: capture in the pinned container, compare against the
-      # committed x86_64 baseline, publish the gallery preview and comment the before/after.
-      # A drift in the CLI's rendered output fails here; `just screenshots-bless` moves it.
-      - uses: nickderobertis/screencomp@v0.4.2
-        with:
-          version: v0.4.2
-      - name: Capture the visual docs
-        run: ./screenshots/capture-visual-docs.sh
-      - uses: nickderobertis/screencomp/visual-docs@v0.4.2
-        with:
-          arch: x86_64
-          current: shots/current
-          verify-second: shots/verify
-          gallery-title: Visual docs
-          fail-on-drift: true
-          publish: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
-          github-token: ${{ github.token }}
-      # A job concludes success or failure unless its run is cancelled, so cancelling is how an
-      # unanswered judge ends this required lane as neither: it does not pass the merge gate and
-      # does not read as rejected code. It runs last, once every other verdict here is in, and
-      # stops the platform lanes too, which cannot make this head mergeable. Re-run the
-      # workflow once the judge answers.
-      - name: Withhold the verdict the judge could not give
-        if: steps.judge.outputs.verdict == 'unavailable'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          echo "::error::Verification unavailable: the judged lint got no verdict from the judge after its retries; no rule rejected this change. Cancelling the run so this head reports no verdict; re-run the workflow once the judge answers." >&2
-          gh run cancel "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY"
-          # The cancellation stops this step; outliving it means it never landed.
-          sleep 300
-          echo "::error::The run was not cancelled within 300 s; re-run this workflow." >&2
-          exit 1
-
-  # llmlint: ignore[comments_earn_their_place] Manager ruling c-de8af5d0b87584fa7cfb48d4c2b4deed requires these measured figures and their run beside the limit they justify.
-  # The Linux test lane: the only platform for the Prism, corpus and packaging proof, which
-  # exercise no platform-specific code path of crozier's.
-  # Measured limit: run 42345332459 spent 7371 s on this work across its jobs (Check 3053,
-  # SDK 160, live/corpus/fallback 3814, packaging 168, install 176). In this shape, run
-  # 42433200026's job took 136 minutes (it failed one corpus-match test, since fixed). The
-  # 150-minute limit cancelled #793's run on 2026-11-08, its final
-  # census-fallback, corpus-match and live-e2e step more than 78 minutes in. 240 stands until
-  # a re-measure shows the lane fits less; crozier-ci-check-time reports the 30-minute line at
-  # each release.
-  test-linux:
-    if: "!(github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.head_ref, 'release-plz-'))"
-    runs-on: ubuntu-latest
-    timeout-minutes: 240
-    steps:
-      # Full history: the affected tier's base is a merge base, which must be in the checkout.
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: extractions/setup-just@v2
-        with:
-          just-version: "1.58.0"
-      # Nx, the orchestrator the gate runs through, is pinned in bun.lock; bootstrap
-      # installs it with bun, on Node.
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version-file: package.json
-      # `rustflags: ""` keeps the compiler flags every recipe builds with locally.
-      - uses: actions-rust-lang/setup-rust-toolchain@v1
-        with:
-          cache-key: ${{ github.job }}
-          rustflags: ""
-          matcher: false
-      # Prebuilt binaries, so `just bootstrap` finds them and skips building from source.
-      - name: Install cargo tools
-        uses: taiki-e/install-action@v2
-        with:
-          tool: cargo-nextest,cargo-llvm-cov,cargo-deny,cargo-machete
-      # uv provisions the locked Python workspace and the SDK venvs; its cache holds wheels only.
-      - uses: astral-sh/setup-uv@v8.3.2
-        with:
-          enable-cache: true
-          cache-dependency-glob: uv.lock
-      # An installer can report success without its executable on PATH; this names the tool
-      # before the gate does, as a late, misleading setup failure.
-      - name: Prove the installed tools run
-        run: node tools/ci/require-tools.mjs just@1.58.0 node bun cargo cargo-nextest cargo-llvm-cov cargo-deny cargo-machete uv
-      - name: Bootstrap
-        run: just bootstrap
-      # Results keyed on what Nx does not hash; see docs/ci-lanes.md.
-      - name: Key the results on this host
-        id: host
-        shell: bash
-        run: echo "key=$(node tools/ci/suite-cases/cache-key.mjs | node -e 'process.stdin.pipe(require("crypto").createHash("sha256")).on("finish",function(){console.log(this.digest("hex"))})')" >> "$GITHUB_OUTPUT"
-      - uses: actions/cache@v4
-        with:
-          path: .ci-results
-          key: nx-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ steps.host.outputs.key }}-${{ hashFiles('bun.lock', 'Cargo.lock', 'uv.lock', 'rust-toolchain.toml', '.cargo/config.toml', '.ruff-version', '.github/workflows/ci.yml') }}-${{ github.sha }}
-          restore-keys: nx-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ steps.host.outputs.key }}-${{ hashFiles('bun.lock', 'Cargo.lock', 'uv.lock', 'rust-toolchain.toml', '.cargo/config.toml', '.ruff-version', '.github/workflows/ci.yml') }}-
-      - name: Install maturin and Prism
-        run: |
-          uv tool install maturin==1.14.1
-          # conftest prefers a Prism on PATH over an `npx` fetch; the version is single-sourced
-          # from the suite, so the pin can never drift between the workflow and it.
-          npm install -g "$(grep -oP '^PRISM_PKG = "\K[^"]+' tests/live_e2e/conftest.py)"
-          node tools/ci/require-tools.mjs maturin@1.14.1 prism
-      # Prove the PUBLISHED crate builds, before anything can dirty the tree: `cargo publish
-      # --dry-run` packages the crate (honoring Cargo.toml's `include`) and compiles from
-      # that tarball, the only check that catches an include-list gap.
-      - name: Verify the published crate tarball builds
-        run: cargo publish --dry-run --locked
-      # The path the README tells users to run: separate from the dev bootstrap.
-      - name: Install crozier (recommended end-user method)
-        run: cargo install --path . --locked
-      - name: Smoke-test the installed binary
-        run: crozier --version
-      - name: Prove the staged native archive and wheel
-        run: just ci-test --projects=tag:lane:packaging
-      # The offline projects this change reaches. No project runs twice on one platform:
-      # each later step below names only the projects it owns.
-      - name: Test the affected projects
-        run: just ci-test --exclude=tag:tier:promoted
-      # The SDK environments: real PyPI installs and suites, no credential. Distinct from
-      # the offline projects for what they contact, not for when they run.
-      # llmlint: ignore-block[external_service_suite_stays_out_of_the_affected_tier, live_tier_compiles_and_requires_credential] The user chose external contact in the PR lanes as an explicit departure from the reference (docs/ci-lanes.md): gating merges on these suites is a stated requirement, and a separate job or schedule would stop them gating. They fetch only public PyPI packages and need no credential.
-      - name: Test the affected SDK environments
-        run: just ci-test --projects=tag:lane:sdk-env
-      # llmlint: ignore-end[external_service_suite_stays_out_of_the_affected_tier, live_tier_compiles_and_requires_credential]
-      # Host-measured: one pool-maintenance pass builds twice and prunes, so Nx runs it alone,
-      # and only when the change reaches that project.
-      - name: Install cargo-prune-superseded
-        run: just install-pruner
-      - name: Measure the affected host budgets
-        run: just ci-budgets-host
-      # Last in the lane: an empty registry at one path for the whole step, so its first dev
-      # build comes from it with sockets denied (`corpus-match:cold-registry-build`), and
-      # cargo reuses that build only under this same CARGO_HOME. Live Prism, the corpus
-      # byte-match (proved offline too, which no replay can), and the parser fallback.
-      # llmlint: ignore[no_second_broader_sweep_over_an_already_gated_commit] The corpus-match offline proof requires a real recipe run with sockets denied and no cache. The normal check cannot prove absence of network dependencies; this distinct environment proof deliberately repeats byte comparison.
-      # llmlint: ignore-block[external_service_suite_stays_out_of_the_affected_tier, live_tier_compiles_and_requires_credential] External contact in the PR lanes is the user's explicit departure from the reference (docs/ci-lanes.md), and no credential exists to require: Prism is loopback, packages are public, and the census-fallback tier reads only committed specifications and loopback servers.
-      - name: Live e2e, corpus byte-match and census fallback
-        env:
-          CARGO_HOME: ${{ runner.temp }}/cold-cargo-home
-          CROZIER_COLD_REGISTRY_HANDOFF: "1"
-        run: just ci-test --projects=tag:lane:live
-      # llmlint: ignore-end[external_service_suite_stays_out_of_the_affected_tier, live_tier_compiles_and_requires_credential]
-
-  # llmlint: ignore[comments_earn_their_place] Manager ruling c-de8af5d0b87584fa7cfb48d4c2b4deed requires these measured figures and their run beside the limit they justify.
-  # The Windows test lane. Measured limit: run 42345332459 spent 4307 s on this work
-  # (Check 3557, SDK 363, install 387). Broad pull requests on 2026-11-08 took 77 to more than
-  # 90 minutes, and the 90-minute limit cancelled passing runs on #790 and #792. In run
-  # 45434125778 (#973, 2026-11-24) the "Test the affected projects" step took 2h18m and the
-  # 150-minute limit cancelled the job in "Install crozier" after every test step passed.
-  # 240 stands until a re-measure, as for test-linux.
   test-windows:
-    if: "!(github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.head_ref, 'release-plz-'))"
     runs-on: windows-latest
     timeout-minutes: 240
+    env:
+      SWEEP_STEP_MINUTES: "175"
     steps:
       - name: Enable Git long paths
-        if: runner.os == 'Windows'
         run: git config --global core.longpaths true
-      # The hosted runner is ephemeral and discarded with this job, so leaving this job's own
-      # checkout (cargo's target is inside it) and its temp directories out of real-time
-      # scanning loosens nothing that outlives it. The e2e suites write and run thousands of
-      # fresh files there, each scanned on first touch. One measured attempt (manager ruling a3).
+      # As test-windows does, so the measurement matches the real lane: the e2e suites write
+      # and run thousands of fresh files, each scanned on first touch, and the runner is discarded.
       - name: Leave this job's own directories out of Defender scanning
         shell: pwsh
         run: Add-MpPreference -ExclusionPath $env:GITHUB_WORKSPACE, $env:RUNNER_TEMP, $env:TEMP
-      # Full history: the affected tier's base is a merge base, which must be in the checkout.
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - uses: extractions/setup-just@v2
         with:
           just-version: "1.58.0"
-      # Nx, the orchestrator the gate runs through, is pinned in bun.lock; bootstrap
-      # installs it with bun, on Node.
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version-file: package.json
-      # `rustflags: ""` keeps the compiler flags every recipe builds with locally.
       - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           cache-key: ${{ github.job }}
           rustflags: ""
           matcher: false
-      # Prebuilt binaries, so `just bootstrap` finds them and skips building from source.
       - name: Install cargo tools
         uses: taiki-e/install-action@v2
         with:
           tool: cargo-nextest,cargo-llvm-cov,cargo-deny,cargo-machete
-      # uv provisions the locked Python workspace and the SDK venvs; its cache holds wheels only.
       - uses: astral-sh/setup-uv@v8.3.2
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
-      # An installer can report success without its executable on PATH; this names the tool
-      # before the gate does, as a late, misleading setup failure.
       - name: Prove the installed tools run
         run: node tools/ci/require-tools.mjs just@1.58.0 node bun cargo cargo-nextest cargo-llvm-cov cargo-deny cargo-machete uv
       - name: Bootstrap
         run: just bootstrap
-      # Results keyed on what Nx does not hash; see docs/ci-lanes.md.
-      - name: Key the results on this host
-        id: host
+      # Outside the checkout, so nothing a suite reads of the tree changes.
+      - name: Record the runner
         shell: bash
-        run: echo "key=$(node tools/ci/suite-cases/cache-key.mjs | node -e 'process.stdin.pipe(require("crypto").createHash("sha256")).on("finish",function(){console.log(this.digest("hex"))})')" >> "$GITHUB_OUTPUT"
-      - uses: actions/cache@v4
+        run: |
+          SPIKE_OUT="$RUNNER_TEMP/spike-out"
+          echo "SPIKE_OUT=$SPIKE_OUT" >> "$GITHUB_ENV"
+          mkdir -p "$SPIKE_OUT"
+          node tools/ci-profile/spike/record.mjs runner "$SPIKE_OUT/runner.json"
+          cat "$SPIKE_OUT/runner.json"
+      # Several suites (ci, ci-journeys, gate-timing, github-workflows, llmlint-resolution)
+      # read ci.yml and hold it to the real lanes' contract. They read the real file, as on
+      # any other branch, so they measure their real course rather than failing on this
+      # cut-down one; git is told to ignore the swap so the tree still reads as clean.
+      # llmlint: ignore[changed_behavior_has_e2e] SPIKE ONLY: the swap exists so the suites that hold the real lanes' contract (tools/ci/tests/ci_workflow.rs, .github/tests/graph.test.mjs, ci-journeys) measure their real course on this never-landing branch; reconciling them with the cut-down workflow would change what they prove, which the spike may not do.
+      - name: Put the real ci.yml in front of the suites
+        shell: bash
+        run: |
+          base=$(git merge-base HEAD "origin/${GITHUB_BASE_REF:-main}")
+          git show "$base:.github/workflows/ci.yml" > .github/workflows/ci.yml
+          git update-index --assume-unchanged .github/workflows/ci.yml
+          git status --short
+      # The measured step: the test lane's offline targets over every non-promoted project,
+      # uncached (the broader tier), as a cold whole-graph change would run them. The step
+      # limit only makes sure the uploads below still run if it is ever reached.
+      - name: Test every offline project (sweep)
+        timeout-minutes: ${{ fromJSON(env.SWEEP_STEP_MINUTES) }}
+        shell: bash
+        env:
+          CROZIER_PROFILE: ${{ runner.temp }}/crozier-profile/sweep
+          CROZIER_SPIKE_STREAM: ${{ github.workspace }}/.nx/logs/sweep.stream.log
+          PYTEST_ADDOPTS: --durations=0 --durations-min=0
+          NEXTEST_HIDE_PROGRESS_BAR: "1"
+        run: |
+          mkdir -p .nx/logs "$CROZIER_PROFILE"
+          start=$(date +%s)
+          status=0
+          just lane-test --sweep --exclude=tag:tier:promoted || status=$?
+          node tools/ci-profile/spike/record.mjs step "$SPIKE_OUT/step-sweep.json" sweep "$(( $(date +%s) - start ))" "$status"
+          mkdir -p .nx/logs/sweep && mv .nx/logs/gate-* .nx/logs/sweep/ 2>/dev/null || true
+          exit $status
+      # The golden replays with each generation batched into a few `ruff format` processes
+      # (one per about 24,000 characters of paths) instead of one per file: the goldens' own byte
+      # comparison proves the output unchanged, and the profiles give the formatting saving.
+      - name: crozier-e2e with batched ruff formatting
+        if: ${{ !cancelled() }}
+        timeout-minutes: 45
+        shell: bash
+        env:
+          CROZIER_PROFILE: ${{ runner.temp }}/crozier-profile/e2e-batch
+          CROZIER_SPIKE_RUFF_BATCH: "1"
+          CROZIER_SPIKE_STREAM: ${{ github.workspace }}/.nx/logs/e2e-batch.stream.log
+          NEXTEST_HIDE_PROGRESS_BAR: "1"
+          NX_PARALLEL: "3"
+        run: |
+          mkdir -p .nx/logs "$CROZIER_PROFILE"
+          start=$(date +%s)
+          status=0
+          just test --sweep --projects=crozier-e2e || status=$?
+          node tools/ci-profile/spike/record.mjs step "$SPIKE_OUT/step-e2e-batch.json" e2e-batch "$(( $(date +%s) - start ))" "$status"
+          mkdir -p .nx/logs/e2e-batch && mv .nx/logs/gate-* .nx/logs/e2e-batch/ 2>/dev/null || true
+          exit $status
+      - name: What one spawn costs here
+        if: ${{ !cancelled() }}
+        timeout-minutes: 10
+        shell: bash
+        run: node tools/ci-profile/spike/spawn-bench.mjs "$SPIKE_OUT/spawn-bench.json" 20
+      # llmlint: ignore[changed_behavior_has_e2e] SPIKE ONLY: runs only on GitHub's runners; runs 45840622476 and 45863948064 packed 27,781 and 34,807 profiles here, and ci-profile.mjs reading those JSONL artifacts is the proof (ci-profile-journeys feeds it real crozier profiles).
+      - name: Pack the crozier profiles
+        if: always()
+        shell: bash
+        run: |
+          for step in sweep sdk-env e2e-batch; do
+            dir="$RUNNER_TEMP/crozier-profile/$step"
+            if [ -d "$dir" ]; then find "$dir" -name '*.json' -exec cat {} + > "$SPIKE_OUT/crozier-profile-$step.jsonl"; fi
+          done
+          for dir in "$SPIKE_OUT"/ruff-batch/*/; do
+            [ -d "$dir" ] && find "$dir" -name '*.json' -exec cat {} + > "${dir%/}.jsonl" && rm -rf "$dir"
+          done
+          ls -la "$SPIKE_OUT"
+      - name: Upload the gate logs
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          path: .ci-results
-          key: nx-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ steps.host.outputs.key }}-${{ hashFiles('bun.lock', 'Cargo.lock', 'uv.lock', 'rust-toolchain.toml', '.cargo/config.toml', '.ruff-version', '.github/workflows/ci.yml') }}-${{ github.sha }}
-          restore-keys: nx-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ steps.host.outputs.key }}-${{ hashFiles('bun.lock', 'Cargo.lock', 'uv.lock', 'rust-toolchain.toml', '.cargo/config.toml', '.ruff-version', '.github/workflows/ci.yml') }}-
-      # The offline projects this change reaches. No project runs twice on one platform:
-      # each later step below names only the projects it owns.
-      - name: Test the affected projects
-        run: just ci-test --exclude=tag:tier:promoted
-      # The SDK environments: real PyPI installs and suites, no credential. Distinct from
-      # the offline projects for what they contact, not for when they run.
-      # llmlint: ignore-block[external_service_suite_stays_out_of_the_affected_tier, live_tier_compiles_and_requires_credential] The user chose external contact in the PR lanes as an explicit departure from the reference (docs/ci-lanes.md): gating merges on these suites is a stated requirement, and a separate job or schedule would stop them gating. They fetch only public PyPI packages and need no credential.
-      - name: Test the affected SDK environments
-        run: just ci-test --projects=tag:lane:sdk-env
-      # llmlint: ignore-end[external_service_suite_stays_out_of_the_affected_tier, live_tier_compiles_and_requires_credential]
-      # The path the README tells users to run: separate from the dev bootstrap.
-      - name: Install crozier (recommended end-user method)
-        run: cargo install --path . --locked
-      - name: Smoke-test the installed binary
-        run: crozier --version
+          name: test-timings-${{ github.job }}
+          path: .nx/logs/
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Upload the spike's measurements
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: spike-profile-${{ github.job }}
+          path: ${{ env.SPIKE_OUT }}
+          if-no-files-found: ignore
+          retention-days: 14
 
-  # llmlint: ignore[comments_earn_their_place] Manager ruling c-de8af5d0b87584fa7cfb48d4c2b4deed requires these measured figures and their run beside the limit they justify.
-  # The Mac test lane, one job per run. Measured limit (manager ruling c-602a8b0c568f2b4c9e7f3104a9e7a581):
-  # in run 42402692714 a whole-graph change's ci-test step alone took 84 minutes, and run
-  # 42422342228 was cancelled at 90 before its SDK step (about 1153 s) and install (about 163 s),
-  # so a cold whole-graph change needs about 110; on 2026-11-08 a broad one took more than 120
-  # and #792's run was cancelled there with nothing failed. 240 stands until the Mac lane has a warm
-  # result cache (main's cache writer runs lint, Linux and Windows only; whether Mac joins it
-  # is the user's open decision) or the follow-up on the cold Mac leg is resolved.
-  test-macos:
-    if: >-
-      (github.event_name == 'pull_request' && !(github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.head_ref, 'release-plz-')))
-      || (github.event_name == 'workflow_dispatch' && inputs.macos-diagnostic)
-    runs-on: macos-latest
-    # 240, as test-linux (manager ruling c33.0): run 43716165831's first stage took 2h04m on macos-latest for the 5.200.0 pair move, and 150 cancelled its sdk-env stage.
+  test-linux:
+    runs-on: ubuntu-latest
     timeout-minutes: 240
+    env:
+      SWEEP_STEP_MINUTES: "175"
     steps:
-      # Full history: the affected tier's base is a merge base, which must be in the checkout.
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - uses: extractions/setup-just@v2
         with:
           just-version: "1.58.0"
-      # Nx, the orchestrator the gate runs through, is pinned in bun.lock; bootstrap
-      # installs it with bun, on Node.
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version-file: package.json
-      # `rustflags: ""` keeps the compiler flags every recipe builds with locally.
       - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           cache-key: ${{ github.job }}
           rustflags: ""
           matcher: false
-      # Prebuilt binaries, so `just bootstrap` finds them and skips building from source.
       - name: Install cargo tools
         uses: taiki-e/install-action@v2
         with:
           tool: cargo-nextest,cargo-llvm-cov,cargo-deny,cargo-machete
-      # uv provisions the locked Python workspace and the SDK venvs; its cache holds wheels only.
       - uses: astral-sh/setup-uv@v8.3.2
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
-      # An installer can report success without its executable on PATH; this names the tool
-      # before the gate does, as a late, misleading setup failure.
       - name: Prove the installed tools run
         run: node tools/ci/require-tools.mjs just@1.58.0 node bun cargo cargo-nextest cargo-llvm-cov cargo-deny cargo-machete uv
       - name: Bootstrap
         run: just bootstrap
-      # Results keyed on what Nx does not hash; see docs/ci-lanes.md.
-      - name: Key the results on this host
-        id: host
+      # Outside the checkout, so nothing a suite reads of the tree changes.
+      - name: Record the runner
         shell: bash
-        run: echo "key=$(node tools/ci/suite-cases/cache-key.mjs | node -e 'process.stdin.pipe(require("crypto").createHash("sha256")).on("finish",function(){console.log(this.digest("hex"))})')" >> "$GITHUB_OUTPUT"
-      - uses: actions/cache@v4
+        run: |
+          SPIKE_OUT="$RUNNER_TEMP/spike-out"
+          echo "SPIKE_OUT=$SPIKE_OUT" >> "$GITHUB_ENV"
+          mkdir -p "$SPIKE_OUT"
+          node tools/ci-profile/spike/record.mjs runner "$SPIKE_OUT/runner.json"
+          cat "$SPIKE_OUT/runner.json"
+      # Several suites (ci, ci-journeys, gate-timing, github-workflows, llmlint-resolution)
+      # read ci.yml and hold it to the real lanes' contract. They read the real file, as on
+      # any other branch, so they measure their real course rather than failing on this
+      # cut-down one; git is told to ignore the swap so the tree still reads as clean.
+      # llmlint: ignore[changed_behavior_has_e2e] SPIKE ONLY: the swap exists so the suites that hold the real lanes' contract (tools/ci/tests/ci_workflow.rs, .github/tests/graph.test.mjs, ci-journeys) measure their real course on this never-landing branch; reconciling them with the cut-down workflow would change what they prove, which the spike may not do.
+      - name: Put the real ci.yml in front of the suites
+        shell: bash
+        run: |
+          base=$(git merge-base HEAD "origin/${GITHUB_BASE_REF:-main}")
+          git show "$base:.github/workflows/ci.yml" > .github/workflows/ci.yml
+          git update-index --assume-unchanged .github/workflows/ci.yml
+          git status --short
+      # The measured step: the test lane's offline targets over every non-promoted project,
+      # uncached (the broader tier), as a cold whole-graph change would run them. The step
+      # limit only makes sure the uploads below still run if it is ever reached.
+      - name: Test every offline project (sweep)
+        timeout-minutes: ${{ fromJSON(env.SWEEP_STEP_MINUTES) }}
+        shell: bash
+        env:
+          CROZIER_PROFILE: ${{ runner.temp }}/crozier-profile/sweep
+          CROZIER_SPIKE_STREAM: ${{ github.workspace }}/.nx/logs/sweep.stream.log
+          PYTEST_ADDOPTS: --durations=0 --durations-min=0
+          NEXTEST_HIDE_PROGRESS_BAR: "1"
+        run: |
+          mkdir -p .nx/logs "$CROZIER_PROFILE"
+          start=$(date +%s)
+          status=0
+          just lane-test --sweep --exclude=tag:tier:promoted || status=$?
+          node tools/ci-profile/spike/record.mjs step "$SPIKE_OUT/step-sweep.json" sweep "$(( $(date +%s) - start ))" "$status"
+          mkdir -p .nx/logs/sweep && mv .nx/logs/gate-* .nx/logs/sweep/ 2>/dev/null || true
+          exit $status
+      # The golden replays with each generation batched into a few `ruff format` processes
+      # (one per about 24,000 characters of paths) instead of one per file: the goldens' own byte
+      # comparison proves the output unchanged, and the profiles give the formatting saving.
+      - name: crozier-e2e with batched ruff formatting
+        if: ${{ !cancelled() }}
+        timeout-minutes: 45
+        shell: bash
+        env:
+          CROZIER_PROFILE: ${{ runner.temp }}/crozier-profile/e2e-batch
+          CROZIER_SPIKE_RUFF_BATCH: "1"
+          CROZIER_SPIKE_STREAM: ${{ github.workspace }}/.nx/logs/e2e-batch.stream.log
+          NEXTEST_HIDE_PROGRESS_BAR: "1"
+          NX_PARALLEL: "3"
+        run: |
+          mkdir -p .nx/logs "$CROZIER_PROFILE"
+          start=$(date +%s)
+          status=0
+          just test --sweep --projects=crozier-e2e || status=$?
+          node tools/ci-profile/spike/record.mjs step "$SPIKE_OUT/step-e2e-batch.json" e2e-batch "$(( $(date +%s) - start ))" "$status"
+          mkdir -p .nx/logs/e2e-batch && mv .nx/logs/gate-* .nx/logs/e2e-batch/ 2>/dev/null || true
+          exit $status
+      - name: What one spawn costs here
+        if: ${{ !cancelled() }}
+        timeout-minutes: 10
+        shell: bash
+        run: node tools/ci-profile/spike/spawn-bench.mjs "$SPIKE_OUT/spawn-bench.json" 20
+      # llmlint: ignore[changed_behavior_has_e2e] SPIKE ONLY: runs only on GitHub's runners; runs 45840622476 and 45863948064 packed 27,781 and 34,807 profiles here, and ci-profile.mjs reading those JSONL artifacts is the proof (ci-profile-journeys feeds it real crozier profiles).
+      - name: Pack the crozier profiles
+        if: always()
+        shell: bash
+        run: |
+          for step in sweep sdk-env e2e-batch; do
+            dir="$RUNNER_TEMP/crozier-profile/$step"
+            if [ -d "$dir" ]; then find "$dir" -name '*.json' -exec cat {} + > "$SPIKE_OUT/crozier-profile-$step.jsonl"; fi
+          done
+          for dir in "$SPIKE_OUT"/ruff-batch/*/; do
+            [ -d "$dir" ] && find "$dir" -name '*.json' -exec cat {} + > "${dir%/}.jsonl" && rm -rf "$dir"
+          done
+          ls -la "$SPIKE_OUT"
+      - name: Upload the gate logs
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          path: .ci-results
-          key: nx-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ steps.host.outputs.key }}-${{ hashFiles('bun.lock', 'Cargo.lock', 'uv.lock', 'rust-toolchain.toml', '.cargo/config.toml', '.ruff-version', '.github/workflows/ci.yml') }}-${{ github.sha }}
-          restore-keys: nx-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ steps.host.outputs.key }}-${{ hashFiles('bun.lock', 'Cargo.lock', 'uv.lock', 'rust-toolchain.toml', '.cargo/config.toml', '.ruff-version', '.github/workflows/ci.yml') }}-
-      # The offline projects this change reaches. No project runs twice on one platform:
-      # each later step below names only the projects it owns.
-      - name: Test the affected projects
-        run: just ci-test --exclude=tag:tier:promoted
-      # The SDK environments: real PyPI installs and suites, no credential. Distinct from
-      # the offline projects for what they contact, not for when they run.
-      # llmlint: ignore-block[external_service_suite_stays_out_of_the_affected_tier, live_tier_compiles_and_requires_credential] The user chose external contact in the PR lanes as an explicit departure from the reference (docs/ci-lanes.md): gating merges on these suites is a stated requirement, and a separate job or schedule would stop them gating. They fetch only public PyPI packages and need no credential.
-      - name: Test the affected SDK environments
-        run: just ci-test --projects=tag:lane:sdk-env
-      # llmlint: ignore-end[external_service_suite_stays_out_of_the_affected_tier, live_tier_compiles_and_requires_credential]
-      # The path the README tells users to run: separate from the dev bootstrap.
-      - name: Install crozier (recommended end-user method)
-        run: cargo install --path . --locked
-      - name: Smoke-test the installed binary
-        run: crozier --version
+          name: test-timings-${{ github.job }}
+          path: .nx/logs/
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Upload the spike's measurements
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: spike-profile-${{ github.job }}
+          path: ${{ env.SPIKE_OUT }}
+          if-no-files-found: ignore
+          retention-days: 14

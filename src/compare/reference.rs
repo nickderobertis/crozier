@@ -50,6 +50,8 @@ pub fn run(command: &str, cwd: &Path, env: &[(String, String)]) -> Outcome {
         .stdin(Stdio::null())
         .output();
     let seconds = started.elapsed().as_secs_f64();
+    // llmlint: ignore[changed_behavior_has_e2e] SPIKE ONLY: this branch never lands (its task: "no tests of its own beyond what keeps its harness honest"); the durable runtime-profiling node owns this proof, and the 27,277 crozier processes profiled in run 45840622476's sweep step exercised this site.
+    crate::profile::spawned(crate::profile::Program::Sh, started.elapsed());
     match output {
         Ok(output) => Outcome {
             end: output.status.code().map_or(End::Signalled, End::Exited),

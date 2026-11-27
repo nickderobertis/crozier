@@ -1,0 +1,71 @@
+{
+  "name": "ci-profile",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "tags": [
+    "type:tooling",
+    "lang:javascript",
+    "lang:python",
+    "lang:bash"
+  ],
+  "targets": {
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ruff format --check tools/ci-profile"
+      },
+      "configurations": {
+        "write": {
+          "command": "uv run --locked --all-packages ruff format tools/ci-profile"
+        }
+      },
+      "cache": true,
+      "inputs": [
+        "default"
+      ]
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node --test tools/ci-profile/tests/reader.test.mjs"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "{workspaceRoot}/.github/workflows/ci.yml"
+      ]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "node --check tools/ci-profile/ci-profile.mjs",
+          "node --check tools/ci-profile/spike/schedule.mjs",
+          "node --check tools/ci-profile/spike/spawn-bench.mjs",
+          "node --check tools/ci-profile/spike/record.mjs",
+          "node --check tools/ci-profile/spike/spawncount/spawncount.mjs",
+          "node --check tools/ci-profile/tests/reader.test.mjs",
+          "bash -n tools/ci-profile/spike/ruff-batch-experiment.sh",
+          "uv run --locked --all-packages ruff check tools/ci-profile",
+          "node scripts/check-project-boundaries.mjs ci-profile"
+        ],
+        "parallel": false
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "boundaries"
+      ]
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ty check tools/ci-profile"
+      },
+      "cache": true,
+      "inputs": [
+        "default"
+      ]
+    }
+  }
+}

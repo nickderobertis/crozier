@@ -46,8 +46,9 @@
 import { taskTimings } from "./gate-timing.mjs";
 import { serveResults } from "./result-cache.mjs";
 import { execFileSync, spawn, spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
+import { StringDecoder } from "node:string_decoder";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -288,14 +289,50 @@ function ensureRustToolchain() {
   return output;
 }
 
+// SPIKE ONLY (spike-windows-lane-breakdown): when CROZIER_SPIKE_STREAM names a file, every
+// line Nx prints is appended there as it completes, prefixed with the seconds since the gate
+// started, so a step cut off by its time limit still leaves what it ran. Each stream keeps
+// its own decoder and unfinished line, so a chunk boundary inside a line or a multi-byte
+// character changes nothing; a write that fails is reported once and the run goes on.
+const SPIKE_STREAM = process.env.CROZIER_SPIKE_STREAM;
+const SPIKE_START = Date.now();
+let spikeStreamBroken = false;
+function spikeStreamWrite(lines) {
+  if (!SPIKE_STREAM || spikeStreamBroken || lines.length === 0) return;
+  const at = ((Date.now() - SPIKE_START) / 1000).toFixed(3);
+  try {
+    appendFileSync(SPIKE_STREAM, lines.map((line) => `${at}\t${line}\n`).join(""));
+  } catch (error) {
+    spikeStreamBroken = true;
+    console.error(`${TOOL}: could not append to CROZIER_SPIKE_STREAM (${error.message}); the run goes on without it`);
+  }
+}
+export function spikeStream() {
+  const decoder = new StringDecoder("utf8");
+  let pending = "";
+  return {
+    push(chunk) {
+      const lines = (pending + decoder.write(chunk)).split(/\r?\n/);
+      pending = lines.pop();
+      spikeStreamWrite(lines);
+    },
+    end() {
+      const rest = pending + decoder.end();
+      spikeStreamWrite(rest ? [rest] : []);
+    },
+  };
+}
+
 /** What a child printed and how it ended, with this process's event loop still running. */
 function runCaptured(command, args, options) {
   return new Promise((done) => {
     const child = spawn(command, args, { ...options, stdio: ["ignore", "pipe", "pipe"] });
     const out = [];
     const err = [];
-    child.stdout.on("data", (chunk) => out.push(chunk));
-    child.stderr.on("data", (chunk) => err.push(chunk));
+    const streams = [spikeStream(), spikeStream()];
+    child.stdout.on("data", (chunk) => { out.push(chunk); streams[0].push(chunk); });
+    child.stderr.on("data", (chunk) => { err.push(chunk); streams[1].push(chunk); });
+    child.on("close", () => streams.forEach((stream) => stream.end()));
     child.on("error", (error) => done({ status: 1, stdout: "", stderr: `${error.message}\n` }));
     child.on("close", (status) => done({ status, stdout: Buffer.concat(out).toString("utf8"), stderr: Buffer.concat(err).toString("utf8") }));
   });

@@ -48,6 +48,23 @@ pub struct Cli {
     no_config: bool,
 }
 
+impl Cli {
+    /// SPIKE ONLY (`spike-windows-lane-breakdown`): the subcommand a
+    /// `CROZIER_PROFILE` file is filed under; bare `crozier` generates.
+    #[must_use]
+    pub fn command_name(&self) -> crate::profile::Command {
+        use crate::profile::Command as Profiled;
+        match self.command {
+            None | Some(Command::Generate(_)) => Profiled::Generate,
+            Some(Command::Init(_)) => Profiled::Init,
+            Some(Command::Config(_)) => Profiled::Config,
+            Some(Command::Compare(_)) => Profiled::Compare,
+            Some(Command::Schema) => Profiled::Schema,
+            Some(Command::InternalStrip { .. }) => Profiled::InternalStrip,
+        }
+    }
+}
+
 /// Top-level subcommands.
 #[derive(Subcommand)]
 enum Command {
@@ -352,6 +369,7 @@ fn do_generate(
     selected: Option<&str>,
     overrides: &CliOverrides,
 ) -> crate::Result<()> {
+    let settings_phase = crate::profile::phase(crate::profile::PhaseName::Settings);
     let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
     // `--config` beats `CROZIER_CONFIG`; either names files explicitly and
     // disables auto-discovery.
@@ -368,9 +386,12 @@ fn do_generate(
         return Err(crate::Error::OverridesWithMultipleGenerators { count: names.len() });
     }
 
+    drop(settings_phase);
     let multiple = names.len() > 1;
     for name in &names {
+        let resolve_phase = crate::profile::phase(crate::profile::PhaseName::Settings);
         let args: GenerateArgs = settings::resolve(name, &loaded.config, &env, overrides)?;
+        drop(resolve_phase);
         let output = args.output.clone();
         let files = generate(args)?;
         if multiple {

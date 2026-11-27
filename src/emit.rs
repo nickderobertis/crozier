@@ -13711,7 +13711,8 @@ fn format_python_files(pkg: &str, files: &mut [GeneratedFile]) -> Result<()> {
     let default_clients = PathBuf::from(format!("src/{pkg}/_default_clients.py"));
     let generated_aiohttp_test = PathBuf::from("tests/test_aiohttp_autodetect.py");
     let generated_conftest = PathBuf::from("tests/conftest.py");
-    for file in files.iter_mut() {
+    let mut batch = Vec::new();
+    for (index, file) in files.iter_mut().enumerate() {
         let is_py = file.path.extension().and_then(|e| e.to_str()) == Some("py");
         // The `core/` tree is vendored verbatim (already ruff-formatted) EXCEPT
         // `client_wrapper.py`, which crozier generates from the auth/global-header
@@ -13733,10 +13734,54 @@ fn format_python_files(pkg: &str, files: &mut [GeneratedFile]) -> Result<()> {
             if file.contents.contains('\t') {
                 file.contents = file.contents.replace('\t', "    ");
             }
-            let name = file.path.to_string_lossy();
-            file.contents =
-                crate::pyfmt::format_source(&name, &file.contents, crate::pyfmt::LINE_LENGTH)?;
+            // SPIKE ONLY: `CROZIER_SPIKE_RUFF_BATCH` = `1` formats these in one
+            // batch below; `verify` formats both ways and fails on any byte of
+            // difference.
+            batch.push(index);
         }
+    }
+    let mode = crate::pyfmt::FormatMode::from_env()?;
+    let per_file = |files: &[GeneratedFile]| -> Result<Vec<String>> {
+        batch
+            .iter()
+            .map(|&i| {
+                let name = files[i].path.to_string_lossy();
+                crate::pyfmt::format_source(&name, &files[i].contents, crate::pyfmt::LINE_LENGTH)
+            })
+            .collect()
+    };
+    let batched =
+        |files: &[GeneratedFile], phase: crate::profile::PhaseName| -> Result<Vec<String>> {
+            let _format = crate::profile::phase(phase);
+            let items: Vec<(String, String)> = batch
+                .iter()
+                .map(|&i| {
+                    (
+                        files[i].path.to_string_lossy().into_owned(),
+                        files[i].contents.clone(),
+                    )
+                })
+                .collect();
+            crate::pyfmt::format_batch(&items, crate::pyfmt::LINE_LENGTH)
+        };
+    let formatted = match mode {
+        crate::pyfmt::FormatMode::Batch => batched(files, crate::profile::PhaseName::Format)?,
+        crate::pyfmt::FormatMode::Verify => {
+            let one = per_file(files)?;
+            let many = batched(files, crate::profile::PhaseName::FormatBatch)?;
+            if let Some(k) = (0..one.len()).find(|&k| one[k] != many[k]) {
+                return Err(Error::Format {
+                    file: files[batch[k]].path.to_string_lossy().into_owned(),
+                    message: "SPIKE: one batched `ruff format` differs from the per-file output"
+                        .to_string(),
+                });
+            }
+            one
+        }
+        crate::pyfmt::FormatMode::PerFile => per_file(files)?,
+    };
+    for (&i, contents) in batch.iter().zip(formatted) {
+        files[i].contents = contents;
     }
     Ok(())
 }

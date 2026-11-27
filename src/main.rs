@@ -14,6 +14,7 @@ use crozier::cli::{execute, parse_args};
 const STACK_BYTES: usize = 64 * 1024 * 1024;
 
 fn main() -> ExitCode {
+    crozier::profile::start();
     let spawned = std::thread::Builder::new()
         .name("crozier".to_owned())
         .stack_size(STACK_BYTES)
@@ -36,14 +37,29 @@ fn main() -> ExitCode {
 
 fn run() -> ExitCode {
     match parse_args(std::env::args_os()) {
-        Ok(cli) => match execute(cli) {
-            Ok(code) => ExitCode::from(code),
-            Err(message) => {
-                eprintln!("crozier: {message}");
-                ExitCode::FAILURE
+        Ok(cli) => {
+            let command = cli.command_name();
+            match execute(cli) {
+                Ok(code) => {
+                    crozier::profile::write(command, code);
+                    ExitCode::from(code)
+                }
+                Err(message) => {
+                    crozier::profile::write(command, 1);
+                    eprintln!("crozier: {message}");
+                    ExitCode::FAILURE
+                }
             }
-        },
+        }
         // clap already printed help/version/usage; propagate its exit code.
-        Err(e) => e.exit(),
+        Err(e) => {
+            let command = match e.kind() {
+                clap::error::ErrorKind::DisplayVersion => crozier::profile::Command::Version,
+                clap::error::ErrorKind::DisplayHelp => crozier::profile::Command::Help,
+                _ => crozier::profile::Command::UsageError,
+            };
+            crozier::profile::write(command, u8::try_from(e.exit_code()).unwrap_or(2));
+            e.exit()
+        }
     }
 }
