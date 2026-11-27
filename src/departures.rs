@@ -1582,6 +1582,29 @@ fn binary_body_example_line(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool 
 /// `reference.md` parameter list name that option where Fern's name
 /// `request_options`: the body argument the method takes under that name.
 fn renamed_request_options_docs_line(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    // A path parameter named `request_options` is the method's
+    // `request_options_` on both sides, and `reference.md`'s worked call passes
+    // it as `request_options=`, which binds to the method's own options.
+    if pair.rel == "reference.md" {
+        let indent = fern.len() - fern.trim_start().len();
+        let (lead, call) = fern.split_at(indent);
+        if let Some(value) = call.strip_prefix("request_options=") {
+            if !value.starts_with('{')
+                && crozier == format!("{lead}request_options_={value}")
+                && pair
+                    .context
+                    .request_examples()
+                    .method_parameters
+                    .values()
+                    .any(|parameters| {
+                        parameters.contains_key("request_options_")
+                            && parameters.contains_key("request_options")
+                    })
+            {
+                return true;
+            }
+        }
+    }
     let renamed = match pair.rel {
         "README.md" if fern.starts_with("client.") && fern.ends_with("request_options={") => {
             format!(
@@ -9931,6 +9954,22 @@ mod tests {
             readme,
             "client.dispatches.create_dispatch(..., options={"
         ));
+        // A path parameter named `request_options` is `request_options_`, and
+        // reference.md's call passes it under that keyword, not the options'.
+        let call = "    request_options=\"request_options\",";
+        let path_call = "    request_options_=\"request_options\",";
+        assert!(!holds(&context, "reference.md", call, path_call));
+        let path_raw = "class RawLabelsClient:\n    def get_label(\n        self, request_options_: str, *, request_options: typing.Optional[RequestOptions] = None\n    ) -> HttpResponse[Dispatch]:\n        pass\n";
+        let path = Context::from_sources([], [("src/fern/labels/raw_client.py", path_raw)]);
+        assert!(holds(&path, "reference.md", call, path_call));
+        assert!(!holds(&path, "src/fern/labels/client.py", call, path_call));
+        assert!(!holds(
+            &path,
+            "reference.md",
+            "    request_options={",
+            "    request_options_={"
+        ));
+        assert!(!holds(&path, "reference.md", call, call));
     }
 
     #[test]

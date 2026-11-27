@@ -11,6 +11,8 @@ from .environment import FernApiEnvironment
 
 if typing.TYPE_CHECKING:
     from .dispatches.client import AsyncDispatchesClient, DispatchesClient
+    from .labels.client import AsyncLabelsClient, LabelsClient
+    from .routes.client import AsyncRoutesClient, RoutesClient
 
 
 class FernApi:
@@ -93,6 +95,8 @@ class FernApi:
             logging=logging,
         )
         self._dispatches: typing.Optional[DispatchesClient] = None
+        self._routes: typing.Optional[RoutesClient] = None
+        self._labels: typing.Optional[LabelsClient] = None
 
     @property
     def dispatches(self):
@@ -101,6 +105,22 @@ class FernApi:
 
             self._dispatches = DispatchesClient(client_wrapper=self._client_wrapper)
         return self._dispatches
+
+    @property
+    def routes(self):
+        if self._routes is None:
+            from .routes.client import RoutesClient
+
+            self._routes = RoutesClient(client_wrapper=self._client_wrapper)
+        return self._routes
+
+    @property
+    def labels(self):
+        if self._labels is None:
+            from .labels.client import LabelsClient
+
+            self._labels = LabelsClient(client_wrapper=self._client_wrapper)
+        return self._labels
 
 
 def _make_default_async_client(
@@ -199,6 +219,8 @@ class AsyncFernApi:
             logging=logging,
         )
         self._dispatches: typing.Optional[AsyncDispatchesClient] = None
+        self._routes: typing.Optional[AsyncRoutesClient] = None
+        self._labels: typing.Optional[AsyncLabelsClient] = None
 
     @property
     def dispatches(self):
@@ -207,6 +229,22 @@ class AsyncFernApi:
 
             self._dispatches = AsyncDispatchesClient(client_wrapper=self._client_wrapper)
         return self._dispatches
+
+    @property
+    def routes(self):
+        if self._routes is None:
+            from .routes.client import AsyncRoutesClient
+
+            self._routes = AsyncRoutesClient(client_wrapper=self._client_wrapper)
+        return self._routes
+
+    @property
+    def labels(self):
+        if self._labels is None:
+            from .labels.client import AsyncLabelsClient
+
+            self._labels = AsyncLabelsClient(client_wrapper=self._client_wrapper)
+        return self._labels
 
 
 def _get_base_url(*, base_url: typing.Optional[str] = None, environment: FernApiEnvironment) -> str:

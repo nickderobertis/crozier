@@ -647,10 +647,10 @@ when the two differ.
 ### `renamed-request-options-docs`
 
 - **Kind:** `fern-defect`
-- **Trigger:** An operation one of whose own arguments (a body property, parameter or header) is named request_options, so both sides' generated methods take the SDK's options as _request_options: its entry in reference.md's parameter list, and README.md's retry and timeout calls when it is the README's first operation.
-- **Fern writes:** The options entry is **request_options:** `typing.Optional[RequestOptions]`, listed beside the argument of the same name, and the README calls pass request_options={"max_retries": 1} and request_options={"timeout": 1}.
-- **crozier writes:** The method's own name for its options, **_request_options:** and _request_options={; every other byte of each line, and every signature, remain matched.
-- **Why:** The generated method declares no second request_options: the documented options entry names the operation's own argument, and the README's calls bind the options dictionary to that argument, so it is sent in the request as the argument's value and no retry or timeout option is applied.
+- **Trigger:** An operation one of whose own body, query or header arguments is named request_options, so both sides' generated methods take the SDK's options as _request_options: its entry in reference.md's parameter list, and README.md's retry and timeout calls when it is the README's first operation. Or an operation whose path parameter is named request_options, which both sides' methods take as request_options_: its reference.md worked call.
+- **Fern writes:** The options entry is **request_options:** `typing.Optional[RequestOptions]`, listed beside the argument of the same name, and the README calls pass request_options={"max_retries": 1} and request_options={"timeout": 1}. The path parameter's worked call passes request_options="request_options".
+- **crozier writes:** The method's own name for its options, **_request_options:** and _request_options={, and the path parameter's own keyword, request_options_="request_options"; every other byte of each line, and every signature, remain matched.
+- **Why:** The generated method declares no second request_options: the documented options entry names the operation's own argument, and the README's calls bind the options dictionary to that argument, so it is sent in the request as the argument's value and no retry or timeout option is applied. Where the path parameter is request_options_, the worked call binds its value to the SDK's options argument and omits the required path parameter, so it raises TypeError.
 - **Evidence:** [`docs/departures/evidence/renamed-request-options-docs.md`](../../docs/departures/evidence/renamed-request-options-docs.md)
 
 ### `repeated-credential-example-keyword`

@@ -52,3 +52,35 @@ holds the untouched tree to the certified one under the ledger, and
 drives the sync, async and raw clients under both Pydantic majors: the body
 carries `request_options="express"` and `_request_options`' header reaches the
 server.
+
+## A path parameter named `request_options`
+
+The same measurement's `GET /labels/{request_options}` shows the pair's other
+answer to the name. Its generated methods keep their own options argument and
+rename the path parameter instead: `get_label(self, request_options_: str, *,
+request_options: typing.Optional[RequestOptions] = None)` in the sync, async
+and raw clients alike, and both docstrings pass `request_options_=`. But
+`reference.md`'s worked call is:
+
+```python
+client.labels.get_label(
+    request_options="request_options",
+)
+```
+
+Run against the certified pair's own tree (Fern CLI 5.216.0 /
+fern-python-sdk 5.42.0, python-enums, from the host's certified-tree store),
+that call raises before any request is sent:
+
+```text
+TypeError: LabelsClient.get_label() missing 1 required positional argument: 'request_options_'
+```
+
+crozier writes `request_options_="request_options",` there, the keyword its
+method and both docstrings name, and nothing else on the line or in the
+signature changes. The rule's second arm admits only a `reference.md` line
+whose only change is `request_options=` written `request_options_=` at its
+start, a value that is not an options dictionary, in a tree some raw method of
+which declares both `request_options_` and `request_options`. Its unit test
+rejects another file, an options dictionary, an unchanged line, and a tree
+whose methods take `_request_options`.

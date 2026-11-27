@@ -13,6 +13,7 @@ The Fern Python library provides convenient access to the Fern APIs from Python.
 - [Environments](#environments)
 - [Async Client](#async-client)
 - [Exception Handling](#exception-handling)
+- [Pagination](#pagination)
 - [Advanced](#advanced)
   - [Access Raw Response Data](#access-raw-response-data)
   - [Retries](#retries)
@@ -91,6 +92,27 @@ try:
 except ApiError as e:
     print(e.status_code)
     print(e.body)
+```
+
+## Pagination
+
+Paginated requests will return a `SyncPager` or `AsyncPager`, which can be used as generators for the underlying object.
+
+```python
+from fern import FernApi
+
+client = FernApi()
+
+client.routes.list_routes()
+```
+
+```python
+# You can also iterate through pages and access the typed response per page
+pager = client.routes.list_routes(...)
+for page in pager.iter_pages():
+    print(page.response)  # access the typed response for each page
+    for item in page:
+        print(item)
 ```
 
 ## Advanced

@@ -6024,11 +6024,14 @@ fn doc_arg(dp: &DocParam) -> Doc {
 }
 
 /// The name of an operation's SDK `RequestOptions` argument: `request_options`,
-/// or `_request_options` where one of the operation's own arguments already
-/// takes that name, as the certified pair renames it (measured in
+/// or `_request_options` where one of the operation's own body, query or header
+/// arguments already takes that name, as the certified pair renames it
+/// (measured in
 /// `docs/fern-measurements/naming-acceptance/request-options-body-property/`).
 /// The argument keeps its public name and wire key; only the SDK's option
-/// moves, in every signature, docstring, forwarded call and request.
+/// moves, in every signature, docstring, forwarded call and request. A path
+/// parameter of that name is `request_options_` instead
+/// ([`crate::naming::path_param_name`]), so it never collides.
 pub(crate) fn options_name(ep: &Endpoint) -> &'static str {
     let named = |name: &str| name == "request_options";
     let body = match &ep.request_body {
@@ -6037,7 +6040,6 @@ pub(crate) fn options_name(ep: &Endpoint) -> &'static str {
         _ => false,
     };
     if body
-        || ep.path_params.iter().any(|p| named(&p.py_name))
         || ep.query_params.iter().any(|p| named(&p.py_name))
         || ep.header_params.iter().any(|p| named(&p.py_name))
     {
