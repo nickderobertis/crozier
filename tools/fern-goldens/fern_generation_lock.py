@@ -44,6 +44,7 @@ import argparse
 import contextlib
 import os
 import re
+import shutil
 import signal
 import subprocess
 import sys
@@ -98,20 +99,31 @@ def recorded_holder() -> Pid | None:
     return parse_pid(text)
 
 
-def parent_of(pid: Pid) -> Pid | None:
-    """`pid`'s parent, read from /proc where there is one and from `ps` elsewhere
-    off Windows; None where neither answers."""
-    stat = Path("/proc") / str(pid) / "stat"
-    if stat.parent.parent.is_dir():
+PROC = Path("/proc")
+
+
+def parent_lookup() -> str | None:
+    """How this platform reads a process's parent: `"proc"` where `/proc` is
+    mounted, `"ps"` where a `ps` is on PATH off Windows (one on a Windows PATH is a
+    POSIX layer's, naming its own pids), None where it offers neither. Decided
+    from the platform, never from a lookup's result, so a lookup that fails where
+    one exists refuses the hold rather than standing for no lookup."""
+    if PROC.is_dir():
+        return "proc"
+    if sys.platform != "win32" and shutil.which("ps"):
+        return "ps"
+    return None
+
+
+def parent_of(pid: Pid, lookup: str) -> Pid | None:
+    """`pid`'s parent read through `lookup`, or None when that read fails."""
+    if lookup == "proc":
         try:
             # `pid (comm) state ppid …`: comm may hold spaces and parentheses.
-            fields = stat.read_text(encoding="utf-8", errors="replace").rsplit(")", 1)[1].split()
-            return parse_pid(fields[1])
+            text = (PROC / str(pid) / "stat").read_text(encoding="utf-8", errors="replace")
+            return parse_pid(text.rsplit(")", 1)[1].split()[1])
         except (OSError, IndexError, ValueError):
             return None
-    if sys.platform == "win32":
-        # A `ps` on a Windows PATH is a POSIX layer's, naming its own pids.
-        return None
     try:
         shown = subprocess.run(
             ["ps", "-o", "ppid=", "-p", str(pid)], capture_output=True, text=True, check=False, timeout=10
@@ -121,25 +133,16 @@ def parent_of(pid: Pid) -> Pid | None:
     return parse_pid(shown.stdout)
 
 
-def is_self_or_ancestor(pid: Pid) -> bool:
-    """Whether `pid` is this process or one of its ancestors; True too where the
-    platform offers no parent lookup at all, so the recorded match is the proof."""
-    current = own_pid()
-    if current == pid:
-        return True
-    parent = parent_of(current)
-    if parent is None:
-        # Every process has a parent, so no answer for this one means no lookup.
-        return True
+def is_self_or_ancestor(pid: Pid, lookup: str) -> bool:
+    """Whether `pid` is this process or one of its ancestors, read through `lookup`;
+    a failed read is no proof, so it answers False."""
+    current: Pid | None = own_pid()
     for _ in range(MAX_DEPTH):
-        if parent <= 0:
+        if current is None:
             return False
-        if parent == pid:
+        if current == pid:
             return True
-        next_parent = parent_of(parent)
-        if next_parent is None:
-            return False
-        parent = next_parent
+        current = parent_of(current, lookup)
     return False
 
 
@@ -148,7 +151,14 @@ def held() -> bool:
     pid = parse_pid(os.environ.get(HOLDER_ENV, ""))
     if pid is None:
         return False
-    return recorded_holder() == pid and is_self_or_ancestor(pid)
+    if recorded_holder() != pid:
+        return False
+    if pid == own_pid():
+        return True
+    lookup = parent_lookup()
+    # With no parent lookup on this platform the ancestry cannot be read, so the
+    # inherited variable naming the recorded holder is the hold.
+    return lookup is None or is_self_or_ancestor(pid, lookup)
 
 
 # The lock primitive: `fcntl.flock` where the platform has it, `msvcrt.locking`

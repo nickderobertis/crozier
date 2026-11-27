@@ -724,12 +724,58 @@ class NestingIsVerifiedNotTrusted(unittest.TestCase):
             [sys.executable, str(LOCK_SCRIPT), "held"], env=dict(self.environment, **extra), check=False
         ).returncode
 
+    def holder_record(self) -> Path:
+        holder = Path(self.environment["XDG_CACHE_HOME"]) / "crozier" / "fern-generation.lock.holder"
+        holder.parent.mkdir(parents=True, exist_ok=True)
+        return holder
+
+    def without_parent_lookup(self, ps: str | None = None) -> None:
+        """Every later `held` and `run` here runs as on a platform with neither
+        `fcntl` nor `/proc`, and with `ps` either absent or, given `ps`, the
+        doubled one that script stands for (its own parent lookup)."""
+        scratch = Path(self.environment["XDG_CACHE_HOME"])
+        site, bin_dir = scratch / "non-posix", scratch / "bin"
+        site.mkdir(exist_ok=True)
+        bin_dir.mkdir(exist_ok=True)
+        # A `None` in sys.modules is what the import system reads as "not
+        # available"; `/proc` answering no is a platform without it.
+        (site / "sitecustomize.py").write_text(
+            "import pathlib, sys\n"
+            "sys.modules['fcntl'] = None\n"
+            "_is_dir = pathlib.Path.is_dir\n"
+            "def is_dir(self, *args, **kwargs):\n"
+            "    return False if self == pathlib.Path('/proc') else _is_dir(self, *args, **kwargs)\n"
+            "pathlib.Path.is_dir = is_dir\n",
+            encoding="utf-8",
+        )
+        self.environment["PYTHONPATH"] = str(site)
+        if ps is not None:
+            (bin_dir / "ps").write_text(f"#!/bin/sh\n{ps}\n", encoding="utf-8")
+            (bin_dir / "ps").chmod(0o755)
+        if os.name != "nt":
+            # Windows reads no `ps` at all, and its Python wants its PATH.
+            self.environment["PATH"] = str(bin_dir)
+
+    def assert_malformed_or_missing_records_are_no_hold(self, holder: Path) -> None:
+        """A malformed variable, or a malformed, undecodable, unreadable or
+        released holder record, is never a hold — even where the two spell the
+        same text, and whether or not the platform has a parent lookup."""
+        for text in ("abc", "\u0663", "\u00b2", "0", "-1", f" {os.getpid()}x", "9" * 40):
+            with self.subTest(malformed=text):
+                holder.write_text(f"{text}\n", encoding="utf-8")
+                self.assertEqual(1, self.held(**{LOCK.HOLDER_ENV: text}))
+        holder.write_bytes(b"\xff\xfe" + str(os.getpid()).encode())
+        self.assertEqual(1, self.held(**{LOCK.HOLDER_ENV: str(os.getpid())}), "an undecodable holder record")
+        holder.unlink()
+        self.assertEqual(1, self.held(**{LOCK.HOLDER_ENV: str(os.getpid())}), "a released hold: no record")
+        holder.mkdir()
+        self.assertEqual(1, self.held(**{LOCK.HOLDER_ENV: str(os.getpid())}), "an unreadable holder record")
+
     @unittest.skipIf(os.name == "nt", "Windows has no parent lookup, so the recorded match alone is the hold there")
     def test_a_variable_naming_no_recorded_holder_or_no_ancestor_is_not_a_hold(self) -> None:
         self.assertEqual(1, self.held())
         self.assertEqual(1, self.held(**{LOCK.HOLDER_ENV: str(os.getpid())}), "no holder recorded")
-        holder = Path(self.environment["XDG_CACHE_HOME"]) / "crozier" / "fern-generation.lock.holder"
-        holder.parent.mkdir(parents=True)
+        holder = self.holder_record()
         # A recorded holder that is no ancestor of the asking process (pid 1 here is
         # every process's ancestor, so a sibling's pid stands in for a stranger).
         stranger = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(30)"])
@@ -739,17 +785,65 @@ class NestingIsVerifiedNotTrusted(unittest.TestCase):
         self.assertEqual(1, self.held(**{LOCK.HOLDER_ENV: str(stranger.pid)}))
         holder.write_text(f"{os.getpid()}\n", encoding="utf-8")
         self.assertEqual(0, self.held(**{LOCK.HOLDER_ENV: str(os.getpid())}), "this process is the child's parent")
-        # A malformed variable, or a malformed holder record, is never a hold —
-        # even where the two spell the same text.
-        for text in ("abc", "\u0663", "\u00b2", "0", "-1", f" {os.getpid()}x", "9" * 40):
-            with self.subTest(malformed=text):
-                holder.write_text(f"{text}\n", encoding="utf-8")
-                self.assertEqual(1, self.held(**{LOCK.HOLDER_ENV: text}))
-        holder.write_bytes(b"\xff\xfe" + str(os.getpid()).encode())
-        self.assertEqual(1, self.held(**{LOCK.HOLDER_ENV: str(os.getpid())}), "an undecodable holder record")
-        holder.unlink()
-        holder.mkdir()
-        self.assertEqual(1, self.held(**{LOCK.HOLDER_ENV: str(os.getpid())}), "an unreadable holder record")
+        self.assert_malformed_or_missing_records_are_no_hold(holder)
+
+    def test_without_a_parent_lookup_only_the_recorded_holder_is_a_hold(self) -> None:
+        """With no parent lookup (no `/proc` and no `ps`, as on Windows) the
+        inherited variable naming the recorded holder is the hold; anything less
+        is still none."""
+        self.without_parent_lookup()
+        self.assertEqual(1, self.held())
+        self.assertEqual(1, self.held(**{LOCK.HOLDER_ENV: str(os.getpid())}), "no holder recorded")
+        holder = self.holder_record()
+        holder.write_text(f"{os.getpid()}\n", encoding="utf-8")
+        self.assertEqual(0, self.held(**{LOCK.HOLDER_ENV: str(os.getpid())}), "the recorded holder's variable")
+        self.assertEqual(1, self.held(**{LOCK.HOLDER_ENV: str(os.getpid() + 1)}), "a variable naming another pid")
+        self.assert_malformed_or_missing_records_are_no_hold(holder)
+
+    @unittest.skipIf(os.name == "nt", "Windows reads no `ps`, so its lookup cannot fail")
+    def test_a_parent_lookup_that_fails_where_one_exists_is_no_hold(self) -> None:
+        """A `ps` that answers nothing, or answers garbage, proves no ancestry:
+        the recorded match alone stands in only where there is no lookup at all."""
+        holder = self.holder_record()
+        holder.write_text(f"{os.getpid()}\n", encoding="utf-8")
+        for name, script in (("failing", "exit 1"), ("garbled", "echo not-a-pid")):
+            with self.subTest(ps=name):
+                self.without_parent_lookup(ps=script)
+                self.assertEqual(1, self.held(**{LOCK.HOLDER_ENV: str(os.getpid())}))
+
+    def test_without_fcntl_or_a_parent_lookup_a_nested_run_shares_its_parents_hold(self) -> None:
+        """Where `fcntl` will not import and no parent lookup exists (no `/proc`
+        and no `ps`, as on Windows), an entry point started below a holder still
+        recognizes that hold and runs its command, rather than waiting on the lock
+        its own ancestor holds — which never ends."""
+        self.without_parent_lookup()
+        scratch = Path(self.environment["XDG_CACHE_HOME"])
+        ran = scratch / "nested.ran"
+        write_ran = f"import pathlib; pathlib.Path({str(ran)!r}).write_text('')"
+        nested = [sys.executable, str(LOCK_SCRIPT), "run", "--label", "nested", "--", sys.executable, "-c", write_ran]
+        # The holder's command is a process of its own that starts the nested entry
+        # point, so the nested one is the holder's grandchild, not the holder.
+        parent = f"import subprocess, sys; sys.exit(subprocess.run({nested!r}).returncode)"
+        errors = scratch / "outer.stderr"
+        with errors.open("wb") as handle:
+            outer = subprocess.Popen(
+                [sys.executable, str(LOCK_SCRIPT), "run", "--label", "outer", "--", sys.executable, "-c", parent],
+                env=self.environment,
+                stderr=handle,
+                start_new_session=os.name != "nt",
+            )
+        if os.name != "nt":
+            # A nested run that waits forever is reaped with the whole tree.
+            self.addCleanup(lambda: outer.poll() is None and os.killpg(outer.pid, signal.SIGKILL))
+        try:
+            status = outer.wait(timeout=HANG_GUARD_SECONDS)
+        except subprocess.TimeoutExpired:
+            self.fail(f"the nested run deadlocked on its parent's hold:\n{errors.read_text(encoding='utf-8')}")
+        stderr = errors.read_text(encoding="utf-8")
+        self.assertEqual(0, status, stderr)
+        self.assertTrue(ran.exists(), f"the nested run never ran its command:\n{stderr}")
+        self.assertNotIn("nested: waiting", stderr)
+        self.assertFalse((scratch / "crozier" / "fern-generation.lock.held").exists(), "the hold outlived the run")
 
     def lock_is_free(self) -> bool:
         """Whether another process could take the lock now (a fresh process asks, so no hold of this one counts)."""
@@ -883,57 +977,6 @@ class NestingIsVerifiedNotTrusted(unittest.TestCase):
         self.assertIn("probe: cannot take the host Fern generation lock at", ran.stderr)
         self.assertIn("a writable directory (or point XDG_CACHE_HOME at one), then re-run", ran.stderr)
         self.assertNotIn("Traceback", ran.stderr)
-
-    def test_without_fcntl_or_a_parent_lookup_a_nested_run_shares_its_parents_hold(self) -> None:
-        """Where `fcntl` will not import and no parent lookup answers (no `/proc`
-        and no `ps`, as on Windows), an entry point started below a holder still
-        recognizes that hold and runs its command, rather than waiting on the lock
-        its own ancestor holds — which never ends."""
-        scratch = Path(self.environment["XDG_CACHE_HOME"])
-        site, empty_path = scratch / "non-posix", scratch / "no-ps"
-        site.mkdir()
-        empty_path.mkdir()
-        # A `None` in sys.modules is what the import system reads as "not
-        # available"; `/proc` answering no is a platform without it.
-        (site / "sitecustomize.py").write_text(
-            "import pathlib, sys\n"
-            "sys.modules['fcntl'] = None\n"
-            "_is_dir = pathlib.Path.is_dir\n"
-            "pathlib.Path.is_dir = lambda self, *a, **k: False if self == pathlib.Path('/proc') else _is_dir(self, *a, **k)\n",
-            encoding="utf-8",
-        )
-        self.environment["PYTHONPATH"] = str(site)
-        if os.name != "nt":
-            # Windows skips `ps` itself, and its Python wants its PATH.
-            self.environment["PATH"] = str(empty_path)
-        ran = scratch / "nested.ran"
-        nested = [
-            sys.executable, str(LOCK_SCRIPT), "run", "--label", "nested", "--",
-            sys.executable, "-c", f"import pathlib; pathlib.Path({str(ran)!r}).write_text('')",
-        ]  # fmt: skip
-        # The holder's command is a process of its own that starts the nested entry
-        # point, so the nested one is the holder's grandchild, not the holder.
-        parent = f"import subprocess, sys; sys.exit(subprocess.run({nested!r}).returncode)"
-        errors = scratch / "outer.stderr"
-        with errors.open("wb") as handle:
-            outer = subprocess.Popen(
-                [sys.executable, str(LOCK_SCRIPT), "run", "--label", "outer", "--", sys.executable, "-c", parent],
-                env=self.environment,
-                stderr=handle,
-                start_new_session=os.name != "nt",
-            )
-        if os.name != "nt":
-            # A nested run that waits forever is reaped with the whole tree.
-            self.addCleanup(lambda: outer.poll() is None and os.killpg(outer.pid, signal.SIGKILL))
-        try:
-            status = outer.wait(timeout=HANG_GUARD_SECONDS)
-        except subprocess.TimeoutExpired:
-            self.fail(f"the nested run deadlocked on its parent's hold:\n{errors.read_text(encoding='utf-8')}")
-        stderr = errors.read_text(encoding="utf-8")
-        self.assertEqual(0, status, stderr)
-        self.assertTrue(ran.exists(), f"the nested run never ran its command:\n{stderr}")
-        self.assertNotIn("nested: waiting", stderr)
-        self.assertFalse((scratch / "crozier" / "fern-generation.lock.held").exists(), "the hold outlived the run")
 
     @unittest.skipIf(os.name == "nt", "Windows takes msvcrt's lock, which needs no fallback")
     def test_without_fcntl_a_second_run_still_waits_for_the_first(self) -> None:
