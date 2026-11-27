@@ -30,7 +30,9 @@ Usage: fern_generation_lock.py held
 `held` exits 0 when this process is inside a hold, 1 when it is not. `run` holds
 the lock (or shares the hold it was started in) while COMMAND runs and exits
 with COMMAND's status; while another process holds it, it says so once on
-stderr and waits. Exit 2 on a usage error.
+stderr and waits. Where the lock cannot be taken (its directory is not
+writable), `run` and every entry point exit 1 naming it and run no Fern. Exit 2
+on a usage error.
 """
 
 from __future__ import annotations
@@ -181,6 +183,14 @@ def _record_holder(pid: int) -> None:
     os.replace(staged, path)
 
 
+def unavailable(label: str, path: Path, error: OSError) -> SystemExit:
+    """The exit an entry point takes when it cannot take the lock: no Fern runs."""
+    return SystemExit(
+        f"{label}: cannot take the host Fern generation lock at {path} ({error.strerror or error}); "
+        f"make {path.parent} a writable directory (or point XDG_CACHE_HOME at one), then re-run"
+    )
+
+
 @contextlib.contextmanager
 def hold(label: str) -> Generator[None]:
     """Hold the host's Fern generation lock for the block, or share the hold this
@@ -190,8 +200,11 @@ def hold(label: str) -> Generator[None]:
         yield
         return
     path = lock_path()
-    path.parent.mkdir(parents=True, exist_ok=True)
-    handle = path.open("a+", encoding="utf-8")
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        handle = path.open("a+", encoding="utf-8")
+    except OSError as error:
+        raise unavailable(label, path, error) from None
     try:
         if not _try_lock(handle):
             holder = recorded_holder()
@@ -205,7 +218,10 @@ def hold(label: str) -> Generator[None]:
             print(f"{label}: took the host Fern generation lock", file=sys.stderr, flush=True)
         previous = os.environ.get(HOLDER_ENV)
         try:
-            _record_holder(os.getpid())
+            try:
+                _record_holder(os.getpid())
+            except OSError as error:
+                raise unavailable(label, holder_path(), error) from None
             os.environ[HOLDER_ENV] = str(os.getpid())
             yield
         finally:

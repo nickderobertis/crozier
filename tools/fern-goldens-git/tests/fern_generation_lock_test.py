@@ -39,6 +39,7 @@ from collections.abc import Callable, Generator
 from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from typing import Literal, get_args
 
 os.environ["PYTHONUTF8"] = "1"
 
@@ -166,6 +167,26 @@ class Raw(BaseHTTPRequestHandler):
         self.send_response(200 if body is not None else 404)
         self.end_headers()
         self.wfile.write(body or b"")
+
+
+# What the event log records: a Fern run starting or ending (the double), this
+# test releasing its foreign hold or a competitor taking the lock, and a tool
+# besides Fern running at all.
+EventKind = Literal["fern-start", "fern-end", "released", "intruded", "unexpected"]
+
+
+@dataclass(frozen=True)
+class Event:
+    kind: EventKind
+
+    @classmethod
+    def decode(cls, line: str) -> Event:
+        record = json.loads(line)
+        kind = record.get("event") if isinstance(record, dict) else None
+        for known in get_args(EventKind):
+            if kind == known:
+                return cls(known)
+        raise AssertionError(f"an event log line no writer here produces: {line!r}")
 
 
 @dataclass(frozen=True)
@@ -578,10 +599,10 @@ class EveryFernEntryPointHoldsTheHostLock(unittest.TestCase):
         shutil.copytree(Path(self.pristine.name) / "repo", self.root, symlinks=True)
         return case.prepare(self.root)
 
-    def recorded(self) -> list[dict[str, object]]:
+    def recorded(self) -> list[Event]:
         if not self.events.exists():
             return []
-        return [json.loads(line) for line in self.events.read_text(encoding="utf-8").splitlines()]
+        return [Event.decode(line) for line in self.events.read_text(encoding="utf-8").splitlines()]
 
     def start(self, argv: list[str], environment: dict[str, str]) -> tuple[subprocess.Popen[bytes], Path]:
         log = self.root.parent / "entry-point.log"
@@ -619,8 +640,8 @@ class EveryFernEntryPointHoldsTheHostLock(unittest.TestCase):
                 if not released:
                     LOCK._unlock(handle)
 
-    def assert_ran_fern(self, events: list[dict[str, object]], output: str) -> None:
-        kinds = [event["event"] for event in events]
+    def assert_ran_fern(self, events: list[Event], output: str) -> None:
+        kinds = [event.kind for event in events]
         self.assertIn("fern-start", kinds, f"the entry point never reached Fern:\n{output}")
         self.assertEqual(kinds.count("fern-start"), kinds.count("fern-end"), output)
         self.assertNotIn("unexpected", kinds, f"a tool besides Fern ran:\n{events}\n{output}")
@@ -633,7 +654,7 @@ class EveryFernEntryPointHoldsTheHostLock(unittest.TestCase):
             while time.monotonic() < deadline and process.poll() is None:
                 if WAITING in log.read_text(encoding="utf-8", errors="replace"):
                     break
-                if any(event["event"] == "fern-start" for event in self.recorded()):
+                if any(event.kind == "fern-start" for event in self.recorded()):
                     break
                 time.sleep(0.05)
             # Still held a moment after it says it waits: it must keep waiting.
@@ -647,7 +668,7 @@ class EveryFernEntryPointHoldsTheHostLock(unittest.TestCase):
         competing.join(timeout=HANG_GUARD_SECONDS)
         events = self.recorded()
         self.assert_ran_fern(events, output)
-        kinds = [event["event"] for event in events]
+        kinds = [event.kind for event in events]
         self.assertLess(
             kinds.index("released"),
             kinds.index("fern-start"),
@@ -718,6 +739,17 @@ class NestingIsVerifiedNotTrusted(unittest.TestCase):
         self.assertEqual(1, self.held(**{LOCK.HOLDER_ENV: str(stranger.pid)}))
         holder.write_text(f"{os.getpid()}\n", encoding="utf-8")
         self.assertEqual(0, self.held(**{LOCK.HOLDER_ENV: str(os.getpid())}), "this process is the child's parent")
+        # A malformed variable, or a malformed holder record, is never a hold —
+        # even where the two spell the same text.
+        for text in ("abc", "\u0663", "\u00b2", "0", "-1", f" {os.getpid()}x", "9" * 40):
+            with self.subTest(malformed=text):
+                holder.write_text(f"{text}\n", encoding="utf-8")
+                self.assertEqual(1, self.held(**{LOCK.HOLDER_ENV: text}))
+        holder.write_bytes(b"\xff\xfe" + str(os.getpid()).encode())
+        self.assertEqual(1, self.held(**{LOCK.HOLDER_ENV: str(os.getpid())}), "an undecodable holder record")
+        holder.unlink()
+        holder.mkdir()
+        self.assertEqual(1, self.held(**{LOCK.HOLDER_ENV: str(os.getpid())}), "an unreadable holder record")
 
     def lock_is_free(self) -> bool:
         """Whether another process could take the lock now (a fresh process asks, so no hold of this one counts)."""
@@ -738,7 +770,7 @@ class NestingIsVerifiedNotTrusted(unittest.TestCase):
             time.sleep(0.05)
         self.assertTrue(path.exists(), f"{path.name} never appeared")
 
-    def held_command(self, name: str) -> tuple[subprocess.Popen[bytes], Path, Path]:
+    def held_command(self, name: str, stderr: Path | None = None) -> tuple[subprocess.Popen[bytes], Path, Path]:
         """`run` over a command that marks it started, then waits for `<name>.go`,
         exiting 0, or ends on SIGTERM or SIGHUP noting which in `<name>.ended`."""
         scratch = Path(self.environment["XDG_CACHE_HOME"])
@@ -755,10 +787,13 @@ class NestingIsVerifiedNotTrusted(unittest.TestCase):
             f"while not pathlib.Path({str(go)!r}).exists():\n"
             "    time.sleep(0.05)\n"
         )
-        wrapper = subprocess.Popen(
-            [sys.executable, str(LOCK_SCRIPT), "run", "--label", name, "--", sys.executable, "-c", child],
-            env=self.environment,
-        )
+        with contextlib.ExitStack() as files:
+            errors = files.enter_context(stderr.open("wb")) if stderr else None
+            wrapper = subprocess.Popen(
+                [sys.executable, str(LOCK_SCRIPT), "run", "--label", name, "--", sys.executable, "-c", child],
+                env=self.environment,
+                stderr=errors,
+            )
         self.addCleanup(lambda: wrapper.poll() is None and wrapper.kill())
         return wrapper, started, go
 
@@ -767,7 +802,8 @@ class NestingIsVerifiedNotTrusted(unittest.TestCase):
         starts only once the first's has ended and the lock is released."""
         first, first_started, first_go = self.held_command("first")
         self.until(first_started)
-        second, second_started, second_go = self.held_command("second")
+        said = Path(self.environment["XDG_CACHE_HOME"]) / "second.stderr"
+        second, second_started, second_go = self.held_command("second", said)
         time.sleep(1.0)
         self.assertFalse(second_started.exists(), "the second command started while the first held the lock")
         second_go.write_text("", encoding="utf-8")
@@ -775,6 +811,78 @@ class NestingIsVerifiedNotTrusted(unittest.TestCase):
         self.assertEqual(0, first.wait(timeout=HANG_GUARD_SECONDS))
         self.until(second_started)
         self.assertEqual(0, second.wait(timeout=HANG_GUARD_SECONDS))
+        # It says, once each, that it waits and on whom, then that it took the lock.
+        lines = said.read_text(encoding="utf-8").splitlines()
+        self.assertEqual(2, len(lines), lines)
+        self.assertTrue(lines[0].startswith(f"second: {WAITING} "), lines)
+        self.assertIn(f"(pid {first.pid} holds it;", lines[0])
+        self.assertEqual("second: took the host Fern generation lock", lines[1])
+
+    def test_a_command_killed_by_a_signal_is_reported_as_the_shell_reports_it(self) -> None:
+        if os.name == "nt":
+            self.skipTest("a signal-terminated child is a POSIX status")
+        killed = subprocess.run(
+            [
+                sys.executable,
+                str(LOCK_SCRIPT),
+                "run",
+                "--label",
+                "probe",
+                "--",
+                sys.executable,
+                "-c",
+                "import os, signal; os.kill(os.getpid(), signal.SIGKILL)",
+            ],
+            env=self.environment,
+            check=False,
+        )
+        self.assertEqual(128 + signal.SIGKILL, killed.returncode)
+        self.assertTrue(self.lock_is_free())
+
+    def test_an_unset_empty_or_relative_cache_home_takes_the_lock_under_home(self) -> None:
+        """XDG asks for an absolute XDG_CACHE_HOME; anything else is the default
+        ~/.cache, so every such caller still meets on one lock."""
+        home = Path(self.environment["XDG_CACHE_HOME"]) / "home"
+        home.mkdir()
+        relative = Path(self.environment["XDG_CACHE_HOME"]) / "cwd"
+        relative.mkdir()
+        lock = home / ".cache" / "crozier" / "fern-generation.lock"
+        for name, value in (("unset", None), ("empty", ""), ("relative", "relative-cache")):
+            with self.subTest(XDG_CACHE_HOME=name):
+                environment = dict(self.environment, HOME=str(home), USERPROFILE=str(home))
+                environment.pop("XDG_CACHE_HOME")
+                if value is not None:
+                    environment["XDG_CACHE_HOME"] = value
+                probe = f"import pathlib, sys; sys.exit(0 if pathlib.Path({str(lock)!r}).exists() else 3)"
+                ran = subprocess.run(
+                    [sys.executable, str(LOCK_SCRIPT), "run", "--label", "probe", "--", sys.executable, "-c", probe],
+                    env=environment,
+                    cwd=relative,
+                    check=False,
+                )
+                self.assertEqual(0, ran.returncode, f"the lock was not taken at {lock}")
+                self.assertFalse((relative / "relative-cache").exists(), "a relative XDG_CACHE_HOME was used")
+                lock.unlink()
+
+    @unittest.skipIf(os.name == "nt", "a directory's write bit and root's bypass of it are POSIX")
+    def test_a_lock_that_cannot_be_taken_names_its_directory_and_runs_nothing(self) -> None:
+        if os.geteuid() == 0:
+            self.skipTest("root writes into a read-only directory")
+        cache = Path(self.environment["XDG_CACHE_HOME"])
+        cache.chmod(0o555)
+        self.addCleanup(cache.chmod, 0o755)
+        ran = subprocess.run(
+            [sys.executable, str(LOCK_SCRIPT), "run", "--label", "probe", "--", sys.executable, "-c", "print('ran')"],
+            env=self.environment,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(1, ran.returncode, ran.stderr)
+        self.assertEqual("", ran.stdout, "the command ran without the lock")
+        self.assertIn("probe: cannot take the host Fern generation lock at", ran.stderr)
+        self.assertIn("a writable directory (or point XDG_CACHE_HOME at one), then re-run", ran.stderr)
+        self.assertNotIn("Traceback", ran.stderr)
 
     @unittest.skipIf(os.name == "nt", "SIGTERM, SIGHUP and flock are POSIX")
     def test_a_terminated_or_hung_up_run_ends_its_command_and_frees_the_lock(self) -> None:

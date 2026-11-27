@@ -21,11 +21,13 @@ use super::departure_contributors::{
 use super::departures_ledger::{self, CONTRIBUTOR_ENV, EXAMPLE_INVENTORY_ENV, RECORD_ENV};
 use super::example_values_inventory;
 
-/// Which comparison [`recording_probe`] makes: `ordinary` or `perturbed`.
+/// Which comparison [`recording_probe`] makes: `ordinary`, `perturbed`,
+/// `declared`, `nested` or `unwound`.
 const PROBE_ENV: &str = "CROZIER_RECORDING_PROBE";
 
 /// The hand-written fixture the probe compares: a small tree whose golden has
-/// ledger rows in `README.md`, the file the perturbation shifts.
+/// ledger rows in `src/fern/client.py`, the file the perturbation shifts, and
+/// every example-inventory row in `README.md`, which it leaves untouched.
 const FIXTURE: &str = "docs/openapi-surface/handwritten/odometer-reading";
 const GOLDEN: &str = "docs/openapi-surface/handwritten/odometer-reading/fern-expected";
 
