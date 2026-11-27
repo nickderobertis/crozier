@@ -734,7 +734,6 @@ fn the_colliding_component_departure_explains_only_the_renamed_class() {
         "a module no renamed class owns must fail the comparison: {failures:?}"
     );
 }
-// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 /// #992: a run of one-letter words in a component name is one class word, as
 /// the certified pair cases it (`a/b-c` is `Abc`, `p-q-r` `Pqr`, `m_n` `Mn`,
@@ -768,3 +767,4 @@ fn single_letter_component_words_use_the_certified_casing() {
     }
     assert!(failures.is_empty(), "{}", failures.join("\n\n"));
 }
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]

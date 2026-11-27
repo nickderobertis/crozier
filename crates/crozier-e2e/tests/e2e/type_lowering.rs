@@ -648,7 +648,6 @@ fn union_members_lower_dedupe_merge_and_hoist_as_the_certified_pair() {
         ],
     );
 }
-// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 /// #984: an `allOf` beside a plain `type: string` member is the certified
 /// pair's `str` alias, before inheritance (`TagCode` over `$ref Hound`) or
@@ -702,3 +701,4 @@ fn enum_components_keep_their_own_description() {
         ],
     );
 }
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]

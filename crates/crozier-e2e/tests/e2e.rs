@@ -28149,6 +28149,7 @@ fn missing_discriminant_refusal_follows_fern_examples_and_recovers_with_a_mapped
     }
 }
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These registry journeys run crozier over every committed refusal shape, on the crozier-e2e edge every other binary-driving journey shares (crates/crozier-e2e/AGENTS.md); a narrower edge for them is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 /// Every probe and control shape the registry commits, through the real CLI.
 /// Measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3 (`shapes.tsv`, which
 /// `fern-refusals.py check` holds to each role), a `-probe` is a shape Fern
@@ -28359,6 +28360,7 @@ fn example_value_class_holds(id: &str, diagnostic: &str) {
         }
     }
 }
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 #[test]
 fn example_type_mismatch_refusal_covers_measured_shapes() {
