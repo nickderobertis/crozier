@@ -884,6 +884,30 @@ class NestingIsVerifiedNotTrusted(unittest.TestCase):
         self.assertIn("a writable directory (or point XDG_CACHE_HOME at one), then re-run", ran.stderr)
         self.assertNotIn("Traceback", ran.stderr)
 
+    @unittest.skipIf(os.name == "nt", "Windows takes msvcrt's lock, which needs no fallback")
+    def test_without_fcntl_a_second_run_still_waits_for_the_first(self) -> None:
+        """Where `fcntl` will not import and there is no `msvcrt`, the lock is the
+        exclusive creation of a marker beside it: two runs still exclude each
+        other, and the marker is gone once the second has finished."""
+        site = Path(self.environment["XDG_CACHE_HOME"]) / "without-fcntl"
+        site.mkdir()
+        # A `None` in sys.modules is what the import system reads as "not available".
+        (site / "sitecustomize.py").write_text("import sys\nsys.modules['fcntl'] = None\n", encoding="utf-8")
+        self.environment["PYTHONPATH"] = str(site)
+        marker = Path(self.environment["XDG_CACHE_HOME"]) / "crozier" / "fern-generation.lock.held"
+        first, first_started, first_go = self.held_command("first")
+        self.until(first_started)
+        self.assertTrue(marker.exists(), "the first run did not take the exclusive-create lock")
+        second, second_started, second_go = self.held_command("second")
+        time.sleep(1.0)
+        self.assertFalse(second_started.exists(), "the second command started while the first held the lock")
+        second_go.write_text("", encoding="utf-8")
+        first_go.write_text("", encoding="utf-8")
+        self.assertEqual(0, first.wait(timeout=HANG_GUARD_SECONDS))
+        self.until(second_started)
+        self.assertEqual(0, second.wait(timeout=HANG_GUARD_SECONDS))
+        self.assertFalse(marker.exists(), "the marker outlived the last hold")
+
     @unittest.skipIf(os.name == "nt", "SIGTERM, SIGHUP and flock are POSIX")
     def test_a_terminated_or_hung_up_run_ends_its_command_and_frees_the_lock(self) -> None:
         """`run` hands SIGTERM and SIGHUP to its command, exits as the signal asked,

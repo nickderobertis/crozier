@@ -45,6 +45,7 @@ import signal
 import subprocess
 import sys
 import tempfile
+import time
 from collections.abc import Generator
 from pathlib import Path
 from typing import IO, NewType
@@ -137,49 +138,82 @@ def held() -> bool:
     return recorded_holder() == pid and is_self_or_ancestor(pid)
 
 
-def _try_lock(handle: IO[str]) -> bool:
-    if sys.platform == "win32":
-        import msvcrt
+# The lock primitive: `fcntl.flock` where the platform has it, `msvcrt.locking`
+# on Windows, both released by the kernel if the holder dies. Where neither
+# imports, the lock is the exclusive creation of `fern-generation.lock.held`
+# beside the lock file, which a killed holder leaves behind: the wait then names
+# that file to remove.
+try:
+    import fcntl
+except ImportError:
+    fcntl = None
+try:
+    import msvcrt
+except ImportError:
+    msvcrt = None
+# How often a wait on the exclusive-create marker re-reads it, and how many of
+# those reads pass between reminders naming the marker to remove.
+MARKER_POLL_SECONDS = 0.1
+MARKER_REMINDER_EVERY = 600
 
+
+def _marker(handle: IO[str]) -> Path:
+    return Path(handle.name).with_name(LOCK_NAME + ".held")
+
+
+def _try_lock(handle: IO[str]) -> bool:
+    if fcntl is not None and sys.platform != "win32":
+        try:
+            fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            return True
+        except BlockingIOError:
+            return False
+    if msvcrt is not None and sys.platform == "win32":
         try:
             msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
             return True
         except OSError:
             return False
-    import fcntl
-
     try:
-        fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        os.close(os.open(_marker(handle), os.O_CREAT | os.O_EXCL | os.O_WRONLY))
         return True
-    except BlockingIOError:
+    except FileExistsError:
         return False
 
 
 def _lock(handle: IO[str]) -> None:
-    if sys.platform == "win32":
-        import msvcrt
-
+    if fcntl is not None and sys.platform != "win32":
+        fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+        return
+    if msvcrt is not None and sys.platform == "win32":
         while True:
             try:
+                # LK_LOCK gives up after about ten seconds, so wait again.
                 msvcrt.locking(handle.fileno(), msvcrt.LK_LOCK, 1)
                 return
             except OSError:
                 continue
-    import fcntl
-
-    fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+    polls = 0
+    while not _try_lock(handle):
+        polls += 1
+        if polls % MARKER_REMINDER_EVERY == 0:
+            print(
+                f"still waiting on {_marker(handle)}; remove it if no Fern run holds the lock",
+                file=sys.stderr,
+                flush=True,
+            )
+        time.sleep(MARKER_POLL_SECONDS)
 
 
 def _unlock(handle: IO[str]) -> None:
-    if sys.platform == "win32":
-        import msvcrt
-
+    if fcntl is not None and sys.platform != "win32":
+        fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+        return
+    if msvcrt is not None and sys.platform == "win32":
         with contextlib.suppress(OSError):
             msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
         return
-    import fcntl
-
-    fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+    _marker(handle).unlink(missing_ok=True)
 
 
 def _record_holder(pid: Pid) -> None:
