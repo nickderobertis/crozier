@@ -20789,15 +20789,25 @@ fn is_bare_required_member(member: &Schema) -> bool {
 /// `ManifestBooleanScalarConfig` is `allOf: [$ref BaseManifestScalarConfig,
 /// {properties: {type}}, {required: [type]}]` and its `type` is optional, where
 /// `StudyCreate`, `allOf: [{properties}, {required}]`, requires what it lists.
-/// `None` for any other
-/// composition, and for one whose bare member a later member with properties
-/// follows, which skips it (TAMS's `StorageBackendsList` items, and the
-/// measurement's `Shelf.samples`).
+/// `None` for any other composition: one whose bare member a later member with
+/// properties follows, which skips it (TAMS's `StorageBackendsList` items, and
+/// the measurement's `Shelf.samples`), and one of two or more `$ref` parents,
+/// which extends them unchanged (Groupe PSA's `AlarmStatus`, `allOf: [$ref
+/// CreatedAtField, $ref BaseAlarmStatus, {title}, {required: [activation,
+/// createdAt]}]`, keeps `createdAt` optional).
 fn trailing_required_view(
     schemas: &IndexMap<String, Schema>,
     schema: &Schema,
 ) -> Option<Vec<String>> {
     let members = schema.all_of.as_deref()?;
+    if members
+        .iter()
+        .filter(|member| member.reference.is_some())
+        .count()
+        > 1
+    {
+        return None;
+    }
     let mut listed: Vec<String> = Vec::new();
     for (index, member) in members.iter().enumerate() {
         if !is_bare_required_member(member) {
@@ -20818,6 +20828,21 @@ fn trailing_required_view(
     if listed.is_empty() {
         return None;
     }
+    let has_parent = members.iter().any(|member| member.reference.is_some());
+    // Beside a `$ref` parent and an inline member declaring properties the bare
+    // member changes no model: Groupe PSA's `PreconditioningProgram` (`allOf:
+    // [$ref Program, {title}, {properties: {slot, enabled}}, {required: [start,
+    // enabled, recurrence, occurence]}]`) extends `Program` with
+    // `recurrence` optional, and its `Point` requires only what `Geometry` does.
+    // A request body flattening such a composition still reads it
+    // (`promote_bare_required_members`).
+    let inline_properties = schema.properties.declared()
+        || members
+            .iter()
+            .any(|member| member.reference.is_none() && member.properties.declared());
+    if has_parent && inline_properties {
+        return None;
+    }
     let mut required: Vec<String> = Vec::new();
     let push = |name: &String, required: &mut Vec<String>| {
         if !required.contains(name) {
@@ -20833,19 +20858,13 @@ fn trailing_required_view(
             push(name, &mut required);
         }
     }
-    let has_parent = members.iter().any(|member| member.reference.is_some());
     for name in &listed {
         let declared_inline = schema.properties.contains_key(name)
             || members
                 .iter()
                 .filter(|member| member.reference.is_none())
                 .any(|member| member.properties.contains_key(name));
-        let applies = if declared_inline {
-            !has_parent
-        } else {
-            ancestry_declarers(schemas, members, name) < 2
-        };
-        if applies {
+        if declared_inline || ancestry_declarers(schemas, members, name) < 2 {
             push(name, &mut required);
         }
     }
@@ -20905,9 +20924,12 @@ fn ancestry_declarers(schemas: &IndexMap<String, Schema>, members: &[Schema], ke
 /// requiring it, `Feature` requires it, and the golden field is a required
 /// `id: str`.
 fn all_of_required(schemas: &IndexMap<String, Schema>, schema: &Schema) -> Vec<String> {
-    if let Some(required) = trailing_required_view(schemas, schema) {
-        return required;
-    }
+    trailing_required_view(schemas, schema).unwrap_or_else(|| composed_required(schemas, schema))
+}
+
+/// [`all_of_required`] without the bare-member view: every object member's and
+/// the schema's own `required`.
+fn composed_required(schemas: &IndexMap<String, Schema>, schema: &Schema) -> Vec<String> {
     let mut required = Vec::new();
     if let Some(members) = schema.all_of.as_deref() {
         let objects: Vec<Schema> = members
