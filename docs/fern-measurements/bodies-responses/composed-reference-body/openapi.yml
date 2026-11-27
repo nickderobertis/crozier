@@ -57,6 +57,21 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Weave'
+  /weaves:blend:
+    post:
+      operationId: BlendWeave
+      tags:
+      - Weaves
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/BlendYarn'
+              - $ref: '#/components/schemas/BlendDye'
+      responses:
+        '204':
+          description: Blended
 components:
   schemas:
     Weave:
@@ -193,6 +208,22 @@ components:
       properties:
         bead:
           $ref: '#/components/schemas/BeadRef'
+    BlendYarn:
+      type: object
+      properties:
+        yarn:
+          type: string
+        gauge:
+          description: The yarn's gauge.
+          type: integer
+    BlendDye:
+      type: object
+      properties:
+        gauge:
+          description: The dye bath's gauge.
+          type: integer
+        dye:
+          type: string
     WeaveFinish:
       description: Where a started weave is filed.
       type: object

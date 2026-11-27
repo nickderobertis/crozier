@@ -545,8 +545,9 @@ fn unresolved_non_component_body_reference_is_any() {
 /// two `$ref`s alone is laid out as both parents' fields in member order, its
 /// operation and its tag's siblings keep their client, each parent stays a root
 /// model, the docstring's worked call passes the later parent's fields first,
-/// and a field typed by a discriminated union is worked as its first member
-/// whatever the union's own example names.
+/// a field typed by a discriminated union is worked as its first member
+/// whatever the union's own example names, and a property both parents
+/// declare is one argument.
 #[test]
 fn composed_reference_bodies_spread_both_parents() {
     let case = "composed-reference-body";
@@ -571,6 +572,14 @@ fn composed_reference_bodies_spread_both_parents() {
         "src/fern/weaves/client.py",
         "bead=BeadRef_Glass(\n",
         "bead=BeadRef_Wood(\n",
+    );
+    // A property both parents declare is one argument, the first parent's.
+    decides(
+        case,
+        &out,
+        "src/fern/weaves/client.py",
+        "        gauge : typing.Optional[int]\n            The yarn's gauge.\n",
+        "        gauge : typing.Optional[int]\n            The dye bath's gauge.\n",
     );
     for root_model in ["weave_plan.py", "weave_plan_pattern.py", "weave_finish.py"] {
         assert!(

@@ -8720,14 +8720,22 @@ fn resolve_request_body(
         {
             let mut fields = Vec::new();
             append_parent_body_fields(schema, types, &mut fields);
+            // A property two parents declare is one argument, the first
+            // parent's, at its place (the measurement's `BlendWeave` `gauge`).
+            let mut seen = std::collections::HashSet::new();
+            fields.retain(|field| seen.insert(field.wire_name.clone()));
             // The docstring's worked call lists the later parent's fields first,
             // as it does a model composed of `$ref`s (#933); the signature and
             // the Markdown writers keep member order.
             let mut order = 0;
+            let mut ordered = std::collections::HashSet::new();
             for reference in parents.iter().rev() {
                 for parent_field in
                     hoist_fields(&ref_to_class(reference), types).unwrap_or_default()
                 {
+                    if !ordered.insert(parent_field.wire_name.clone()) {
+                        continue;
+                    }
                     if let Some(field) = fields
                         .iter_mut()
                         .find(|field| field.wire_name == parent_field.wire_name)

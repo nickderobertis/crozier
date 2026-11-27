@@ -209,6 +209,43 @@ class WeavesClient:
         )
         return _response.data
 
+    def blend_weave(
+        self,
+        *,
+        yarn: typing.Optional[str] = OMIT,
+        gauge: typing.Optional[int] = OMIT,
+        dye: typing.Optional[str] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> None:
+        """
+        Parameters
+        ----------
+        yarn : typing.Optional[str]
+
+        gauge : typing.Optional[int]
+            The yarn's gauge.
+
+        dye : typing.Optional[str]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi(
+            base_url="https://yourhost.com/path/to/api",
+        )
+        client.weaves.blend_weave()
+        """
+        _response = self._raw_client.blend_weave(yarn=yarn, gauge=gauge, dye=dye, request_options=request_options)
+        return _response.data
+
 
 class AsyncWeavesClient:
     def __init__(self, *, client_wrapper: AsyncClientWrapper):
@@ -425,4 +462,49 @@ class AsyncWeavesClient:
         _response = await self._raw_client.check_weave(
             pattern=pattern, threads=threads, knots=knots, finish=finish, request_options=request_options
         )
+        return _response.data
+
+    async def blend_weave(
+        self,
+        *,
+        yarn: typing.Optional[str] = OMIT,
+        gauge: typing.Optional[int] = OMIT,
+        dye: typing.Optional[str] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> None:
+        """
+        Parameters
+        ----------
+        yarn : typing.Optional[str]
+
+        gauge : typing.Optional[int]
+            The yarn's gauge.
+
+        dye : typing.Optional[str]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            base_url="https://yourhost.com/path/to/api",
+        )
+
+
+        async def main() -> None:
+            await client.weaves.blend_weave()
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.blend_weave(yarn=yarn, gauge=gauge, dye=dye, request_options=request_options)
         return _response.data

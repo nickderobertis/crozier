@@ -7,6 +7,8 @@ from importlib import import_module
 
 if typing.TYPE_CHECKING:
     from .bead_ref import BeadRef, BeadRef_Glass, BeadRef_Wood
+    from .blend_dye import BlendDye
+    from .blend_yarn import BlendYarn
     from .glass_bead import GlassBead
     from .knot import Knot
     from .plain_pattern import PlainPattern
@@ -25,6 +27,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "BeadRef": ".bead_ref",
     "BeadRef_Glass": ".bead_ref",
     "BeadRef_Wood": ".bead_ref",
+    "BlendDye": ".blend_dye",
+    "BlendYarn": ".blend_yarn",
     "GlassBead": ".glass_bead",
     "Knot": ".knot",
     "PlainPattern": ".plain_pattern",
@@ -71,6 +75,8 @@ __all__ = [
     "BeadRef",
     "BeadRef_Glass",
     "BeadRef_Wood",
+    "BlendDye",
+    "BlendYarn",
     "GlassBead",
     "Knot",
     "PlainPattern",
