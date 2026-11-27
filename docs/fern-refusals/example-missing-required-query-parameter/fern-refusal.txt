@@ -1,5 +1,5 @@
-fern_cli_version: 5.216.0
-fern_python_sdk_version: 5.42.0
+fern_cli_version: 5.227.0
+fern_python_sdk_version: 5.42.5
 generate_exit: 1
 diagnostic: Example is missing required query parameter "f"
 output_tree: none

@@ -1,6 +1,6 @@
-fern_cli_version = "5.216.0"
-fern_python_sdk_version = "5.42.0"
-digest = "e6fbf39f60d16c35543a8fef89b3ba0f3135274591025c7281a2637586254329"
+fern_cli_version = "5.227.0"
+fern_python_sdk_version = "5.42.5"
+digest = "d722e74f56fdee7c1d78922814a1a374ec9e1dc02ea555b4759ca3aef122fd21"
 
 [[covers]]
 key = "sdk-variables-extension"

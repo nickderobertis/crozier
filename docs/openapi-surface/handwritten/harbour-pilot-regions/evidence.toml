@@ -1,6 +1,6 @@
-fern_cli_version = "5.216.0"
-fern_python_sdk_version = "5.42.0"
-digest = "0d333a15b6da03dd2b6cb9c5fc6302952833091dfffd218a57378543eaaffb7f"
+fern_cli_version = "5.227.0"
+fern_python_sdk_version = "5.42.5"
+digest = "90386c9d5fc017dd00771c91a60ea9ea5351d1ab3270afc54ee42ca3c101314b"
 
 [[covers]]
 key = "server-default-url-templated"

@@ -1,7 +1,7 @@
 # LanternHarbor Python Library
 
 [![fern shield](https://img.shields.io/badge/%F0%9F%8C%BF-Built%20with%20Fern-brightgreen)](https://buildwithfern.com?utm_source=github&utm_medium=github&utm_campaign=readme&utm_source=LanternHarbor%2FPython)
-[![pypi](https://img.shields.io/pypi/v/LanternHarbor)](https://pypi.python.org/pypi/LanternHarbor)
+[![pypi](https://img.shields.io/pypi/v/lanternharbor)](https://pypi.python.org/pypi/lanternharbor)
 
 The LanternHarbor Python library provides convenient access to the LanternHarbor APIs from Python.
 
@@ -23,7 +23,7 @@ The LanternHarbor Python library provides convenient access to the LanternHarbor
 ## Installation
 
 ```sh
-pip install LanternHarbor
+pip install lanternharbor
 ```
 
 ## Reference

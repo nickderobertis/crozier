@@ -1,6 +1,6 @@
-fern_cli_version = "5.216.0"
-fern_python_sdk_version = "5.42.0"
-digest = "cb9be3ff22794a2bd76db7f4a93081db596d2c49bb75401ce7ec86e0acbd70ea"
+fern_cli_version = "5.227.0"
+fern_python_sdk_version = "5.42.5"
+digest = "c5879126d643fd5b6feece9b50f097a40a3e4e5789520c809dbc5317cb8a2633"
 
 [[covers]]
 key = "media-type-event-stream-inline-const-union"

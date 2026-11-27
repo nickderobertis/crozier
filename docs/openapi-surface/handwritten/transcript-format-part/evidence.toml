@@ -1,6 +1,6 @@
-fern_cli_version = "5.216.0"
-fern_python_sdk_version = "5.42.0"
-digest = "6e43ab5e8e629e649f1a06e12f279c025155319e7bfa13bb574bd2d1fce05ffb"
+fern_cli_version = "5.227.0"
+fern_python_sdk_version = "5.42.5"
+digest = "75748467bfc54da3a982167f5f2cfb1b5c3feb32184698b027c4b1bcc229b403"
 
 [[covers]]
 key = "multipart-optional-enum-part-plain-field"

@@ -1,6 +1,6 @@
-fern_cli_version = "5.216.0"
-fern_python_sdk_version = "5.42.0"
-digest = "d064e9ff6d1a392eb5cc9ab9e9a540a3271324fc901ec95f95f48216c000d690"
+fern_cli_version = "5.227.0"
+fern_python_sdk_version = "5.42.5"
+digest = "2fbb8427b5c27db986d18f3a7b83a64434ebad65abcdc7b0846918bfc414b3dd"
 
 [[covers]]
 key = "literal-example-dollar-escaped-in-docstring"

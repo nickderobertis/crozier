@@ -1,13 +1,13 @@
 # json-binary-path: literals measurement
 
 Source: [independently authored request fixture](../../../openapi-surface/handwritten/json-binary-path/openapi.yml).
-Pin: Fern CLI 5.216.0, `fernapi/fern-python-sdk` 5.42.0.
+Pin: Fern CLI 5.227.0, `fernapi/fern-python-sdk` 5.42.5.
 Settings: packaged preview, organization/package `fern`, project
 `default_package_name`, no audience filter; `pydantic_config.enum_type` unset.
 The python-enums counterpart uses that same source with `enum_type: python_enums`.
 Every committed file is unedited comment-stripped certified output.
 
-Canonical tree SHA-256: `0ced399debecc95dd70c3ffcf0891c5b70a7d5d951afda85fbcff9cdf5bd57c6`.
+Canonical tree SHA-256: `6d2d4f459082b62d4eeaa5dfd1c57780839da08ee2f142861e4ea08f8e798cd0`.
 
 The real-binary gate compares the complete tree bidirectionally through
 `src/parity.rs`. Its scenario departure corrects only the invalid default

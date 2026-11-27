@@ -1,6 +1,6 @@
 {
-  "fern_python_sdk_version": "5.42.0",
-  "fern_cli_version": "5.216.0",
+  "fern_python_sdk_version": "5.42.5",
+  "fern_cli_version": "5.227.0",
   "default_max_retries": 0,
   "base": "expected",
   "removed": []

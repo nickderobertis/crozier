@@ -1,6 +1,6 @@
-fern_cli_version = "5.216.0"
-fern_python_sdk_version = "5.42.0"
-digest = "420a775915fc311b028bedab95509dec5f76c7766500cfeec7920bcf6a4ae1b6"
+fern_cli_version = "5.227.0"
+fern_python_sdk_version = "5.42.5"
+digest = "56e53bb2b208a480d2bc2d791e98e41edad41007b5e26174993279435e015db0"
 
 [[covers]]
 key = "query-anyof-const-member-example-as-enum-member"

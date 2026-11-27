@@ -1,6 +1,6 @@
-fern_cli_version = "5.216.0"
-fern_python_sdk_version = "5.42.0"
-digest = "2952793fe9e7acfdafa449e0be1cc2752d48b655bed3c31c3a287fc74c665b71"
+fern_cli_version = "5.227.0"
+fern_python_sdk_version = "5.42.5"
+digest = "6921b174b233707454912d790862eb68ed3b6ccef0fe852c26d566d536792def"
 
 [[covers]]
 key = "media-type-multipart"

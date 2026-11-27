@@ -1,6 +1,6 @@
-fern_cli_version = "5.216.0"
-fern_python_sdk_version = "5.42.0"
-digest = "f2eaed05a92cd4590168d3cc35a2716bd476bdfad94e8e1cf9812860a3d5f40e"
+fern_cli_version = "5.227.0"
+fern_python_sdk_version = "5.42.5"
+digest = "5f94b6b864ec44b307df61928341456b94764058139157a2758c759da3a2d12d"
 
 [[covers]]
 key = "http-mutual"

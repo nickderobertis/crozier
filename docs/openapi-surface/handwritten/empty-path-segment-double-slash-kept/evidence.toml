@@ -1,6 +1,6 @@
-fern_cli_version = "5.216.0"
-fern_python_sdk_version = "5.42.0"
-digest = "f2817fef2bf60f05b6351a2af5f7ff5b6288ece4481126964b7fe0f90b074456"
+fern_cli_version = "5.227.0"
+fern_python_sdk_version = "5.42.5"
+digest = "cdbba9ff4fead23af8e47f71010a719152e21046793270f591e96bc0bbd1bf65"
 
 [[covers]]
 key = "empty-path-segment-double-slash-kept"

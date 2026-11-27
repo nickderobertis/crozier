@@ -1,6 +1,6 @@
-fern_cli_version = "5.216.0"
-fern_python_sdk_version = "5.42.0"
-digest = "0c4b78d815743918aadae67d48246a5db043cd00f9169c4a37ef0215b4219101"
+fern_cli_version = "5.227.0"
+fern_python_sdk_version = "5.42.5"
+digest = "789b6917a12f251f510a874fb4b41390b96a15a7b78a8b8b17f9fd95cb37997b"
 
 [[covers]]
 key = "model-property-construct"

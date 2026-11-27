@@ -1,6 +1,6 @@
-fern_cli_version = "5.216.0"
-fern_python_sdk_version = "5.42.0"
-digest = "ea95177ff02909c54370ad6871a46bb5317b822b68c573723d2c26add3e73170"
+fern_cli_version = "5.227.0"
+fern_python_sdk_version = "5.42.5"
+digest = "1d55bf5f5c8c6e91de22ff4cb54499ca6dfc7af5e548770d7c43947df6ea0bdf"
 
 [[covers]]
 key = "operation-pagination-offset"

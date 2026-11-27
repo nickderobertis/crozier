@@ -1,5 +1,5 @@
-fern_cli_version = "5.216.0"
-fern_python_sdk_version = "5.42.0"
-digest = "850ba659775011ccc2d9b488aa893ef021de5285252242bf921bfd73fe175719"
+fern_cli_version = "5.227.0"
+fern_python_sdk_version = "5.42.5"
+digest = "a2656134ad268bf0486d6c65765e5ee353d509e62759ea9a0c448eca0f75c7cb"
 source = "docs/fern-measurements/schema-shapes/kiln-problem-response/openapi.yml"
 reason = "Literals-mode companion of the focused problem-response regression; registered goldens already reach JSON-suffix selection."

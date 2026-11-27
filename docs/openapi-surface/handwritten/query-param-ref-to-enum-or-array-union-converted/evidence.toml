@@ -1,6 +1,6 @@
-fern_cli_version = "5.216.0"
-fern_python_sdk_version = "5.42.0"
-digest = "6d90c14c8d44c5e5d48a5f4d61584193d1bb06b2aa844c34837ff1b851af1bb8"
+fern_cli_version = "5.227.0"
+fern_python_sdk_version = "5.42.5"
+digest = "774e14799102ee1246f42d91fbe141e3f2f515e769970d72f7ab3a1097933edc"
 
 [[covers]]
 key = "query-param-ref-to-enum-or-array-union-converted"

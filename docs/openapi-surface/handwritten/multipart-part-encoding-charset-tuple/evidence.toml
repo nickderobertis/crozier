@@ -1,6 +1,6 @@
-fern_cli_version = "5.216.0"
-fern_python_sdk_version = "5.42.0"
-digest = "29fe5097e0aa7b5de80776d229d06d4e0aec819aba065691cb130c9459322b1d"
+fern_cli_version = "5.227.0"
+fern_python_sdk_version = "5.42.5"
+digest = "248cd845647125f5f06d9f340e5ffc698fbc085d332cc1a10bf738b624ef9a56"
 
 [[covers]]
 key = "multipart-part-encoding-charset-tuple"
