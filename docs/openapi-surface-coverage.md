@@ -2147,12 +2147,12 @@ table, with this header and this column order:
 
 ## Parity repair proof index
 
-These 63 rows are the 27 generator categories and the 36 scenarios later
+These 66 rows are the 27 generator categories and the 39 scenarios later
 parity repairs closed: the base-path and string-map example gaps, the
 parameter fix's additional scenarios, and every scenario whose correction is a
 Fern defect. Other
-scenarios are not proof claims here. Each path is committed output from Fern CLI **5.200.0** with
-`fernapi/fern-python-sdk` **5.41.25** (the pair
+scenarios are not proof claims here. Each path is committed output from Fern CLI **5.216.0** with
+`fernapi/fern-python-sdk` **5.42.0** (the pair
 [`assets/scaffolding/metadata.json`](../assets/scaffolding/metadata.json)
 declares), compared by the named deterministic e2e
 test. Hand-written and measurement documents certify their shapes without
@@ -2236,6 +2236,9 @@ corrections the shared comparison engine applies. All other bytes must match.
 | docstring-example-escapes | A worked example holding a string escape, in a client method docstring: every backslash doubled so the example Python evaluates for `help()` is the README's call | Fern defect | `worked-examples` | docs/fern-measurements/worked-examples/docstring-example-escapes/fern-expected | `worked_examples::docstring_examples_keep_their_string_escapes; worked_examples::sdk_env_worked_examples_bind_and_their_repaired_values_validate` | `docstring-example-escapes` |
 | typeless-body-required-arguments | Operations declaring `x-codeSamples` whose typeless body values Fern's calls leave out: every argument the signature requires kept | Fern defect | `worked-examples` | docs/fern-measurements/worked-examples/typeless-body-values/fern-expected | `worked_examples::typeless_body_values_keep_required_arguments; worked_examples::sdk_env_worked_examples_bind_and_their_repaired_values_validate` | `typeless-body-required-arguments` |
 | binary-form-part-example | A required binary multipart part's worked value: `b"file"` for its bytes annotation in README.md, reference.md and the client | Fern defect | `worked-examples` | docs/fern-measurements/bodies-responses/multipart-binary-required-part/fern-expected | `bodies_responses::required_binary_reference_part_is_exampled_as_bytes; worked_examples::sdk_env_worked_examples_bind_and_their_repaired_values_validate` | `binary-form-part-example` |
+| binary-body-example | A binary body's worked value as bytes, its `"string"` sample and a declared example alike (`request=b"string"`), in README.md, reference.md and every client docstring | Fern defect | `generator` | docs/fern-measurements/worked-examples/binary-body-examples/fern-expected; tests/fixtures/apideck.com-file-storage/expected | `worked_examples::binary_body_examples_are_bytes_in_every_writer; worked_examples::sdk_env_worked_examples_bind_and_their_repaired_values_validate; apideck_file_storage_matches_fern_output` | `binary-body-example` |
+| discriminated-union-v1-wire-keys | A discriminated union whose tag needs a Python alias (`schema`, field `schema_`) parses under Pydantic v1 through the SDK's `parse_obj_as`, its input validated as received | Fern defect | `generator` | docs/fern-measurements/naming-acceptance/aliased-union-discriminator/fern-expected | `naming_acceptance::naming_acceptance_documents_generate_as_the_certified_pair_does; naming_acceptance::sdk_env_aliased_discriminated_unions_parse_under_both_pydantic_majors` | `discriminated-union-v1-wire-keys` |
+| renamed-request-options-docs | An argument named `request_options`: reference.md and the README's retry and timeout calls name the SDK option `_request_options`, and a path parameter's worked call `request_options_` | Fern defect | `generator` | docs/fern-measurements/naming-acceptance/request-options-body-property/fern-expected | `naming_acceptance::naming_acceptance_documents_generate_as_the_certified_pair_does; naming_acceptance::sdk_env_request_options_body_property_sends_beside_the_sdk_options` | `renamed-request-options-docs` |
 
 Additional boundaries of these rows are held by the same gate: the
 `empty-body-guard` row also uses
@@ -2333,7 +2336,7 @@ link and expect the named failure. The counts below are the output of
 shapes: 160
 by kind: handwritten 104, measurement 5, real 46, refusal 5
 by owner: bodies-responses 20, clients-extensions 29, examples-docs 16, models-refs 21, parameters 16, prove-matches 30, streaming 13, unions 15
-by outcome: default=refuse;strict=refuse 5, departure 78, match 77
+by outcome: default=refuse;strict=refuse 5, departure 155
 closed with no open residual: 160
 closed on their proof with a residual open: 0
 witnesses: registered 6
