@@ -66,6 +66,16 @@ docs/fern-measurements/models-refs-literals/measurement-phase/fern-expected	src/
 docs/fern-measurements/models-refs-literals/measurement-phase/fern-expected	src/fern/client.py	155	phase	"preparation"	pattern=^(?!preparation$).*$	pattern-narrowed-enum-example	repaired
 docs/fern-measurements/models-refs-literals/measurement-phase/fern-expected	src/fern/client.py	291	phase	"preparation"	pattern=^(?!preparation$).*$	pattern-narrowed-enum-example	repaired
 docs/fern-measurements/models-refs-literals/measurement-phase/fern-expected	src/fern/client.py	329	phase	"preparation"	pattern=^(?!preparation$).*$	pattern-narrowed-enum-example	repaired
+docs/fern-measurements/type-lowering/enum-use-site-descriptions/expected-literals/fern-expected	README.md	45	state	"drafted"	pattern=^(?!drafted$).*$	pattern-narrowed-enum-example	repaired
+docs/fern-measurements/type-lowering/enum-use-site-descriptions/expected-literals/fern-expected	README.md	66	state	"drafted"	pattern=^(?!drafted$).*$	pattern-narrowed-enum-example	repaired
+docs/fern-measurements/type-lowering/enum-use-site-descriptions/expected-literals/fern-expected	reference.md	23	state	"drafted"	pattern=^(?!drafted$).*$	pattern-narrowed-enum-example	repaired
+docs/fern-measurements/type-lowering/enum-use-site-descriptions/expected-literals/fern-expected	src/fern/client.py	128	state	"drafted"	pattern=^(?!drafted$).*$	pattern-narrowed-enum-example	repaired
+docs/fern-measurements/type-lowering/enum-use-site-descriptions/expected-literals/fern-expected	src/fern/client.py	295	state	"drafted"	pattern=^(?!drafted$).*$	pattern-narrowed-enum-example	repaired
+docs/fern-measurements/type-lowering/enum-use-site-descriptions/fern-expected	README.md	45	state	ParcelState.DRAFTED	pattern=^(?!drafted$).*$	pattern-narrowed-enum-example	repaired
+docs/fern-measurements/type-lowering/enum-use-site-descriptions/fern-expected	README.md	66	state	ParcelState.DRAFTED	pattern=^(?!drafted$).*$	pattern-narrowed-enum-example	repaired
+docs/fern-measurements/type-lowering/enum-use-site-descriptions/fern-expected	reference.md	23	state	ParcelState.DRAFTED	pattern=^(?!drafted$).*$	pattern-narrowed-enum-example	repaired
+docs/fern-measurements/type-lowering/enum-use-site-descriptions/fern-expected	src/fern/client.py	128	state	ParcelState.DRAFTED	pattern=^(?!drafted$).*$	pattern-narrowed-enum-example	repaired
+docs/fern-measurements/type-lowering/enum-use-site-descriptions/fern-expected	src/fern/client.py	295	state	ParcelState.DRAFTED	pattern=^(?!drafted$).*$	pattern-narrowed-enum-example	repaired
 docs/fern-measurements/worked-examples/composed-enum-constraints/expected-literals/fern-expected	README.md	45	state	"drafted"	pattern=^(?!drafted$).*$	pattern-narrowed-enum-example	repaired
 docs/fern-measurements/worked-examples/composed-enum-constraints/expected-literals/fern-expected	README.md	66	state	"drafted"	pattern=^(?!drafted$).*$	pattern-narrowed-enum-example	repaired
 docs/fern-measurements/worked-examples/composed-enum-constraints/expected-literals/fern-expected	reference.md	23	state	"drafted"	pattern=^(?!drafted$).*$	pattern-narrowed-enum-example	repaired

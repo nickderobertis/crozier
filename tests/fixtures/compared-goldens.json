@@ -688,6 +688,12 @@
       ]
     },
     "docs/fern-measurements/naming-acceptance/root-import-order/fern-expected": {},
+    "docs/fern-measurements/naming-acceptance/single-letter-component-words/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/naming-acceptance/single-letter-component-words/fern-expected": {},
     "docs/fern-measurements/naming-acceptance/xml-helper-import/expected-literals/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
@@ -775,6 +781,12 @@
       ]
     },
     "docs/fern-measurements/type-lowering/const-discriminator-tags/fern-expected": {},
+    "docs/fern-measurements/type-lowering/enum-use-site-descriptions/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/type-lowering/enum-use-site-descriptions/fern-expected": {},
     "docs/fern-measurements/type-lowering/inferred-discriminator-tags/expected-literals/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
@@ -835,6 +847,12 @@
       ]
     },
     "docs/fern-measurements/type-lowering/reference-siblings-legacy/fern-expected": {},
+    "docs/fern-measurements/type-lowering/string-member-compositions/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/type-lowering/string-member-compositions/fern-expected": {},
     "docs/fern-measurements/type-lowering/union-branch-flattening/expected-literals/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"

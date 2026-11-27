@@ -412,6 +412,8 @@ docs/fern-measurements/naming-acceptance/request-options-body-property/expected-
 docs/fern-measurements/naming-acceptance/request-options-body-property/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_documents_generate_as_the_certified_pair_does
 docs/fern-measurements/naming-acceptance/root-import-order/expected-literals/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_repairs_match_the_certified_pair
 docs/fern-measurements/naming-acceptance/root-import-order/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_repairs_match_the_certified_pair
+docs/fern-measurements/naming-acceptance/single-letter-component-words/expected-literals/fern-expected	crozier-e2e::e2e	naming_acceptance::single_letter_component_words_use_the_certified_casing
+docs/fern-measurements/naming-acceptance/single-letter-component-words/fern-expected	crozier-e2e::e2e	naming_acceptance::single_letter_component_words_use_the_certified_casing
 docs/fern-measurements/naming-acceptance/xml-helper-import/expected-literals/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_repairs_match_the_certified_pair
 docs/fern-measurements/naming-acceptance/xml-helper-import/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_repairs_match_the_certified_pair
 docs/fern-measurements/naming-wire/enum-extension-names-dropped-under-literals/fern-expected	crozier-e2e::e2e	naming_wire::naming_wire_measurements_match_fern_under_python_enums
@@ -505,6 +507,8 @@ docs/fern-measurements/type-lowering/anyof-discriminators/expected-literals/fern
 docs/fern-measurements/type-lowering/anyof-discriminators/fern-expected	crozier-e2e::e2e	type_lowering::any_of_mappings_and_lone_references_match_the_certified_pair
 docs/fern-measurements/type-lowering/const-discriminator-tags/expected-literals/fern-expected	crozier-e2e::e2e	type_lowering::const_tags_are_stripped_and_discriminated_by_the_schema
 docs/fern-measurements/type-lowering/const-discriminator-tags/fern-expected	crozier-e2e::e2e	type_lowering::const_tags_are_stripped_and_discriminated_by_the_schema
+docs/fern-measurements/type-lowering/enum-use-site-descriptions/expected-literals/fern-expected	crozier-e2e::e2e	type_lowering::enum_components_keep_their_own_description
+docs/fern-measurements/type-lowering/enum-use-site-descriptions/fern-expected	crozier-e2e::e2e	type_lowering::enum_components_keep_their_own_description
 docs/fern-measurements/type-lowering/inferred-discriminator-tags/expected-literals/fern-expected	crozier-e2e::e2e	type_lowering::inferred_tags_discriminate_and_name_the_variant_field
 docs/fern-measurements/type-lowering/inferred-discriminator-tags/fern-expected	crozier-e2e::e2e	type_lowering::inferred_tags_discriminate_and_name_the_variant_field
 docs/fern-measurements/type-lowering/inherited-discriminator-tags/expected-literals/fern-expected	crozier-e2e::e2e	type_lowering::inherited_tags_stay_on_flattened_subtypes
@@ -525,6 +529,8 @@ docs/fern-measurements/type-lowering/reference-compositions/expected-literals/fe
 docs/fern-measurements/type-lowering/reference-compositions/fern-expected	crozier-e2e::e2e	type_lowering::reference_compositions_match_the_certified_pair
 docs/fern-measurements/type-lowering/reference-siblings-legacy/expected-literals/fern-expected	crozier-e2e::e2e	type_lowering::reference_compositions_match_the_certified_pair
 docs/fern-measurements/type-lowering/reference-siblings-legacy/fern-expected	crozier-e2e::e2e	type_lowering::reference_compositions_match_the_certified_pair
+docs/fern-measurements/type-lowering/string-member-compositions/expected-literals/fern-expected	crozier-e2e::e2e	type_lowering::string_compositions_keep_the_certified_scalar_type
+docs/fern-measurements/type-lowering/string-member-compositions/fern-expected	crozier-e2e::e2e	type_lowering::string_compositions_keep_the_certified_scalar_type
 docs/fern-measurements/type-lowering/union-branch-flattening/expected-literals/fern-expected	crozier-e2e::e2e	type_lowering::flattened_union_branches_keep_fields_and_first_branch_precedence
 docs/fern-measurements/type-lowering/union-branch-flattening/fern-expected	crozier-e2e::e2e	type_lowering::flattened_union_branches_keep_fields_and_first_branch_precedence
 docs/fern-measurements/type-lowering/union-member-lowering/expected-literals/fern-expected	crozier-e2e::e2e	type_lowering::union_members_lower_dedupe_merge_and_hoist_as_the_certified_pair
