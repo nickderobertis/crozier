@@ -14537,7 +14537,7 @@ fn collect_discriminant_strips(
                 || discriminator
                     .mapping
                     .values()
-                    .all(|target| target.contains('/'))
+                    .all(|target| target.contains('/') && !maps_another_document(target))
         });
         if resolvable && (schema.one_of.is_some() || honoured || is_inheritance_union_base(schema))
         {
@@ -14550,6 +14550,16 @@ fn collect_discriminant_strips(
                     // keeps its tag, as ingef/conquery's `SecondaryIdQuery.type`
                     // does in Fern's tree. Any other dangling mapping strips as it
                     // always did.
+                    // Fern reads the mapping in order and stops at a target in
+                    // another document: it and every later target strip nothing.
+                    // The `type-lowering/discriminator-tag-reach` measurement's
+                    // `PersonHolder`, mapped locally ahead of `RobotHolder`'s
+                    // other document, loses `type`; `Rental.renter`'s `CarHolder`
+                    // and `BikeHolder`, mapped after `VanHolder`'s, keep theirs
+                    // (Benchling's `Collaboration.collaborator`).
+                    if maps_another_document(reference) {
+                        break;
+                    }
                     if !reference.contains('/')
                         || resolve_ref_from_schemas(schemas, reference).is_none()
                             && schema.one_of.as_deref().is_some_and(|variants| {
@@ -14641,17 +14651,39 @@ fn is_inheritance_union_base(schema: &Schema) -> bool {
 }
 
 /// Whether a discriminated union — a `oneOf` or an inheritance base — maps a
-/// value to a bare schema name rather than a reference. Fern cannot resolve
-/// that target, so the union is its unknown type and it never reads the
-/// discriminant at all.
+/// value to a bare schema name rather than a reference, or to a schema of
+/// another document. Fern cannot resolve that target, so the union is its
+/// unknown type and it never reads the discriminant at all: the
+/// `type-lowering/discriminator-tag-reach` measurement's `Share.holder`, whose
+/// `ROBOT` names `robots/openapi.yaml#/components/schemas/RobotHolder`, is
+/// `typing.Any` (Benchling's `Collaboration.collaborator`, #994).
 pub(crate) fn bare_name_mapped_union(schema: &Schema) -> bool {
     (schema.one_of.is_some() || is_inheritance_union_base(schema))
         && schema.discriminator.as_ref().is_some_and(|discriminator| {
             discriminator
                 .mapping
                 .values()
-                .any(|target| !target.contains('/'))
+                .any(|target| !target.contains('/') || maps_another_document(target))
         })
+}
+
+/// Whether `schema` is a discriminated `oneOf` one of whose mapping targets
+/// names a schema of another document ([`maps_another_document`]).
+fn another_document_mapped_union(schema: &Schema) -> bool {
+    schema.one_of.is_some()
+        && schema.discriminator.as_ref().is_some_and(|discriminator| {
+            discriminator
+                .mapping
+                .values()
+                .any(|target| maps_another_document(target))
+        })
+}
+
+/// Whether a discriminator mapping target names a schema of another document
+/// (`robots/openapi.yaml#/components/schemas/RobotHolder`), not one of this
+/// document's (`#/components/schemas/RobotHolder`).
+fn maps_another_document(target: &str) -> bool {
+    target.contains('/') && !target.starts_with('#')
 }
 
 /// Whether an error body is a union whose mapping Fern cannot resolve: a bare
@@ -17106,7 +17138,11 @@ impl Builder<'_> {
                 || described_all_of_ref(prop_schema)
                     .and_then(|(reference, _)| resolve_ref_from_schemas(self.schemas, reference))
                     .is_some_and(|target| schema_accepts_none(target, self.schemas));
-            let optional = is_optional(prop_schema) || referenced_nullable || !spec_required;
+            // Fern's unknown type for a union mapping into another document is
+            // written bare, `holder: typing.Any`, required or not (the
+            // `discriminator-tag-reach` measurement's `Share.holder`).
+            let optional = (is_optional(prop_schema) || referenced_nullable || !spec_required)
+                && !another_document_mapped_union(prop_schema);
             let type_ref = self.field_type_ref(owner, prop, prop_schema);
             // Only an unwrapped field: an optional one's wrapper carries the
             // property's own description, as LiveBuildings' `refMap` shows.
@@ -18056,6 +18092,13 @@ impl Builder<'_> {
     /// The type of a property, hoisting an inline string enum to a named
     /// `enum.Enum` class `{Owner}{Prop}` (as Fern does for `typesAnimal`).
     fn field_type_ref(&mut self, owner: &str, prop: &str, prop_schema: &Schema) -> TypeRef {
+        // A property's discriminated `oneOf` mapping a value into another
+        // document is Fern's unknown type, no union hoisted: the
+        // `type-lowering/discriminator-tag-reach` measurement's `Share.holder`
+        // is `typing.Any` (Benchling's `Collaboration.collaborator`).
+        if another_document_mapped_union(prop_schema) {
+            return TypeRef::Primitive(Prim::Any);
+        }
         // A component property's `oneOf` of bare `const`s is a union of its
         // members, as a component's is (see [`Builder::add_named_shape`]): the
         // `type-lowering/union-member-lowering` measurement's `Session.shutter`
