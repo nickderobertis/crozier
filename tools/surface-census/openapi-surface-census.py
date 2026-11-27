@@ -2724,7 +2724,7 @@ PORT_PINS = (
         "Census.class_name_sanitizations",
         "src/naming.rs::class_name",
         "that the schema-name predicate still applies the same pre-sanitization Pascal-casing decision",
-        "2599e090f3e05b7d",
+        "31fe6c9ef96fdba6",
     ),
     PortPin(
         "finalize_enum_ident",
@@ -4524,7 +4524,8 @@ def _class_name_pascal(words: str) -> str:
 def class_name(schema_key: str) -> str:
     """`naming::class_name`: the Python class name crozier gives a named schema."""
     words = "".join(c if c.isalnum() or c == "_" else " " for c in schema_key)
-    return sanitize_identifier(_class_name_pascal(words))
+    # Cased once more, as crozier does: `a/b-c` is `Abc`, not `ABC` (#992).
+    return sanitize_identifier(to_pascal_case(_class_name_pascal(words)))
 
 
 # The entries in naming.rs's DEBURRED_LATIN that NFKD does not spell the same
@@ -8669,7 +8670,7 @@ class Census:
         def needs_sanitizing(key: str) -> bool:
             # class_name spells a leading number before it ever calls
             # sanitize_identifier.
-            pascal = _class_name_pascal(key)
+            pascal = to_pascal_case(_class_name_pascal(key))
             return sanitize_identifier(pascal) != pascal
 
         return [
