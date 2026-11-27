@@ -23,6 +23,7 @@
         "{workspaceRoot}/tools/corpus/corpus-lib.sh",
         "{workspaceRoot}/tools/corpus/fetch-corpus.sh",
         "{workspaceRoot}/tools/surface-census/openapi-surface-census.py",
+        "{workspaceRoot}/tools/surface-census/output-insensitive.py",
         "{workspaceRoot}/scripts/lib.sh",
         "{workspaceRoot}/tests/fixtures/**/*",
         "{workspaceRoot}/assets/scaffolding/metadata.json",

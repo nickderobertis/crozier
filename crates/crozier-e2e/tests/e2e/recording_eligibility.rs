@@ -36,9 +36,10 @@ const PERTURBED: &str = "recording_eligibility::a_perturbed_comparison";
 
 /// One comparison of crozier's output over [`FIXTURE`] with its golden,
 /// recording as a recording run's comparisons do. `perturbed` plants a line at
-/// the top of crozier's `README.md` first, shifting every departure under it,
+/// the top of crozier's `src/fern/client.py` first, shifting every departure under it,
 /// and compares inside [`departures_ledger::perturbed`]; it must still report
-/// the planted difference. An ordinary comparison must pass. `nested` makes a
+/// the planted difference; `declared` compares unaltered output inside
+/// [`departures_ledger::perturbed`]. An ordinary comparison must pass. `nested` makes a
 /// planted comparison inside a perturbed closure nested in another, then a
 /// second one in the outer closure after the inner returns, then an ordinary
 /// comparison once both have; `unwound` makes an ordinary comparison after a
@@ -63,26 +64,33 @@ fn recording_probe() {
             &sdk,
         )
     };
-    let readme = sdk.join("README.md");
-    let text = std::fs::read_to_string(&readme).expect("crozier's README.md");
+    // The planted line goes into a module with departures of its own, so the
+    // ledger rows under it shift, while README.md, which holds every example
+    // row of this golden, stays compared and its rows are observed as usual.
+    let module = sdk.join("src/fern/client.py");
+    let text = std::fs::read_to_string(&module).expect("crozier's src/fern/client.py");
     let ordinary = || {
-        std::fs::write(&readme, &text).expect("restore");
+        std::fs::write(&module, &text).expect("restore");
         let failures = compare();
         assert!(failures.is_empty(), "{}", failures.join("\n"));
     };
     let planted = || {
-        std::fs::write(&readme, format!("A planted line.\n{text}")).expect("perturb");
+        std::fs::write(&module, format!("PLANTED_LINE = 1\n{text}")).expect("perturb");
         let failures = compare();
         assert!(
             failures
                 .iter()
-                .any(|failure| failure.contains("README.md differs")),
+                .any(|failure| failure.contains("src/fern/client.py differs")),
             "the planted line was not reported: {failures:?}"
         );
     };
     match std::env::var(PROBE_ENV).as_deref() {
         Ok("ordinary") => ordinary(),
         Ok("perturbed") => departures_ledger::perturbed(planted),
+        // A comparison declared perturbed over unaltered output passes every
+        // check, so it reaches each recorder — the example inventory's included,
+        // which an altered file stops short of — and must still record nothing.
+        Ok("declared") => departures_ledger::perturbed(ordinary),
         Ok("nested") => {
             departures_ledger::perturbed(|| {
                 departures_ledger::perturbed(planted);
@@ -106,7 +114,9 @@ fn recording_probe() {
             );
             ordinary();
         }
-        other => panic!("set {PROBE_ENV} to ordinary, perturbed, nested or unwound, not {other:?}"),
+        other => panic!(
+            "set {PROBE_ENV} to ordinary, perturbed, declared, nested or unwound, not {other:?}"
+        ),
     }
 }
 
@@ -209,10 +219,34 @@ fn a_perturbed_comparison_records_nothing_beside_an_ordinary_one() {
     let root = crate::repo_root();
     let scratch = Scratch::new();
     let cwd = tempfile::tempdir().expect("probe working directory");
-    for (kind, test) in [("ordinary", ORDINARY), ("perturbed", PERTURBED)] {
+    let recorded = |scratch: &Scratch| {
+        [scratch.ledger.path(), scratch.examples.path()].map(|dir| {
+            files(dir)
+                .into_iter()
+                .map(|rel| {
+                    let bytes = std::fs::read(dir.join(&rel)).expect("a record");
+                    (rel, bytes)
+                })
+                .collect::<Vec<_>>()
+        })
+    };
+    let mut after_ordinary = None;
+    for (kind, test) in [
+        ("ordinary", ORDINARY),
+        ("perturbed", PERTURBED),
+        ("declared", PERTURBED),
+    ] {
         let output = probe(kind, test, &scratch.destinations(), cwd.path());
         assert!(output.status.success(), "{kind}: {}", said(&output));
+        after_ordinary.get_or_insert_with(|| recorded(&scratch));
     }
+    // Byte for byte: a perturbed record repeating an ordinary row would merge
+    // away unseen, so the record files themselves must be the ordinary run's.
+    assert_eq!(
+        after_ordinary.expect("the ordinary run recorded"),
+        recorded(&scratch),
+        "the perturbed comparison wrote ledger or example-inventory records"
+    );
 
     let committed = |rel: &str| std::fs::read_to_string(root.join(rel)).expect("committed");
     assert_eq!(
