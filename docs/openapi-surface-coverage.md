@@ -167,11 +167,11 @@ same way. The 628 `golden` rows declare 1127 handling sites in
 [ledger](openapi-surface/golden-reach.tsv) retains the base measurement's
 provenance and records scoped updates beside their rows.
 
-- **1042 are reached by a registered real specification.** Its scoped
+- **1043 are reached by a registered real specification.** Its scoped
   golden test executes the site; file-level residuals remain recorded separately.
-- **82 are reached only by a hand-written fixture.** Each arm-level
-  cover executes the site and byte-matches the certified tree. Thus each of the 82 is still one of the 85 [unreached arms](#every-unreached-arm-and-its-search-verdict).
-  The cited records of 61 read `exhausted`, 21 read `search-incomplete` and 0 read `config-gated`.
+- **81 are reached only by a hand-written fixture.** Each arm-level
+  cover executes the site and byte-matches the certified tree. Thus each of the 81 is still one of the 84 [unreached arms](#every-unreached-arm-and-its-search-verdict).
+  The cited records of 61 read `exhausted`, 20 read `search-incomplete` and 0 read `config-gated`.
 - **3 are reachable only by a document Fern refuses**, leaving no
   successful complete tree to byte-match. Their refused documents and controls
   are recorded in [the limitations ledger](fern-limitations.md#arms-only-a-refused-document-reaches).
@@ -180,7 +180,7 @@ provenance and records scoped updates beside their rows.
   before/after trees in both generators recorded in [the shared table](openapi-surface/output-insensitive.tsv).
 - **0 are named gaps**, whose outstanding evidence is in [Unproven arms, named](#unproven-arms-named).
 
-1042 + 82 + 3 + 0 + 0 = 1127. `combo-allof-with-required` replaced `co-occurrence` with its promotion arm `promote_parent_property`, which `groupe-psa` reaches, and `combo-property-anyof-composed-sibling` and the two `combo-unrequired-tag-*-reference` rows became `golden` on the dedicated arms their registered declarers reach ([their record](openapi-surface/witness-search-combinations-schemas/README.md#keys)). Nine sites replaced `co-occurrence` with the body and response
+1043 + 81 + 3 + 0 + 0 = 1127. The `format-binary` arm in `build_example_inner` left the fixture-only count when the `binary-body-example` repair (#987) let real specifications reach it, and its `json-binary-path` fixture was retired. `combo-allof-with-required` replaced `co-occurrence` with its promotion arm `promote_parent_property`, which `groupe-psa` reaches, and `combo-property-anyof-composed-sibling` and the two `combo-unrequired-tag-*-reference` rows became `golden` on the dedicated arms their registered declarers reach ([their record](openapi-surface/witness-search-combinations-schemas/README.md#keys)). Nine sites replaced `co-occurrence` with the body and response
 interaction arms [their search record](openapi-surface/witness-search-combinations-bodies-responses/README.md#dedicated-regions)
 names, `combo-allof-schema-example` replaced it with its interaction branch in `Builder::add_object`, and the two `combo-oas31-*` rows left `golden` once decided output-insensitive. Twelve more
 replaced `co-occurrence` with the parameter, security and name-collision arms
@@ -254,7 +254,7 @@ real-specification match.
   and `enum-extension-names-dropped-under-literals` retains member descriptions
   under `python_enums`. Complete certified trees and negative comparisons are
   held by the naming-wire and literals-mode gates.
-- **Features and arms resting on hand-written fixtures only (110 features, 82
+- **Features and arms resting on hand-written fixtures only (110 features, 81
   arms):** weaker proof, counted apart above; each fixture's cover cites the
   failed real-specification search that admitted it.
 - **Behaviours the Nexmo withdrawal left on a hand-written fixture alone (4):** a
