@@ -745,4 +745,40 @@ fn discriminator_tags_reach_only_the_members_fern_resolves() {
         ],
     );
 }
+
+/// Benchling's `InstanceProvider`: an inheritance base whose mapping names a
+/// target that is no component (`DIAL` to `DialGadget`, the subtype being
+/// `DialControlGadget`) is still the certified pair's discriminated union, a
+/// wrapper per mapping value. The dangling value's wrapper carries the fields of
+/// the subtype tagging itself with it (`dangling-mapping-variant-fields`), and
+/// no wrapper repeats the tag a subtype referenced on its own keeps
+/// (`LampGadget.kind`).
+#[test]
+fn an_inheritance_base_with_a_dangling_target_is_a_union_of_wrappers() {
+    holds(
+        "inheritance-dangling-target",
+        &[
+            (
+                "Benchling",
+                "src/fern/types/gadget.py",
+                "class Gadget_Lamp(UniversalBaseModel):\n    kind: typing.Literal[\"LAMP\"] = \"LAMP\"\n    watts: typing.Optional[int] = None\n",
+            ),
+            (
+                "Benchling",
+                "src/fern/types/gadget.py",
+                "class Gadget_Dial(UniversalBaseModel):\n    kind: typing.Literal[\"DIAL\"] = \"DIAL\"\n    notches: typing.Optional[int] = None\n",
+            ),
+            (
+                "Benchling",
+                "src/fern/types/gadget.py",
+                "typing.Union[Gadget_Lamp, Gadget_Fan, Gadget_Dial], pydantic.Field(discriminator=\"kind\")",
+            ),
+            (
+                "Benchling",
+                "src/fern/types/lamp_gadget.py",
+                "    kind: typing.Optional[LampGadgetKind] = None\n",
+            ),
+        ],
+    );
+}
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]

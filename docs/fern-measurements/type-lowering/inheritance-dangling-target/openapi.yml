@@ -1,0 +1,79 @@
+openapi: 3.0.3
+info:
+  title: Control Panels
+  version: 1.0.0
+paths:
+  /panels/{panel_id}:
+    get:
+      operationId: get_panel
+      parameters:
+      - name: panel_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The panel
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Panel'
+components:
+  schemas:
+    Gadget:
+      type: object
+      additionalProperties: false
+      discriminator:
+        propertyName: kind
+        mapping:
+          LAMP: '#/components/schemas/LampGadget'
+          FAN: '#/components/schemas/FanGadget'
+          DIAL: '#/components/schemas/DialGadget'
+    LampGadget:
+      allOf:
+      - $ref: '#/components/schemas/Gadget'
+      - type: object
+        description: A gadget that lights the panel.
+        properties:
+          kind:
+            type: string
+            enum:
+            - LAMP
+          watts:
+            type: integer
+    FanGadget:
+      allOf:
+      - $ref: '#/components/schemas/Gadget'
+      - type: object
+        additionalProperties: false
+        description: A gadget that cools the panel.
+        properties:
+          kind:
+            type: string
+            enum:
+            - FAN
+    DialControlGadget:
+      allOf:
+      - $ref: '#/components/schemas/Gadget'
+      - type: object
+        description: A gadget the operator turns.
+        properties:
+          kind:
+            type: string
+            enum:
+            - DIAL
+          notches:
+            type: integer
+    Panel:
+      type: object
+      properties:
+        main:
+          $ref: '#/components/schemas/Gadget'
+        gadgets:
+          type: array
+          items:
+            anyOf:
+            - $ref: '#/components/schemas/LampGadget'
+            - $ref: '#/components/schemas/FanGadget'
+            - $ref: '#/components/schemas/DialControlGadget'

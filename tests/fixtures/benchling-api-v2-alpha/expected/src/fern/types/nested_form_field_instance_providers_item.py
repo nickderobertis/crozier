@@ -1,0 +1,11 @@
+
+
+import typing
+
+from .barcode_scan_form_instance_provider import BarcodeScanFormInstanceProvider
+from .entity_search_form_instance_provider import EntitySearchFormInstanceProvider
+from .new_blank_form_instance_provider import NewBlankFormInstanceProvider
+
+NestedFormFieldInstanceProvidersItem = typing.Union[
+    BarcodeScanFormInstanceProvider, EntitySearchFormInstanceProvider, NewBlankFormInstanceProvider
+]

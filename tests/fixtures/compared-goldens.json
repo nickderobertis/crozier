@@ -799,6 +799,12 @@
       ]
     },
     "docs/fern-measurements/type-lowering/inferred-discriminator-tags/fern-expected": {},
+    "docs/fern-measurements/type-lowering/inheritance-dangling-target/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/type-lowering/inheritance-dangling-target/fern-expected": {},
     "docs/fern-measurements/type-lowering/inherited-discriminator-tags/expected-literals/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"

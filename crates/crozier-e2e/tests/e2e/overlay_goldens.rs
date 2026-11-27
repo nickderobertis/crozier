@@ -107,6 +107,7 @@ const KINDS: &[Kind] = &[
             "api-evangelist-pinecone-inference",
             "mnahkies-openapi-code-generator-e2e",
             "go-kratos-examples-blog",
+            "benchling-api-v2-alpha",
             "registered-literals-hashgraph-guardian-63ba2735",
             "registered-literals-francineo-easa-dxcomponents-fc03fd3c",
             "registered-literals-ai-riksarkivet-rask-672f1ef2",

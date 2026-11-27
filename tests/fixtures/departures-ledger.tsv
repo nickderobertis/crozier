@@ -2955,6 +2955,14 @@ docs/fern-measurements/type-lowering/inferred-discriminator-tags/fern-expected	s
 docs/fern-measurements/type-lowering/inferred-discriminator-tags/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/type-lowering/inferred-discriminator-tags/fern-expected	src/fern/core/pydantic_utilities.py	294	discriminated-union-v1-wire-keys
 docs/fern-measurements/type-lowering/inferred-discriminator-tags/fern-expected	src/fern/types/query_response.py	49	escaped-discriminator-field-name
+docs/fern-measurements/type-lowering/inheritance-dangling-target/expected-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
+docs/fern-measurements/type-lowering/inheritance-dangling-target/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/type-lowering/inheritance-dangling-target/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/type-lowering/inheritance-dangling-target/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/type-lowering/inheritance-dangling-target/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/type-lowering/inheritance-dangling-target/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/type-lowering/inheritance-dangling-target/fern-expected	src/fern/core/pydantic_utilities.py	294	discriminated-union-v1-wire-keys
+docs/fern-measurements/type-lowering/inheritance-dangling-target/fern-expected	src/fern/types/gadget.py	1	dangling-mapping-variant-fields
 docs/fern-measurements/type-lowering/inherited-discriminator-tags/expected-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
 docs/fern-measurements/type-lowering/inherited-discriminator-tags/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/type-lowering/inherited-discriminator-tags/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
