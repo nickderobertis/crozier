@@ -16423,19 +16423,19 @@ impl Builder<'_> {
                         continue;
                     };
                     // A promoted field is the composition's own required
-                    // declaration, not a restatement of the base's optional one:
-                    // the `naming-acceptance/required-only-members` measurement's
-                    // `Harvest` requires `crop`, which only its later parent
-                    // `HarvestTarget` requires, and the base's copy is dropped.
-                    if promoted_owners.is_some_and(|owners| owners.contains_key(&field.wire_name)) {
-                        continue;
-                    }
+                    // declaration, never a restatement of the base's optional
+                    // one: the `naming-acceptance/required-only-members`
+                    // measurement's `Harvest` requires `crop`, which only its later
+                    // parent `HarvestTarget` requires, and the base's copy is
+                    // dropped.
+                    let promoted =
+                        promoted_owners.is_some_and(|owners| owners.contains_key(&field.wire_name));
                     let requires = base_required.contains(&field.wire_name.as_str());
                     let same_shape = local.type_ref == field.type_ref
                         || own_property(schema, &field.wire_name)
                             .zip(base.properties.get(&field.wire_name))
                             .is_some_and(|(own, inherited)| same_shape(own, inherited));
-                    if restates_without_conflict(local, field, requires, same_shape) {
+                    if !promoted && restates_without_conflict(local, field, requires, same_shape) {
                         restated.insert(field.wire_name.clone());
                     } else {
                         overridden = true;
