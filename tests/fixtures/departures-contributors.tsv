@@ -511,6 +511,8 @@ docs/fern-measurements/type-lowering/enum-use-site-descriptions/expected-literal
 docs/fern-measurements/type-lowering/enum-use-site-descriptions/fern-expected	crozier-e2e::e2e	type_lowering::enum_components_keep_their_own_description
 docs/fern-measurements/type-lowering/inferred-discriminator-tags/expected-literals/fern-expected	crozier-e2e::e2e	type_lowering::inferred_tags_discriminate_and_name_the_variant_field
 docs/fern-measurements/type-lowering/inferred-discriminator-tags/fern-expected	crozier-e2e::e2e	type_lowering::inferred_tags_discriminate_and_name_the_variant_field
+docs/fern-measurements/type-lowering/inheritance-dangling-target/expected-literals/fern-expected	crozier-e2e::e2e	type_lowering::an_inheritance_base_with_a_dangling_target_is_a_union_of_wrappers
+docs/fern-measurements/type-lowering/inheritance-dangling-target/fern-expected	crozier-e2e::e2e	type_lowering::an_inheritance_base_with_a_dangling_target_is_a_union_of_wrappers
 docs/fern-measurements/type-lowering/inherited-discriminator-tags/expected-literals/fern-expected	crozier-e2e::e2e	type_lowering::inherited_tags_stay_on_flattened_subtypes
 docs/fern-measurements/type-lowering/inherited-discriminator-tags/fern-expected	crozier-e2e::e2e	type_lowering::inherited_tags_stay_on_flattened_subtypes
 docs/fern-measurements/type-lowering/json-binary-strings/expected-literals/fern-expected	crozier-e2e::e2e	type_lowering::json_binary_and_base64_strings_take_the_certified_types
