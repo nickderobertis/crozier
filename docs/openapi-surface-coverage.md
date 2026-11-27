@@ -148,12 +148,12 @@ split five ways:
 at an interaction branch or with source-checked independent feature controls. `finished_state_failures` in
 [the census suite](../tools/surface-census/tests/surface_census_test.py) validates the recorded evidence, with
 [the hand-written fixture format](openapi-surface/handwritten/AGENTS.md) it reads.
-**67** are byte-matched against a registered real specification at their
+**68** are byte-matched against a registered real specification at their
 interaction branch, **1** has independent handling, checked against the source,
 instrumented feature-only controls and fresh certified trees
 ([the audit](openapi-surface/combination-cooccurrence.tsv)), **0** are compared against a committed measurement of
-non-generation, **0** rest on a hand-written fixture (0 of them witness-blocked, 0 of them co-occurrences proven on the fixture), **26** remain
-open (unproven) (0 left unproven by the user's ruling), and **13** are decided output-insensitive: 67 + 1 + 0 + 0 + 26 + 13 = 107.
+non-generation, **0** rest on a hand-written fixture (0 of them witness-blocked, 0 of them co-occurrences proven on the fixture), **25** remain
+open (unproven) (0 left unproven by the user's ruling), and **13** are decided output-insensitive: 68 + 1 + 0 + 0 + 25 + 13 = 107.
 None is among the 726 features above, and each other `gap` one is named under
 [Unproven combinations, named](#unproven-combinations-named).
 The schema-combination certified screen's 264 `attributed-residual` rows and
@@ -2974,7 +2974,7 @@ the tests run and carried.
 #### The reach ranking
 
 Golden rows ranked by unreached handling sites, then unreached handling regions,
-then key. **561** golden rows reach every handling site and tie below every row
+then key. **562** golden rows reach every handling site and tie below every row
 listed here: the [ledger](openapi-surface/golden-reach.tsv)'s rows whose
 `unreached_sites` is 0, its combination rows among them. Each says so in its own cell. Unreached regions break ties and
 create no obligation of their own.
@@ -3070,22 +3070,22 @@ unreached by any Fern-accepted document.
 | 49 | `array-item-pointer-walk-items` | `schemas` | **1** | **3** | **3** | open — real-specification witness search remains open |
 | 50 | `schema-example-outside-enum` | `schemas` | **1** | **2** | **4** | open — real-specification witness search remains open |
 | 51 | `anyof-array-variant-inline-enum-item` | `schemas` | **1** | **1** | **7** | open — real-specification witness search remains open |
-| 53 | `enum-empty-identifier-member` | `schemas` | **1** | **1** | **5** | open — real-specification witness search remains open |
-| 54 | `enum-leading-digit-identifier` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
-| 55 | `format-email` | `schemas` | **1** | **1** | **63** | open — real-specification witness search remains open |
-| 56 | `format-hostname` | `schemas` | **1** | **1** | **5** | open — real-specification witness search remains open |
-| 57 | `format-idn-hostname` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
-| 58 | `format-int64` | `schemas` | **1** | **1** | **91** | open — real-specification witness search remains open |
-| 59 | `format-ipv4` | `schemas` | **1** | **1** | **9** | open — real-specification witness search remains open |
-| 60 | `format-iri` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
-| 61 | `format-json-pointer` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
-| 62 | `format-password` | `schemas` | **1** | **1** | **15** | open — real-specification witness search remains open |
-| 63 | `format-regex` | `schemas` | **1** | **1** | **2** | open — real-specification witness search remains open |
-| 64 | `format-time` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
-| 65 | `format-uri` | `schemas` | **1** | **1** | **116** | open — real-specification witness search remains open |
-| 66 | `format-uri-reference` | `schemas` | **1** | **1** | **12** | open — real-specification witness search remains open |
-| 67 | `format-uri-template` | `schemas` | **1** | **1** | **1** | owned — first-pass search record below |
-| 68 | `property-oneof-residual` | `schemas` | **1** | **1** | **68** | open — real-specification witness search remains open |
+| 52 | `enum-empty-identifier-member` | `schemas` | **1** | **1** | **5** | open — real-specification witness search remains open |
+| 53 | `enum-leading-digit-identifier` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
+| 54 | `format-email` | `schemas` | **1** | **1** | **63** | open — real-specification witness search remains open |
+| 55 | `format-hostname` | `schemas` | **1** | **1** | **5** | open — real-specification witness search remains open |
+| 56 | `format-idn-hostname` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
+| 57 | `format-int64` | `schemas` | **1** | **1** | **91** | open — real-specification witness search remains open |
+| 58 | `format-ipv4` | `schemas` | **1** | **1** | **9** | open — real-specification witness search remains open |
+| 59 | `format-iri` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
+| 60 | `format-json-pointer` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
+| 61 | `format-password` | `schemas` | **1** | **1** | **15** | open — real-specification witness search remains open |
+| 62 | `format-regex` | `schemas` | **1** | **1** | **2** | open — real-specification witness search remains open |
+| 63 | `format-time` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
+| 64 | `format-uri` | `schemas` | **1** | **1** | **116** | open — real-specification witness search remains open |
+| 65 | `format-uri-reference` | `schemas` | **1** | **1** | **12** | open — real-specification witness search remains open |
+| 66 | `format-uri-template` | `schemas` | **1** | **1** | **1** | owned — first-pass search record below |
+| 67 | `property-oneof-residual` | `schemas` | **1** | **1** | **68** | open — real-specification witness search remains open |
 
 
 #### The rows this measurement's first pass owned
