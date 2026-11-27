@@ -729,10 +729,10 @@ class NestingIsVerifiedNotTrusted(unittest.TestCase):
         holder.parent.mkdir(parents=True, exist_ok=True)
         return holder
 
-    def without_parent_lookup(self, ps: str | None = None) -> None:
+    def as_a_platform_without_fcntl_or_proc(self, ps: str | None = None) -> None:
         """Every later `held` and `run` here runs as on a platform with neither
-        `fcntl` nor `/proc`, and with `ps` either absent or, given `ps`, the
-        doubled one that script stands for (its own parent lookup)."""
+        `fcntl` nor `/proc`: with no `ps` either (no parent lookup at all, as on
+        Windows), or, given `ps`, a doubled `ps` running that script as its lookup."""
         scratch = Path(self.environment["XDG_CACHE_HOME"])
         site, bin_dir = scratch / "non-posix", scratch / "bin"
         site.mkdir(exist_ok=True)
@@ -791,7 +791,7 @@ class NestingIsVerifiedNotTrusted(unittest.TestCase):
         """With no parent lookup (no `/proc` and no `ps`, as on Windows) the
         inherited variable naming the recorded holder is the hold; anything less
         is still none."""
-        self.without_parent_lookup()
+        self.as_a_platform_without_fcntl_or_proc()
         self.assertEqual(1, self.held())
         self.assertEqual(1, self.held(**{LOCK.HOLDER_ENV: str(os.getpid())}), "no holder recorded")
         holder = self.holder_record()
@@ -808,7 +808,7 @@ class NestingIsVerifiedNotTrusted(unittest.TestCase):
         holder.write_text(f"{os.getpid()}\n", encoding="utf-8")
         for name, script in (("failing", "exit 1"), ("garbled", "echo not-a-pid")):
             with self.subTest(ps=name):
-                self.without_parent_lookup(ps=script)
+                self.as_a_platform_without_fcntl_or_proc(ps=script)
                 self.assertEqual(1, self.held(**{LOCK.HOLDER_ENV: str(os.getpid())}))
 
     def test_without_fcntl_or_a_parent_lookup_a_nested_run_shares_its_parents_hold(self) -> None:
@@ -816,7 +816,7 @@ class NestingIsVerifiedNotTrusted(unittest.TestCase):
         and no `ps`, as on Windows), an entry point started below a holder still
         recognizes that hold and runs its command, rather than waiting on the lock
         its own ancestor holds — which never ends."""
-        self.without_parent_lookup()
+        self.as_a_platform_without_fcntl_or_proc()
         scratch = Path(self.environment["XDG_CACHE_HOME"])
         ran = scratch / "nested.ran"
         write_ran = f"import pathlib; pathlib.Path({str(ran)!r}).write_text('')"

@@ -42,6 +42,7 @@ from __future__ import annotations
 
 import argparse
 import contextlib
+import enum
 import os
 import re
 import shutil
@@ -102,22 +103,29 @@ def recorded_holder() -> Pid | None:
 PROC = Path("/proc")
 
 
-def parent_lookup() -> str | None:
-    """How this platform reads a process's parent: `"proc"` where `/proc` is
-    mounted, `"ps"` where a `ps` is on PATH off Windows (one on a Windows PATH is a
+class ParentLookup(enum.Enum):
+    """How a platform reads a process's parent."""
+
+    PROC = "proc"
+    PS = "ps"
+
+
+def parent_lookup() -> ParentLookup | None:
+    """How this platform reads a process's parent: `PROC` where `/proc` is
+    mounted, `PS` where a `ps` is on PATH off Windows (one on a Windows PATH is a
     POSIX layer's, naming its own pids), None where it offers neither. Decided
     from the platform, never from a lookup's result, so a lookup that fails where
     one exists refuses the hold rather than standing for no lookup."""
     if PROC.is_dir():
-        return "proc"
+        return ParentLookup.PROC
     if sys.platform != "win32" and shutil.which("ps"):
-        return "ps"
+        return ParentLookup.PS
     return None
 
 
-def parent_of(pid: Pid, lookup: str) -> Pid | None:
+def parent_of(pid: Pid, lookup: ParentLookup) -> Pid | None:
     """`pid`'s parent read through `lookup`, or None when that read fails."""
-    if lookup == "proc":
+    if lookup is ParentLookup.PROC:
         try:
             # `pid (comm) state ppid …`: comm may hold spaces and parentheses.
             text = (PROC / str(pid) / "stat").read_text(encoding="utf-8", errors="replace")
@@ -133,7 +141,7 @@ def parent_of(pid: Pid, lookup: str) -> Pid | None:
     return parse_pid(shown.stdout)
 
 
-def is_self_or_ancestor(pid: Pid, lookup: str) -> bool:
+def is_self_or_ancestor(pid: Pid, lookup: ParentLookup) -> bool:
     """Whether `pid` is this process or one of its ancestors, read through `lookup`;
     a failed read is no proof, so it answers False."""
     current: Pid | None = own_pid()
