@@ -41,6 +41,10 @@ The rows of eight candidates (`012938b1…`, `7cff4ee7…`, `95cd1e1e…`,
 again at Fern CLI 5.216.0 / fern-python-sdk 5.42.0 in both enum modes after the
 naming-acceptance repairs (#919–#924, #940, #955, #956); each row's detail ends
 with that screen's result, and the counts below are the original screen's.
+Benchling (`58d3c068…`) stopped there at `object-property-name-collision`; after
+#985 and the Benchling repairs beside it, it generates in both modes and matches
+its golden (corpus row 7000) up to catalogued departures, so its rows read
+`repaired-here`.
 
 The rows of twelve candidates whose rows named a worked-example or
 documentation cause (tickets #891, #927–#937; `0d01bc91…`, `47ed73c7…`,
