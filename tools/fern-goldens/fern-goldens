@@ -354,6 +354,18 @@ def load_corpus_module(root: Path, name: str):
     return module
 
 
+def generation_lock():
+    """`fern_generation_lock.py` beside this tool: the host's Fern generation lock,
+    which `generate` (and `run`'s generation) holds while Fern runs."""
+    path = Path(__file__).resolve().with_name("fern_generation_lock.py")
+    spec = importlib.util.spec_from_file_location("fern_generation_lock", path)
+    if not path.is_file() or spec is None or spec.loader is None:
+        raise GoldensError(f"could not load the Fern generation lock {path}; restore it with git checkout")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def load_pins_module(root: Path):
     """`tools/corpus/corpus_remote_ref_pins.py`.
 
@@ -1425,7 +1437,8 @@ def main(argv: list[str]) -> int:
         args = parse_args(argv)
         root = repo_root()
         if args.command == "generate":
-            return generate(root, args.version, selectors_from(args))
+            with generation_lock().hold("fern-goldens"):
+                return generate(root, args.version, selectors_from(args))
         if args.command == "compare":
             return compare(root)
         if args.command == "latest-version":
@@ -1443,7 +1456,8 @@ def main(argv: list[str]) -> int:
                 args.comparison_summary,
                 args.comparison_evidence,
             )
-        generation_status = generate(root, args.version, selectors_from(args))
+        with generation_lock().hold("fern-goldens"):
+            generation_status = generate(root, args.version, selectors_from(args))
         comparison_status = compare(root)
         return result(
             "success" if generation_status == 0 else "failure",

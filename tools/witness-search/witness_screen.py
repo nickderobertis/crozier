@@ -315,6 +315,16 @@ def fern_diagnostic(output: str) -> str:
 
 
 def fern_screen_document(document: Path, scratch: Path, timeout: int) -> dict[str, Any]:
+    """Fern's measured verdict on one document, its check and generation inside the
+    host's Fern generation lock (`tools/fern-goldens/fern_generation_lock.py`), or
+    inside the hold of a caller that already has it. The row stays `dict[str, Any]`:
+    it is a JSON record of mixed value types written as-is to the screen ledger."""
+    lock = _load("fern_generation_lock", REPO / "tools" / "fern-goldens" / "fern_generation_lock.py")
+    with lock.hold("witness-screen"):
+        return _fern_screen_document(document, scratch, timeout)
+
+
+def _fern_screen_document(document: Path, scratch: Path, timeout: int) -> dict[str, Any]:
     """Fern's measured verdict on one document: `fern check`, then a generation where it passes.
 
     Each log digest is taken over the redacted log; the logs themselves ride

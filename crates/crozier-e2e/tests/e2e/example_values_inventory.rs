@@ -14,7 +14,7 @@ use std::path::Path;
 use crozier::departures::Context;
 use crozier::example_values::{Disposition, ExampleValue, Mechanism};
 
-use super::departures_ledger::{GoldenLedger, Observed};
+use super::departures_ledger::{self, GoldenLedger, Observed};
 
 /// The inventory, relative to the repository root.
 pub const INVENTORY: &str = "docs/departures/evidence/invalid-example-values/inventory.tsv";
@@ -27,7 +27,7 @@ pub const HEADER: &str =
 pub const REGENERATE: &str = "just departures-ledger";
 
 /// The directory a recording run's comparisons write their rows under.
-pub const RECORD_ENV: &str = "CROZIER_RECORD_EXAMPLE_INVENTORY";
+pub const RECORD_ENV: &str = departures_ledger::EXAMPLE_INVENTORY_ENV;
 
 /// One inventory row; rows sort by golden, file, line and argument.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -488,7 +488,8 @@ fn list_end(lines: &[&str], start: usize) -> usize {
 
 /// Hold `observed`, a comparison's rows over the files `compared` admits, to
 /// the committed rows of its goldens: one failure per stale and per
-/// unrecorded row. Under [`RECORD_ENV`], record them there instead and pass.
+/// unrecorded row. Under [`RECORD_ENV`], record them there instead and pass;
+/// a [`departures_ledger::perturbed`] comparison records nothing and passes.
 pub fn check(
     ledger: &GoldenLedger,
     observed: &BTreeSet<Row>,
@@ -496,6 +497,12 @@ pub fn check(
 ) -> Vec<String> {
     let goldens = ledger.goldens();
     if let Some(dir) = std::env::var_os(RECORD_ENV) {
+        if !departures_ledger::recording_eligible() {
+            return Vec::new();
+        }
+        if let Err(error) = departures_ledger::recording_destinations() {
+            return vec![error];
+        }
         return match record_to(Path::new(&dir), &goldens, observed) {
             Ok(()) => Vec::new(),
             Err(error) => vec![error],
@@ -529,8 +536,11 @@ pub fn check(
 
 /// Write `rows` under `dir`, one directory per golden, with an empty record
 /// for each of `goldens` the inventory of compared goldens records, so a
-/// golden whose values all went away loses its rows at the merge.
+/// golden whose values all went away loses its rows at the merge. `dir` must
+/// be a [`departures_ledger::scratch_destination`], checked before anything is
+/// written.
 fn record_to(dir: &Path, goldens: &[(&str, bool)], rows: &BTreeSet<Row>) -> Result<(), String> {
+    departures_ledger::scratch_destination(RECORD_ENV, dir)?;
     let mut by_golden: BTreeMap<&str, String> = goldens
         .iter()
         .filter(|(_, known)| *known)

@@ -10,6 +10,7 @@
 
 use std::path::Path;
 
+use super::departures_ledger::perturbed;
 use super::literals_mode;
 use super::{
     copy_dir, departure_ledger, golden_path, golden_tree_failures, probe_command, repo_root,
@@ -224,9 +225,9 @@ fn int64_example_correction_explains_only_the_out_of_range_rounding() {
             "metres=9223372036854775000,",
         ),
     ] {
-        let (perturbed, _, _) = handwritten_copy("odometer-reading");
-        perturb(perturbed.path(), rel, from, to);
-        let failures = check(perturbed.path());
+        let (copy, _, _) = handwritten_copy("odometer-reading");
+        perturb(copy.path(), rel, from, to);
+        let failures = perturbed(|| check(copy.path()));
         assert!(
             failures
                 .iter()
@@ -268,7 +269,7 @@ fn dollar_docstring_correction_explains_only_the_declared_const() {
     ] {
         let tree = case.materialize();
         perturb(tree.path(), rel, from, to);
-        let failures = literals_mode::case_failures(&case, tree.path(), "literals");
+        let failures = perturbed(|| literals_mode::case_failures(&case, tree.path(), "literals"));
         assert!(
             failures
                 .iter()
@@ -292,7 +293,7 @@ fn plain_multipart_file_correction_explains_only_the_placeholder() {
         "            title=\"title\",",
         "            title=\"poster\",",
     );
-    let failures = check(tree.path());
+    let failures = perturbed(|| check(tree.path()));
     assert!(
         failures
             .iter()
@@ -400,13 +401,15 @@ fn examples_docs_cases_fail_on_an_adjacent_unexplained_byte() {
         let copy = tempfile::tempdir().expect("golden copy tempdir");
         copy_dir(&expected, copy.path());
         perturb(copy.path(), rel, from, to);
-        let failures = tree_failures(
-            case,
-            &root.join(spec),
-            flags,
-            &golden_path(&expected),
-            copy.path(),
-        );
+        let failures = perturbed(|| {
+            tree_failures(
+                case,
+                &root.join(spec),
+                flags,
+                &golden_path(&expected),
+                copy.path(),
+            )
+        });
         assert!(
             failures
                 .iter()

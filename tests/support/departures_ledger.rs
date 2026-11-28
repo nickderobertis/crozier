@@ -7,8 +7,9 @@
 //! fails as unrecorded. The catalog itself is `assets/departures.yml`; the
 //! contract and the regeneration command are in `docs/departures/README.md`.
 
+use std::cell::Cell;
 use std::collections::{BTreeMap, BTreeSet};
-use std::path::{Component, Path};
+use std::path::{Component, Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 
@@ -46,6 +47,105 @@ pub const RECORD_ENV: &str = "CROZIER_RECORD_DEPARTURES";
 /// can hold its committed inventory of contributing tests to what ran.
 pub const CONTRIBUTOR_ENV: &str = "CROZIER_RECORD_CONTRIBUTORS";
 
+thread_local! {
+    /// How many [`perturbed`] comparisons enclose the running one on this thread.
+    static PERTURBED: Cell<usize> = const { Cell::new(0) };
+}
+
+/// The recording-eligibility contract. A comparison is eligible to record by
+/// default: under [`RECORD_ENV`] it writes the departures it observes, notes
+/// its test under [`CONTRIBUTOR_ENV`] and writes its example-value rows, which
+/// is how `just departures-ledger` (and `--discover-contributors`) builds the
+/// committed ledger and inventories. A test that compares a tree it altered on
+/// purpose (a planted byte, a removed line, the other enum mode's output) runs
+/// that comparison inside `perturbed`, which declares it ineligible: it still
+/// reports every difference and, outside a recording run, is still held to the
+/// committed rows, but it never writes a record or a contributor entry, so a
+/// perturbation's shifted or artificial departures never reach the ledger. The
+/// test's own untouched comparisons outside the closure keep recording.
+#[allow(
+    dead_code,
+    reason = "only crozier-e2e's perturbation tests declare one; the module is shared"
+)]
+pub fn perturbed<T>(compare: impl FnOnce() -> T) -> T {
+    struct Enclosed;
+    impl Drop for Enclosed {
+        fn drop(&mut self) {
+            PERTURBED.with(|depth| depth.set(depth.get() - 1));
+        }
+    }
+    PERTURBED.with(|depth| depth.set(depth.get() + 1));
+    let _enclosed = Enclosed;
+    compare()
+}
+
+/// Whether the running comparison may record: false inside [`perturbed`].
+pub fn recording_eligible() -> bool {
+    PERTURBED.with(|depth| depth.get() == 0)
+}
+
+/// `dir`, the directory `env` names for a recording run, once it is shown to be
+/// a scratch directory: an existing absolute directory with no source checkout
+/// (a directory holding `.git`) at or above it. Every recorder calls this
+/// before it writes, so a relative path (which nextest resolves against the
+/// crate it runs in) or a path inside a checkout is refused with nothing
+/// written, rather than leaving record files where a broad `git add` commits
+/// them. Returns the directory as resolved.
+pub fn scratch_destination(env: &str, dir: &Path) -> Result<PathBuf, String> {
+    let remedy = format!(
+        "point {env} at an absolute scratch directory outside every source checkout (one \
+         `mktemp -d` makes, as `{REGENERATE}` does), or record through `{REGENERATE}`"
+    );
+    if !dir.is_absolute() {
+        return Err(format!(
+            "{env}: `{}` is a relative path, which resolves inside the checkout a test runs \
+             in; nothing was recorded — {remedy}",
+            dir.display()
+        ));
+    }
+    let resolved = dir.canonicalize().map_err(|error| {
+        format!(
+            "{env}: `{}` is no directory to record into ({error}); nothing was recorded — \
+             {remedy}",
+            dir.display()
+        )
+    })?;
+    if !resolved.is_dir() {
+        return Err(format!(
+            "{env}: `{}` is not a directory; nothing was recorded — {remedy}",
+            dir.display()
+        ));
+    }
+    if let Some(checkout) = resolved
+        .ancestors()
+        .find(|ancestor| ancestor.join(".git").exists())
+    {
+        return Err(format!(
+            "{env}: `{}` is inside the source checkout {}; nothing was recorded — {remedy}",
+            dir.display(),
+            checkout.display()
+        ));
+    }
+    Ok(resolved)
+}
+
+/// The directory a recording run's comparisons write their example-inventory
+/// rows under (crozier-e2e's `example_values_inventory::RECORD_ENV`).
+pub const EXAMPLE_INVENTORY_ENV: &str = "CROZIER_RECORD_EXAMPLE_INVENTORY";
+
+/// Every recorder destination this run sets — [`RECORD_ENV`],
+/// [`CONTRIBUTOR_ENV`] and [`EXAMPLE_INVENTORY_ENV`] — shown to be a
+/// [`scratch_destination`], so a comparison refuses a bad one before it writes
+/// any of its records rather than after writing the others.
+pub fn recording_destinations() -> Result<(), String> {
+    for env in [RECORD_ENV, CONTRIBUTOR_ENV, EXAMPLE_INVENTORY_ENV] {
+        if let Some(dir) = std::env::var_os(env) {
+            scratch_destination(env, Path::new(&dir))?;
+        }
+    }
+    Ok(())
+}
+
 /// Under [`CONTRIBUTOR_ENV`], note that the running test recorded `golden` into
 /// `records`, as `golden`, the nextest binary id and the test name, one
 /// tab-separated line. Only a record written where `record_env` points — the
@@ -55,9 +155,12 @@ pub fn note_contributor(golden: &str, records: &Path, record_env: &str) -> Resul
     let Some(dir) = std::env::var_os(CONTRIBUTOR_ENV) else {
         return Ok(());
     };
-    if std::env::var_os(record_env).is_none_or(|run| Path::new(&run) != records) {
+    if !recording_eligible()
+        || std::env::var_os(record_env).is_none_or(|run| Path::new(&run) != records)
+    {
         return Ok(());
     }
+    let dir = scratch_destination(CONTRIBUTOR_ENV, Path::new(&dir))?;
     let (Ok(binary), Ok(test)) = (
         std::env::var("NEXTEST_BINARY_ID"),
         std::env::var("NEXTEST_TEST_NAME"),
@@ -376,9 +479,16 @@ impl GoldenLedger {
     /// Hold `observed`, every departure a comparison applied in the files
     /// `scope` admits, to the rows: one failure per stale row (the engine no
     /// longer applies it) and per unrecorded departure (no row records it).
-    /// Under [`RECORD_ENV`], record `observed` there instead and pass.
+    /// Under [`RECORD_ENV`], record `observed` there instead and pass; a
+    /// [`perturbed`] comparison records nothing and passes.
     pub fn check(&self, observed: &[Observed], scope: &dyn Fn(&str) -> bool) -> Vec<String> {
         if let Some(dir) = std::env::var_os(RECORD_ENV) {
+            if !recording_eligible() {
+                return Vec::new();
+            }
+            if let Err(error) = recording_destinations() {
+                return vec![error];
+            }
             return match self.record_to(Path::new(&dir), observed) {
                 Ok(()) => Vec::new(),
                 Err(error) => vec![error],
@@ -414,8 +524,18 @@ impl GoldenLedger {
     /// Write `observed` under `dir`, one file per golden it belongs to, beside
     /// any other comparison's records of the same golden — this golden's and
     /// its base's even when empty, so a golden whose departures all stopped
-    /// applying loses its rows at the merge.
+    /// applying loses its rows at the merge. `dir` must be a
+    /// [`scratch_destination`]; a [`perturbed`] comparison writes nothing.
     pub fn record_to(&self, dir: &Path, observed: &[Observed]) -> Result<(), String> {
+        if !recording_eligible() {
+            return Ok(());
+        }
+        scratch_destination(RECORD_ENV, dir)?;
+        // The contributor note follows each record, so its destination is
+        // refused before the first record is written, not after.
+        if let Some(noted) = std::env::var_os(CONTRIBUTOR_ENV) {
+            scratch_destination(CONTRIBUTOR_ENV, Path::new(&noted))?;
+        }
         let mut by_golden: BTreeMap<&str, Vec<&Observed>> = BTreeMap::new();
         by_golden.entry(&self.golden).or_default();
         if let Some((base, _)) = &self.base {

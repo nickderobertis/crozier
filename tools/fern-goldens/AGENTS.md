@@ -12,6 +12,10 @@
   `CROZIER_CERTIFIED_TREE_PUBLISH=1`) with a stand-in `fern` that writes
   `.fern/metadata.json` sets `XDG_CACHE_HOME` to a scratch directory, or its
   stand-in tree lands in the host's certified-tree store.
+- Every Fern entry point takes the host's Fern generation lock under
+  `XDG_CACHE_HOME`, so any suite reaching a stand-in `fern` through one sets it
+  to a scratch directory too, or it waits on a real Fern run on the same host.
+  A new entry point joins `fern-goldens-git`'s `fern_generation_lock_test.py`.
 - `fern-references.py check` and `generate` share each family's `validate_*`:
   an input a generation starts reading is validated there, and its path joins
   `fern-references-check`'s test inputs (its trace test fails until it does).

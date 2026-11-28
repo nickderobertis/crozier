@@ -40,6 +40,26 @@ from fern_goldens_test import (
 
 GENERATOR = "fernapi/fern-python-sdk"
 
+_CACHE: list[tuple[tempfile.TemporaryDirectory[str], str | None]] = []
+
+
+def setUpModule() -> None:
+    """Every Fern-running script these journeys start holds the Fern generation
+    lock under `XDG_CACHE_HOME`: this suite's own scratch, never the host's, so
+    no journey waits on a real Fern run on the same host."""
+    cache = tempfile.TemporaryDirectory(prefix="fern-goldens-git-cache-")
+    _CACHE.append((cache, os.environ.get("XDG_CACHE_HOME")))
+    os.environ["XDG_CACHE_HOME"] = cache.name
+
+
+def tearDownModule() -> None:
+    cache, previous = _CACHE.pop()
+    if previous is None:
+        os.environ.pop("XDG_CACHE_HOME", None)
+    else:
+        os.environ["XDG_CACHE_HOME"] = previous
+    cache.cleanup()
+
 
 @unittest.skipIf(os.name == "nt", "Fern golden workflow scripts run on Linux")
 class FernGoldensBoundaryTests(unittest.TestCase):
@@ -70,6 +90,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             "tools/corpus/corpus_sources.py",
             "tools/corpus/fetch-corpus.sh",
             "scripts/lib.sh",
+            "tools/fern-goldens/fern_generation_lock.py",
             "tools/surface-census/openapi-surface-census.py",
         )
         shutil.copy2(ALIASES, self.root / "tests" / "fixtures" / ALIASES.name)
@@ -1638,6 +1659,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             root,
             "tools/fern-goldens/generate-fern-fixture.sh",
             "scripts/lib.sh",
+            "tools/fern-goldens/fern_generation_lock.py",
             "assets/scaffolding/metadata.json",
             "tools/corpus/corpus_remote_ref_pins.py",
             "tools/surface-census/openapi-surface-census.py",
@@ -1784,7 +1806,11 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         for directory in (scripts, fixture, fake_bin, target):
             directory.mkdir(parents=True, exist_ok=True)
         mirror(
-            root, "tools/fern-goldens/generate-fern-fixture.sh", "scripts/lib.sh", "assets/scaffolding/metadata.json"
+            root,
+            "tools/fern-goldens/generate-fern-fixture.sh",
+            "scripts/lib.sh",
+            "tools/fern-goldens/fern_generation_lock.py",
+            "assets/scaffolding/metadata.json",
         )
         (fixture / "openapi.yml").write_text("openapi: 3.0.3\n", encoding="utf-8", newline="\n")
         (root / "tests" / "fixtures" / "fern-generator-config.txt").write_text(
@@ -1887,7 +1913,11 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             "openapi: 3.0.3 # zeta\n", encoding="utf-8", newline="\n"
         )
         mirror(
-            root, "tools/fern-goldens/generate-fern-fixture.sh", "scripts/lib.sh", "assets/scaffolding/metadata.json"
+            root,
+            "tools/fern-goldens/generate-fern-fixture.sh",
+            "scripts/lib.sh",
+            "tools/fern-goldens/fern_generation_lock.py",
+            "assets/scaffolding/metadata.json",
         )
         for fixture in ("beta", "delta"):
             (fixtures / fixture / "openapi.yml").write_text(
@@ -2044,7 +2074,11 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         for directory in (root / "scripts", fixtures / "beta", fake_bin, target):
             directory.mkdir(parents=True, exist_ok=True)
         mirror(
-            root, "tools/fern-goldens/generate-fern-fixture.sh", "scripts/lib.sh", "assets/scaffolding/metadata.json"
+            root,
+            "tools/fern-goldens/generate-fern-fixture.sh",
+            "scripts/lib.sh",
+            "tools/fern-goldens/fern_generation_lock.py",
+            "assets/scaffolding/metadata.json",
         )
         (fixtures / "beta" / "openapi.yml").write_text("openapi: 3.0.3\n", encoding="utf-8")
         self.write_executable(
@@ -2645,6 +2679,7 @@ class GenerateCorpusFixturesTests(unittest.TestCase):
         mirror(
             self.root,
             "tools/fern-goldens/generate-corpus-fixtures.sh",
+            "tools/fern-goldens/fern_generation_lock.py",
             "tools/corpus/corpus-lib.sh",
             "tools/corpus/corpus_remote_ref_pins.py",
             "tools/corpus/corpus_sources.py",

@@ -22,6 +22,7 @@
         "{workspaceRoot}/tools/fern-goldens/fern-goldens",
         "{workspaceRoot}/tools/fern-goldens/generate-corpus-fixtures.sh",
         "{workspaceRoot}/tools/fern-goldens/generate-fern-fixture.sh",
+        "{workspaceRoot}/tools/fern-goldens/fern_generation_lock.py",
         "{workspaceRoot}/tools/fern-goldens/fern-references.py",
         "{workspaceRoot}/tools/fern-goldens/golden_overlay.py",
         "{workspaceRoot}/tools/fern-goldens/tests/fern_goldens_test.py",
@@ -102,11 +103,66 @@
         "{workspaceRoot}/.coverage-data/fern-goldens-git/test-certified-pair"
       ]
     },
+    "test-generation-lock": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/fern-goldens-git/tests/fern_generation_lock_test.py",
+        "env": {
+          "COVERAGE_FILE": ".coverage-data/fern-goldens-git/test-generation-lock/.coverage"
+        }
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "{workspaceRoot}/justfile",
+        "{workspaceRoot}/scripts/lib.sh",
+        "{workspaceRoot}/scripts/census-python.sh",
+        "{workspaceRoot}/assets/scaffolding/metadata.json",
+        "{workspaceRoot}/tools/fern-goldens/fern_generation_lock.py",
+        "{workspaceRoot}/tools/fern-goldens/fern-goldens",
+        "{workspaceRoot}/tools/fern-goldens/fern-references.py",
+        "{workspaceRoot}/tools/fern-goldens/weekly.py",
+        "{workspaceRoot}/tools/fern-goldens/generate-fern-fixture.sh",
+        "{workspaceRoot}/tools/fern-goldens/fern-overlay-goldens.sh",
+        "{workspaceRoot}/tools/fern-goldens/generate-corpus-fixtures.sh",
+        "{workspaceRoot}/tools/fern-goldens/golden_overlay.py",
+        "{workspaceRoot}/tools/fern-goldens/certified_pair.py",
+        "{workspaceRoot}/tools/fern-goldens/certified_tree.py",
+        "{workspaceRoot}/tools/fern-refusals/fern-refusals.py",
+        "{workspaceRoot}/tools/fern-refusals/sdk_evaluation.py",
+        "{workspaceRoot}/tools/fern-refusals/sdk_evaluation_runtime.py",
+        "{workspaceRoot}/docs/fern-refusals/unsettled-contract.json",
+        "{workspaceRoot}/docs/fern-refusals/classes.tsv",
+        "{workspaceRoot}/docs/fern-refusals/findings.tsv",
+        "{workspaceRoot}/docs/fern-refusals/request-property-name-collision/probe.yml",
+        "{workspaceRoot}/tools/corpus/corpus-lib.sh",
+        "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
+        "{workspaceRoot}/tools/corpus/corpus_sources.py",
+        "{workspaceRoot}/tools/corpus/fetch-corpus.sh",
+        "{workspaceRoot}/tests/fixtures/corpus-aliases.tsv",
+        "{workspaceRoot}/tests/fixtures/corpus-remote-ref-pins.tsv",
+        "{workspaceRoot}/tools/surface-census/openapi-surface-census.py",
+        "{workspaceRoot}/tools/surface-census/witness-search-region-keys.py",
+        "{workspaceRoot}/tools/surface-census/output-insensitive.py",
+        "{workspaceRoot}/tools/surface-census/output-insensitive-remeasure.py",
+        "{workspaceRoot}/tools/witness-search/witness_screen.py",
+        "{workspaceRoot}/tools/witness-search/witness-search-github.py",
+        "{workspaceRoot}/tools/witness-search/witness-search-github-index.py",
+        "{workspaceRoot}/tools/witness-search/witness-search-redo.py",
+        "{workspaceRoot}/tools/witness-search/rate_limit_guard.py",
+        "{workspaceRoot}/docs/corpus-licensing.md",
+        "pythonTooling"
+      ],
+      "outputs": [
+        "{workspaceRoot}/.coverage-data/fern-goldens-git/test-generation-lock"
+      ]
+    },
     "test": {
       "executor": "nx:noop",
       "dependsOn": [
         "test-lifecycle",
-        "test-certified-pair"
+        "test-certified-pair",
+        "test-generation-lock"
       ]
     },
     "lint-boundaries": {

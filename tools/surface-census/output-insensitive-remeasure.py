@@ -37,6 +37,7 @@ error or a record whose documents do not resolve.
 from __future__ import annotations
 
 import argparse
+import contextlib
 import csv
 import hashlib
 import importlib.util
@@ -49,6 +50,7 @@ import shlex
 import subprocess
 import sys
 import tempfile
+from collections.abc import Callable
 from dataclasses import astuple, dataclass, fields
 from enum import StrEnum
 from pathlib import Path
@@ -73,6 +75,17 @@ def load_reader() -> ModuleType:
         raise ImportError("cannot load output-insensitive.py beside this script")
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def generation_lock() -> ModuleType:
+    """`tools/fern-goldens/fern_generation_lock.py`: the host's Fern generation lock."""
+    path = Path(__file__).resolve().parents[1] / "fern-goldens" / "fern_generation_lock.py"
+    spec = importlib.util.spec_from_file_location("fern_generation_lock", path)
+    if not path.is_file() or spec is None or spec.loader is None:
+        raise GenerationError(f"cannot load {path}; restore it with git checkout")
+    module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
 
@@ -464,18 +477,37 @@ def main(argv: list[str]) -> int:
         print(f"output-insensitive-remeasure: {error}", file=sys.stderr)
         return 2
     measured: dict[tuple[Generator, Path], dict[str, str]] = {}
+    # The first Fern generation takes the host's Fern generation lock (or shares
+    # the hold this run was started in), and the run keeps it to its end.
+    fern_hold = contextlib.ExitStack()
+    holding: list[bool] = []
 
     def measure(generator: Generator, document: Path) -> dict[str, str]:
         key = (generator, document)
         if key not in measured:
             with tempfile.TemporaryDirectory() as scratch:
                 if generator is Generator.FERN:
+                    if not holding:
+                        fern_hold.enter_context(generation_lock().hold("output-insensitive-remeasure"))
+                        holding.append(True)
                     log = logs / f"{hashlib.sha256(str(document).encode()).hexdigest()[:12]}.fern.log"
                     measured[key] = fern_tree(fern, document, pair, Path(scratch), log, args.timeout)
                 else:
                     measured[key] = crozier_tree(crozier, document, Path(scratch), args.timeout)
         return measured[key]
 
+    with fern_hold:
+        return remeasure(root, rows, records, plans, pair, measure)
+
+
+def remeasure(
+    root: Path,
+    rows: list[Row],
+    records: list[tuple[str, str]],
+    plans: dict[str, Documents],
+    pair: Pair,
+    measure: Callable[[Generator, Path], dict[str, str]],
+) -> int:
     dropped: set[str] = set()
     failed = False
     for fern_record, crozier_record in records:

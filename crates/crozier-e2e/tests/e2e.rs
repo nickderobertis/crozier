@@ -449,6 +449,11 @@ mod departures_ledger_gate;
 #[path = "e2e/departure_contributors.rs"]
 mod departure_contributors;
 
+/// Which comparisons may record (issue #988) and where (issue #989), driven
+/// through a real recording comparison.
+#[path = "e2e/recording_eligibility.rs"]
+mod recording_eligibility;
+
 /// `fixtures-report.sh` and `departures-ledger.sh`, run as their recipes run them.
 #[cfg(unix)]
 #[path = "e2e/report_scripts.rs"]

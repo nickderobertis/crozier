@@ -2,7 +2,8 @@
 # Fetch (when needed) and generate Fern golden `expected/` trees for the issue #77
 # corpus. Existing committed fixture specs are reused. URL-only rows are fetched
 # into the ignored cache under .local/corpus and passed directly to Fern so source
-# specs do not need to be vendored just to refresh generated output.
+# specs do not need to be vendored just to refresh generated output. A run that
+# generates holds the host's Fern generation lock for its whole interval.
 set -euo pipefail
 
 script_dir="$(cd "$(dirname "$0")" && pwd)" && repo_root="$(cd "$script_dir/../.." && pwd)" || {
@@ -17,6 +18,7 @@ script_dir="$(cd "$(dirname "$0")" && pwd)" && repo_root="$(cd "$script_dir/../.
   exit 1
 }
 manifest="$repo_root/tests/fixtures/CORPUS.md"
+arguments=("$@")
 mode=all
 dry_run=0
 fetch_root="$repo_root/.local/corpus"
@@ -56,6 +58,18 @@ while [ "$#" -gt 0 ]; do
   esac
   shift
 done
+
+# A run that generates holds the host's Fern generation lock, sharing the hold of a
+# caller that already has it, so no caller wraps it in `flock`
+# (docs/fern-goldens.md#one-fern-run-at-a-time-on-a-host).
+fern_lock="$repo_root/tools/fern-goldens/fern_generation_lock.py"
+[ -r "$fern_lock" ] || {
+  echo "generate-corpus-fixtures: missing $fern_lock — restore it with git checkout --" \
+       "tools/fern-goldens/fern_generation_lock.py, then re-run" >&2
+  exit 1
+}
+[ "$dry_run" = 1 ] || python3 "$fern_lock" held \
+  || exec python3 "$fern_lock" run --label generate-corpus-fixtures -- "$0" ${arguments[@]+"${arguments[@]}"}
 
 [ -f "$manifest" ] || {
   echo "generate-corpus-fixtures: missing $manifest — it is committed; restore it with" \

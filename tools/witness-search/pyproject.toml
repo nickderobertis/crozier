@@ -8,10 +8,11 @@ name = "crozier-witness-search"
 version = "0.0.0"
 description = "Witness search, screening and evidence-integrity tooling."
 requires-python = ">=3.11"
-dependencies = ["crozier-surface-census"]
+dependencies = ["crozier-fern-goldens", "crozier-surface-census"]
 
 [tool.uv]
 package = false
 
 [tool.uv.sources]
+crozier-fern-goldens = { workspace = true }
 crozier-surface-census = { workspace = true }
