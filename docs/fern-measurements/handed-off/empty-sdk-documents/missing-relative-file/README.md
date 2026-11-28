@@ -65,7 +65,7 @@ error. `request` and the response are `typing.Any`, and `BadRequestError` takes
   bare name or to a local pointer outside `#/components/schemas/`.
   `error_body_type` and `hoist_error_body_types` type such a body as unknown
   and hoist no model for it. Only the error-body form is measured, so the
-  named-union, request and success-response paths keep `bare_name_mapped_union`
+  named-union, request and success-response paths keep `unresolvable_mapped_union`
   unchanged.
 
 **Comparison on the finished tree.**

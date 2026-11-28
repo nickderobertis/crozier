@@ -5282,7 +5282,7 @@ fn build_endpoint(
         .and_then(|schema| schema.reference.as_deref())
         .is_some_and(|reference| {
             resolve_ref(doc, reference)
-                .is_some_and(|schema| is_unknown(schema) || bare_name_mapped_union(schema))
+                .is_some_and(|schema| is_unknown(schema) || unresolvable_mapped_union(schema))
                 || types.iter().any(|decl| {
                     matches!(decl, TypeDecl::Alias(alias)
                         if alias.name == ref_to_class(reference)
@@ -5319,7 +5319,7 @@ fn build_endpoint(
                                     .as_deref()
                                     .and_then(|reference| resolve_ref(doc, reference))
                                     .is_some_and(|target| {
-                                        target.title.is_none() || bare_name_mapped_union(target)
+                                        target.title.is_none() || unresolvable_mapped_union(target)
                                     })
                             // A component that is only `allOf` one `$ref` is an
                             // alias, a bare type name whatever its `title`:
@@ -8396,7 +8396,7 @@ fn resolve_request_body(
         if target.one_of.is_some()
             || target.any_of.is_some()
             || renamed_union
-            || bare_name_mapped_union(target)
+            || unresolvable_mapped_union(target)
         {
             let mut body = single(TypeRef::Named(class), required, true, true);
             if let RequestBody::Single(single) = &mut body {
@@ -8404,7 +8404,7 @@ fn resolve_request_body(
                 // [string, null]` is `Optional[str]`) has nothing to convert,
                 // and is sent as it is (measured in
                 // `docs/fern-measurements/bodies-responses/request-convert-decision/`).
-                single.convert = !bare_name_mapped_union(target)
+                single.convert = !unresolvable_mapped_union(target)
                     && !prefer_map_to_union(target)
                     && simple_nullable_member(target).is_none_or(|member| {
                         member.reference.is_some() || !is_plain_scalar(member)
@@ -14668,7 +14668,7 @@ fn is_inheritance_union_base(schema: &Schema) -> bool {
 /// `type-lowering/discriminator-tag-reach` measurement's `Share.holder`, whose
 /// `ROBOT` names `robots/openapi.yaml#/components/schemas/RobotHolder`, is
 /// `typing.Any` (Benchling's `Collaboration.collaborator`, #994).
-pub(crate) fn bare_name_mapped_union(schema: &Schema) -> bool {
+pub(crate) fn unresolvable_mapped_union(schema: &Schema) -> bool {
     (schema.one_of.is_some() || is_inheritance_union_base(schema))
         && schema.discriminator.as_ref().is_some_and(|discriminator| {
             discriminator
@@ -14698,13 +14698,13 @@ fn maps_another_document(target: &str) -> bool {
 }
 
 /// Whether an error body is a union whose mapping Fern cannot resolve: a bare
-/// name ([`bare_name_mapped_union`]), or a local pointer outside
+/// name ([`unresolvable_mapped_union`]), or a local pointer outside
 /// `#/components/schemas/`, which outstack/enveloper's inline `400` maps
 /// (`#/Components/schemas/syntax-error`). Fern types that body as unknown
 /// (`docs/fern-measurements/handed-off/empty-sdk-documents/missing-relative-file/`);
 /// only the error-body form is measured, so only the error path reads it.
 fn unresolvable_mapped_error_body(schema: &Schema) -> bool {
-    bare_name_mapped_union(schema)
+    unresolvable_mapped_union(schema)
         || (is_inheritance_union_base(schema) || schema.one_of.is_some())
             && schema.discriminator.as_ref().is_some_and(|discriminator| {
                 discriminator.mapping.values().any(|target| {
@@ -15538,7 +15538,7 @@ impl Builder<'_> {
         // `typing.Any`, its members plain models keeping their `type` enums.
         // The inheritance spelling is the same union: the openapi-generator
         // AllOf sample's `Person` maps `c` to `Child` and is `typing.Any` too.
-        if bare_name_mapped_union(schema) {
+        if unresolvable_mapped_union(schema) {
             self.push_alias(name, module, TypeRef::Primitive(Prim::Any), docstring);
             return;
         }
@@ -26851,21 +26851,21 @@ mod tests {
         let pointers = serde_json::json!({ "apple": "#/components/schemas/Apple" });
         let one_of = serde_json::json!({ "oneOf": [{ "$ref": "#/components/schemas/Apple" }] });
         let any_of = serde_json::json!({ "anyOf": [{ "$ref": "#/components/schemas/Apple" }] });
-        assert!(super::bare_name_mapped_union(&union(
+        assert!(super::unresolvable_mapped_union(&union(
             serde_json::json!({}),
             mixed.clone()
         )));
-        assert!(super::bare_name_mapped_union(&union(
+        assert!(super::unresolvable_mapped_union(&union(
             one_of.clone(),
             mixed.clone()
         )));
-        assert!(!super::bare_name_mapped_union(&union(any_of, mixed)));
-        assert!(!super::bare_name_mapped_union(&union(
+        assert!(!super::unresolvable_mapped_union(&union(any_of, mixed)));
+        assert!(!super::unresolvable_mapped_union(&union(
             serde_json::json!({}),
             pointers.clone()
         )));
-        assert!(!super::bare_name_mapped_union(&union(one_of, pointers)));
-        assert!(!super::bare_name_mapped_union(&union(
+        assert!(!super::unresolvable_mapped_union(&union(one_of, pointers)));
+        assert!(!super::unresolvable_mapped_union(&union(
             serde_json::json!({}),
             serde_json::json!({})
         )));
@@ -26875,7 +26875,7 @@ mod tests {
         // document is left to the resolver.
         let elsewhere = serde_json::json!({ "apple": "#/Components/schemas/apple" });
         let elsewhere = union(serde_json::json!({}), elsewhere);
-        assert!(!super::bare_name_mapped_union(&elsewhere));
+        assert!(!super::unresolvable_mapped_union(&elsewhere));
         assert!(super::unresolvable_mapped_error_body(&elsewhere));
         let bare = union(serde_json::json!({}), serde_json::json!({ "pear": "Pear" }));
         assert!(super::unresolvable_mapped_error_body(&bare));

@@ -25,7 +25,23 @@ import threading
 import urllib.parse
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any
+from typing import Any, NamedTuple, TypedDict
+
+
+class Recorded(NamedTuple):
+    """One request the journey server received: its method, target and headers."""
+
+    method: str
+    target: str
+    headers: dict[str, str]
+
+
+class SdkOptions(TypedDict):
+    """The `RequestOptions` keys these journeys pass to a generated client."""
+
+    additional_headers: dict[str, str]
+    max_retries: int
+
 
 MAX_BODY = 1 << 20
 """The largest request body the journey server reads; an SDK request is far smaller."""
@@ -41,7 +57,7 @@ class Server:
     def __init__(self, bodies: dict[str, object]) -> None:
         self.received: list[object] = []
         self.headers: list[dict[str, str]] = []
-        self.requests: list[tuple[str, str, dict[str, str]]] = []
+        self.requests: list[Recorded] = []
         server = self
 
         class Handler(http.server.BaseHTTPRequestHandler):
@@ -65,7 +81,9 @@ class Server:
                 self._answer()
 
             def _record(self, method: str) -> None:
-                server.requests.append((method, self.path, {key.lower(): value for key, value in self.headers.items()}))
+                server.requests.append(
+                    Recorded(method, self.path, {key.lower(): value for key, value in self.headers.items()})
+                )
 
             def _answer(self) -> None:
                 body = bodies.get(self.path, bodies.get(self.path.split("?", 1)[0]))
@@ -196,14 +214,16 @@ def request_options_body_property() -> None:
 
     import_every_module()
     server = Server({"/dispatches": {"id": "d-1", "request_options": "express"}})
-    options = {"additional_headers": {"x-courier-trace": "t-1"}, "max_retries": 0}
+    options: SdkOptions = {"additional_headers": {"x-courier-trace": "t-1"}, "max_retries": 0}
     arguments: dict[str, Any] = {"request_options": "express", "kwargs_": "k", "self_": "s"}
     try:
         sync = FernApi(base_url=server.base_url).dispatches
         async_ = AsyncFernApi(base_url=server.base_url).dispatches
         results = [
+            # llmlint: ignore-block[async_typed_clients_at_boundaries] #981 requires the generated sync client and its raw variant to be driven too; these two calls are that coverage, beside the async calls below.
             sync.create_dispatch(**arguments, _request_options=options),
             sync.with_raw_response.create_dispatch(**arguments, _request_options=options).data,
+            # llmlint: ignore-end[async_typed_clients_at_boundaries]
             asyncio.run(async_.create_dispatch(**arguments, _request_options=options)),
             asyncio.run(async_.with_raw_response.create_dispatch(**arguments, _request_options=options)).data,
         ]
@@ -220,14 +240,14 @@ def request_options_body_property() -> None:
     other_sources(options)
 
 
-def other_sources(options: dict[str, Any]) -> None:
+def other_sources(options: SdkOptions) -> None:
     """The other places an argument can take the name: a query parameter (on a
     paginated and on a binary-download operation), a header and a form field
     beside disabled retries each rename the SDK's options `_request_options`,
     while a path parameter is `request_options_` and leaves the SDK's options
     `request_options`. Each argument reaches the wire under its own name, and
     each operation's options reach it as options."""
-    from fern import FernApi
+    from fern import AsyncFernApi
 
     server = Server(
         {
@@ -238,15 +258,24 @@ def other_sources(options: dict[str, Any]) -> None:
             "/labels/express": {"id": "l-2"},
         }
     )
+
+    async def drive() -> tuple[list[str], bytes, Any, Any]:
+        api = AsyncFernApi(base_url=server.base_url)
+        pager = await api.routes.list_routes(request_options="by-query", _request_options=options)
+        routes = [route async for route in pager]
+        chunks = [
+            chunk
+            async for chunk in api.dispatches.download_manifest(
+                "d-1", request_options="by-query", _request_options=options
+            )
+        ]
+        await api.dispatches.add_note("d-1", request_options="by-form", _request_options=options)
+        labels = await api.labels.list_labels(request_options="by-header", _request_options=options)
+        label = await api.labels.get_label(request_options_="express", request_options=options)
+        return routes, b"".join(chunks), labels, label
+
     try:
-        api = FernApi(base_url=server.base_url)
-        routes = list(api.routes.list_routes(request_options="by-query", _request_options=options))
-        manifest = b"".join(
-            api.dispatches.download_manifest("d-1", request_options="by-query", _request_options=options)
-        )
-        api.dispatches.add_note("d-1", request_options="by-form", _request_options=options)
-        labels = api.labels.list_labels(request_options="by-header", _request_options=options)
-        label = api.labels.get_label(request_options_="express", request_options=options)
+        routes, manifest, labels, label = asyncio.run(drive())
     finally:
         server.close()
     if (
@@ -256,7 +285,7 @@ def other_sources(options: dict[str, Any]) -> None:
         or label.id != "l-2"
     ):
         raise SystemExit(f"request-options-body-property: returned {routes!r}, {manifest!r}, {labels!r}, {label!r}")
-    targets = [(method, target.split("?", 1)) for method, target, _ in server.requests]
+    targets = [(request.method, request.target.split("?", 1)) for request in server.requests]
     expected = [
         ("GET", ["/routes", "page=1&request_options=by-query"]),
         ("GET", ["/routes", "page=2&request_options=by-query"]),
@@ -269,8 +298,8 @@ def other_sources(options: dict[str, Any]) -> None:
         raise SystemExit(f"request-options-body-property: requested {targets!r}")
     if server.received != [{"request_options": "by-form"}]:
         raise SystemExit(f"request-options-body-property: the form sent {server.received!r}")
-    headers = [headers for _, _, headers in server.requests]
-    (listed,) = [request for (_, target, request) in server.requests if target == "/labels"]
+    headers = [request.headers for request in server.requests]
+    (listed,) = [request.headers for request in server.requests if request.target == "/labels"]
     if listed.get("request-options") != "by-header":
         raise SystemExit(f"request-options-body-property: the header went as {listed!r}")
     traces = [request.get("x-courier-trace") for request in headers]

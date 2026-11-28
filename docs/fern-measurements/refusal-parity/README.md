@@ -50,10 +50,10 @@ method optional.
 ## The repair
 
 - `src/name_refusals.rs` `check_schema_names` skips the discriminant-name check
-  for a union that `bare_name_mapped_union` matches. It still checks that
+  for a union that `unresolvable_mapped_union` matches. It still checks that
   union's properties and members.
 - `src/ir.rs`:
-  - `bare_name_mapped_union` (new) is the shared predicate: a `oneOf` or an
+  - `unresolvable_mapped_union` (new) is the shared predicate: a `oneOf` or an
     inheritance base whose mapping names a target with no `/`.
   - `add_named_shape` lowers both spellings to `typing.Any`.
   - `collect_discriminant_strips` strips a `oneOf` member's tag only where the
