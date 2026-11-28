@@ -43,6 +43,25 @@ class SdkOptions(TypedDict):
     max_retries: int
 
 
+class DispatchArguments(TypedDict):
+    """`create_dispatch`'s body arguments, the three names its signature escapes or keeps."""
+
+    request_options: str
+    kwargs_: str
+    self_: str
+
+
+class SourceResults(NamedTuple):
+    """What the other collision sources' calls return. The two label results are
+    models of the SDK under test, generated at run time, so this script has no
+    static type for them."""
+
+    routes: list[str]
+    manifest: bytes
+    labels: Any
+    label: Any
+
+
 MAX_BODY = 1 << 20
 """The largest request body the journey server reads; an SDK request is far smaller."""
 
@@ -215,7 +234,7 @@ def request_options_body_property() -> None:
     import_every_module()
     server = Server({"/dispatches": {"id": "d-1", "request_options": "express"}})
     options: SdkOptions = {"additional_headers": {"x-courier-trace": "t-1"}, "max_retries": 0}
-    arguments: dict[str, Any] = {"request_options": "express", "kwargs_": "k", "self_": "s"}
+    arguments: DispatchArguments = {"request_options": "express", "kwargs_": "k", "self_": "s"}
     try:
         sync = FernApi(base_url=server.base_url).dispatches
         async_ = AsyncFernApi(base_url=server.base_url).dispatches
@@ -259,7 +278,7 @@ def other_sources(options: SdkOptions) -> None:
         }
     )
 
-    async def drive() -> tuple[list[str], bytes, Any, Any]:
+    async def drive() -> SourceResults:
         api = AsyncFernApi(base_url=server.base_url)
         pager = await api.routes.list_routes(request_options="by-query", _request_options=options)
         routes = [route async for route in pager]
@@ -272,7 +291,7 @@ def other_sources(options: SdkOptions) -> None:
         await api.dispatches.add_note("d-1", request_options="by-form", _request_options=options)
         labels = await api.labels.list_labels(request_options="by-header", _request_options=options)
         label = await api.labels.get_label(request_options_="express", request_options=options)
-        return routes, b"".join(chunks), labels, label
+        return SourceResults(routes, b"".join(chunks), labels, label)
 
     try:
         routes, manifest, labels, label = asyncio.run(drive())

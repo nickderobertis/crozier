@@ -11290,17 +11290,6 @@ fn reserved_body_property_names(
     own_property_names(schema, schemas, out, 0, Parents::Counted);
 }
 
-/// An inline schema with no properties of its own whose `allOf` holds at least
-/// one `$ref` parent beside inline members, each either a plain object
-/// (properties, no composition of its own) or only an `anyOf` of plain objects,
-/// rewritten as those members' properties — first declaration wins — beside an
-/// `allOf` of the parents alone; `None` for any other schema. A plain member's
-/// `required` is merged; an `anyOf` branch's is not, since no one branch is
-/// required. Both are measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3:
-/// `docs/fern-measurements/handed-off/document-acceptance/` cases
-/// `never-compared-request-property-name-collision` (a plain member) and
-/// `crozier-invalid-duplicate-parameter` (an `anyOf` member whose branches
-/// redeclare the parent's properties, which crozier passed twice).
 /// The `$ref` parents of an inline body that is nothing but an `allOf` of two
 /// or more bare `$ref`s to objects. Fern lays it out as their fields in member
 /// order, each parent's own resolved types, and keeps each parent as a model:
@@ -11332,6 +11321,17 @@ fn composed_reference_body(schema: &Schema) -> Option<Vec<&str>> {
         .collect()
 }
 
+/// An inline schema with no properties of its own whose `allOf` holds at least
+/// one `$ref` parent beside inline members, each either a plain object
+/// (properties, no composition of its own) or only an `anyOf` of plain objects,
+/// rewritten as those members' properties — first declaration wins — beside an
+/// `allOf` of the parents alone; `None` for any other schema. A plain member's
+/// `required` is merged; an `anyOf` branch's is not, since no one branch is
+/// required. Both are measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3:
+/// `docs/fern-measurements/handed-off/document-acceptance/` cases
+/// `never-compared-request-property-name-collision` (a plain member) and
+/// `crozier-invalid-duplicate-parameter` (an `anyOf` member whose branches
+/// redeclare the parent's properties, which crozier passed twice).
 fn parents_with_inline_members(schema: &Schema) -> Option<Schema> {
     if schema.reference.is_some() || !schema.properties.is_empty() {
         return None;
