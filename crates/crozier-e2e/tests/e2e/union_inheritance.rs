@@ -18,7 +18,10 @@
 use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
 
-use super::{departure_ledger, golden_tree_failures, probe_command, repo_root, walk_files};
+use super::{
+    departure_ledger, golden_tree_failures, golden_tree_failures_in, probe_command, repo_root,
+    walk_files,
+};
 
 /// Where the measurements live; each case's `fern-expected/` is a compared golden.
 pub(crate) const DIR: &str = "docs/fern-measurements/union-inheritance";
@@ -314,6 +317,24 @@ pub(crate) fn enum_failures_in(dir: &str, case: &str, out: &Path) -> Vec<String>
         &ledger,
         &repo_root().join(&golden),
         out,
+    )
+}
+
+/// [`enum_failures_in`] over a tree a test tampered with on purpose: every
+/// difference no departure explains still fails, but no departure is held to,
+/// or recorded into, the golden's ledger rows.
+pub(crate) fn tampered_enum_failures_in(dir: &str, case: &str, out: &Path) -> Vec<String> {
+    let golden = golden_in(dir, case);
+    let ledger = departure_ledger()
+        .golden(&golden, &[])
+        .unwrap_or_else(|failures| panic!("{}", failures.join("\n")));
+    golden_tree_failures_in(
+        &format!("{case} (python-enums, tampered)"),
+        &spec_in(dir, case).display().to_string(),
+        &ledger,
+        &repo_root().join(&golden),
+        out,
+        &|_| false,
     )
 }
 

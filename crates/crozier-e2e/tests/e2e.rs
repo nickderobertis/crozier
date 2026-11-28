@@ -28447,6 +28447,7 @@ fn example_missing_required_property_refusal_covers_measured_shapes() {
     );
 }
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This journey runs crozier over one refusal shape and its schema-invalid variant in both modes, on the crozier-e2e edge every other binary-driving journey shares (crates/crozier-e2e/AGENTS.md); a narrower edge for these is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 /// #991 retires only the component-collision refusal: the class's
 /// `component-collision` shape generates, and the same document with an example
 /// its own schema rejects (a date-time for a `format: date` property) is still
@@ -28488,6 +28489,7 @@ fn a_schema_invalid_example_beside_colliding_components_is_still_refused() {
         assert!(failures.is_empty(), "{}", failures.join("\n"));
     }
 }
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 #[test]
 fn enum_default_refusal_recovers_with_a_retained_default() {

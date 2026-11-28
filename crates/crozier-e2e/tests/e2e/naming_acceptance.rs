@@ -808,4 +808,54 @@ fn required_only_members_and_repeated_parents_decide_the_certified_requiredness(
     }
     assert!(failures.is_empty(), "{}", failures.join("\n\n"));
 }
+
+/// The #981 and #983 departures explain only the change each catalogues: an
+/// options entry, README call or path keyword renamed to anything but the
+/// method's own name, or a vendored-runtime parse change other than the one
+/// shipped, fails the comparison of the real generated tree.
+#[test]
+fn the_request_options_and_wire_key_departures_explain_only_their_own_change() {
+    for (case, file, shipped, unexplained) in [
+        (
+            "request-options-body-property",
+            "reference.md",
+            "**_request_options:** `typing.Optional[RequestOptions]`",
+            "**_options:** `typing.Optional[RequestOptions]`",
+        ),
+        (
+            "request-options-body-property",
+            "README.md",
+            "_request_options={",
+            "options={",
+        ),
+        (
+            "request-options-body-property",
+            "reference.md",
+            "request_options_=\"request_options\",",
+            "request_options_=\"labels\",",
+        ),
+        (
+            "aliased-union-discriminator",
+            "src/fern/core/pydantic_utilities.py",
+            "if not IS_PYDANTIC_V2 and _has_discriminated_union(type_)",
+            "if _has_discriminated_union(type_)",
+        ),
+    ] {
+        let temp = tempfile::tempdir().expect("output tempdir");
+        let out = temp.path().join("sdk");
+        generate(case, "python-enums", &out);
+        let path = out.join(file);
+        let written = read(&path);
+        assert!(
+            written.contains(shipped),
+            "{case}: {file} lacks {shipped:?}"
+        );
+        std::fs::write(&path, written.replacen(shipped, unexplained, 1)).expect("tamper");
+        let failures = tampered_enum_failures(case, &out);
+        assert!(
+            failures.iter().any(|failure| failure.contains(file)),
+            "{case}: writing {unexplained:?} into {file} must fail the comparison: {failures:?}"
+        );
+    }
+}
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]

@@ -1651,6 +1651,9 @@ fn python_bytes_literal(literal: &str) -> Option<Vec<u8>> {
         match chars.next()? {
             'x' => {
                 let digits: String = chars.by_ref().take(2).collect();
+                if digits.len() != 2 || !digits.chars().all(|c| c.is_ascii_hexdigit()) {
+                    return None;
+                }
                 out.push(u8::from_str_radix(&digits, 16).ok()?);
             }
             'n' => out.push(b'\n'),
@@ -9875,6 +9878,17 @@ mod tests {
             cafe,
             "    request=b\"caf\\\\xc3\\\\xa9 receipt\","
         ));
+        // A `\x` escape takes exactly two hex digits: `\x9` is no byte, so the
+        // value it would spell is not the declared text.
+        assert!(!holds(
+            &context,
+            "reference.md",
+            "    request=\"\t\",",
+            "    request=b\"\\x9\","
+        ));
+        assert_eq!(python_bytes_literal("b\"\\x9\""), None);
+        assert_eq!(python_bytes_literal("b\"\\x0g\""), None);
+        assert_eq!(python_bytes_literal("b\"\\x09\""), Some(vec![9]));
         // Only that text, as bytes, at the same indent.
         assert!(!holds(
             &context,

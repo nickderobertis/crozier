@@ -11,6 +11,7 @@ use std::path::Path;
 
 use super::union_inheritance::{
     enum_failures_in, generate_in, literals_failures_in, literals_tree_in,
+    tampered_enum_failures_in,
 };
 use super::{python_env_with, repo_root};
 
@@ -1075,6 +1076,34 @@ fn sdk_env_worked_examples_bind_and_their_repaired_values_validate() {
     assert!(
         stdout.contains("fern either='a\\\\nb': rejected"),
         "{stdout}"
+    );
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This journey generates one small SDK and compares it whole, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+/// The `binary-body-example` departure explains only a bytes literal of the
+/// declared text: written as other bytes, the worked call fails the comparison
+/// of the real generated tree.
+#[test]
+fn the_binary_body_departure_explains_only_the_declared_text_as_bytes() {
+    let case = "binary-body-examples";
+    let temp = tempfile::tempdir().expect("output tempdir");
+    let out = temp.path().join("sdk");
+    generate_in(DIR, case, "python-enums", &out);
+    let client = out.join("src/fern/blobs/client.py");
+    let written = std::fs::read_to_string(&client).expect("the blobs client");
+    assert!(written.contains("request=b\"string\","), "{written}");
+    std::fs::write(
+        &client,
+        written.replacen("request=b\"string\",", "request=b\"strung\",", 1),
+    )
+    .expect("tamper");
+    let failures = tampered_enum_failures_in(DIR, case, &out);
+    assert!(
+        failures
+            .iter()
+            .any(|failure| failure.contains("blobs/client.py")),
+        "other bytes than the declared text must fail the comparison: {failures:?}"
     );
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
