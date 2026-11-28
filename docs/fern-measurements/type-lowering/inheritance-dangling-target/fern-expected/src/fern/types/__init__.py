@@ -10,11 +10,15 @@ if typing.TYPE_CHECKING:
     from .dial_control_gadget_kind import DialControlGadgetKind
     from .fan_gadget import FanGadget
     from .fan_gadget_kind import FanGadgetKind
-    from .gadget import Gadget, Gadget_Dial, Gadget_Fan, Gadget_Lamp
+    from .gadget import Gadget, Gadget_Dial, Gadget_Fan, Gadget_Knob, Gadget_Lamp, Gadget_Slider
     from .lamp_gadget import LampGadget
     from .lamp_gadget_kind import LampGadgetKind
+    from .linear_slider_gadget import LinearSliderGadget
+    from .linear_slider_gadget_kind import LinearSliderGadgetKind
     from .panel import Panel
     from .panel_gadgets_item import PanelGadgetsItem
+    from .rotary_slider_gadget import RotarySliderGadget
+    from .rotary_slider_gadget_kind import RotarySliderGadgetKind
 _dynamic_imports: typing.Dict[str, str] = {
     "DialControlGadget": ".dial_control_gadget",
     "DialControlGadgetKind": ".dial_control_gadget_kind",
@@ -23,11 +27,17 @@ _dynamic_imports: typing.Dict[str, str] = {
     "Gadget": ".gadget",
     "Gadget_Dial": ".gadget",
     "Gadget_Fan": ".gadget",
+    "Gadget_Knob": ".gadget",
     "Gadget_Lamp": ".gadget",
+    "Gadget_Slider": ".gadget",
     "LampGadget": ".lamp_gadget",
     "LampGadgetKind": ".lamp_gadget_kind",
+    "LinearSliderGadget": ".linear_slider_gadget",
+    "LinearSliderGadgetKind": ".linear_slider_gadget_kind",
     "Panel": ".panel",
     "PanelGadgetsItem": ".panel_gadgets_item",
+    "RotarySliderGadget": ".rotary_slider_gadget",
+    "RotarySliderGadgetKind": ".rotary_slider_gadget_kind",
 }
 
 
@@ -60,9 +70,15 @@ __all__ = [
     "Gadget",
     "Gadget_Dial",
     "Gadget_Fan",
+    "Gadget_Knob",
     "Gadget_Lamp",
+    "Gadget_Slider",
     "LampGadget",
     "LampGadgetKind",
+    "LinearSliderGadget",
+    "LinearSliderGadgetKind",
     "Panel",
     "PanelGadgetsItem",
+    "RotarySliderGadget",
+    "RotarySliderGadgetKind",
 ]

@@ -30,6 +30,8 @@ components:
           LAMP: '#/components/schemas/LampGadget'
           FAN: '#/components/schemas/FanGadget'
           DIAL: '#/components/schemas/DialGadget'
+          KNOB: '#/components/schemas/KnobGadget'
+          SLIDER: '#/components/schemas/SliderGadget'
     LampGadget:
       allOf:
       - $ref: '#/components/schemas/Gadget'
@@ -64,6 +66,30 @@ components:
             enum:
             - DIAL
           notches:
+            type: integer
+    LinearSliderGadget:
+      allOf:
+      - $ref: '#/components/schemas/Gadget'
+      - type: object
+        description: A slider that travels in a line.
+        properties:
+          kind:
+            type: string
+            enum:
+            - SLIDER
+          travel:
+            type: integer
+    RotarySliderGadget:
+      allOf:
+      - $ref: '#/components/schemas/Gadget'
+      - type: object
+        description: A slider that travels round a dial.
+        properties:
+          kind:
+            type: string
+            enum:
+            - SLIDER
+          degrees:
             type: integer
     Panel:
       type: object

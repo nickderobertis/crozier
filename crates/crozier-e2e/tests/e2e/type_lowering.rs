@@ -752,7 +752,9 @@ fn discriminator_tags_reach_only_the_members_fern_resolves() {
 /// wrapper per mapping value. The dangling value's wrapper carries the fields of
 /// the subtype tagging itself with it (`dangling-mapping-variant-fields`), and
 /// no wrapper repeats the tag a subtype referenced on its own keeps
-/// (`LampGadget.kind`).
+/// (`LampGadget.kind`). A dangling value no subtype tags (`KNOB`), or two do
+/// (`SLIDER`), is the pair's `value: typing.Any` wrapper: there is no one
+/// subtype's fields to carry.
 #[test]
 fn an_inheritance_base_with_a_dangling_target_is_a_union_of_wrappers() {
     holds(
@@ -771,7 +773,17 @@ fn an_inheritance_base_with_a_dangling_target_is_a_union_of_wrappers() {
             (
                 "Benchling",
                 "src/fern/types/gadget.py",
-                "typing.Union[Gadget_Lamp, Gadget_Fan, Gadget_Dial], pydantic.Field(discriminator=\"kind\")",
+                "typing.Union[Gadget_Lamp, Gadget_Fan, Gadget_Dial, Gadget_Knob, Gadget_Slider], pydantic.Field(discriminator=\"kind\")",
+            ),
+            (
+                "Benchling",
+                "src/fern/types/gadget.py",
+                "class Gadget_Knob(UniversalBaseModel):\n    value: typing.Any\n    kind: typing.Literal[\"KNOB\"] = \"KNOB\"\n",
+            ),
+            (
+                "Benchling",
+                "src/fern/types/gadget.py",
+                "class Gadget_Slider(UniversalBaseModel):\n    value: typing.Any\n    kind: typing.Literal[\"SLIDER\"] = \"SLIDER\"\n",
             ),
             (
                 "Benchling",

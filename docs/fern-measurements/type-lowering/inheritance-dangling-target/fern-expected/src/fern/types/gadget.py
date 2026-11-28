@@ -49,6 +49,32 @@ class Gadget_Dial(UniversalBaseModel):
             smart_union = True
 
 
+class Gadget_Knob(UniversalBaseModel):
+    value: typing.Any
+    kind: typing.Literal["KNOB"] = "KNOB"
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+
+
+class Gadget_Slider(UniversalBaseModel):
+    value: typing.Any
+    kind: typing.Literal["SLIDER"] = "SLIDER"
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+
+
 Gadget = typing_extensions.Annotated[
-    typing.Union[Gadget_Lamp, Gadget_Fan, Gadget_Dial], pydantic.Field(discriminator="kind")
+    typing.Union[Gadget_Lamp, Gadget_Fan, Gadget_Dial, Gadget_Knob, Gadget_Slider], pydantic.Field(discriminator="kind")
 ]
