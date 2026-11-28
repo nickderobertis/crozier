@@ -186,7 +186,7 @@ def colliding_control() -> None:
 
 def recursive_alias_dependents() -> None:
     """Every module imports, and the dependent model holds a recursive object."""
-    import_every_module()
+    import_every_source_module()
     from fern.types.fit_summary import FitSummary
 
     summary = FitSummary(report={"engine": "nuts", "inference_diagnostics": {"chains": [1, {"ok": True}]}})
@@ -214,8 +214,10 @@ def aliased_discriminator() -> None:
         raise SystemExit(f"aliased-discriminator: get_query('g') returned {graph!r}")
 
 
-def import_every_module() -> None:
-    """Import every module of the generated `fern` package."""
+def import_every_source_module() -> None:
+    """Import every module of the generated `fern` package that runs from its
+    source tree: all but `fern.version`, which reads the installed
+    distribution's metadata."""
     import fern
 
     for module in pkgutil.walk_packages(fern.__path__, "fern."):
@@ -231,7 +233,7 @@ def request_options_body_property() -> None:
     the sync, async and both raw clients alike."""
     from fern import AsyncFernApi, FernApi
 
-    import_every_module()
+    import_every_source_module()
     server = Server({"/dispatches": {"id": "d-1", "request_options": "express"}})
     options: SdkOptions = {"additional_headers": {"x-courier-trace": "t-1"}, "max_retries": 0}
     arguments: DispatchArguments = {"request_options": "express", "kwargs_": "k", "self_": "s"}
