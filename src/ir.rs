@@ -3244,6 +3244,21 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
             }
         }
     }
+    // …and so is each parent a body composes of `$ref`s alone, which Fern keeps
+    // as a model beside the method it lays out ([`composed_reference_body`]).
+    for item in doc.paths.values() {
+        for (_, op) in item.operations() {
+            let parents = op
+                .request_body
+                .as_ref()
+                .and_then(selected_json_request_media)
+                .and_then(|(_, media)| media.schema.as_ref())
+                .and_then(composed_reference_body);
+            for reference in parents.into_iter().flatten() {
+                referenced.insert(ref_to_class(reference));
+            }
+        }
+    }
     let inline_sources = inline_body_source_names(doc, &endpoints);
     let urlencoded_sources = urlencoded_body_source_names(doc);
     // A `stream-condition` operation sends its body from two methods, and Fern
@@ -3359,7 +3374,7 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
                     // Only a collision's `_` comes off: a reserved name keeps its
                     // own (GravitLauncher's `uuid` is `uuid_` on every operation,
                     // a JSON body beside it or not).
-                    if path_param.py_name == naming::field_name(&path_param.wire_name) {
+                    if path_param.py_name == naming::path_param_name(&path_param.wire_name) {
                         continue;
                     }
                     if let Some(base) = path_param.py_name.strip_suffix('_') {
@@ -4238,7 +4253,7 @@ fn build_endpoint(
             PathParam {
                 constraints: crate::example_values::ValueConstraints::of_parameter(p, doc),
                 wire_name: p.name.clone(),
-                py_name: naming::field_name(p.sdk_name()),
+                py_name: naming::path_param_name(p.sdk_name()),
                 // A path value that reaches nothing but scalars is interpolated as
                 // text, the same guard the query arm applies. A string enum a `$ref`
                 // names is one of them: it is a plain `str` value, with no field
@@ -5267,7 +5282,7 @@ fn build_endpoint(
         .and_then(|schema| schema.reference.as_deref())
         .is_some_and(|reference| {
             resolve_ref(doc, reference)
-                .is_some_and(|schema| is_unknown(schema) || bare_name_mapped_union(schema))
+                .is_some_and(|schema| is_unknown(schema) || unresolvable_mapped_union(schema))
                 || types.iter().any(|decl| {
                     matches!(decl, TypeDecl::Alias(alias)
                         if alias.name == ref_to_class(reference)
@@ -5304,7 +5319,7 @@ fn build_endpoint(
                                     .as_deref()
                                     .and_then(|reference| resolve_ref(doc, reference))
                                     .is_some_and(|target| {
-                                        target.title.is_none() || bare_name_mapped_union(target)
+                                        target.title.is_none() || unresolvable_mapped_union(target)
                                     })
                             // A component that is only `allOf` one `$ref` is an
                             // alias, a bare type name whatever its `title`:
@@ -6659,6 +6674,14 @@ fn referenced_example_literal(
     target: &Schema,
     schemas: &IndexMap<String, Schema>,
 ) -> Option<String> {
+    // A discriminated union's own example names no member of a field typed by
+    // it: the certified pair works the field as the union's first member
+    // whatever the example's tag (the `bodies-responses/composed-reference-body`
+    // measurement's `Knot.bead`, `BeadRef_Glass` beside an example naming
+    // `WOOD`; Benchling's `AssemblyFragmentShared.polymer`).
+    if target.one_of.is_some() && target.discriminator.is_some() {
+        return None;
+    }
     if target.one_of.is_some()
         && schema_example(target).is_some_and(|example| {
             crate::openapi::example_validation::matches(schemas, target, example, 0) == Some(false)
@@ -6709,6 +6732,17 @@ fn request_body_composition(doc: &OpenApi, op: &Operation) -> BodyComposition {
                 .and_then(parents_with_inline_members)
                 .is_some()
     }) {
+        return BodyComposition::AllOf;
+    }
+    // So does an inline body composed of `$ref`s alone ([`composed_reference_body`]).
+    if op
+        .request_body
+        .as_ref()
+        .and_then(selected_json_request_media)
+        .and_then(|(_, media)| media.schema.as_ref())
+        .and_then(composed_reference_body)
+        .is_some()
+    {
         return BodyComposition::AllOf;
     }
     let reference = op
@@ -8362,7 +8396,7 @@ fn resolve_request_body(
         if target.one_of.is_some()
             || target.any_of.is_some()
             || renamed_union
-            || bare_name_mapped_union(target)
+            || unresolvable_mapped_union(target)
         {
             let mut body = single(TypeRef::Named(class), required, true, true);
             if let RequestBody::Single(single) = &mut body {
@@ -8370,7 +8404,7 @@ fn resolve_request_body(
                 // [string, null]` is `Optional[str]`) has nothing to convert,
                 // and is sent as it is (measured in
                 // `docs/fern-measurements/bodies-responses/request-convert-decision/`).
-                single.convert = !bare_name_mapped_union(target)
+                single.convert = !unresolvable_mapped_union(target)
                     && !prefer_map_to_union(target)
                     && simple_nullable_member(target).is_none_or(|member| {
                         member.reference.is_some() || !is_plain_scalar(member)
@@ -8438,7 +8472,7 @@ fn resolve_request_body(
                     {
                         apply_sibling_properties_example_order(&class, types, &mut fields);
                     }
-                    promote_bare_required_members(target, &mut fields);
+                    promote_bare_required_members(&doc.components.schemas, target, &mut fields);
                     for field in &mut fields {
                         if field.example.is_none()
                             && target.is_beta == Some(true)
@@ -8679,6 +8713,42 @@ fn resolve_request_body(
     // document-acceptance/never-compared-request-property-name-collision/,
     // FOSSology's `PUT /users/{id}`). Without this the body lowered to nothing
     // and the operation was dropped as unemittable.
+    if let Some(parents) = composed_reference_body(schema) {
+        if parents
+            .iter()
+            .all(|reference| hoist_fields(&ref_to_class(reference), types).is_some())
+        {
+            let mut fields = Vec::new();
+            append_parent_body_fields(schema, types, &mut fields);
+            // A property two parents declare is one argument, the first
+            // parent's, at its place (the measurement's `BlendWeave` `gauge`).
+            let mut seen = std::collections::HashSet::new();
+            fields.retain(|field| seen.insert(field.wire_name.clone()));
+            // The docstring's worked call lists the later parent's fields first,
+            // as it does a model composed of `$ref`s (#933); the signature and
+            // the Markdown writers keep member order.
+            let mut order = 0;
+            let mut ordered = std::collections::HashSet::new();
+            for reference in parents.iter().rev() {
+                for parent_field in
+                    hoist_fields(&ref_to_class(reference), types).unwrap_or_default()
+                {
+                    if !ordered.insert(parent_field.wire_name.clone()) {
+                        continue;
+                    }
+                    if let Some(field) = fields
+                        .iter_mut()
+                        .find(|field| field.wire_name == parent_field.wire_name)
+                    {
+                        field.declaration_order = order;
+                        order += 1;
+                    }
+                }
+            }
+            apply_body_example(&mut fields, media_example(doc, media), true);
+            return Some(RequestBody::Inline(fields));
+        }
+    }
     let parents_and_inline;
     let schema = match parents_with_inline_members(schema) {
         Some(merged) => {
@@ -11220,6 +11290,37 @@ fn reserved_body_property_names(
     own_property_names(schema, schemas, out, 0, Parents::Counted);
 }
 
+/// The `$ref` parents of an inline body that is nothing but an `allOf` of two
+/// or more bare `$ref`s to objects. Fern lays it out as their fields in member
+/// order, each parent's own resolved types, and keeps each parent as a model:
+/// Benchling's `CreateAndFinalizeAssembly` posts `allOf: [$ref
+/// AssemblySpecShared, $ref AssemblySpecFinalized]` and takes
+/// `assembly_parameters` through `output_location` (measured at Fern CLI
+/// 5.216.0 / fern-python-sdk 5.42.0 in
+/// `docs/fern-measurements/bodies-responses/composed-reference-body/`).
+fn composed_reference_body(schema: &Schema) -> Option<Vec<&str>> {
+    if schema.reference.is_some()
+        || !schema.properties.is_empty()
+        || schema.one_of.is_some()
+        || schema.any_of.is_some()
+    {
+        return None;
+    }
+    let members = schema
+        .all_of
+        .as_deref()
+        .filter(|members| members.len() > 1)?;
+    members
+        .iter()
+        .map(|member| {
+            member
+                .reference
+                .as_deref()
+                .filter(|_| member.properties.is_empty() && member.all_of.is_none())
+        })
+        .collect()
+}
+
 /// An inline schema with no properties of its own whose `allOf` holds at least
 /// one `$ref` parent beside inline members, each either a plain object
 /// (properties, no composition of its own) or only an `anyOf` of plain objects,
@@ -12031,14 +12132,24 @@ fn tightened_parent(schemas: &IndexMap<String, Schema>, schema: &Schema) -> Opti
 /// of its `allOf`, or through `required` beside it. In the type layer such a member
 /// is skipped (see [`is_object_all_of_member`]), but a flattened body honours it:
 /// Notehub's `CreateMonitor` is `allOf: [$ref Monitor, {required: [name, …]}]`, and
-/// the certified pair's method requires those arguments, listed first.
-fn promote_bare_required_members(target: &Schema, fields: &mut [BodyField]) {
-    let names: Vec<&String> = target
-        .all_of
+/// the certified pair's method requires those arguments, listed first. A name
+/// two components of the body's `$ref` ancestry declare is not promoted: the
+/// `naming-acceptance/required-only-members` measurement's `create_packet`
+/// keeps `bin_id` optional (see [`trailing_required_view`]).
+fn promote_bare_required_members(
+    schemas: &IndexMap<String, Schema>,
+    target: &Schema,
+    fields: &mut [BodyField],
+) {
+    let members = target.all_of.as_deref().unwrap_or_default();
+    let names: Vec<&String> = members
         .iter()
-        .flatten()
         .filter(|member| member.reference.is_none() && member.properties.is_empty())
         .flat_map(|member| member.required.iter())
+        .filter(|name| {
+            target.properties.contains_key(name.as_str())
+                || ancestry_declarers(schemas, members, name) < 2
+        })
         .collect();
     if names.is_empty() {
         return;
@@ -12105,6 +12216,25 @@ fn apply_sibling_properties_example_order(
     }
 }
 
+/// The model a body's base names, through any alias of it: Benchling's
+/// `OligoUpdateHelm` extends `OligoUpdate`, an alias of `OligoBaseRequest`
+/// (`allOf: [$ref OligoBaseRequest]`), and the certified pair's
+/// `update_dna_oligo_helm` takes `OligoBaseRequest`'s fields after `helm`.
+fn base_object<'a>(types: &'a [TypeDecl], base: &str) -> Option<&'a ObjectType> {
+    let mut name = base;
+    for _ in 0..8 {
+        match types.iter().find(|decl| decl.name() == name)? {
+            TypeDecl::Object(object) => return Some(object),
+            TypeDecl::Alias(alias) => match &alias.target {
+                TypeRef::Named(target) => name = target,
+                _ => return None,
+            },
+            _ => return None,
+        }
+    }
+    None
+}
+
 /// The order reference documentation lists a request body's fields in: the ones
 /// the generated signature makes mandatory first, then the rest, each in
 /// declaration order. That is the *emitted* optionality rather than the Schema
@@ -12121,10 +12251,7 @@ fn append_reference_field_names(
         return;
     }
     for base in &obj.bases {
-        if let Some(base_obj) = types.iter().find_map(|decl| match decl {
-            TypeDecl::Object(candidate) if candidate.name == *base => Some(candidate),
-            _ => None,
-        }) {
+        if let Some(base_obj) = base_object(types, base) {
             append_reference_base_field_names(base_obj, types, seen, out);
         }
     }
@@ -12149,10 +12276,7 @@ fn append_declaration_field_names(
         return;
     }
     for base in &obj.bases {
-        if let Some(base_obj) = types.iter().find_map(|decl| match decl {
-            TypeDecl::Object(candidate) if candidate.name == *base => Some(candidate),
-            _ => None,
-        }) {
+        if let Some(base_obj) = base_object(types, base) {
             append_declaration_field_names(base_obj, types, seen, out);
         }
     }
@@ -12164,10 +12288,7 @@ fn append_declaration_field_names(
 fn append_markdown_field_names(obj: &ObjectType, types: &[TypeDecl], out: &mut Vec<String>) {
     let mut seen = std::collections::HashSet::from([obj.name.clone()]);
     for base in &obj.bases {
-        if let Some(base_obj) = types.iter().find_map(|decl| match decl {
-            TypeDecl::Object(candidate) if candidate.name == *base => Some(candidate),
-            _ => None,
-        }) {
+        if let Some(base_obj) = base_object(types, base) {
             let mut base_fields = Vec::new();
             append_own_first_field_names(base_obj, types, &mut seen, &mut base_fields);
             out.extend(base_fields);
@@ -12188,10 +12309,7 @@ fn append_own_first_field_names(
     }
     out.extend(obj.fields.iter().map(|field| field.wire_name.clone()));
     for base in &obj.bases {
-        if let Some(base_obj) = types.iter().find_map(|decl| match decl {
-            TypeDecl::Object(candidate) if candidate.name == *base => Some(candidate),
-            _ => None,
-        }) {
+        if let Some(base_obj) = base_object(types, base) {
             append_own_first_field_names(base_obj, types, seen, out);
         }
     }
@@ -12214,10 +12332,7 @@ fn append_reference_base_field_names(
             .map(|field| field.wire_name.clone()),
     );
     for base in &obj.bases {
-        if let Some(base_obj) = types.iter().find_map(|decl| match decl {
-            TypeDecl::Object(candidate) if candidate.name == *base => Some(candidate),
-            _ => None,
-        }) {
+        if let Some(base_obj) = base_object(types, base) {
             append_reference_base_field_names(base_obj, types, seen, out);
         }
     }
@@ -12277,10 +12392,7 @@ fn append_request_fields(
         }
     }));
     for base in &obj.bases {
-        if let Some(base_obj) = types.iter().find_map(|decl| match decl {
-            TypeDecl::Object(candidate) if candidate.name == *base => Some(candidate),
-            _ => None,
-        }) {
+        if let Some(base_obj) = base_object(types, base) {
             append_request_fields(
                 base_obj,
                 request_class,
@@ -14436,7 +14548,7 @@ fn collect_discriminant_strips(
                 || discriminator
                     .mapping
                     .values()
-                    .all(|target| target.contains('/'))
+                    .all(|target| target.contains('/') && !maps_another_document(target))
         });
         if resolvable && (schema.one_of.is_some() || honoured || is_inheritance_union_base(schema))
         {
@@ -14449,6 +14561,16 @@ fn collect_discriminant_strips(
                     // keeps its tag, as ingef/conquery's `SecondaryIdQuery.type`
                     // does in Fern's tree. Any other dangling mapping strips as it
                     // always did.
+                    // Fern reads the mapping in order and stops at a target in
+                    // another document: it and every later target strip nothing.
+                    // The `type-lowering/discriminator-tag-reach` measurement's
+                    // `PersonHolder`, mapped locally ahead of `RobotHolder`'s
+                    // other document, loses `type`; `Rental.renter`'s `CarHolder`
+                    // and `BikeHolder`, mapped after `VanHolder`'s, keep theirs
+                    // (Benchling's `Collaboration.collaborator`).
+                    if maps_another_document(reference) {
+                        break;
+                    }
                     if !reference.contains('/')
                         || resolve_ref_from_schemas(schemas, reference).is_none()
                             && schema.one_of.as_deref().is_some_and(|variants| {
@@ -14540,27 +14662,49 @@ fn is_inheritance_union_base(schema: &Schema) -> bool {
 }
 
 /// Whether a discriminated union — a `oneOf` or an inheritance base — maps a
-/// value to a bare schema name rather than a reference. Fern cannot resolve
-/// that target, so the union is its unknown type and it never reads the
-/// discriminant at all.
-pub(crate) fn bare_name_mapped_union(schema: &Schema) -> bool {
+/// value to a bare schema name rather than a reference, or to a schema of
+/// another document. Fern cannot resolve that target, so the union is its
+/// unknown type and it never reads the discriminant at all: the
+/// `type-lowering/discriminator-tag-reach` measurement's `Share.holder`, whose
+/// `ROBOT` names `robots/openapi.yaml#/components/schemas/RobotHolder`, is
+/// `typing.Any` (Benchling's `Collaboration.collaborator`, #994).
+pub(crate) fn unresolvable_mapped_union(schema: &Schema) -> bool {
     (schema.one_of.is_some() || is_inheritance_union_base(schema))
         && schema.discriminator.as_ref().is_some_and(|discriminator| {
             discriminator
                 .mapping
                 .values()
-                .any(|target| !target.contains('/'))
+                .any(|target| !target.contains('/') || maps_another_document(target))
         })
 }
 
+/// Whether `schema` is a discriminated `oneOf` one of whose mapping targets
+/// names a schema of another document ([`maps_another_document`]).
+fn another_document_mapped_union(schema: &Schema) -> bool {
+    schema.one_of.is_some()
+        && schema.discriminator.as_ref().is_some_and(|discriminator| {
+            discriminator
+                .mapping
+                .values()
+                .any(|target| maps_another_document(target))
+        })
+}
+
+/// Whether a discriminator mapping target names a schema of another document
+/// (`robots/openapi.yaml#/components/schemas/RobotHolder`), not one of this
+/// document's (`#/components/schemas/RobotHolder`).
+fn maps_another_document(target: &str) -> bool {
+    target.contains('/') && !target.starts_with('#')
+}
+
 /// Whether an error body is a union whose mapping Fern cannot resolve: a bare
-/// name ([`bare_name_mapped_union`]), or a local pointer outside
+/// name ([`unresolvable_mapped_union`]), or a local pointer outside
 /// `#/components/schemas/`, which outstack/enveloper's inline `400` maps
 /// (`#/Components/schemas/syntax-error`). Fern types that body as unknown
 /// (`docs/fern-measurements/handed-off/empty-sdk-documents/missing-relative-file/`);
 /// only the error-body form is measured, so only the error path reads it.
 fn unresolvable_mapped_error_body(schema: &Schema) -> bool {
-    bare_name_mapped_union(schema)
+    unresolvable_mapped_union(schema)
         || (is_inheritance_union_base(schema) || schema.one_of.is_some())
             && schema.discriminator.as_ref().is_some_and(|discriminator| {
                 discriminator.mapping.values().any(|target| {
@@ -14730,6 +14874,10 @@ pub(crate) fn dangling_mapping_wrappers(
     let schemas = &doc.components.schemas;
     let mut wrappers = Vec::new();
     for (name, schema) in schemas {
+        if is_inheritance_union_base(schema) {
+            wrappers.extend(inheritance_dangling_wrappers(name, schema, schemas));
+            continue;
+        }
         let (Some(discriminator), Some(variants)) = (&schema.discriminator, &schema.one_of) else {
             continue;
         };
@@ -14767,6 +14915,49 @@ pub(crate) fn dangling_mapping_wrappers(
     wrappers
 }
 
+/// [`dangling_mapping_wrappers`] for an inheritance base: each wrapper of a
+/// mapping value whose target names no component and which one subtype tags,
+/// with that subtype's own fields' Python names in the order
+/// [`Builder::variant_own_fields`] collects them, the tag left out.
+fn inheritance_dangling_wrappers(
+    key: &str,
+    schema: &Schema,
+    schemas: &IndexMap<String, Schema>,
+) -> Vec<(String, String, Vec<String>)> {
+    let Some(discriminator) = &schema.discriminator else {
+        return Vec::new();
+    };
+    let name = naming::class_name(key);
+    let property = &discriminator.property_name;
+    let mut wrappers = Vec::new();
+    for (value, reference) in &discriminator.mapping {
+        if !names_no_component(reference, schemas) {
+            continue;
+        }
+        let Some((_, subtype)) =
+            inheritance_dangling_member(&name, &discriminator.mapping, property, value, schemas)
+        else {
+            continue;
+        };
+        let fields = subtype
+            .all_of
+            .iter()
+            .flatten()
+            .filter(|member| member.reference.is_none())
+            .chain(std::iter::once(subtype))
+            .flat_map(|member| member.properties.keys())
+            .filter(|wire| *wire != property)
+            .map(|wire| naming::field_name(wire))
+            .collect();
+        wrappers.push((
+            format!("{name}_{}", discriminant_class_name(value)),
+            value.clone(),
+            fields,
+        ));
+    }
+    wrappers
+}
+
 /// The `oneOf` member a discriminator mapping entry whose target names no
 /// component stands for: a `$ref` member no mapping target names, whose own
 /// discriminant property is `value`. Its class name and schema; `None` when no
@@ -14789,6 +14980,45 @@ fn dangling_target_member<'a>(
             .get(property)
             .and_then(discriminant_value)?;
         (tag == value).then(|| (ref_to_class(reference), member))
+    });
+    let first = found.next()?;
+    found.next().is_none().then_some(first)
+}
+
+/// The subtype an inheritance base's mapping entry whose target names no
+/// component stands for: a component extending the base `name` through an
+/// `allOf` `$ref`, named by no mapping target, whose own discriminant property
+/// is `value`. Its class name and schema; `None` when none, or more than one,
+/// fits.
+fn inheritance_dangling_member<'a>(
+    name: &str,
+    mapping: &IndexMap<String, String>,
+    property: &str,
+    value: &str,
+    schemas: &'a IndexMap<String, Schema>,
+) -> Option<(String, &'a Schema)> {
+    let mut found = schemas.iter().filter_map(|(key, schema)| {
+        let class = naming::class_name(key);
+        let extends = schema
+            .all_of
+            .iter()
+            .flatten()
+            .filter_map(|member| member.reference.as_deref())
+            .any(|reference| ref_to_class(reference) == name);
+        if !extends || mapping.values().any(|target| ref_to_class(target) == class) {
+            return None;
+        }
+        // The subtype declares its tag beside the `$ref`, in an inline `allOf`
+        // member or its own `properties`.
+        let tag = schema
+            .all_of
+            .iter()
+            .flatten()
+            .filter(|member| member.reference.is_none())
+            .chain(std::iter::once(schema))
+            .find_map(|member| member.properties.get(property))
+            .and_then(discriminant_value)?;
+        (tag == value).then_some((class, schema))
     });
     let first = found.next()?;
     found.next().is_none().then_some(first)
@@ -15191,6 +15421,35 @@ fn sole_reference_member(schema: &Schema) -> Option<&str> {
 }
 
 impl Builder<'_> {
+    /// The inline `type: string` member of a named `allOf` the certified pair
+    /// lowers to `str`: one declaring no enum, format, properties or composition,
+    /// beside members none of which is itself a string (a `$ref` to one is the
+    /// scalar narrowing the other rules decide).
+    fn string_all_of_member<'s>(&self, schema: &'s Schema) -> Option<&'s Schema> {
+        let members = schema.all_of.as_deref()?;
+        let plain_string = |member: &Schema| {
+            member.reference.is_none()
+                && is_string_type(member)
+                && member.enum_values.is_none()
+                && member.format.is_none()
+                && member.properties.is_empty()
+                && member.all_of.is_none()
+                && member.one_of.is_none()
+                && member.any_of.is_none()
+        };
+        let index = members.iter().position(plain_string)?;
+        let other_is_string = members.iter().enumerate().any(|(at, member)| {
+            at != index
+                && match member.reference.as_deref() {
+                    Some(reference) => {
+                        resolve_ref_from_schemas(self.schemas, reference).is_none_or(is_string_type)
+                    }
+                    None => is_string_type(member) || member.enum_values.is_some(),
+                }
+        });
+        (schema.reference.is_none() && !other_is_string).then(|| &members[index])
+    }
+
     /// Classify one named schema and push it (plus any hoisted types).
     fn add_named(&mut self, name: &str, schema: &Schema) {
         let before = self.types.len();
@@ -15245,6 +15504,18 @@ impl Builder<'_> {
             return;
         }
 
+        // An `allOf` beside a plain `type: string` member is that string, before
+        // any inheritance or union flattening, documented by the member: the
+        // `type-lowering/string-member-compositions` measurement's `TagCode`
+        // (`$ref Hound` then the string) and `BadgeCode` (the string then a
+        // `oneOf`) are the certified pair's `= str`, and `CollarCode` takes the
+        // member's description over its own (#984).
+        if let Some(member) = self.string_all_of_member(schema) {
+            let docstring = operation_doc(member.description.as_deref()).or(docstring);
+            self.push_alias(name, module, TypeRef::Primitive(Prim::Str), docstring);
+            return;
+        }
+
         // An `allOf` of one `$ref` to a scalar component beside members that only
         // annotate it is that scalar, not a model inheriting it: the draft-04
         // meta-schema's `positiveIntegerDefault0` is `allOf: [$ref
@@ -15267,7 +15538,7 @@ impl Builder<'_> {
         // `typing.Any`, its members plain models keeping their `type` enums.
         // The inheritance spelling is the same union: the openapi-generator
         // AllOf sample's `Person` maps `c` to `Child` and is `typing.Any` too.
-        if bare_name_mapped_union(schema) {
+        if unresolvable_mapped_union(schema) {
             self.push_alias(name, module, TypeRef::Primitive(Prim::Any), docstring);
             return;
         }
@@ -15808,7 +16079,15 @@ impl Builder<'_> {
                         // declares a flat model of `CodedError`'s fields.
                         || target.all_of.is_some())
                 {
-                    let target = with_annotation_xml(target, schema);
+                    let mut target = with_annotation_xml(target, schema);
+                    // A bare `{required: [...]}` annotation decides what the copy
+                    // requires (see [`trailing_required_view`]).
+                    if let Some(required) =
+                        trailing_required_view(self.schemas, schema).filter(|_| !union)
+                    {
+                        target = all_properties_of(self.schemas, &target, 0);
+                        target.required = required.into();
+                    }
                     self.use_site_copy(name, &target, description);
                     return;
                 }
@@ -16362,12 +16641,20 @@ impl Builder<'_> {
                     else {
                         continue;
                     };
+                    // A promoted field is the composition's own required
+                    // declaration, never a restatement of the base's optional
+                    // one: the `naming-acceptance/required-only-members`
+                    // measurement's `Harvest` requires `crop`, which only its later
+                    // parent `HarvestTarget` requires, and the base's copy is
+                    // dropped.
+                    let promoted =
+                        promoted_owners.is_some_and(|owners| owners.contains_key(&field.wire_name));
                     let requires = base_required.contains(&field.wire_name.as_str());
                     let same_shape = local.type_ref == field.type_ref
                         || own_property(schema, &field.wire_name)
                             .zip(base.properties.get(&field.wire_name))
                             .is_some_and(|(own, inherited)| same_shape(own, inherited));
-                    if restates_without_conflict(local, field, requires, same_shape) {
+                    if !promoted && restates_without_conflict(local, field, requires, same_shape) {
                         restated.insert(field.wire_name.clone());
                     } else {
                         overridden = true;
@@ -16878,7 +17165,11 @@ impl Builder<'_> {
                 || described_all_of_ref(prop_schema)
                     .and_then(|(reference, _)| resolve_ref_from_schemas(self.schemas, reference))
                     .is_some_and(|target| schema_accepts_none(target, self.schemas));
-            let optional = is_optional(prop_schema) || referenced_nullable || !spec_required;
+            // Fern's unknown type for a union mapping into another document is
+            // written bare, `holder: typing.Any`, required or not (the
+            // `discriminator-tag-reach` measurement's `Share.holder`).
+            let optional = (is_optional(prop_schema) || referenced_nullable || !spec_required)
+                && !another_document_mapped_union(prop_schema);
             let type_ref = self.field_type_ref(owner, prop, prop_schema);
             // Only an unwrapped field: an optional one's wrapper carries the
             // property's own description, as LiveBuildings' `refMap` shows.
@@ -17589,11 +17880,69 @@ impl Builder<'_> {
                 variant_targets.push(target_class);
                 continue;
             }
+            // A target naming no component still names a variant, as it does
+            // under a `oneOf`: Benchling's `InstanceProvider` maps `ENTITY_SEARCH`
+            // to `EntitySearchInstanceProvider` where the subtype is
+            // `EntitySearchFormInstanceProvider`, and the certified pair writes
+            // `InstanceProvider_EntitySearch` holding `value: typing.Any` (the
+            // `union-modelling/inheritance-dangling-target` measurement's
+            // `Gadget_Dial`). crozier's wrapper carries the fields of the one
+            // subtype extending the base whose own tag is that value (the
+            // `dangling-mapping-variant-fields` departure); only a value no
+            // subtype tags keeps Fern's `value`.
+            if names_no_component(reference, self.schemas) {
+                let member = match inheritance_dangling_member(
+                    name,
+                    &discriminator.mapping,
+                    &property_name,
+                    value,
+                    self.schemas,
+                ) {
+                    Some((class, subtype)) => {
+                        let subtype = subtype.clone();
+                        let mut fields = self.variant_own_fields(&class, &subtype);
+                        fields.retain(|field| field.wire_name != property_name);
+                        variant_targets.push(class.clone());
+                        UnionMember {
+                            class_name,
+                            discriminant: value.clone(),
+                            fields,
+                            declared_discriminant: member_declared_discriminant(
+                                &subtype,
+                                &property_name,
+                                self.schemas,
+                                DiscriminantContext::RecoveredMapping,
+                            ),
+                            source: Some(class),
+                            docstring: docstring.clone(),
+                            layout: crate::ir::UnionMemberLayout::Flattened,
+                        }
+                    }
+                    None => UnionMember {
+                        class_name,
+                        discriminant: value.clone(),
+                        fields: vec![wrapped_value_field(TypeRef::Primitive(Prim::Any))],
+                        declared_discriminant: None,
+                        source: None,
+                        docstring: None,
+                        layout: crate::ir::UnionMemberLayout::Wrapped,
+                    },
+                };
+                members.push(member);
+                continue;
+            }
             let target = resolve_ref_from_schemas(self.schemas, reference)?.clone();
+            // The wrapper's `Literal` is the tag, so a subtype the document also
+            // references on its own, whose standalone model keeps its tag field,
+            // lends the wrapper every field but that one (the
+            // `inheritance-dangling-target` measurement's `Gadget_Lamp` beside
+            // `LampGadget.kind`).
+            let mut fields = self.variant_own_fields(&target_class, &target);
+            fields.retain(|field| field.wire_name != property_name);
             members.push(UnionMember {
                 class_name,
                 discriminant: value.clone(),
-                fields: self.variant_own_fields(&target_class, &target),
+                fields,
                 declared_discriminant: member_declared_discriminant(
                     &target,
                     &property_name,
@@ -17770,6 +18119,13 @@ impl Builder<'_> {
     /// The type of a property, hoisting an inline string enum to a named
     /// `enum.Enum` class `{Owner}{Prop}` (as Fern does for `typesAnimal`).
     fn field_type_ref(&mut self, owner: &str, prop: &str, prop_schema: &Schema) -> TypeRef {
+        // A property's discriminated `oneOf` mapping a value into another
+        // document is Fern's unknown type, no union hoisted: the
+        // `type-lowering/discriminator-tag-reach` measurement's `Share.holder`
+        // is `typing.Any` (Benchling's `Collaboration.collaborator`).
+        if another_document_mapped_union(prop_schema) {
+            return TypeRef::Primitive(Prim::Any);
+        }
         // A component property's `oneOf` of bare `const`s is a union of its
         // members, as a component's is (see [`Builder::add_named_shape`]): the
         // `type-lowering/union-member-lowering` measurement's `Session.shutter`
@@ -20685,9 +21041,167 @@ fn all_properties_of(schemas: &IndexMap<String, Schema>, schema: &Schema, depth:
     }
     required.extend(schema.required.iter().cloned());
     required.dedup();
+    if let Some(view) = trailing_required_view(schemas, schema) {
+        required = view;
+    }
     merged.properties = properties;
     merged.required = required.into();
     merged
+}
+
+/// Whether an `allOf` member only restates `required`: no `$ref`, `type`,
+/// properties or composition of its own.
+fn is_bare_required_member(member: &Schema) -> bool {
+    member.reference.is_none()
+        && member.ty.is_none()
+        && !member.properties.declared()
+        && member.all_of.is_none()
+        && member.one_of.is_none()
+        && member.any_of.is_none()
+        && !member.required.is_empty()
+}
+
+/// What a composition requires when it ends in bare `{required: [...]}`
+/// members, as the certified pair reads it (Fern CLI 5.216.0 /
+/// fern-python-sdk 5.42.0, the
+/// `naming-acceptance/required-only-members` measurement): the names such a
+/// member lists, its siblings' own `required` and the schema's, while its `$ref`
+/// parents' lists no longer apply. Benchling's `OligoBaseRequestForCreate` is
+/// `allOf: [$ref OligoBaseRequest, {required: [name]}]` and its `name` is
+/// required; the measurement's `PacketForCreate` drops `PacketBase`'s required
+/// `grower`. A listed name that two components of the composition's ancestry
+/// declare stays optional: Benchling's `OligoCreateHelm` requires `folderId`,
+/// which `OligoBaseRequest` and `CreateEntityIntoRegistry` both declare, and
+/// `create_dna_oligo_with_helm` takes it optional. Beside a `$ref` parent a
+/// listed name an inline member declares is not required either: Benchling's
+/// `ManifestBooleanScalarConfig` is `allOf: [$ref BaseManifestScalarConfig,
+/// {properties: {type}}, {required: [type]}]` and its `type` is optional, where
+/// `StudyCreate`, `allOf: [{properties}, {required}]`, requires what it lists.
+/// `None` for any other composition: one whose bare member a later member with
+/// properties follows, which skips it (TAMS's `StorageBackendsList` items, and
+/// the measurement's `Shelf.samples`), and one of two or more `$ref` parents,
+/// which extends them unchanged (Groupe PSA's `AlarmStatus`, `allOf: [$ref
+/// CreatedAtField, $ref BaseAlarmStatus, {title}, {required: [activation,
+/// createdAt]}]`, keeps `createdAt` optional).
+fn trailing_required_view(
+    schemas: &IndexMap<String, Schema>,
+    schema: &Schema,
+) -> Option<Vec<String>> {
+    let members = schema.all_of.as_deref()?;
+    if members
+        .iter()
+        .filter(|member| member.reference.is_some())
+        .count()
+        > 1
+    {
+        return None;
+    }
+    let mut listed: Vec<String> = Vec::new();
+    for (index, member) in members.iter().enumerate() {
+        if !is_bare_required_member(member) {
+            continue;
+        }
+        let followed = members[index + 1..]
+            .iter()
+            .any(|later| later.reference.is_some() || later.properties.declared());
+        if followed {
+            continue;
+        }
+        for name in member.required.iter() {
+            if !listed.contains(name) {
+                listed.push(name.clone());
+            }
+        }
+    }
+    if listed.is_empty() {
+        return None;
+    }
+    let has_parent = members.iter().any(|member| member.reference.is_some());
+    // Beside a `$ref` parent and an inline member declaring properties the bare
+    // member changes no model: Groupe PSA's `PreconditioningProgram` (`allOf:
+    // [$ref Program, {title}, {properties: {slot, enabled}}, {required: [start,
+    // enabled, recurrence, occurence]}]`) extends `Program` with
+    // `recurrence` optional, and its `Point` requires only what `Geometry` does.
+    // A request body flattening such a composition still reads it
+    // (`promote_bare_required_members`).
+    let inline_properties = schema.properties.declared()
+        || members
+            .iter()
+            .any(|member| member.reference.is_none() && member.properties.declared());
+    if has_parent && inline_properties {
+        return None;
+    }
+    let mut required: Vec<String> = Vec::new();
+    let push = |name: &String, required: &mut Vec<String>| {
+        if !required.contains(name) {
+            required.push(name.clone());
+        }
+    };
+    for member in members.iter().filter(|member| {
+        member.reference.is_none()
+            && !is_bare_required_member(member)
+            && is_object_all_of_member(member)
+    }) {
+        for name in member.required.iter() {
+            push(name, &mut required);
+        }
+    }
+    for name in &listed {
+        let declared_inline = schema.properties.contains_key(name)
+            || members
+                .iter()
+                .filter(|member| member.reference.is_none())
+                .any(|member| member.properties.contains_key(name));
+        if declared_inline || ancestry_declarers(schemas, members, name) < 2 {
+            push(name, &mut required);
+        }
+    }
+    for name in schema.required.iter() {
+        push(name, &mut required);
+    }
+    Some(required)
+}
+
+/// How many components (each once) of the `$ref` ancestry of `members` declare
+/// `key` among their own properties.
+fn ancestry_declarers(schemas: &IndexMap<String, Schema>, members: &[Schema], key: &str) -> usize {
+    fn walk<'a>(
+        schemas: &'a IndexMap<String, Schema>,
+        members: &'a [Schema],
+        key: &str,
+        visited: &mut std::collections::HashSet<&'a str>,
+        count: &mut usize,
+    ) {
+        for member in members {
+            let node = match member.reference.as_deref() {
+                Some(reference) => {
+                    if !visited.insert(reference) {
+                        continue;
+                    }
+                    let Some(node) = resolve_ref_from_schemas(schemas, reference) else {
+                        continue;
+                    };
+                    if node.properties.contains_key(key) {
+                        *count += 1;
+                    }
+                    node
+                }
+                None => member,
+            };
+            if let Some(inner) = node.all_of.as_deref() {
+                walk(schemas, inner, key, visited, count);
+            }
+        }
+    }
+    let mut count = 0;
+    walk(
+        schemas,
+        members,
+        key,
+        &mut std::collections::HashSet::new(),
+        &mut count,
+    );
+    count
 }
 
 /// Every name an `allOf` composition requires: what each member requires —
@@ -20698,6 +21212,12 @@ fn all_properties_of(schemas: &IndexMap<String, Schema>, schema: &Schema, depth:
 /// requiring it, `Feature` requires it, and the golden field is a required
 /// `id: str`.
 fn all_of_required(schemas: &IndexMap<String, Schema>, schema: &Schema) -> Vec<String> {
+    trailing_required_view(schemas, schema).unwrap_or_else(|| composed_required(schemas, schema))
+}
+
+/// [`all_of_required`] without the bare-member view: every object member's and
+/// the schema's own `required`.
+fn composed_required(schemas: &IndexMap<String, Schema>, schema: &Schema) -> Vec<String> {
     let mut required = Vec::new();
     if let Some(members) = schema.all_of.as_deref() {
         let objects: Vec<Schema> = members
@@ -20755,6 +21275,14 @@ fn required_through<'a>(
                 let Some(node) = resolve_ref_from_schemas(schemas, reference) else {
                     continue;
                 };
+                if let Some(view) = trailing_required_view(schemas, node) {
+                    for name in view {
+                        if !out.contains(&name) {
+                            out.push(name);
+                        }
+                    }
+                    continue;
+                }
                 node
             }
             None => member,
@@ -21836,18 +22364,27 @@ fn scalar_narrowed_enum_type(
         .flatten()
         .filter_map(|value| value.as_str().map(str::to_owned))
         .collect();
-    let mut declaration = build_enum(
-        target,
-        &name,
-        values,
-        clean_doc(
-            schema
-                .description
-                .as_deref()
-                .or(member.description.as_deref())
-                .or(target.description.as_deref()),
-        ),
-    );
+    // A copy named exactly as the enum it narrows is that component's own
+    // declaration, which keeps the enum's description: the
+    // `type-lowering/enum-use-site-descriptions` measurement's `Parcel.state`
+    // copy is `ParcelState`, and the certified pair documents it "Where a
+    // parcel is in its journey.", not with the narrowing member's sentence (#982).
+    let own_name = schema
+        .all_of
+        .as_deref()
+        .and_then(<[Schema]>::first)
+        .and_then(|first| first.reference.as_deref())
+        .is_some_and(|reference| ref_to_class(reference) == name);
+    let use_site = schema
+        .description
+        .as_deref()
+        .or(member.description.as_deref());
+    let docstring = if own_name {
+        target.description.as_deref().or(use_site)
+    } else {
+        use_site.or(target.description.as_deref())
+    };
+    let mut declaration = build_enum(target, &name, values, clean_doc(docstring));
     if let Some(value) = narrowed_enum_example(schema, schemas) {
         declaration.select_example_member(&value);
     }
@@ -26314,21 +26851,21 @@ mod tests {
         let pointers = serde_json::json!({ "apple": "#/components/schemas/Apple" });
         let one_of = serde_json::json!({ "oneOf": [{ "$ref": "#/components/schemas/Apple" }] });
         let any_of = serde_json::json!({ "anyOf": [{ "$ref": "#/components/schemas/Apple" }] });
-        assert!(super::bare_name_mapped_union(&union(
+        assert!(super::unresolvable_mapped_union(&union(
             serde_json::json!({}),
             mixed.clone()
         )));
-        assert!(super::bare_name_mapped_union(&union(
+        assert!(super::unresolvable_mapped_union(&union(
             one_of.clone(),
             mixed.clone()
         )));
-        assert!(!super::bare_name_mapped_union(&union(any_of, mixed)));
-        assert!(!super::bare_name_mapped_union(&union(
+        assert!(!super::unresolvable_mapped_union(&union(any_of, mixed)));
+        assert!(!super::unresolvable_mapped_union(&union(
             serde_json::json!({}),
             pointers.clone()
         )));
-        assert!(!super::bare_name_mapped_union(&union(one_of, pointers)));
-        assert!(!super::bare_name_mapped_union(&union(
+        assert!(!super::unresolvable_mapped_union(&union(one_of, pointers)));
+        assert!(!super::unresolvable_mapped_union(&union(
             serde_json::json!({}),
             serde_json::json!({})
         )));
@@ -26338,7 +26875,7 @@ mod tests {
         // document is left to the resolver.
         let elsewhere = serde_json::json!({ "apple": "#/Components/schemas/apple" });
         let elsewhere = union(serde_json::json!({}), elsewhere);
-        assert!(!super::bare_name_mapped_union(&elsewhere));
+        assert!(!super::unresolvable_mapped_union(&elsewhere));
         assert!(super::unresolvable_mapped_error_body(&elsewhere));
         let bare = union(serde_json::json!({}), serde_json::json!({ "pear": "Pear" }));
         assert!(super::unresolvable_mapped_error_body(&bare));
@@ -35031,6 +35568,55 @@ components:
             strips(beside_gone).get("MeteorReading").map(String::as_str),
             Some("kind")
         );
+    }
+
+    #[test]
+    fn an_inheritance_base_s_dangling_target_takes_the_one_subtype_tagging_it() {
+        // The `type-lowering/inheritance-dangling-target` measurement's shape:
+        // `DIAL` maps to `DialGadget`, and `DialControlGadget` tags itself `DIAL`.
+        let schemas = |dial_tag: &str, twice: bool| {
+            let subtype = serde_json::json!({ "allOf": [
+                { "$ref": "#/components/schemas/Gadget" },
+                { "type": "object", "properties": {
+                    "kind": { "type": "string", "enum": [dial_tag] },
+                    "notches": { "type": "integer" }
+                } }
+            ] });
+            let mut schemas = serde_json::json!({
+                "Gadget": { "type": "object", "discriminator": {
+                    "propertyName": "kind",
+                    "mapping": {
+                        "LAMP": "#/components/schemas/LampGadget",
+                        "DIAL": "#/components/schemas/DialGadget"
+                    }
+                } },
+                "LampGadget": { "allOf": [
+                    { "$ref": "#/components/schemas/Gadget" },
+                    { "type": "object", "properties": {
+                        "kind": { "type": "string", "enum": ["LAMP"] }
+                    } }
+                ] },
+                "DialControlGadget": subtype.clone()
+            });
+            if twice {
+                schemas["KnobGadget"] = subtype;
+            }
+            let document: OpenApi =
+                serde_json::from_value(observed_document(schemas, serde_json::json!({})))
+                    .expect("document deserializes");
+            document
+        };
+        assert_eq!(
+            dangling_mapping_wrappers(&schemas("DIAL", false)),
+            [(
+                "Gadget_Dial".to_string(),
+                "DIAL".to_string(),
+                vec!["notches".to_string()]
+            )]
+        );
+        // No subtype tagging the value, or two, keep Fern's `value` wrapper.
+        assert!(dangling_mapping_wrappers(&schemas("KNOB", false)).is_empty());
+        assert!(dangling_mapping_wrappers(&schemas("DIAL", true)).is_empty());
     }
 
     #[test]

@@ -850,7 +850,7 @@ FIRST_KIND_DECIDES = BINARY + r"[&& media_types\(\)\.any\(\x7cmedia_type\x7c is_
 PASSED_WHOLE = r"src/ir.rs::resolve_request_body[=^ {8}\x7c\x7c passed_whole$]"
 INLINE_MAP = r"src/ir.rs::resolve_request_body[=^ {8}\x7c\x7c is_map\(schema\)$]"
 TARGET_NULLABLE = r"src/ir.rs::Builder::collect_fields[=\.is_some_and\(\x7ctarget\x7c schema_accepts_none\(target, self\.schemas\)\);$]"
-NOT_REQUIRED = r"src/ir.rs::Builder::collect_fields[=!spec_required;$]"
+NOT_REQUIRED = r"src/ir.rs::Builder::collect_fields[=!spec_required\)$]"
 SCHEMA_EXAMPLE = r"src/ir.rs::parameter_example_value[=parameter\.schema\.as_ref\(\)\.and_then\(typed_schema_example\)]"
 URL_SCALARS = r"src/ir.rs::build_endpoint[=^ {20}hoister\.needs_convert\(&type_ref\) && !hoister\.reaches_url_as_scalars\(&type_ref\)$]"
 NAMED_STREAM = r"src/ir.rs::stream_condition_method_names[if op\.sdk_method_name\(\)\.is_some\(\) \{]"

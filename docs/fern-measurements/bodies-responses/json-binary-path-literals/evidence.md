@@ -1,6 +1,6 @@
 # json-binary-path: literals measurement
 
-Source: [independently authored request fixture](../../../openapi-surface/handwritten/json-binary-path/openapi.yml).
+Source: [independently authored request probe](../../../openapi-surface/probes/json-binary-path.yml).
 Pin: Fern CLI 5.216.0, `fernapi/fern-python-sdk` 5.42.0.
 Settings: packaged preview, organization/package `fern`, project
 `default_package_name`, no audience filter; `pydantic_config.enum_type` unset.

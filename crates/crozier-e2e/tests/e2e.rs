@@ -10673,6 +10673,7 @@ const CORPORA: &[&Corpus] = &[
     &PINECONE_INFERENCE,
     &OPENAPI_CODE_GENERATOR_E2E,
     &KRATOS_BLOG,
+    &BENCHLING_V2_ALPHA,
     &LITERALS_HASHGRAPH_63BA2735,
     &LITERALS_SAMEPAGE_BEA1554A,
     &LITERALS_EASA_FC03FD3C,
@@ -19044,8 +19045,8 @@ fn binary_request_media_types_are_preserved() {
     let client = std::fs::read_to_string(out.join("src/acme/widgets/client.py"))
         .expect("widgets client is generated");
     assert!(
-        client.contains("request=\"string\"") && !client.contains("request=b\"string\""),
-        "referenced binary request examples use Fern's string literal: {client}"
+        client.contains("request=b\"string\"") && !client.contains("request=\"string\""),
+        "a referenced binary request example is bytes for its bytes alias (the `binary-body-example` departure): {client}"
     );
 }
 
@@ -19066,9 +19067,9 @@ fn wildcard_binary_requests_with_path_params_omit_json_content_type() {
         .expect("widgets client is generated");
     assert!(
         client.contains("request: bytes")
-            && client.contains("request=\"string\"")
-            && !client.contains("request=b\"string\""),
-        "the high-level bytes method should use Fern's string example: {client}"
+            && client.contains("request=b\"string\"")
+            && !client.contains("request=\"string\""),
+        "the high-level bytes method's example is bytes (the `binary-body-example` departure): {client}"
     );
     // fern-python-sdk 5.41.3 documents the body by the signature's `bytes`
     // (apideck.com-file-storage's `upload_sessions.upload`, a `*/*` binary
@@ -27446,6 +27447,19 @@ fn two_parents_sharing_an_inherited_property_are_refused_on_a_component_and_a_re
             "request-two-parents-probe.yml",
             "POST /hostnames request body property \"errors\"",
         ),
+        // Fern CLI 5.216.0 refuses it once the inheriting parent adds a
+        // property of its own beside its `$ref` (#985); a parent only
+        // requiring a name there is Benchling's `OligoCreate`, which generates
+        // (`naming-acceptance/repeated-inherited-properties`).
+        (
+            "wrapper-adds-property-probe.yml",
+            "#/components/schemas/OligoCreate property \"folderId\"",
+        ),
+        // …or a second `$ref` (SURFnet's `Offering`).
+        (
+            "two-reference-parent-probe.yml",
+            "#/components/schemas/CourseOffering property \"offeringType\"",
+        ),
     ] {
         for strict in [false, true] {
             let run = refusal_run(&crozier, &class.join(probe), strict).unwrap();
@@ -28141,13 +28155,16 @@ fn missing_discriminant_refusal_follows_fern_examples_and_recovers_with_a_mapped
     }
 }
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These registry journeys run crozier over every committed refusal shape, on the crozier-e2e edge every other binary-driving journey shares (crates/crozier-e2e/AGENTS.md); a narrower edge for them is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 /// Every probe and control shape the registry commits, through the real CLI.
 /// Measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3 (`shapes.tsv`, which
 /// `fern-refusals.py check` holds to each role), a `-probe` is a shape Fern
 /// refuses and a `-control` one it generates from: crozier refuses each probe
 /// in both modes — exit 1, nothing written, one line naming a registry class
 /// and, only under `--fern-strict`, the strict cause — and generates each
-/// control with identical bytes in both modes.
+/// control with identical bytes in both modes. A probe of
+/// [`COMPONENT_COLLISION_SHAPES`], refused only by Fern's limitation (#991),
+/// generates as a control does.
 #[test]
 fn every_committed_shape_follows_its_measured_role_through_the_cli() {
     let registry = repo_root().join(FERN_REFUSALS_DIR);
@@ -28222,7 +28239,10 @@ fn shape_role_failures(classes: &[String], path: &Path) -> Vec<String> {
         } else {
             "default mode"
         };
-        if name.contains("-probe.") {
+        let fern_limitation = COMPONENT_COLLISION_SHAPES
+            .iter()
+            .any(|(class, shape)| path.ends_with(Path::new(class).join(shape)));
+        if name.contains("-probe.") && !fern_limitation {
             let line = run.stderr.trim();
             let names_class = classes
                 .iter()
@@ -28272,6 +28292,36 @@ fn shape_role_failures(classes: &[String], path: &Path) -> Vec<String> {
 /// refused shape (`*-probe.yml`/`.json`) is refused with the class, and every
 /// accepted near miss (`*-control.yml`/`.json`) generates identical bytes in
 /// both modes.
+/// Shapes Fern refuses only because it names two components alike
+/// (`Thing_Item`, `ThingItem`) and validates the earlier one's example against
+/// the later declaration. crozier gives each component its own class
+/// (`colliding-component-own-class`), so each is valid OpenAPI and the refusal
+/// only Fern's limitation (#991): crozier generates them in both modes, with
+/// and without `--fern-strict`, as it does a control.
+const COMPONENT_COLLISION_SHAPES: [(&str, &str); 6] = [
+    (
+        "example-missing-required-property",
+        "allof-collision-probe.yml",
+    ),
+    (
+        "example-missing-required-property",
+        "component-collision-probe.yml",
+    ),
+    (
+        "example-unexpected-property",
+        "allof-base-collision-probe.yml",
+    ),
+    ("example-unexpected-property", "allof-collision-probe.yml"),
+    (
+        "example-unexpected-property",
+        "allof-inline-collision-probe.yml",
+    ),
+    (
+        "example-unexpected-property",
+        "component-collision-probe.yml",
+    ),
+];
+
 fn example_value_class_holds(id: &str, diagnostic: &str) {
     let class = repo_root().join(FERN_REFUSALS_DIR).join(id);
     for strict in [false, true] {
@@ -28295,7 +28345,8 @@ fn example_value_class_holds(id: &str, diagnostic: &str) {
         let spec = class.join(&case);
         let normal = refusal_run(&crozier, &spec, false).unwrap();
         let strict = refusal_run(&crozier, &spec, true).unwrap();
-        if case.ends_with("-probe.yml") || case.ends_with("-probe.json") {
+        let fern_limitation = COMPONENT_COLLISION_SHAPES.contains(&(id, case.as_str()));
+        if !fern_limitation && (case.ends_with("-probe.yml") || case.ends_with("-probe.json")) {
             for (run, strict) in [(&normal, false), (&strict, true)] {
                 let failures = refused_failures(id, run, &format!("{id}: "), strict);
                 assert!(failures.is_empty(), "{case}: {}", failures.join("\n"));
@@ -28315,6 +28366,7 @@ fn example_value_class_holds(id: &str, diagnostic: &str) {
         }
     }
 }
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 #[test]
 fn example_type_mismatch_refusal_covers_measured_shapes() {
@@ -28388,7 +28440,7 @@ fn example_not_enum_value_refusal_covers_measured_shapes() {
 fn example_unexpected_property_refusal_covers_measured_shapes() {
     example_value_class_holds(
         "example-unexpected-property",
-        "example-unexpected-property: GET /probe components/schemas/Thing_Item collides with ThingItem",
+        "example-unexpected-property: GET /activities x-fern-examples response zzz",
     );
 }
 
@@ -28399,6 +28451,50 @@ fn example_missing_required_property_refusal_covers_measured_shapes() {
         "example-missing-required-property: GET /requests/{id} response extends nullable",
     );
 }
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This journey runs crozier over one refusal shape and its schema-invalid variant in both modes, on the crozier-e2e edge every other binary-driving journey shares (crates/crozier-e2e/AGENTS.md); a narrower edge for these is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+/// #991 retires only the component-collision refusal: the class's
+/// `component-collision` shape generates, and the same document with an example
+/// its own schema rejects (a date-time for a `format: date` property) is still
+/// refused in both modes, by `example-type-mismatch`.
+#[test]
+fn a_schema_invalid_example_beside_colliding_components_is_still_refused() {
+    let class = repo_root()
+        .join(FERN_REFUSALS_DIR)
+        .join("example-missing-required-property");
+    let collision = std::fs::read_to_string(class.join("component-collision-probe.yml")).unwrap();
+    let workspace = tempfile::tempdir().unwrap();
+    let invalid = workspace.path().join("invalid-example.yml");
+    let old = "    Thing_Item: {type: object, properties: {name: {type: string}}}";
+    assert!(collision.contains(old), "the collision shape changed");
+    std::fs::write(
+        &invalid,
+        collision.replace(
+            old,
+            "    Thing_Item: {type: object, properties: {name: {type: string}, \
+             born: {type: string, format: date, example: '2006-01-02T15:04:05+00:00'}}}",
+        ),
+    )
+    .unwrap();
+    for strict in [false, true] {
+        let generated = refusal_run(
+            &crozier,
+            &class.join("component-collision-probe.yml"),
+            strict,
+        )
+        .unwrap();
+        assert_eq!(generated.code, Some(0), "{}", generated.stderr);
+        let run = refusal_run(&crozier, &invalid, strict).unwrap();
+        let failures = refused_failures(
+            "example-type-mismatch",
+            &run,
+            "example-type-mismatch: GET /probe response example \"2006-01-02T15:04:05+00:00\"",
+            strict,
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+    }
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 #[test]
 fn enum_default_refusal_recovers_with_a_retained_default() {
@@ -33741,5 +33837,25 @@ const KRATOS_BLOG: Corpus = Corpus {
 fn go_kratos_examples_blog_matches_fern_output() {
     assert_committed_corpus_matches(&KRATOS_BLOG);
     overlay_goldens::assert_literals_match(&KRATOS_BLOG);
+}
+
+/// `benchling-api-v2-alpha`: corpus row 7000, Benchling's v2 alpha API — the
+/// specification #985 names, whose `OligoCreate` inherits `folderId` through two
+/// `allOf` parents, and which the certified pair generates in both enum modes.
+const BENCHLING_V2_ALPHA: Corpus = Corpus {
+    api: "benchling-api-v2-alpha",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn benchling_api_v2_alpha_matches_fern_output() {
+    assert_committed_corpus_matches(&BENCHLING_V2_ALPHA);
+    overlay_goldens::assert_literals_match(&BENCHLING_V2_ALPHA);
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]

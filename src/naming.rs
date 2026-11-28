@@ -181,7 +181,11 @@ pub fn class_name(schema_key: &str) -> String {
         let (number, rest) = words.split_at(digits);
         to_pascal_case(&format!("{} {rest}", spelled_leading_number(number)))
     };
-    sanitize_identifier(&pascal)
+    // Fern cases the name once more, so a run of one-letter words that the
+    // first pass left as a capital run is one word: the
+    // `naming-acceptance/single-letter-component-words` measurement's `a/b-c`
+    // is `Abc` and `k/l-mn` is `KlMn`, while `e/fg-h` keeps `EFgH` (#992).
+    sanitize_identifier(&to_pascal_case(&pascal))
 }
 
 /// The words Fern spells a name's leading run of digits as: its integer value
@@ -250,6 +254,24 @@ pub fn field_name(wire_name: &str) -> String {
         format!("{snake}_")
     } else {
         snake
+    }
+}
+
+/// The Python argument name of a path parameter: its [`field_name`], with a
+/// `_` appended where it would take `request_options`, the name the SDK's own
+/// options argument keeps on that method. Measured at Fern CLI 5.216.0 /
+/// fern-python-sdk 5.42.0 on
+/// `docs/fern-measurements/naming-acceptance/request-options-body-property/`
+/// (#981): `GET /labels/{request_options}` is `get_label(self,
+/// request_options_: str, *, request_options: …)`, where a query, header or
+/// body argument of that name renames the SDK's option instead.
+#[must_use]
+pub fn path_param_name(wire_name: &str) -> String {
+    let name = field_name(wire_name);
+    if name == "request_options" {
+        format!("{name}_")
+    } else {
+        name
     }
 }
 
@@ -1187,6 +1209,26 @@ mod tests {
             split_words("osdb:output_type"),
             vec!["osdb", "output", "type"]
         );
+    }
+
+    #[test]
+    fn a_run_of_one_letter_words_is_one_class_word() {
+        // The `single-letter-component-words` measurement's components.
+        for (key, class) in [
+            ("a/b-c", "Abc"),
+            ("a-b-c", "Abc"),
+            ("p-q-r", "Pqr"),
+            ("m_n", "Mn"),
+            ("ab/c-d", "AbCd"),
+            ("e/fg-h", "EFgH"),
+            ("k/l-mn", "KlMn"),
+            ("u/v-w", "Uvw"),
+            ("HTTPServer", "HttpServer"),
+            ("3dKilnModel", "ThreeDKilnModel"),
+        ] {
+            assert_eq!(class_name(key), class, "{key}");
+        }
+        assert_eq!(module_name(&class_name("a/b-c")), "abc");
     }
 
     #[test]

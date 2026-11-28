@@ -11,6 +11,7 @@ use std::path::Path;
 
 use super::union_inheritance::{
     enum_failures_in, generate_in, literals_failures_in, literals_tree_in,
+    tampered_enum_failures_in,
 };
 use super::{python_env_with, repo_root};
 
@@ -425,6 +426,93 @@ fn composite_path_parameters_keep_valid_worked_values() {
         ],
     );
 }
+
+/// #987: a body the method annotates `bytes` is passed bytes in every writer,
+/// whether its value is the `"string"` sample or the document's declared
+/// example (the `binary-body-example` departure): ASCII text keeps the quoting
+/// each writer gives it behind a `b` prefix, and non-ASCII text is its UTF-8
+/// octets as `\xNN` escapes, doubled in a docstring as every escape is there.
+#[test]
+fn binary_body_examples_are_bytes_in_every_writer() {
+    holds(
+        "binary-body-examples",
+        &[
+            (
+                "#987",
+                "README.md",
+                "client.blobs.upload_blob(\n    request=b\"string\",\n)",
+            ),
+            (
+                "#987",
+                "src/fern/blobs/client.py",
+                "            request=b\"string\",\n",
+            ),
+            (
+                "#987",
+                "src/fern/blobs/client.py",
+                "            request=b'note \"quoted\" body',\n",
+            ),
+            (
+                "#987",
+                "src/fern/blobs/client.py",
+                "                request=b'note \"quoted\" body',\n",
+            ),
+            (
+                "#987",
+                "src/fern/blobs/client.py",
+                "            request=b\"caf\\\\xc3\\\\xa9 receipt\",\n",
+            ),
+            (
+                "#987",
+                "reference.md",
+                "    request=b\"note \\\"quoted\\\" body\",\n",
+            ),
+            (
+                "#987",
+                "reference.md",
+                "    request=b\"caf\\xc3\\xa9 receipt\",\n",
+            ),
+        ],
+    );
+}
+
+/// #990: a worked call's argument line ends with its comma, which the width
+/// counts: in the async docstring a list or map reaching column 81 with it is
+/// spread one item per line with a trailing comma, while one ending at column
+/// 80 stays on its line, as each does in the sync docstring.
+#[test]
+fn worked_call_arguments_count_their_comma_in_the_width() {
+    holds(
+        "nested-argument-widths",
+        &[
+            (
+                "#990",
+                "src/fern/bulletins/client.py",
+                "                cc_addresses=[\n                    \"alpha-one@example.com\",\n                    \"second-beta-twoooo@example.com\",\n                ],\n",
+            ),
+            (
+                "#990",
+                "src/fern/bulletins/client.py",
+                "                bcc_addresses=[\"alpha-on@example.com\", \"second-beta-twooo@example.com\"],\n",
+            ),
+            (
+                "#990",
+                "src/fern/bulletins/client.py",
+                "                routing={\n                    \"priority\": \"high\",\n                    \"channel\": \"postal-mail-express-one-twooo\",\n                },\n",
+            ),
+            (
+                "#990",
+                "src/fern/bulletins/client.py",
+                "                handling={\"priority\": \"high\", \"channel\": \"postal-mail-express-one-tww\"},\n",
+            ),
+            (
+                "#990",
+                "src/fern/bulletins/client.py",
+                "            cc_addresses=[\"alpha-one@example.com\", \"second-beta-twoooo@example.com\"],\n",
+            ),
+        ],
+    );
+}
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 /// One repaired or changed value to validate:
@@ -483,7 +571,7 @@ fn sdk_env_worked_examples_bind_and_their_repaired_values_validate() {
         .map(|entry| entry.file_name().to_string_lossy().into_owned())
         .collect();
     cases.sort();
-    assert!(cases.len() >= 17, "{cases:?}");
+    assert!(cases.len() >= 19, "{cases:?}");
     for case in &cases {
         for mode in ["python-enums", "literals"] {
             let out = temp.path().join(format!("{case}-{mode}"));
@@ -501,6 +589,19 @@ fn sdk_env_worked_examples_bind_and_their_repaired_values_validate() {
     // calls, the reference usage and the README's sync and async calls all pass
     // `file=b"file"` to its `FormFile` (bytes) annotation.
     let multipart = "docs/fern-measurements/bodies-responses";
+    // A body composed of two `$ref`s alone: every worked call passes both
+    // parents' fields and the union field's first member, and binds.
+    for mode in ["python-enums", "literals"] {
+        let out = temp.path().join(format!("composed-reference-body-{mode}"));
+        generate_in(multipart, "composed-reference-body", mode, &out);
+        let run = check(&out);
+        assert!(
+            run.status.success(),
+            "composed-reference-body ({mode}): {}{}",
+            String::from_utf8_lossy(&run.stdout),
+            String::from_utf8_lossy(&run.stderr)
+        );
+    }
     for mode in ["python-enums", "literals"] {
         let out = temp
             .path()
@@ -556,6 +657,7 @@ fn sdk_env_worked_examples_bind_and_their_repaired_values_validate() {
         (DIR, "composite-path-parameters", "error"),
         (DIR, "docstring-example-escapes", "error"),
         (DIR, "typeless-body-values", "missing for parameter"),
+        (DIR, "binary-body-examples", "\"bytes\""),
         (multipart, "multipart-binary-required-part", "FormFile"),
     ] {
         let run = check(&root.join(dir).join(case).join("fern-expected"));
@@ -669,6 +771,71 @@ fn sdk_env_worked_examples_bind_and_their_repaired_values_validate() {
         );
         assert!(stdout.contains(says), "{case} {file} {argument}: {stdout}");
     }
+    // #987: each bytes body value, read as the string of its octets, against the
+    // binary string schema of its own operation, at the docstring and
+    // `reference.md` call that passes it; Fern's str is the same text.
+    let wildcard = "/requestBody/content/*~1*/schema";
+    for (file, fern_needle, crozier_needle, path, says) in [
+        (
+            "src/fern/blobs/client.py",
+            "request='note",
+            "request=b'note",
+            "~1blobs~1{blob_id}~1notes",
+            "crozier request='note \"quoted\" body': accepted",
+        ),
+        (
+            "reference.md",
+            "request=\"note",
+            "request=b\"note",
+            "~1blobs~1{blob_id}~1notes",
+            "crozier request='note \"quoted\" body': accepted",
+        ),
+        (
+            "reference.md",
+            "request=\"caf",
+            "request=b\"caf",
+            "~1blobs~1{blob_id}~1receipts",
+            "crozier request='caf\u{c3}\u{a9} receipt': accepted",
+        ),
+        (
+            "reference.md",
+            "request=\"string",
+            "request=b\"string",
+            "~1blobs",
+            "crozier request='string': accepted",
+        ),
+    ] {
+        let at = |tree: &Path, needle: &str| {
+            let text = std::fs::read_to_string(tree.join(file)).expect("the writer's file");
+            let number = text
+                .lines()
+                .position(|line| line.trim_start().starts_with(needle))
+                .unwrap_or_else(|| panic!("{file} passes no {needle}"));
+            format!("{}:{}", tree.join(file).display(), number + 1)
+        };
+        let run = validate(
+            &root.join(DIR).join("binary-body-examples/openapi.yml"),
+            &format!("/paths/{path}/post{wildcard}"),
+            &at(
+                &root.join(DIR).join("binary-body-examples/fern-expected"),
+                fern_needle,
+            ),
+            &at(
+                &temp.path().join("binary-body-examples-python-enums"),
+                crozier_needle,
+            ),
+            "request",
+        );
+        let stdout = String::from_utf8_lossy(&run.stdout);
+        assert_eq!(
+            run.status.code(),
+            Some(1),
+            "{file} {crozier_needle}: {stdout}{}",
+            String::from_utf8_lossy(&run.stderr)
+        );
+        assert!(stdout.contains(says), "{file} {crozier_needle}: {stdout}");
+    }
+
     // The composite reading rejects a value of the wrong member: a trigger is
     // no alarm (neither oneOf member admits it), and a buyer, lacking the
     // inline member's `deck`, is no lessee.
@@ -909,6 +1076,34 @@ fn sdk_env_worked_examples_bind_and_their_repaired_values_validate() {
     assert!(
         stdout.contains("fern either='a\\\\nb': rejected"),
         "{stdout}"
+    );
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This journey generates one small SDK and compares it whole, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+/// The `binary-body-example` departure explains only a bytes literal of the
+/// declared text: written as other bytes, the worked call fails the comparison
+/// of the real generated tree.
+#[test]
+fn the_binary_body_departure_explains_only_the_declared_text_as_bytes() {
+    let case = "binary-body-examples";
+    let temp = tempfile::tempdir().expect("output tempdir");
+    let out = temp.path().join("sdk");
+    generate_in(DIR, case, "python-enums", &out);
+    let client = out.join("src/fern/blobs/client.py");
+    let written = std::fs::read_to_string(&client).expect("the blobs client");
+    assert!(written.contains("request=b\"string\","), "{written}");
+    std::fs::write(
+        &client,
+        written.replacen("request=b\"string\",", "request=b\"strung\",", 1),
+    )
+    .expect("tamper");
+    let failures = tampered_enum_failures_in(DIR, case, &out);
+    assert!(
+        failures
+            .iter()
+            .any(|failure| failure.contains("blobs/client.py")),
+        "other bytes than the declared text must fail the comparison: {failures:?}"
     );
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]

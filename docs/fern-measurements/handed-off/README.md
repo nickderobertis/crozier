@@ -279,10 +279,10 @@ enum modes; its scoped export reaches the named arm.
 | `byte-text-response` | `format-byte` | `src/ir.rs::has_byte_text_response[=^ {16}return true;$]` | `registered-literals-apis-guru-openapi-directory-a0bd29a9` |
 | `byte-text-response-controls` | `format-byte` | `src/ir.rs::has_byte_text_response[=^ {16}return true;$]` | `registered-literals-apis-guru-openapi-directory-a0bd29a9` |
 | `json-binary-path` | `format-binary` | `src/ir.rs::scalar_body[=Some\("binary"\)]` | `registered-literals-hey-api-hey-api-30fbd0e5` |
-| `json-binary-path` | `format-binary` | `src/emit.rs::build_example_inner[if s\.type_ref == TypeRef::Primitive\(Prim::Bytes\)]` | `registered-literals-hey-api-hey-api-30fbd0e5` |
+| `json-binary-path` | `format-binary` | `src/emit.rs::build_example_inner[if ctx\.resolves_to_bytes\(&s\.type_ref\)]` | `registered-literals-hey-api-hey-api-30fbd0e5` |
 | `json-request-shapes` | `request-body-content` | `src/ir.rs::append_parent_body_fields[let own_count = fields\.len\(\)]` | `registered-literals-codosseum-org-backend-9fa232be` |
 | `json-request-shapes` | `format-binary` | `src/ir.rs::scalar_body[=Some\("binary"\)]` | `registered-literals-hey-api-hey-api-30fbd0e5` |
-| `json-request-shapes` | `format-binary` | `src/emit.rs::build_example_inner[if s\.type_ref == TypeRef::Primitive\(Prim::Bytes\)]` | `registered-literals-hey-api-hey-api-30fbd0e5` |
+| `json-request-shapes` | `format-binary` | `src/emit.rs::build_example_inner[if ctx\.resolves_to_bytes\(&s\.type_ref\)]` | `registered-literals-hey-api-hey-api-30fbd0e5` |
 | `meadow-tag-code` | `format-uuid` | `src/ir.rs::scalar_body[=Some\("uuid" \x7c "byte"\)]` | `registered-literals-hey-api-hey-api-30fbd0e5` |
 | `shelf-labels-map-variants` | `property-map-value-oneof` | `src/ir.rs::InlineHoister::prop_type_ref[if value.reference.is_none\(\) && value.declared_type_name\(\).is_none\(\) && structured \{]` | `registered-literals-apis-guru-openapi-directory-9031af6a` |
 | `kitchen-nested-mapping-target` | `discriminator-mapping` | `src/ir.rs::Builder::discriminated_union[if let Some\(merged\) = merged_mapping_union\(target\x2c &property_name\x2c self\.schemas\) \{]` | `registered-literals-kong-developer-konghq-com-d58ac8e1` |

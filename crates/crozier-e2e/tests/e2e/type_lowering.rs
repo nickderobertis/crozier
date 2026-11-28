@@ -1,7 +1,7 @@
 //! The type-lowering tickets of #965 (#438, #539, #889, #893–#902, #904–#912,
-//! #925, #949), each settled against a from-scratch document under [`DIR`] and
-//! the certified pair's complete tree for it (Fern CLI 5.216.0,
-//! fern-python-sdk 5.42.0), in both enum modes.
+//! #925, #949) and of #994 (#982, #984), each settled against a from-scratch
+//! document under [`DIR`] and the certified pair's complete tree for it (Fern
+//! CLI 5.216.0, fern-python-sdk 5.42.0), in both enum modes.
 //!
 //! Every case runs the real binary, compares its SDK with the certified tree
 //! file for file under the departures ledger, and asserts the bytes each ticket
@@ -644,6 +644,151 @@ fn union_members_lower_dedupe_merge_and_hoist_as_the_certified_pair() {
                 "#897",
                 "src/fern/types/session_calibrations_value_item.py",
                 "SessionCalibrationsValueItem = typing.Union[str, SessionCalibrationsValueItemOffset]",
+            ),
+        ],
+    );
+}
+
+/// #984: an `allOf` beside a plain `type: string` member is the certified
+/// pair's `str` alias, before inheritance (`TagCode` over `$ref Hound`) or
+/// union flattening (`BadgeCode` over a `oneOf`), documented by the string
+/// member's description over the composition's own (`CollarCode`); the object
+/// composition `Hound` stays a model.
+#[test]
+fn string_compositions_keep_the_certified_scalar_type() {
+    holds(
+        "string-member-compositions",
+        &[
+            (
+                "#984",
+                "src/fern/types/tag_code.py",
+                "TagCode = str\n\"\"\"\nA tag code, after the referenced hound.\n\"\"\"\n",
+            ),
+            (
+                "#984",
+                "src/fern/types/badge_code.py",
+                "BadgeCode = str\n\"\"\"\nA badge code, before a union of breeds.\n\"\"\"\n",
+            ),
+            (
+                "#984",
+                "src/fern/types/collar_code.py",
+                "CollarCode = str\n\"\"\"\nThe string member's description.\n\"\"\"\n",
+            ),
+            ("#984", "src/fern/types/leash_code.py", "LeashCode = str\n"),
+            ("#984", "src/fern/types/hound.py", "class Hound(Animal):"),
+        ],
+    );
+}
+
+/// #982: a property narrowing an enum whose use-site copy is named as the enum
+/// itself (`Parcel.state` over `ParcelState`) leaves the enum documented with
+/// its own description; the property keeps the narrowing member's sentence.
+#[test]
+fn enum_components_keep_their_own_description() {
+    holds(
+        "enum-use-site-descriptions",
+        &[
+            (
+                "#982",
+                "src/fern/types/parcel_state.py",
+                "class ParcelState(enum.StrEnum):\n    \"\"\"\n    Where a parcel is in its journey.\n    \"\"\"\n",
+            ),
+            (
+                "#982",
+                "src/fern/client.py",
+                "        state : ParcelState\n            A registered parcel is never a draft.\n",
+            ),
+        ],
+    );
+}
+
+/// Benchling (#994): a property's discriminated `oneOf` whose mapping names a
+/// schema of another document is the certified pair's bare `typing.Any`, no
+/// union hoisted. Fern reads the mapping in order and stops at that target: a
+/// member mapped locally ahead of it loses its `type` tag (`PersonHolder`),
+/// and every member from it on keeps one (`RobotHolder`, and `Rental.renter`'s
+/// `CarHolder` and `BikeHolder` after `VanHolder`). An inheritance union's variant writes its tag once,
+/// as the wrapper's `Literal`, even where its subtype, also a member of a plain
+/// `oneOf`, keeps the tag as a standalone model.
+#[test]
+fn discriminator_tags_reach_only_the_members_fern_resolves() {
+    holds(
+        "discriminator-tag-reach",
+        &[
+            ("#994", "src/fern/types/share.py", "    holder: typing.Any\n"),
+            ("#994", "src/fern/types/rental.py", "    renter: typing.Any\n"),
+            (
+                "#994",
+                "src/fern/types/car_holder.py",
+                "    type: typing.Optional[CarHolderType] = None\n",
+            ),
+            (
+                "#994",
+                "src/fern/types/bike_holder.py",
+                "    type: typing.Optional[BikeHolderType] = None\n",
+            ),
+            (
+                "#994",
+                "src/fern/types/robot_holder.py",
+                "    type: typing.Optional[RobotHolderType] = None\n",
+            ),
+            (
+                "#994",
+                "src/fern/types/part.py",
+                "class Part_Bolt(UniversalBaseModel):\n    type: typing.Literal[\"BOLT\"] = \"BOLT\"\n\n",
+            ),
+            (
+                "#994",
+                "src/fern/types/bolt_part.py",
+                "    type: typing.Optional[BoltPartType] = None\n",
+            ),
+        ],
+    );
+}
+
+/// Benchling's `InstanceProvider`: an inheritance base whose mapping names a
+/// target that is no component (`DIAL` to `DialGadget`, the subtype being
+/// `DialControlGadget`) is still the certified pair's discriminated union, a
+/// wrapper per mapping value. The dangling value's wrapper carries the fields of
+/// the subtype tagging itself with it (`dangling-mapping-variant-fields`), and
+/// no wrapper repeats the tag a subtype referenced on its own keeps
+/// (`LampGadget.kind`). A dangling value no subtype tags (`KNOB`), or two do
+/// (`SLIDER`), is the pair's `value: typing.Any` wrapper: there is no one
+/// subtype's fields to carry.
+#[test]
+fn an_inheritance_base_with_a_dangling_target_is_a_union_of_wrappers() {
+    holds(
+        "inheritance-dangling-target",
+        &[
+            (
+                "Benchling",
+                "src/fern/types/gadget.py",
+                "class Gadget_Lamp(UniversalBaseModel):\n    kind: typing.Literal[\"LAMP\"] = \"LAMP\"\n    watts: typing.Optional[int] = None\n",
+            ),
+            (
+                "Benchling",
+                "src/fern/types/gadget.py",
+                "class Gadget_Dial(UniversalBaseModel):\n    kind: typing.Literal[\"DIAL\"] = \"DIAL\"\n    notches: typing.Optional[int] = None\n",
+            ),
+            (
+                "Benchling",
+                "src/fern/types/gadget.py",
+                "typing.Union[Gadget_Lamp, Gadget_Fan, Gadget_Dial, Gadget_Knob, Gadget_Slider], pydantic.Field(discriminator=\"kind\")",
+            ),
+            (
+                "Benchling",
+                "src/fern/types/gadget.py",
+                "class Gadget_Knob(UniversalBaseModel):\n    value: typing.Any\n    kind: typing.Literal[\"KNOB\"] = \"KNOB\"\n",
+            ),
+            (
+                "Benchling",
+                "src/fern/types/gadget.py",
+                "class Gadget_Slider(UniversalBaseModel):\n    value: typing.Any\n    kind: typing.Literal[\"SLIDER\"] = \"SLIDER\"\n",
+            ),
+            (
+                "Benchling",
+                "src/fern/types/lamp_gadget.py",
+                "    kind: typing.Optional[LampGadgetKind] = None\n",
             ),
         ],
     );

@@ -1,0 +1,42 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /oligos:
+    get:
+      operationId: getOligo
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OligoCreate'
+components:
+  schemas:
+    OligoBase:
+      type: object
+      properties:
+        name:
+          type: string
+        folderId:
+          type: string
+          description: Folder of the oligo.
+    OligoBaseForCreate:
+      allOf:
+      - $ref: '#/components/schemas/OligoBase'
+      - required:
+        - name
+    RegistryTarget:
+      type: object
+      properties:
+        folderId:
+          type: string
+          description: Folder of the entity.
+        registryId:
+          type: string
+    OligoCreate:
+      allOf:
+      - $ref: '#/components/schemas/OligoBaseForCreate'
+      - $ref: '#/components/schemas/RegistryTarget'

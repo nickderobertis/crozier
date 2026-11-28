@@ -1,0 +1,85 @@
+openapi: 3.0.3
+info:
+  title: Letter Roster
+  version: 1.0.0
+paths:
+  /roster:
+    get:
+      operationId: get_roster
+      responses:
+        '200':
+          description: The roster
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Roster'
+  /entries/{entry_id}:
+    get:
+      operationId: get_entry
+      parameters:
+      - name: entry_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: One entry
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/a/b-c'
+components:
+  schemas:
+    a/b-c:
+      type: object
+      properties:
+        note:
+          type: string
+    p-q-r:
+      type: object
+      properties:
+        note:
+          type: string
+    m_n:
+      type: object
+      properties:
+        note:
+          type: string
+    ab/c-d:
+      type: object
+      properties:
+        note:
+          type: string
+    e/fg-h:
+      type: object
+      properties:
+        note:
+          type: string
+    k/l-mn:
+      type: object
+      properties:
+        note:
+          type: string
+    u/v-w:
+      type: string
+      enum:
+      - lit
+      - unlit
+    Roster:
+      type: object
+      properties:
+        first:
+          $ref: '#/components/schemas/a/b-c'
+        second:
+          $ref: '#/components/schemas/p-q-r'
+        third:
+          $ref: '#/components/schemas/m_n'
+        fourth:
+          $ref: '#/components/schemas/ab/c-d'
+        fifth:
+          $ref: '#/components/schemas/e/fg-h'
+        sixth:
+          $ref: '#/components/schemas/k/l-mn'
+        lamp:
+          $ref: '#/components/schemas/u/v-w'

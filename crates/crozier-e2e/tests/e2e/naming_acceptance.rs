@@ -1,6 +1,6 @@
 //! The naming, import and document-acceptance tickets of the naming-acceptance
 //! node (#536, #919, #920, #921, #922, #923, #924, #941, #942, #943, #944,
-//! #946, #948, #955, #956), each settled against a from-scratch document under
+//! #946, #948, #955, #956) and #981, each settled against a from-scratch document under
 //! [`DIR`] and the certified pair's complete tree for it (Fern CLI 5.216.0,
 //! fern-python-sdk 5.42.0), in both enum modes.
 //!
@@ -144,6 +144,13 @@ const ACCEPTED: &[(&str, &str, &str, &str, &str)] = &[
         "type_path_param: str,",
     ),
     (
+        "#981 (ruff refused the duplicate `request_options` parameter)",
+        "request-options-body-property",
+        "Duplicate parameter",
+        "src/fern/dispatches/raw_client.py",
+        "        request_options: str,\n        kwargs_: typing.Optional[str] = OMIT,\n        self_: typing.Optional[str] = OMIT,\n        _request_options: typing.Optional[RequestOptions] = None,\n",
+    ),
+    (
         "#944 (the control: one component)",
         "normalized-component-identity-control",
         "",
@@ -151,11 +158,25 @@ const ACCEPTED: &[(&str, &str, &str, &str, &str)] = &[
         "class KilnGlazeCoat(UniversalBaseModel):\n    left: str",
     ),
     (
+        "#985 (a property two `allOf` parents declare, one through its own `$ref`)",
+        "repeated-inherited-properties",
+        "object-property-name-collision",
+        "src/fern/types/oligo_create.py",
+        "    folder_id: typing_extensions.Annotated[\n        typing.Optional[str],\n        FieldMetadata(alias=\"folderId\"),\n        pydantic.Field(alias=\"folderId\", description=\"ID of the folder containing the oligo.\"),\n    ] = None",
+    ),
+    (
         "#944 (two components spelling one class, reached from a request)",
         "normalized-component-identity",
         "",
         "src/fern/types/kiln_glaze_coat.py",
         "class KilnGlazeCoat(UniversalBaseModel):\n    right: int",
+    ),
+    (
+        "#983 (a union tagged by an aliased wire key; its runtime parse is the sdk_env_ journey)",
+        "aliased-union-discriminator",
+        "",
+        "src/fern/types/query_response.py",
+        "typing.Union[QueryResponse_Table, QueryResponse_Graph], pydantic.Field(discriminator=\"schema_\")",
     ),
 ];
 
@@ -510,6 +531,22 @@ fn sdk_env_colliding_components_send_and_parse_their_own_shapes() {
     }
 }
 
+/// #981: through the generated client, under both Pydantic majors and both
+/// enum modes, every module imports and the sync, async and both raw clients
+/// send the caller's `request_options` body value while applying
+/// `_request_options` as the SDK's options (its header reaches the server).
+#[test]
+#[ignore = "SDK Python-environment tier (builds Pydantic 1 and 2 environments from PyPI with uv); run via `just test-sdk-env`"]
+fn sdk_env_request_options_body_property_sends_beside_the_sdk_options() {
+    for mode in ["python-enums", "literals"] {
+        runtime_journey(
+            "request-options-body-property",
+            mode,
+            "request-options-body-property",
+        );
+    }
+}
+
 /// #922: every module of the recursive-alias measurement imports under both
 /// Pydantic majors and `FitSummary`, which reaches the alias-only cycle through
 /// `InferenceReport`, constructs a value holding a recursive JSON object.
@@ -528,6 +565,20 @@ fn sdk_env_recursive_alias_dependents_import_and_construct() {
         "python-enums",
         "recursive-alias-dependents",
     );
+}
+
+/// #983: a response of a discriminated union whose tag's wire key `schema`
+/// is the aliased field `schema_` parses through the generated client into
+/// its variant under both Pydantic majors and both enum modes. The certified
+/// runtime dealiases the union's input, and Pydantic 1.10 then reports the
+/// discriminator missing: crozier's `discriminated-union-v1-wire-keys`
+/// departure keeps the wire keys there.
+#[test]
+#[ignore = "SDK Python-environment tier (builds Pydantic 1 and 2 environments from PyPI with uv); run via `just test-sdk-env`"]
+fn sdk_env_aliased_discriminated_unions_parse_under_both_pydantic_majors() {
+    for mode in ["python-enums", "literals"] {
+        runtime_journey("aliased-union-discriminator", mode, "aliased-discriminator");
+    }
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These journeys generate one small SDK per measurement in each enum mode, comparing each whole against its certified tree, on the crozier-e2e edge every other golden comparison shares; a narrower edge for generator-replay journeys is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
@@ -685,5 +736,129 @@ fn the_colliding_component_departure_explains_only_the_renamed_class() {
             .any(|failure| failure.contains("kiln_glaze_coat9.py")),
         "a module no renamed class owns must fail the comparison: {failures:?}"
     );
+}
+
+/// #992: a run of one-letter words in a component name is one class word, as
+/// the certified pair cases it (`a/b-c` is `Abc`, `p-q-r` `Pqr`, `m_n` `Mn`,
+/// `k/l-mn` `KlMn`), at its declaration and at every annotation naming it,
+/// while a lone one-letter word beside longer ones keeps its capital (`EFgH`).
+#[test]
+fn single_letter_component_words_use_the_certified_casing() {
+    let case = "single-letter-component-words";
+    let temp = tempfile::tempdir().expect("output tempdir");
+    let mut failures = both_modes_failures(case, temp.path());
+    let sdk = temp.path().join("sdk");
+    for (file, certified) in [
+        ("src/fern/types/abc.py", "class Abc(UniversalBaseModel):"),
+        ("src/fern/types/kl_mn.py", "class KlMn(UniversalBaseModel):"),
+        ("src/fern/types/uvw.py", "class Uvw(enum.StrEnum):"),
+        (
+            "src/fern/types/roster.py",
+            "    first: typing.Optional[Abc] = None\n    second: typing.Optional[Pqr] = None\n    \
+             third: typing.Optional[Mn] = None\n    fourth: typing.Optional[AbCd] = None\n    \
+             fifth: typing.Optional[EFgH] = None\n    sixth: typing.Optional[KlMn] = None\n    \
+             lamp: typing.Optional[Uvw] = None\n",
+        ),
+        (
+            "src/fern/client.py",
+            "    def get_entry(self, entry_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Abc:",
+        ),
+    ] {
+        if !read(&sdk.join(file)).contains(certified) {
+            failures.push(format!("#992 {case}: {file} lacks {certified:?}"));
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n\n"));
+}
+
+/// What an `allOf` requires through a bare `{required: [...]}` member and
+/// across repeated parents, as the certified pair decides it: a trailing bare
+/// member requires the `$ref` parent's `name` and drops that parent's own
+/// `required` (`PacketForCreate`, Benchling's `OligoBaseRequestForCreate`), and
+/// so do models built on it (`PacketCreate`). It requires what an inline sibling
+/// declares where no `$ref` stands beside it (`TrialCreate`, Benchling's
+/// `StudyCreate`), and leaves optional a name two parents of the body declare
+/// (`create_packet`'s `bin_id`, Benchling's `create_dna_oligo_with_helm`'s
+/// `folder_id`). A property a later parent requires, which the earlier one
+/// declares optional, is required (`Harvest.crop`).
+#[test]
+fn required_only_members_and_repeated_parents_decide_the_certified_requiredness() {
+    let case = "required-only-members";
+    let temp = tempfile::tempdir().expect("output tempdir");
+    let mut failures = both_modes_failures(case, temp.path());
+    let sdk = temp.path().join("sdk");
+    for (file, certified) in [
+        ("src/fern/types/packet_for_create.py", "    name: str\n"),
+        (
+            "src/fern/types/packet_for_create.py",
+            "    grower: typing.Optional[str] = None\n",
+        ),
+        (
+            "src/fern/types/packet_create.py",
+            "    grower: typing.Optional[str] = None\n",
+        ),
+        ("src/fern/types/trial_create.py", "    title: str\n"),
+        ("src/fern/types/harvest.py", "    crop: str\n"),
+        (
+            "src/fern/client.py",
+            "        name: str,\n        label: typing.Optional[str] = OMIT,\n        \
+             bin_id: typing.Optional[str] = OMIT,\n        grower: typing.Optional[str] = OMIT,\n",
+        ),
+    ] {
+        if !read(&sdk.join(file)).contains(certified) {
+            failures.push(format!("#985 {case}: {file} lacks {certified:?}"));
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n\n"));
+}
+
+/// The #981 and #983 departures explain only the change each catalogues: an
+/// options entry, README call or path keyword renamed to anything but the
+/// method's own name, or a vendored-runtime parse change other than the one
+/// shipped, fails the comparison of the real generated tree.
+#[test]
+fn the_request_options_and_wire_key_departures_explain_only_their_own_change() {
+    for (case, file, shipped, unexplained) in [
+        (
+            "request-options-body-property",
+            "reference.md",
+            "**_request_options:** `typing.Optional[RequestOptions]`",
+            "**_options:** `typing.Optional[RequestOptions]`",
+        ),
+        (
+            "request-options-body-property",
+            "README.md",
+            "_request_options={",
+            "options={",
+        ),
+        (
+            "request-options-body-property",
+            "reference.md",
+            "request_options_=\"request_options\",",
+            "request_options_=\"labels\",",
+        ),
+        (
+            "aliased-union-discriminator",
+            "src/fern/core/pydantic_utilities.py",
+            "if not IS_PYDANTIC_V2 and _has_discriminated_union(type_)",
+            "if _has_discriminated_union(type_)",
+        ),
+    ] {
+        let temp = tempfile::tempdir().expect("output tempdir");
+        let out = temp.path().join("sdk");
+        generate(case, "python-enums", &out);
+        let path = out.join(file);
+        let written = read(&path);
+        assert!(
+            written.contains(shipped),
+            "{case}: {file} lacks {shipped:?}"
+        );
+        std::fs::write(&path, written.replacen(shipped, unexplained, 1)).expect("tamper");
+        let failures = tampered_enum_failures(case, &out);
+        assert!(
+            failures.iter().any(|failure| failure.contains(file)),
+            "{case}: writing {unexplained:?} into {file} must fail the comparison: {failures:?}"
+        );
+    }
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]

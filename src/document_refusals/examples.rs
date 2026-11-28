@@ -57,8 +57,14 @@ pub(super) fn first_violation_in(root: &Value, text: &str) -> Option<(Class, Str
             return Some((class, format!("{element} {detail}")));
         }
     }
-    doc.colliding_component()
-        .or_else(|| doc.colliding_property())
+    // Two components Fern names alike (`Thing_Item`, `ThingItem`) are no
+    // refusal, though Fern's check validates the earlier one's response example
+    // against the later declaration and refuses: crozier gives each its own
+    // class (`colliding-component-own-class`), so the document is valid and the
+    // refusal is only Fern's limitation (#991). An inline schema taking a
+    // component's name still refuses below: crozier types it with that
+    // component, as Fern does.
+    doc.colliding_property()
         .or_else(|| doc.scalar_taken_by_inline_object())
         .or_else(|| doc.merged_member_enum())
 }
@@ -1397,79 +1403,6 @@ impl<'a> Doc<'a> {
                 )
             })
         })
-    }
-
-    /// Two component objects Fern names alike (`Thing_Item`, `ThingItem`): the
-    /// later declaration is the one type, and Fern's example of the earlier one,
-    /// reached from a response, is validated against it (see
-    /// [`collision_class`]). The winner declaring every property (or
-    /// `additionalProperties: true`), a loser reached only from a request and an
-    /// unreachable loser are measured accepted.
-    fn colliding_component(&self) -> Option<(Class, String)> {
-        let components = self.component_schemas();
-        let names: Vec<String> = components
-            .iter()
-            .map(|(key, _)| crate::naming::class_name(key))
-            .collect();
-        for (index, (key, loser)) in components.iter().enumerate() {
-            let Some(winner_index) = (index + 1..components.len())
-                .rev()
-                .find(|other| names[*other] == names[index])
-            else {
-                continue;
-            };
-            let (winner_key, winner) = components[winner_index];
-            let declared = *loser;
-            let merged;
-            let loser = if has_composition(loser) {
-                let Some(flat) = self.flattened_all_of(loser) else {
-                    continue;
-                };
-                merged = flat;
-                &merged
-            } else {
-                *loser
-            };
-            let Some(class) = collision_class(loser, winner) else {
-                continue;
-            };
-            if let Some(element) = self.response_reaching(declared) {
-                return Some((
-                    class,
-                    format!("{element} components/schemas/{key} collides with {winner_key}"),
-                ));
-            }
-        }
-        None
-    }
-
-    /// An `allOf` of plain objects as the one object Fern's example of it is:
-    /// every member's properties and required names, members resolved by
-    /// reference (Clio's `TaskTemplateList` against `TaskTemplate_List`).
-    /// Anything else in the composition is not measured and yields `None`.
-    fn flattened_all_of(&self, schema: &'a Value) -> Option<Value> {
-        if ["oneOf", "anyOf"]
-            .iter()
-            .any(|key| schema.get(*key).is_some())
-        {
-            return None;
-        }
-        let mut properties = serde_json::Map::new();
-        let mut required = Vec::new();
-        for member in schema.get("allOf")?.as_array()? {
-            let member = self.resolve(member)?;
-            if has_composition(member) {
-                return None;
-            }
-            if let Some(own) = member.get("properties").and_then(Value::as_object) {
-                properties.extend(own.iter().map(|(key, value)| (key.clone(), value.clone())));
-            }
-            required.extend(required_names(member).into_iter().map(Value::from));
-        }
-        let mut flat = serde_json::Map::new();
-        flat.insert("properties".into(), properties.into());
-        flat.insert("required".into(), required.into());
-        Some(flat.into())
     }
 
     /// A component object's inline property schema named (owner + property)

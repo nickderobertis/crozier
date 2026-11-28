@@ -18,7 +18,10 @@
 use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
 
-use super::{departure_ledger, golden_tree_failures, probe_command, repo_root, walk_files};
+use super::{
+    departure_ledger, golden_tree_failures, golden_tree_failures_in, probe_command, repo_root,
+    walk_files,
+};
 
 /// Where the measurements live; each case's `fern-expected/` is a compared golden.
 pub(crate) const DIR: &str = "docs/fern-measurements/union-inheritance";
@@ -314,6 +317,24 @@ pub(crate) fn enum_failures_in(dir: &str, case: &str, out: &Path) -> Vec<String>
         &ledger,
         &repo_root().join(&golden),
         out,
+    )
+}
+
+/// [`enum_failures_in`] over a tree a test tampered with on purpose: every
+/// difference no departure explains still fails, but no departure is held to,
+/// or recorded into, the golden's ledger rows.
+pub(crate) fn tampered_enum_failures_in(dir: &str, case: &str, out: &Path) -> Vec<String> {
+    let golden = golden_in(dir, case);
+    let ledger = departure_ledger()
+        .golden(&golden, &[])
+        .unwrap_or_else(|failures| panic!("{}", failures.join("\n")));
+    golden_tree_failures_in(
+        &format!("{case} (python-enums, tampered)"),
+        &spec_in(dir, case).display().to_string(),
+        &ledger,
+        &repo_root().join(&golden),
+        out,
+        &|_| false,
     )
 }
 
@@ -848,8 +869,10 @@ fn slash_named_components_resolve_from_every_reference_spelling() {
     // every pointer names its own component's.
     let tags = read("src/fern/types/get_tags_response.py");
     for (field, class) in [
-        ("first", "TagsABC2"),
-        ("second", "TagsABC"),
+        // `a/b-c`'s one-letter words are one class word (#992, the
+        // `naming-acceptance/single-letter-component-words` measurement).
+        ("first", "TagsAbc2"),
+        ("second", "TagsAbc"),
         ("slashed", "DraftsNote2"),
         ("declared", "DraftsNote"),
     ] {
@@ -861,8 +884,8 @@ fn slash_named_components_resolve_from_every_reference_spelling() {
     for (file, declaration) in [
         ("drafts_note.py", "DraftsNote = int"),
         ("drafts_note2.py", "DraftsNote2 = str"),
-        ("tags_abc.py", "TagsABC = int"),
-        ("tags_abc2.py", "TagsABC2 = str"),
+        ("tags_abc.py", "TagsAbc = int"),
+        ("tags_abc2.py", "TagsAbc2 = str"),
     ] {
         let text = read(&format!("src/fern/types/{file}"));
         assert!(text.contains(declaration), "{file}: {text}");

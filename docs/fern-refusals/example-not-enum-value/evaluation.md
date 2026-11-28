@@ -1,5 +1,19 @@
 # example-not-enum-value: refuse
 
+## Component collisions retired at Fern CLI 5.216.0 / fern-python-sdk 5.42.0 (#991)
+
+Decision: **refuse**, narrowed. Two components Fern names alike (`Thing_Item` and `ThingItem`) are one type to
+the pair, the later declaration, and its check validates its example of the
+earlier one, reached from a response, against that later one. crozier gives
+each component its own class (the
+[`colliding-component-own-class`](../../departures/evidence/colliding-component-own-class.md)
+departure), so such a document is valid OpenAPI and the refusal only Fern's
+limitation: crozier no longer refuses it, in either mode, with or without
+`--fern-strict` (#991). An inline schema taking a component's name still
+refuses: crozier types it with that component, as Fern does.
+
+Its probe is no collision and stands. The first-letter-case enum twins of [`crozier-refuses-type-name-collision`](../../fern-measurements/handed-off/document-acceptance/crozier-refuses-type-name-collision/README.md) (`Mode` beside `mode`) now generate in both modes, the later `Mode` keeping the pair's name and the earlier its own `Mode2`; an inline enum taking a component's name and the merged member enum still refuse.
+
 ## At Fern CLI 5.216.0 / fern-python-sdk 5.42.0
 
 Decision: **refuse**, unchanged. The Fern goldens run 44880783817

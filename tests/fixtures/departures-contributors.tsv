@@ -3,6 +3,8 @@ docs/departures/evidence/readme-client-class-casing/fern-reference	crozier-e2e::
 docs/fern-measurements/bodies-responses/body-requiredness-shapes/fern-expected	crozier-e2e::e2e	bodies_responses::request_body_requiredness_follows_the_measured_shapes
 docs/fern-measurements/bodies-responses/byte-text-response-literals/fern-expected	crozier-e2e::e2e	byte_text_response_matches_certified_output_in_both_enum_modes
 docs/fern-measurements/bodies-responses/composed-form-body/fern-expected	crozier-e2e::e2e	bodies_responses::composed_form_bodies_send_every_field
+docs/fern-measurements/bodies-responses/composed-reference-body/expected-literals/fern-expected	crozier-e2e::e2e	bodies_responses::composed_reference_bodies_spread_both_parents
+docs/fern-measurements/bodies-responses/composed-reference-body/fern-expected	crozier-e2e::e2e	bodies_responses::composed_reference_bodies_spread_both_parents
 docs/fern-measurements/bodies-responses/error-body-shapes-literals/fern-expected	crozier-e2e::e2e	error_body_shapes_match_certified_output_in_both_enum_modes
 docs/fern-measurements/bodies-responses/header-body-collision/fern-expected	crozier-e2e::e2e	bodies_responses::header_and_body_sharing_a_name_keep_their_own_arguments
 docs/fern-measurements/bodies-responses/header-body-collision/fern-expected	crozier-e2e::e2e	bodies_responses::header_body_departure_needs_the_header_to_map_that_variable
@@ -363,6 +365,8 @@ docs/fern-measurements/models-refs-literals/union-sample/fern-expected	crozier-e
 docs/fern-measurements/models-refs-literals/verified-seal/fern-expected	crozier-e2e::e2e	property_metadata_shapes_match_the_certified_fern_trees
 docs/fern-measurements/models-refs-literals/woven-thread/fern-expected	crozier-e2e::e2e	remaining_model_shapes_match_the_certified_fern_trees
 docs/fern-measurements/models-refs-remote/library-records/fern-expected	crozier-e2e::e2e	remote_model_components_match_the_certified_fern_tree
+docs/fern-measurements/naming-acceptance/aliased-union-discriminator/expected-literals/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_documents_generate_as_the_certified_pair_does
+docs/fern-measurements/naming-acceptance/aliased-union-discriminator/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_documents_generate_as_the_certified_pair_does
 docs/fern-measurements/naming-acceptance/boolean-component-schemas/expected-literals/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_documents_generate_as_the_certified_pair_does
 docs/fern-measurements/naming-acceptance/boolean-component-schemas/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_documents_generate_as_the_certified_pair_does
 docs/fern-measurements/naming-acceptance/discriminator-only-parent/expected-literals/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_documents_generate_as_the_certified_pair_does
@@ -388,10 +392,18 @@ docs/fern-measurements/naming-acceptance/recursive-alias-dependents/expected-lit
 docs/fern-measurements/naming-acceptance/recursive-alias-dependents/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_repairs_match_the_certified_pair
 docs/fern-measurements/naming-acceptance/relative-response-ref/expected-literals/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_repairs_match_the_certified_pair
 docs/fern-measurements/naming-acceptance/relative-response-ref/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_repairs_match_the_certified_pair
+docs/fern-measurements/naming-acceptance/repeated-inherited-properties/expected-literals/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_documents_generate_as_the_certified_pair_does
+docs/fern-measurements/naming-acceptance/repeated-inherited-properties/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_documents_generate_as_the_certified_pair_does
 docs/fern-measurements/naming-acceptance/request-local-union-payloads/expected-literals/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_repairs_match_the_certified_pair
 docs/fern-measurements/naming-acceptance/request-local-union-payloads/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_repairs_match_the_certified_pair
+docs/fern-measurements/naming-acceptance/request-options-body-property/expected-literals/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_documents_generate_as_the_certified_pair_does
+docs/fern-measurements/naming-acceptance/request-options-body-property/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_documents_generate_as_the_certified_pair_does
+docs/fern-measurements/naming-acceptance/required-only-members/expected-literals/fern-expected	crozier-e2e::e2e	naming_acceptance::required_only_members_and_repeated_parents_decide_the_certified_requiredness
+docs/fern-measurements/naming-acceptance/required-only-members/fern-expected	crozier-e2e::e2e	naming_acceptance::required_only_members_and_repeated_parents_decide_the_certified_requiredness
 docs/fern-measurements/naming-acceptance/root-import-order/expected-literals/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_repairs_match_the_certified_pair
 docs/fern-measurements/naming-acceptance/root-import-order/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_repairs_match_the_certified_pair
+docs/fern-measurements/naming-acceptance/single-letter-component-words/expected-literals/fern-expected	crozier-e2e::e2e	naming_acceptance::single_letter_component_words_use_the_certified_casing
+docs/fern-measurements/naming-acceptance/single-letter-component-words/fern-expected	crozier-e2e::e2e	naming_acceptance::single_letter_component_words_use_the_certified_casing
 docs/fern-measurements/naming-acceptance/xml-helper-import/expected-literals/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_repairs_match_the_certified_pair
 docs/fern-measurements/naming-acceptance/xml-helper-import/fern-expected	crozier-e2e::e2e	naming_acceptance::naming_acceptance_repairs_match_the_certified_pair
 docs/fern-measurements/naming-wire/enum-extension-names-dropped-under-literals/fern-expected	crozier-e2e::e2e	naming_wire::naming_wire_measurements_match_fern_under_python_enums
@@ -485,8 +497,14 @@ docs/fern-measurements/type-lowering/anyof-discriminators/expected-literals/fern
 docs/fern-measurements/type-lowering/anyof-discriminators/fern-expected	crozier-e2e::e2e	type_lowering::any_of_mappings_and_lone_references_match_the_certified_pair
 docs/fern-measurements/type-lowering/const-discriminator-tags/expected-literals/fern-expected	crozier-e2e::e2e	type_lowering::const_tags_are_stripped_and_discriminated_by_the_schema
 docs/fern-measurements/type-lowering/const-discriminator-tags/fern-expected	crozier-e2e::e2e	type_lowering::const_tags_are_stripped_and_discriminated_by_the_schema
+docs/fern-measurements/type-lowering/discriminator-tag-reach/expected-literals/fern-expected	crozier-e2e::e2e	type_lowering::discriminator_tags_reach_only_the_members_fern_resolves
+docs/fern-measurements/type-lowering/discriminator-tag-reach/fern-expected	crozier-e2e::e2e	type_lowering::discriminator_tags_reach_only_the_members_fern_resolves
+docs/fern-measurements/type-lowering/enum-use-site-descriptions/expected-literals/fern-expected	crozier-e2e::e2e	type_lowering::enum_components_keep_their_own_description
+docs/fern-measurements/type-lowering/enum-use-site-descriptions/fern-expected	crozier-e2e::e2e	type_lowering::enum_components_keep_their_own_description
 docs/fern-measurements/type-lowering/inferred-discriminator-tags/expected-literals/fern-expected	crozier-e2e::e2e	type_lowering::inferred_tags_discriminate_and_name_the_variant_field
 docs/fern-measurements/type-lowering/inferred-discriminator-tags/fern-expected	crozier-e2e::e2e	type_lowering::inferred_tags_discriminate_and_name_the_variant_field
+docs/fern-measurements/type-lowering/inheritance-dangling-target/expected-literals/fern-expected	crozier-e2e::e2e	type_lowering::an_inheritance_base_with_a_dangling_target_is_a_union_of_wrappers
+docs/fern-measurements/type-lowering/inheritance-dangling-target/fern-expected	crozier-e2e::e2e	type_lowering::an_inheritance_base_with_a_dangling_target_is_a_union_of_wrappers
 docs/fern-measurements/type-lowering/inherited-discriminator-tags/expected-literals/fern-expected	crozier-e2e::e2e	type_lowering::inherited_tags_stay_on_flattened_subtypes
 docs/fern-measurements/type-lowering/inherited-discriminator-tags/fern-expected	crozier-e2e::e2e	type_lowering::inherited_tags_stay_on_flattened_subtypes
 docs/fern-measurements/type-lowering/json-binary-strings/expected-literals/fern-expected	crozier-e2e::e2e	type_lowering::json_binary_and_base64_strings_take_the_certified_types
@@ -505,6 +523,8 @@ docs/fern-measurements/type-lowering/reference-compositions/expected-literals/fe
 docs/fern-measurements/type-lowering/reference-compositions/fern-expected	crozier-e2e::e2e	type_lowering::reference_compositions_match_the_certified_pair
 docs/fern-measurements/type-lowering/reference-siblings-legacy/expected-literals/fern-expected	crozier-e2e::e2e	type_lowering::reference_compositions_match_the_certified_pair
 docs/fern-measurements/type-lowering/reference-siblings-legacy/fern-expected	crozier-e2e::e2e	type_lowering::reference_compositions_match_the_certified_pair
+docs/fern-measurements/type-lowering/string-member-compositions/expected-literals/fern-expected	crozier-e2e::e2e	type_lowering::string_compositions_keep_the_certified_scalar_type
+docs/fern-measurements/type-lowering/string-member-compositions/fern-expected	crozier-e2e::e2e	type_lowering::string_compositions_keep_the_certified_scalar_type
 docs/fern-measurements/type-lowering/union-branch-flattening/expected-literals/fern-expected	crozier-e2e::e2e	type_lowering::flattened_union_branches_keep_fields_and_first_branch_precedence
 docs/fern-measurements/type-lowering/union-branch-flattening/fern-expected	crozier-e2e::e2e	type_lowering::flattened_union_branches_keep_fields_and_first_branch_precedence
 docs/fern-measurements/type-lowering/union-member-lowering/expected-literals/fern-expected	crozier-e2e::e2e	type_lowering::union_members_lower_dedupe_merge_and_hoist_as_the_certified_pair
@@ -559,6 +579,8 @@ docs/fern-measurements/union-literals/telescope-renamed-discriminant/fern-expect
 docs/fern-measurements/union-literals/thermostat-nullable-member/fern-expected	crozier-e2e::e2e	unions::union_shapes_match_complete_goldens_in_both_enum_modes
 docs/fern-measurements/worked-examples/alias-body-reference-order/expected-literals/fern-expected	crozier-e2e::e2e	worked_examples::reference_lists_the_flattened_body_after_the_queries
 docs/fern-measurements/worked-examples/alias-body-reference-order/fern-expected	crozier-e2e::e2e	worked_examples::reference_lists_the_flattened_body_after_the_queries
+docs/fern-measurements/worked-examples/binary-body-examples/expected-literals/fern-expected	crozier-e2e::e2e	worked_examples::binary_body_examples_are_bytes_in_every_writer
+docs/fern-measurements/worked-examples/binary-body-examples/fern-expected	crozier-e2e::e2e	worked_examples::binary_body_examples_are_bytes_in_every_writer
 docs/fern-measurements/worked-examples/composed-enum-constraints/expected-literals/fern-expected	crozier-e2e::e2e	worked_examples::narrowed_enum_examples_take_a_member_the_constraints_admit
 docs/fern-measurements/worked-examples/composed-enum-constraints/fern-expected	crozier-e2e::e2e	worked_examples::narrowed_enum_examples_take_a_member_the_constraints_admit
 docs/fern-measurements/worked-examples/composed-reference-order/expected-literals/fern-expected	crozier-e2e::e2e	worked_examples::reference_compositions_list_the_later_member_first
@@ -577,6 +599,8 @@ docs/fern-measurements/worked-examples/inline-enum-constraints/expected-literals
 docs/fern-measurements/worked-examples/inline-enum-constraints/fern-expected	crozier-e2e::e2e	worked_examples::narrowed_enum_examples_take_a_member_the_constraints_admit
 docs/fern-measurements/worked-examples/kept-blank-descriptions/expected-literals/fern-expected	crozier-e2e::e2e	worked_examples::kept_description_blank_lines_follow_the_body_schema
 docs/fern-measurements/worked-examples/kept-blank-descriptions/fern-expected	crozier-e2e::e2e	worked_examples::kept_description_blank_lines_follow_the_body_schema
+docs/fern-measurements/worked-examples/nested-argument-widths/expected-literals/fern-expected	crozier-e2e::e2e	worked_examples::worked_call_arguments_count_their_comma_in_the_width
+docs/fern-measurements/worked-examples/nested-argument-widths/fern-expected	crozier-e2e::e2e	worked_examples::worked_call_arguments_count_their_comma_in_the_width
 docs/fern-measurements/worked-examples/numeric-dict-pairs/expected-literals/fern-expected	crozier-e2e::e2e	worked_examples::documentation_maps_spread_every_pair
 docs/fern-measurements/worked-examples/numeric-dict-pairs/fern-expected	crozier-e2e::e2e	worked_examples::documentation_maps_spread_every_pair
 docs/fern-measurements/worked-examples/optional-enum-query-arrays/expected-literals/fern-expected	crozier-e2e::e2e	worked_examples::optional_enum_query_arrays_are_left_out_of_worked_calls
@@ -707,7 +731,6 @@ docs/openapi-surface/handwritten/inline-oneof-variants/fern-expected	crozier-e2e
 docs/openapi-surface/handwritten/inline-property-unions/fern-expected	crozier-e2e::e2e	handwritten_fixtures_match_fern_goldens
 docs/openapi-surface/handwritten/invoice-renderer/fern-expected	crozier-e2e::e2e	handwritten_fixtures_match_fern_goldens
 docs/openapi-surface/handwritten/invoice-renderer/fern-expected	crozier-e2e::e2e	literals_mode::literals_mode_measurements_match_fern
-docs/openapi-surface/handwritten/json-binary-path/fern-expected	crozier-e2e::e2e	handwritten_fixtures_match_fern_goldens
 docs/openapi-surface/handwritten/json-request-shapes/fern-expected	crozier-e2e::e2e	handwritten_fixtures_match_fern_goldens
 docs/openapi-surface/handwritten/json-request-shapes/fern-expected	crozier-e2e::e2e	json_request_shapes_match_certified_output_in_both_enum_modes
 docs/openapi-surface/handwritten/kiln-array-mode/fern-expected	crozier-e2e::e2e	handwritten_fixtures_match_fern_goldens
@@ -1071,6 +1094,10 @@ tests/fixtures/azure-databox-management/expected	crozier-e2e::e2e	azure_databox_
 tests/fixtures/azure-databox-management/expected	crozier-e2e::e2e	overlay_goldens::overlay_goldens_match_fern_output
 tests/fixtures/azure-databox-management/expected-literals	crozier-e2e::e2e	overlay_goldens::overlay_goldens_match_fern_output
 tests/fixtures/basic-auth/expected	crozier-e2e::e2e	basic_auth_matches_fern_output
+tests/fixtures/benchling-api-v2-alpha/expected	crozier-e2e::e2e	benchling_api_v2_alpha_matches_fern_output
+tests/fixtures/benchling-api-v2-alpha/expected	crozier-e2e::e2e	overlay_goldens::overlay_goldens_match_fern_output
+tests/fixtures/benchling-api-v2-alpha/expected-literals	crozier-e2e::e2e	benchling_api_v2_alpha_matches_fern_output
+tests/fixtures/benchling-api-v2-alpha/expected-literals	crozier-e2e::e2e	overlay_goldens::overlay_goldens_match_fern_output
 tests/fixtures/billie-entry/expected	crozier-e2e::e2e	billie_entry_matches_fern_output
 tests/fixtures/billie/expected	crozier-e2e::e2e	billie_matches_fern_output
 tests/fixtures/bintable.com/expected	crozier-e2e::e2e	bintable_matches_fern_output

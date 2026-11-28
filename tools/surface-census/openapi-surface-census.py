@@ -27,7 +27,7 @@ Four rules make the number honest; none of them a `grep` obeys.
   `default`, `enum`, `const`) are never descended into for the same reason.
 * **A missing source is a hard failure, not a silent skip.** A missing committed
   document would otherwise report as declaring nothing,
-  and 394 of the 425 registered sources live in `corpus-sources/` (a split
+  and 395 of the 426 registered sources live in `corpus-sources/` (a split
   `tools/surface-census/tests/surface_census_test.py` holds to the registry, so it cannot drift). Pass
   `--allow-missing` to downgrade that to a warning, or `--original-fixtures-only` to
   census only the original fixture directories on purpose.
@@ -2724,7 +2724,7 @@ PORT_PINS = (
         "Census.class_name_sanitizations",
         "src/naming.rs::class_name",
         "that the schema-name predicate still applies the same pre-sanitization Pascal-casing decision",
-        "2599e090f3e05b7d",
+        "31fe6c9ef96fdba6",
     ),
     PortPin(
         "finalize_enum_ident",
@@ -4524,7 +4524,8 @@ def _class_name_pascal(words: str) -> str:
 def class_name(schema_key: str) -> str:
     """`naming::class_name`: the Python class name crozier gives a named schema."""
     words = "".join(c if c.isalnum() or c == "_" else " " for c in schema_key)
-    return sanitize_identifier(_class_name_pascal(words))
+    # Cased once more, as crozier does: `a/b-c` is `Abc`, not `ABC` (#992).
+    return sanitize_identifier(to_pascal_case(_class_name_pascal(words)))
 
 
 # The entries in naming.rs's DEBURRED_LATIN that NFKD does not spell the same
@@ -8669,7 +8670,7 @@ class Census:
         def needs_sanitizing(key: str) -> bool:
             # class_name spells a leading number before it ever calls
             # sanitize_identifier.
-            pascal = _class_name_pascal(key)
+            pascal = to_pascal_case(_class_name_pascal(key))
             return sanitize_identifier(pascal) != pascal
 
         return [

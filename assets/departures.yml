@@ -32,6 +32,29 @@
     invalid declared union examples and abstains on unsupported assertions.
   evidence: docs/departures/evidence/anyof-path-param-schema-example.md
 
+- id: binary-body-example
+  kind: fern-defect
+  trigger: >-
+    A request body the method takes as a single request argument annotated
+    bytes (a binary string body under a media type other than
+    application/octet-stream, wildcard media among them), in the worked
+    examples of README.md, reference.md and each client.py docstring.
+  fern: >-
+    The body's declared example, or the "string" sample where it declares
+    none, as a str (request="<binary string>"), which the bytes parameter
+    rejects.
+  crozier: >-
+    The same text as bytes, its UTF-8 encoding: the str literal behind a b
+    prefix where it is ASCII (request=b"<binary string>"), and spelled with
+    \xNN escapes where it is not; the annotation, the request construction and
+    every other byte of the call remain matched.
+  reason: >-
+    Type-checking the documented call against the generated signature rejects
+    the str for the bytes parameter, so the example does not match the code;
+    the bytes literal is a value the annotation admits, carrying the text the
+    document declares.
+  evidence: docs/departures/evidence/binary-body-example.md
+
 - id: binary-form-part-example
   kind: fern-defect
   trigger: >-
@@ -197,8 +220,10 @@
   trigger: >-
     A discriminated `oneOf` whose `discriminator.mapping` names, for one value,
     a target that is no component schema, beside targets that are, and one
-    `oneOf` member no mapping target names tags itself with that value: the
-    union's types module.
+    `oneOf` member no mapping target names tags itself with that value; or an
+    inheritance base (a `discriminator` with a mapping and no `oneOf`) whose
+    mapping names such a target for a value one subtype extending the base
+    tags itself with: the union's types module.
   fern: >-
     The value's wrapper holds a required `value: typing.Any` ahead of its
     `Literal` tag, so a payload of that variant, which carries the member's
@@ -338,6 +363,30 @@
     The documented call does not bind: the method takes no `f_5g_mm_cause_value`
     or `f_value`, so Python raises `TypeError` for the unexpected keyword.
   evidence: docs/departures/evidence/digit-leading-property-example-keyword.md
+
+- id: discriminated-union-v1-wire-keys
+  kind: fern-defect
+  trigger: >-
+    Every SDK: `core/pydantic_utilities.py`'s `parse_obj_as`, the entry point
+    every generated client parses a response through.
+  fern: >-
+    Every input that is not a model class is dealiased to Python field names
+    before validation, so under Pydantic v1 a discriminated union whose tag
+    property needs an alias (a wire key `schema` declared as field `schema_`)
+    loses the key Pydantic v1 looks its discriminator up by.
+  crozier: >-
+    The same function, except that under Pydantic v1 an input whose type holds
+    a discriminated union outside any model (the union itself, or a list, map
+    or optional of one) is validated as received, through a
+    `_has_discriminated_union` helper defined just before it. Pydantic v2's
+    path and every other input are unchanged.
+  reason: >-
+    The generated package declares `pydantic >= 1.9.2`, and through the
+    certified SDK's own client a valid response of such a union raises a
+    validation error under Pydantic 1.10 ("Discriminator 'schema_' is missing
+    in value") although Pydantic validates the same payload directly. crozier's
+    parser constructs the variant under both Pydantic majors.
+  evidence: docs/departures/evidence/discriminated-union-v1-wire-keys.md
 
 - id: docstring-example-escapes
   kind: fern-defect
@@ -936,6 +985,37 @@
     `client.applicants.all(...)` raises `AttributeError`, and the usage example
     under the same heading already calls `all_`.
   evidence: docs/departures/evidence/reference-heading-escaped-method-name.md
+
+- id: renamed-request-options-docs
+  kind: fern-defect
+  trigger: >-
+    An operation one of whose own body, query or header arguments is named
+    request_options, so both sides' generated methods take the SDK's options
+    as _request_options: its entry in reference.md's parameter list, and
+    README.md's retry and timeout calls when it is the README's first
+    operation. Or an operation whose path parameter is named request_options,
+    which both sides' methods take as request_options_: its reference.md
+    worked call.
+  fern: >-
+    The options entry is **request_options:**
+    `typing.Optional[RequestOptions]`, listed beside the argument of the same
+    name, and the README calls pass request_options={"max_retries": 1} and
+    request_options={"timeout": 1}. The path parameter's worked call passes
+    request_options="request_options".
+  crozier: >-
+    The method's own name for its options, **_request_options:** and
+    _request_options={, and the path parameter's own keyword,
+    request_options_="request_options"; every other byte of each line, and
+    every signature, remain matched.
+  reason: >-
+    The generated method declares no second request_options: the documented
+    options entry names the operation's own argument, and the README's calls
+    bind the options dictionary to that argument, so it is sent in the request
+    as the argument's value and no retry or timeout option is applied. Where
+    the path parameter is request_options_, the worked call binds its value to
+    the SDK's options argument and omits the required path parameter, so it
+    raises TypeError.
+  evidence: docs/departures/evidence/renamed-request-options-docs.md
 
 - id: repeated-credential-example-keyword
   kind: fern-defect

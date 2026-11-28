@@ -107,11 +107,11 @@ def test_the_scenario_index_writer_refuses_a_broken_catalog_and_writes_once_it_i
     script = root / "tools/surface-census/scenario-proof-index.py"
     shutil.copy2(REPO / "tools/surface-census/scenario-proof-index.py", script)
     index = root / "docs/openapi-surface/scenario-proof-index.tsv"
-    row = next(
-        line
-        for line in index.read_text(encoding="utf-8").splitlines()[1:]
-        if "\treal\t" in line and line.split("\t")[7] == "match"
-    )
+    row = next(line for line in index.read_text(encoding="utf-8").splitlines()[1:] if "\treal\t" in line)
+    # Any outcome other than the row's own is a stale cell the writer restates.
+    cells = row.split("\t")
+    cells[7] = "departure" if cells[7] == "match" else "match"
+    stale_row = "\t".join(cells)
     golden = row.split("\t")[4].split(";")[0]
     for broken in ("metadata", "document"):
         match broken:
@@ -131,7 +131,7 @@ def test_the_scenario_index_writer_refuses_a_broken_catalog_and_writes_once_it_i
             case _:
                 raise AssertionError(broken)
         # A stale derived cell the writer would restate, were its catalogs readable.
-        stale = index.read_text(encoding="utf-8").replace(row, row.replace("\tmatch\t", "\tdeparture\t", 1), 1)
+        stale = index.read_text(encoding="utf-8").replace(row, stale_row, 1)
         assert stale != index.read_text(encoding="utf-8")
         index.write_text(stale, encoding="utf-8")
         refused = subprocess.run(

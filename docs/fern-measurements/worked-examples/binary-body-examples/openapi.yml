@@ -1,0 +1,111 @@
+openapi: 3.0.3
+info:
+  title: Parcel Vault
+  version: 1.0.0
+servers:
+- url: https://vault.example.com
+paths:
+  /blobs/{blob_id}:
+    put:
+      operationId: putBlob
+      tags:
+      - blobs
+      parameters:
+      - name: blob_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+              example: <binary chunk>
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Blob'
+  /blobs:
+    post:
+      operationId: uploadBlob
+      tags:
+      - blobs
+      requestBody:
+        required: true
+        content:
+          '*/*':
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Blob'
+  /blobs/{blob_id}/notes:
+    post:
+      operationId: attachNote
+      tags:
+      - blobs
+      parameters:
+      - name: blob_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          '*/*':
+            schema:
+              type: string
+              format: binary
+              example: "note \"quoted\" body"
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Blob'
+  /blobs/{blob_id}/receipts:
+    post:
+      operationId: attachReceipt
+      tags:
+      - blobs
+      parameters:
+      - name: blob_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          '*/*':
+            schema:
+              type: string
+              format: binary
+              example: "café receipt"
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Blob'
+components:
+  schemas:
+    Blob:
+      type: object
+      properties:
+        id:
+          type: string

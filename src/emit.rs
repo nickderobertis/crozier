@@ -271,6 +271,44 @@ fn single_quoted_python_string(literal: &str) -> Option<(String, usize)> {
     None
 }
 
+/// The text a Python string literal (double- or single-quoted, as the worked
+/// examples write one) holds; `None` for any other value.
+pub(crate) fn string_literal_text(literal: &str) -> Option<String> {
+    if !(literal.starts_with('"') || literal.starts_with('\'')) {
+        return None;
+    }
+    match parse_example_value(literal)? {
+        serde_json::Value::String(text) => Some(text),
+        _ => None,
+    }
+}
+
+/// The bytes literal holding a string literal's UTF-8 encoding, `None` for
+/// anything but a string literal. An ASCII string keeps its own spelling behind
+/// a `b` prefix (`'note "quoted" body'` is `b'note "quoted" body'`), so each
+/// writer keeps the quoting it chose; a non-ASCII character cannot stand in a
+/// bytes literal, so such a string is spelled with `\xNN` escapes.
+pub(crate) fn bytes_literal(literal: &str) -> Option<String> {
+    let text = string_literal_text(literal)?;
+    if text.is_ascii() {
+        return Some(format!("b{literal}"));
+    }
+    let mut out = String::from("b\"");
+    for byte in text.bytes() {
+        match byte {
+            b'"' => out.push_str("\\\""),
+            b'\\' => out.push_str("\\\\"),
+            b'\n' => out.push_str("\\n"),
+            b'\r' => out.push_str("\\r"),
+            b'\t' => out.push_str("\\t"),
+            0x20..=0x7e => out.push(char::from(byte)),
+            other => out.push_str(&format!("\\x{other:02x}")),
+        }
+    }
+    out.push('"');
+    Some(out)
+}
+
 /// The value Fern substitutes for a `date-time` example it cannot read.
 const FERN_DEFAULT_DATETIME: &str = "2024-01-15T09:30:00+00:00";
 
@@ -3194,8 +3232,9 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
     };
     let retry_prefix = client_call_prefix(first);
     let retry_call = format!(
-        "{retry_prefix}({}request_options={{",
-        if complex { "..., " } else { "" }
+        "{retry_prefix}({}{}={{",
+        if complex { "..., " } else { "" },
+        options_name(first)
     );
 
     let sync_example = {
@@ -3749,7 +3788,7 @@ fn reference_entry(
     }
     params.extend(optional_path_rows.take().unwrap_or_default());
     params.push(ParamRow {
-        name: "request_options".to_string(),
+        name: options_name(ep).to_string(),
         annot: "typing.Optional[RequestOptions]".to_string(),
         suffix: " — Request-specific configuration.".to_string(),
     });
@@ -5984,6 +6023,32 @@ fn doc_arg(dp: &DocParam) -> Doc {
     })
 }
 
+/// The name of an operation's SDK `RequestOptions` argument: `request_options`,
+/// or `_request_options` where one of the operation's own body, query or header
+/// arguments already takes that name, as the certified pair renames it
+/// (measured in
+/// `docs/fern-measurements/naming-acceptance/request-options-body-property/`).
+/// The argument keeps its public name and wire key; only the SDK's option
+/// moves, in every signature, docstring, forwarded call and request. A path
+/// parameter of that name is `request_options_` instead
+/// ([`crate::naming::path_param_name`]), so it never collides.
+pub(crate) fn options_name(ep: &Endpoint) -> &'static str {
+    let named = |name: &str| name == "request_options";
+    let body = match &ep.request_body {
+        Some(RequestBody::Inline(fields)) => fields.iter().any(|f| named(&f.py_name)),
+        Some(RequestBody::Form(form)) => form.fields.iter().any(|f| named(&f.py_name)),
+        _ => false,
+    };
+    if body
+        || ep.query_params.iter().any(|p| named(&p.py_name))
+        || ep.header_params.iter().any(|p| named(&p.py_name))
+    {
+        "_request_options"
+    } else {
+        "request_options"
+    }
+}
+
 /// The `def`/`async def` signature line (indent 4), laid out with ruff's
 /// right-hand-split: `self`, positional path params, `*`, keyword-only query,
 /// header, and body arguments, then `request_options`, closing with the return
@@ -5999,9 +6064,10 @@ fn signature(ep: &Endpoint, mp: &MethodParams, return_type: &str, is_async: bool
             .into_iter()
             .map(doc_arg),
     );
-    args.push(Doc::atom(
-        "request_options: typing.Optional[RequestOptions] = None",
-    ));
+    args.push(Doc::atom(format!(
+        "{}: typing.Optional[RequestOptions] = None",
+        options_name(ep)
+    )));
     let sig_open = format!(
         "    {}def {}(",
         if is_async { "async " } else { "" },
@@ -6114,7 +6180,8 @@ fn pager_success_branch(
     for param in &ep.header_params {
         args.push(format!("{}={}", param.py_name, param.py_name));
     }
-    args.push("request_options=request_options".to_string());
+    let options = options_name(ep);
+    args.push(format!("{options}={options}"));
     if is_async {
         lines.push(String::new());
         lines.push(format!("{indent}async def _get_next():"));
@@ -6234,7 +6301,10 @@ fn raw_docstring(
     for dp in ordered_keyword_params(query_params, header_params, body_params) {
         push_param(dp);
     }
-    lines.push("        request_options : typing.Optional[RequestOptions]".to_string());
+    lines.push(format!(
+        "        {} : typing.Optional[RequestOptions]",
+        options_name(ep)
+    ));
     lines.push("            Request-specific configuration.".to_string());
     lines.push(String::new());
     lines.push("        Returns".to_string());
@@ -6464,9 +6534,10 @@ fn retries_disabled_preamble(ep: &Endpoint) -> Vec<String> {
     if !ep.extensions.retries_disabled {
         return Vec::new();
     }
+    let options = options_name(ep);
     vec![
         "        _request_options_with_retries_disabled: typing.Optional[RequestOptions] = (".to_string(),
-        "            {**request_options, \"max_retries\": 0} if request_options is not None else {\"max_retries\": 0}".to_string(),
+        format!("            {{**{options}, \"max_retries\": 0}} if {options} is not None else {{\"max_retries\": 0}}"),
         "        )".to_string(),
     ]
 }
@@ -7121,7 +7192,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
     lines.push(if ep.extensions.retries_disabled {
         "            request_options=_request_options_with_retries_disabled,".to_string()
     } else {
-        "            request_options=request_options,".to_string()
+        format!("            request_options={},", options_name(ep))
     });
     // A request body passes the `OMIT` sentinel so unset optionals drop out.
     if ep.request_body.is_some() {
@@ -7415,7 +7486,10 @@ fn raw_stream_docstring(ep: &Endpoint, mp: &MethodParams, return_type: &str) -> 
     ordered_keyword_params(&mp.query, &mp.header, &mp.body)
         .into_iter()
         .for_each(&mut push_param);
-    lines.push("        request_options : typing.Optional[RequestOptions]".to_string());
+    lines.push(format!(
+        "        {} : typing.Optional[RequestOptions]",
+        options_name(ep)
+    ));
     lines.push("            Request-specific configuration.".to_string());
     lines.push(String::new());
     lines.push("        Yields".to_string());
@@ -7504,6 +7578,7 @@ fn raw_binary_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports
         format!("\n{error_branches}")
     };
     let validation_error = format!("\n                except {validation_error} as e:\n                    raise ParsingError(\n                        status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e\n                    )");
+    let options = options_name(ep);
     let body = format!(
         "\
 {call}
@@ -7511,7 +7586,7 @@ fn raw_binary_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports
             {async_kw}def _stream() -> {wrapper}[{data_type}]:
                 try:
                     if 200 <= _response.status_code < 300:
-                        _chunk_size = request_options.get(\"chunk_size\", None) if request_options is not None else None
+                        _chunk_size = {options}.get(\"chunk_size\", None) if {options} is not None else None
                         {success_return}
                     {read}{error_branches}
                     _response_json = _response.json()
@@ -7550,7 +7625,10 @@ fn raw_binary_stream_docstring(ep: &Endpoint, mp: &MethodParams, return_type: &s
     ordered_keyword_params(&mp.query, &mp.header, &mp.body)
         .into_iter()
         .for_each(&mut push_param);
-    lines.push("        request_options : typing.Optional[RequestOptions]".to_string());
+    lines.push(format!(
+        "        {} : typing.Optional[RequestOptions]",
+        options_name(ep)
+    ));
     lines.push(
         "            Request-specific configuration. You can pass in configuration such as `chunk_size`, and more to customize the request and response.".to_string(),
     );
@@ -8543,7 +8621,8 @@ fn client_method(cx: &ClientCtx, ep: &Endpoint, is_async: bool, imports: &mut Im
     for dp in ordered_keyword_params(&mp.query, &mp.header, &mp.body) {
         call_args.push(Doc::atom(format!("{}={}", dp.name, dp.name)));
     }
-    call_args.push(Doc::atom("request_options=request_options"));
+    let options = options_name(ep);
+    call_args.push(Doc::atom(format!("{options}={options}")));
     let open = format!("{await_}self._raw_client.{}(", ep.method_name);
     // A paginated raw method already returns the pager, so the high-level one
     // returns it straight through rather than unwrapping a buffered response.
@@ -8592,7 +8671,8 @@ fn client_stream_method(
     for dp in ordered_keyword_params(&mp.query, &mp.header, &mp.body) {
         call_args.push(Doc::atom(format!("{}={}", dp.name, dp.name)));
     }
-    call_args.push(Doc::atom("request_options=request_options"));
+    let options = options_name(ep);
+    call_args.push(Doc::atom(format!("{options}={options}")));
     let open = format!("self._raw_client.{}(", ep.method_name);
     let raw_call = Doc::group(open, call_args, ")").flat();
     let body = if is_async {
@@ -8643,7 +8723,10 @@ fn client_stream_docstring(
     ordered_keyword_params(&mp.query, &mp.header, &mp.body)
         .into_iter()
         .for_each(&mut push_param);
-    lines.push("        request_options : typing.Optional[RequestOptions]".to_string());
+    lines.push(format!(
+        "        {} : typing.Optional[RequestOptions]",
+        options_name(ep)
+    ));
     lines.push("            Request-specific configuration.".to_string());
     lines.push(String::new());
     lines.push("        Yields".to_string());
@@ -8711,7 +8794,8 @@ fn client_binary_stream_method(
     for dp in ordered_keyword_params(&mp.query, &mp.header, &mp.body) {
         call_args.push(Doc::atom(format!("{}={}", dp.name, dp.name)));
     }
-    call_args.push(Doc::atom("request_options=request_options"));
+    let options = options_name(ep);
+    call_args.push(Doc::atom(format!("{options}={options}")));
     let open = format!("self._raw_client.{}(", ep.method_name);
     let raw_call = Doc::group(open, call_args, ")").flat();
     let body = if is_async {
@@ -8755,7 +8839,10 @@ fn client_binary_stream_docstring(
     ordered_keyword_params(&mp.query, &mp.header, &mp.body)
         .into_iter()
         .for_each(&mut push_param);
-    lines.push("        request_options : typing.Optional[RequestOptions]".to_string());
+    lines.push(format!(
+        "        {} : typing.Optional[RequestOptions]",
+        options_name(ep)
+    ));
     lines.push(
         "            Request-specific configuration. You can pass in configuration such as `chunk_size`, and more to customize the request and response.".to_string(),
     );
@@ -8829,7 +8916,10 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
     ordered_keyword_params(&mp.query, &mp.header, &mp.body)
         .into_iter()
         .for_each(&mut push_param);
-    lines.push("        request_options : typing.Optional[RequestOptions]".to_string());
+    lines.push(format!(
+        "        {} : typing.Optional[RequestOptions]",
+        options_name(ep)
+    ));
     lines.push("            Request-specific configuration.".to_string());
     lines.push(String::new());
     lines.push("        Returns".to_string());
@@ -9051,8 +9141,13 @@ impl Example {
                         None => inner_pad.clone(),
                     };
                     out.push_str(&head);
+                    // The argument's line ends with its comma, which the width
+                    // counts, as a list item's does: the
+                    // `worked-examples/nested-argument-widths` measurement's async
+                    // `cc_addresses` and `routing` reach column 81 with it and
+                    // spread, where an argument ending at column 80 stays flat.
                     let value_column = indent + 4 + kw.as_ref().map_or(0, |key| key.len() + 1);
-                    out.push_str(&v.render_at(indent + 4, value_column));
+                    out.push_str(&v.render_at(indent + 4, value_column + 1));
                     out.push_str(",\n");
                 }
                 out.push_str(&pad);
@@ -10678,6 +10773,19 @@ impl<'a> ExampleCtx<'a> {
             TypeRef::Optional(inner) => self.resolves_to_number_or_bool(inner),
             TypeRef::Named(name) => match self.find(name) {
                 Some(TypeDecl::Alias(alias)) => self.resolves_to_number_or_bool(&alias.target),
+                _ => false,
+            },
+            _ => false,
+        }
+    }
+
+    /// Whether a type is `bytes`, through optionality and aliases.
+    fn resolves_to_bytes(&self, t: &TypeRef) -> bool {
+        match t {
+            TypeRef::Primitive(Prim::Bytes) => true,
+            TypeRef::Optional(inner) => self.resolves_to_bytes(inner),
+            TypeRef::Named(name) => match self.find(name) {
+                Some(TypeDecl::Alias(alias)) => self.resolves_to_bytes(&alias.target),
                 _ => false,
             },
             _ => false,
@@ -12324,14 +12432,16 @@ fn build_example_inner(
             if ctx.resolves_to_any(&s.type_ref) {
                 ctx.untyped_arguments.insert("request".to_string());
             }
-            // The JSON binary example must have its generated bytes type. The
-            // matched method still passes the value directly to `json=`.
-            if s.type_ref == TypeRef::Primitive(Prim::Bytes)
-                && s.content_type
-                && s.content_type_override.is_none()
-                && matches!(&v, Example::Atom(value) if value == "\"string\"")
-            {
-                v = Example::Atom("b\"string\"".to_string());
+            // A body the method annotates `bytes` is passed bytes in every
+            // writer, whether its value is Fern's `"string"` sample or the
+            // document's declared example (`binary-json-body-example`,
+            // `binary-body-example`); the matched method sends it unchanged.
+            if ctx.resolves_to_bytes(&s.type_ref) {
+                if let Example::Atom(value) = &v {
+                    if let Some(bytes) = bytes_literal(value) {
+                        v = Example::Atom(bytes);
+                    }
+                }
             }
             if untyped_path_parameter
                 && body_example.is_none()
@@ -14687,9 +14797,9 @@ mod tests {
     }
 
     /// The longest mapping value whose wrapper keeps the example
-    /// `    request=SurveyEntry_<Value>(value=1.1)` within 80 columns, as it is
-    /// written before the docstring indents it.
-    const WRAPPED_FIT: usize = 45;
+    /// `    request=SurveyEntry_<Value>(value=1.1),` within 80 columns, its
+    /// comma counted, as it is written before the docstring indents it.
+    const WRAPPED_FIT: usize = 44;
 
     /// The raw client of `document`, before `ruff format`.
     fn raw_client_for(document: serde_json::Value) -> String {

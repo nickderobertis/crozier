@@ -1,0 +1,82 @@
+openapi: 3.0.3
+info:
+  title: Kennel Records
+  version: 1.0.0
+paths:
+  /kennels/{kennel_id}:
+    get:
+      operationId: get_kennel
+      parameters:
+      - name: kennel_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The kennel
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Kennel'
+components:
+  schemas:
+    Animal:
+      type: object
+      properties:
+        name:
+          type: string
+    Hound:
+      allOf:
+      - $ref: '#/components/schemas/Animal'
+      - type: object
+        properties:
+          howls:
+            type: boolean
+    Terrier:
+      allOf:
+      - $ref: '#/components/schemas/Animal'
+      - type: object
+        properties:
+          digs:
+            type: boolean
+          size:
+            type: string
+            enum:
+            - toy
+            - standard
+    TagCode:
+      allOf:
+      - $ref: '#/components/schemas/Hound'
+      - description: A tag code, after the referenced hound.
+        type: string
+    BadgeCode:
+      allOf:
+      - description: A badge code, before a union of breeds.
+        type: string
+      - oneOf:
+        - $ref: '#/components/schemas/Hound'
+        - $ref: '#/components/schemas/Terrier'
+    CollarCode:
+      description: The collar code's own description.
+      allOf:
+      - $ref: '#/components/schemas/Hound'
+      - description: The string member's description.
+        type: string
+    LeashCode:
+      allOf:
+      - type: string
+      - $ref: '#/components/schemas/Terrier'
+    Kennel:
+      type: object
+      properties:
+        tag:
+          $ref: '#/components/schemas/TagCode'
+        badge:
+          $ref: '#/components/schemas/BadgeCode'
+        collar:
+          $ref: '#/components/schemas/CollarCode'
+        leash:
+          $ref: '#/components/schemas/LeashCode'
+        resident:
+          $ref: '#/components/schemas/Hound'

@@ -4,6 +4,12 @@
     "docs/fern-measurements/bodies-responses/body-requiredness-shapes/fern-expected": {},
     "docs/fern-measurements/bodies-responses/byte-text-response-literals/fern-expected": {},
     "docs/fern-measurements/bodies-responses/composed-form-body/fern-expected": {},
+    "docs/fern-measurements/bodies-responses/composed-reference-body/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/bodies-responses/composed-reference-body/fern-expected": {},
     "docs/fern-measurements/bodies-responses/error-body-shapes-literals/fern-expected": {},
     "docs/fern-measurements/bodies-responses/header-body-collision/fern-expected": {},
     "docs/fern-measurements/bodies-responses/inline-body-readonly-own-overlap-literals/fern-expected": {},
@@ -586,6 +592,12 @@
     "docs/fern-measurements/models-refs-literals/verified-seal/fern-expected": {},
     "docs/fern-measurements/models-refs-literals/woven-thread/fern-expected": {},
     "docs/fern-measurements/models-refs-remote/library-records/fern-expected": {},
+    "docs/fern-measurements/naming-acceptance/aliased-union-discriminator/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/naming-acceptance/aliased-union-discriminator/fern-expected": {},
     "docs/fern-measurements/naming-acceptance/boolean-component-schemas/expected-literals/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
@@ -658,18 +670,42 @@
       ]
     },
     "docs/fern-measurements/naming-acceptance/relative-response-ref/fern-expected": {},
+    "docs/fern-measurements/naming-acceptance/repeated-inherited-properties/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/naming-acceptance/repeated-inherited-properties/fern-expected": {},
     "docs/fern-measurements/naming-acceptance/request-local-union-payloads/expected-literals/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
     "docs/fern-measurements/naming-acceptance/request-local-union-payloads/fern-expected": {},
+    "docs/fern-measurements/naming-acceptance/request-options-body-property/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/naming-acceptance/request-options-body-property/fern-expected": {},
+    "docs/fern-measurements/naming-acceptance/required-only-members/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/naming-acceptance/required-only-members/fern-expected": {},
     "docs/fern-measurements/naming-acceptance/root-import-order/expected-literals/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
     "docs/fern-measurements/naming-acceptance/root-import-order/fern-expected": {},
+    "docs/fern-measurements/naming-acceptance/single-letter-component-words/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/naming-acceptance/single-letter-component-words/fern-expected": {},
     "docs/fern-measurements/naming-acceptance/xml-helper-import/expected-literals/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
@@ -757,12 +793,30 @@
       ]
     },
     "docs/fern-measurements/type-lowering/const-discriminator-tags/fern-expected": {},
+    "docs/fern-measurements/type-lowering/discriminator-tag-reach/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/type-lowering/discriminator-tag-reach/fern-expected": {},
+    "docs/fern-measurements/type-lowering/enum-use-site-descriptions/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/type-lowering/enum-use-site-descriptions/fern-expected": {},
     "docs/fern-measurements/type-lowering/inferred-discriminator-tags/expected-literals/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
     "docs/fern-measurements/type-lowering/inferred-discriminator-tags/fern-expected": {},
+    "docs/fern-measurements/type-lowering/inheritance-dangling-target/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/type-lowering/inheritance-dangling-target/fern-expected": {},
     "docs/fern-measurements/type-lowering/inherited-discriminator-tags/expected-literals/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
@@ -817,6 +871,12 @@
       ]
     },
     "docs/fern-measurements/type-lowering/reference-siblings-legacy/fern-expected": {},
+    "docs/fern-measurements/type-lowering/string-member-compositions/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/type-lowering/string-member-compositions/fern-expected": {},
     "docs/fern-measurements/type-lowering/union-branch-flattening/expected-literals/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
@@ -1007,6 +1067,12 @@
       ]
     },
     "docs/fern-measurements/worked-examples/alias-body-reference-order/fern-expected": {},
+    "docs/fern-measurements/worked-examples/binary-body-examples/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/worked-examples/binary-body-examples/fern-expected": {},
     "docs/fern-measurements/worked-examples/composed-enum-constraints/expected-literals/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
@@ -1061,6 +1127,12 @@
       ]
     },
     "docs/fern-measurements/worked-examples/kept-blank-descriptions/fern-expected": {},
+    "docs/fern-measurements/worked-examples/nested-argument-widths/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/worked-examples/nested-argument-widths/fern-expected": {},
     "docs/fern-measurements/worked-examples/numeric-dict-pairs/expected-literals/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
@@ -1185,7 +1257,6 @@
     "docs/openapi-surface/handwritten/inline-oneof-variants/fern-expected": {},
     "docs/openapi-surface/handwritten/inline-property-unions/fern-expected": {},
     "docs/openapi-surface/handwritten/invoice-renderer/fern-expected": {},
-    "docs/openapi-surface/handwritten/json-binary-path/fern-expected": {},
     "docs/openapi-surface/handwritten/json-request-shapes/fern-expected": {},
     "docs/openapi-surface/handwritten/kiln-array-mode/fern-expected": {},
     "docs/openapi-surface/handwritten/kiln-array-variants/fern-expected": {},
@@ -1506,6 +1577,12 @@
       ]
     },
     "tests/fixtures/basic-auth/expected": {},
+    "tests/fixtures/benchling-api-v2-alpha/expected": {},
+    "tests/fixtures/benchling-api-v2-alpha/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/billie-entry/expected": {},
     "tests/fixtures/billie/expected": {},
     "tests/fixtures/bintable.com/expected": {},

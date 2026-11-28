@@ -1540,6 +1540,132 @@ fn binary_form_part_example_line(pair: &Pair<'_>, fern: &str, crozier: &str) -> 
             .contains(name)
 }
 
+/// `binary-body-example`: a worked call's `request=` argument for a body the
+/// method annotates `bytes`, where Fern passes the text as a str and crozier
+/// the same text as bytes. A docstring doubles the backslashes of a `\xNN`
+/// escape, as it doubles every escape (`docstring-example-escapes`). Fern's
+/// `"string"` sample beside a JSON binary method is `binary-json-body-example`'s.
+fn binary_body_example_line(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    let docstring = pair.rel.ends_with("client.py");
+    if !(DOCS_FILES.contains(&pair.rel) || docstring) {
+        return false;
+    }
+    let fern_argument = fern.trim_start();
+    let indent = &fern[..fern.len() - fern_argument.len()];
+    let (Some(fern_value), Some(crozier_value)) = (
+        fern_argument
+            .strip_prefix("request=")
+            .and_then(|value| value.strip_suffix(',')),
+        crozier
+            .strip_prefix(indent)
+            .and_then(|argument| argument.strip_prefix("request="))
+            .and_then(|value| value.strip_suffix(',')),
+    ) else {
+        return false;
+    };
+    let context = pair.context.request_examples();
+    if fern_value == "\"string\"" && !context.binary_json_methods.is_empty() {
+        return false;
+    }
+    let Some(text) = crate::emit::string_literal_text(fern_value) else {
+        return false;
+    };
+    let encodes_text =
+        |literal: &str| python_bytes_literal(literal).as_deref() == Some(text.as_bytes());
+    (encodes_text(crozier_value) || docstring && encodes_text(&crozier_value.replace("\\\\", "\\")))
+        && context.bytes_parameters.contains("request")
+}
+
+/// `renamed-request-options-docs`: where an operation's own argument is named
+/// `request_options`, its SDK option is `_request_options` (as both sides'
+/// signatures declare it), and crozier's README retry and timeout calls and its
+/// `reference.md` parameter list name that option where Fern's name
+/// `request_options`: the body argument the method takes under that name.
+fn renamed_request_options_docs_line(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    // A path parameter named `request_options` is the method's
+    // `request_options_` on both sides, and `reference.md`'s worked call passes
+    // it as `request_options=`, which binds to the method's own options.
+    if pair.rel == "reference.md" {
+        let indent = fern.len() - fern.trim_start().len();
+        let (lead, call) = fern.split_at(indent);
+        if let Some(value) = call.strip_prefix("request_options=") {
+            if !value.starts_with('{')
+                && crozier == format!("{lead}request_options_={value}")
+                && pair
+                    .context
+                    .request_examples()
+                    .method_parameters
+                    .values()
+                    .any(|parameters| {
+                        parameters.contains_key("request_options_")
+                            && parameters.contains_key("request_options")
+                    })
+            {
+                return true;
+            }
+        }
+    }
+    let renamed = match pair.rel {
+        "README.md" if fern.starts_with("client.") && fern.ends_with("request_options={") => {
+            format!(
+                "{}_request_options={{",
+                fern.strip_suffix("request_options={").unwrap_or(fern)
+            )
+        }
+        "reference.md" => fern.replacen("**request_options:** ", "**_request_options:** ", 1),
+        _ => return false,
+    };
+    renamed != fern
+        && crozier == renamed
+        && (pair.rel == "README.md"
+            || fern
+                .ends_with("`typing.Optional[RequestOptions]` — Request-specific configuration."))
+        && pair
+            .context
+            .request_examples()
+            .method_parameters
+            .values()
+            .any(|parameters| {
+                parameters.contains_key("request_options")
+                    && parameters.contains_key("_request_options")
+            })
+}
+
+/// The bytes a Python bytes literal (`b"…"` or `b'…'`) holds, reading the
+/// escapes crozier writes (`\xNN`, `\\`, a quote, `\n`, `\r`, `\t`); `None` for
+/// anything else, a non-ASCII character among them.
+fn python_bytes_literal(literal: &str) -> Option<Vec<u8>> {
+    let body = literal.strip_prefix('b')?;
+    let quote = body.chars().next().filter(|c| matches!(c, '"' | '\''))?;
+    let inner = body[1..].strip_suffix(quote)?;
+    let mut out = Vec::new();
+    let mut chars = inner.chars();
+    while let Some(c) = chars.next() {
+        if !c.is_ascii() || c == quote {
+            return None;
+        }
+        if c != '\\' {
+            out.push(c as u8);
+            continue;
+        }
+        match chars.next()? {
+            'x' => {
+                let digits: String = chars.by_ref().take(2).collect();
+                if digits.len() != 2 || !digits.chars().all(|c| c.is_ascii_hexdigit()) {
+                    return None;
+                }
+                out.push(u8::from_str_radix(&digits, 16).ok()?);
+            }
+            'n' => out.push(b'\n'),
+            'r' => out.push(b'\r'),
+            't' => out.push(b'\t'),
+            escaped @ ('\\' | '"' | '\'') => out.push(escaped as u8),
+            _ => return None,
+        }
+    }
+    Some(out)
+}
+
 fn binary_json_body_example_line(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
     let (Some(fern_value), Some(crozier_value)) = (
         fern.trim_start().strip_prefix("request="),
@@ -2153,8 +2279,9 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 63] = [
+pub const RULE_IDS: [&str; 66] = [
     "anyof-path-param-schema-example",
+    "binary-body-example",
     "binary-form-part-example",
     "binary-json-body-example",
     "body-query-parameter-value",
@@ -2170,6 +2297,7 @@ pub const RULE_IDS: [&str; 63] = [
     "declared-timestamp-property-example",
     "digit-leading-method-reference-identifiers",
     "digit-leading-property-example-keyword",
+    "discriminated-union-v1-wire-keys",
     "docstring-example-escapes",
     "docstring-literal-dollar-escape",
     "emoji-tag-reference-identifiers",
@@ -2199,6 +2327,7 @@ pub const RULE_IDS: [&str; 63] = [
     "recursive-alias-named-type",
     "reference-anchor-follows-corrected-client",
     "reference-heading-escaped-method-name",
+    "renamed-request-options-docs",
     "repeated-credential-example-keyword",
     "repeated-query-body-example-keyword",
     "request-alias-reference-parameters",
@@ -2376,6 +2505,18 @@ pub fn rule(id: &str) -> Option<Rule> {
         },
         "fern-metadata-generator-config" => Rule {
             region: Some(metadata_generator_config),
+            ..none
+        },
+        "discriminated-union-v1-wire-keys" => Rule {
+            region: Some(discriminated_union_v1_wire_keys),
+            ..none
+        },
+        "renamed-request-options-docs" => Rule {
+            line: Some(renamed_request_options_docs_line),
+            ..none
+        },
+        "binary-body-example" => Rule {
+            line: Some(binary_body_example_line),
             ..none
         },
         "binary-form-part-example" => Rule {
@@ -3731,6 +3872,62 @@ fn metadata_generator_config(pair: &Pair<'_>) -> Result<Option<Region>, String> 
         Member::Shared => false,
     };
     Ok(holds.then_some(window))
+}
+
+/// The helper crozier's `core/pydantic_utilities.py` adds before `parse_obj_as`
+/// (the `discriminated-union-v1-wire-keys` departure), as the comparison reads it.
+const V1_DISCRIMINATED_UNION_HELPER: &str = "def _has_discriminated_union(type_: Any) -> bool:
+    \"\"\"Whether `type_` holds a discriminated union outside any model: Pydantic v1
+    finds a union's discriminator under its wire alias only, so such input is
+    validated as received rather than dealiased.\"\"\"
+    args = typing_extensions.get_args(type_)
+    if typing_extensions.get_origin(type_) is typing_extensions.Annotated:
+        if any(isinstance(meta, _FieldInfo) and getattr(meta, \"discriminator\", None) for meta in args[1:]):
+            return True
+        return _has_discriminated_union(args[0])
+    return any(_has_discriminated_union(arg) for arg in args)
+
+
+";
+
+/// The certified runtime's dealiasing of every non-model input to `parse_obj_as`.
+const CERTIFIED_NON_MODEL_DEALIAS: &str = "    else:
+        dealiased_object = convert_and_respect_annotation_metadata(object_=object_, annotation=type_, direction=\"read\")
+    if IS_PYDANTIC_V2:";
+
+/// crozier's replacement: under Pydantic v1 a discriminated union's input keeps
+/// its wire keys.
+const V1_DISCRIMINATED_UNION_DEALIAS: &str = "    else:
+        dealiased_object = (
+            object_
+            if not IS_PYDANTIC_V2 and _has_discriminated_union(type_)
+            else convert_and_respect_annotation_metadata(object_=object_, annotation=type_, direction=\"read\")
+        )
+    if IS_PYDANTIC_V2:";
+
+/// `discriminated-union-v1-wire-keys`: crozier's `core/pydantic_utilities.py`
+/// is the certified runtime's with exactly the helper inserted before
+/// `def parse_obj_as` and the non-model dealiasing guarded by it, once each.
+fn discriminated_union_v1_wire_keys(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    if !(pair.rel == "core/pydantic_utilities.py"
+        || pair.rel.ends_with("/core/pydantic_utilities.py"))
+    {
+        return Ok(None);
+    }
+    let crozier = pair.crozier.join("\n");
+    let helper = format!("{V1_DISCRIMINATED_UNION_HELPER}def parse_obj_as(");
+    if crozier.matches(helper.as_str()).count() != 1
+        || crozier.matches(V1_DISCRIMINATED_UNION_DEALIAS).count() != 1
+    {
+        return Ok(None);
+    }
+    let certified = crozier
+        .replace(helper.as_str(), "def parse_obj_as(")
+        .replace(V1_DISCRIMINATED_UNION_DEALIAS, CERTIFIED_NON_MODEL_DEALIAS);
+    if certified != pair.fern.join("\n") {
+        return Ok(None);
+    }
+    Ok(differing_window(pair.fern, pair.crozier))
 }
 
 /// Where a JSON document's top-level `generatorConfig` member sits.
@@ -9630,6 +9827,166 @@ mod tests {
     }
 
     #[test]
+    fn the_binary_body_line_rule_needs_a_bytes_request_and_the_same_text() {
+        let holds = |context: &Context, rel: &str, fern: &str, crozier: &str| {
+            let (left, right) = ([fern], [crozier]);
+            binary_body_example_line(
+                &Pair {
+                    rel,
+                    fern: &left,
+                    crozier: &right,
+                    context,
+                },
+                fern,
+                crozier,
+            )
+        };
+        let fern = "    request=\"<binary string>\",";
+        let crozier = "    request=b\"<binary string>\",";
+        // Without a generated bytes `request`, nothing is excused.
+        assert!(!holds(&Context::default(), "reference.md", fern, crozier));
+        let raw = "class RawBlobsClient:\n    def attach_note(\n        self,\n        blob_id: str,\n        *,\n        request: bytes,\n    ) -> HttpResponse[Blob]:\n        pass\n";
+        let context = Context::from_sources([], [("src/fern/blobs/raw_client.py", raw)]);
+        for rel in ["README.md", "reference.md", "src/fern/blobs/client.py"] {
+            assert!(holds(&context, rel, fern, crozier), "{rel}");
+        }
+        assert!(!holds(&context, "src/fern/types/blob.py", fern, crozier));
+        // Each writer's own quoting, and non-ASCII text as its UTF-8 octets,
+        // doubled only inside a docstring.
+        assert!(holds(
+            &context,
+            "src/fern/blobs/client.py",
+            "            request='note \"quoted\" body',",
+            "            request=b'note \"quoted\" body',"
+        ));
+        let cafe = "    request=\"café receipt\",";
+        assert!(holds(
+            &context,
+            "reference.md",
+            cafe,
+            "    request=b\"caf\\xc3\\xa9 receipt\","
+        ));
+        assert!(holds(
+            &context,
+            "src/fern/blobs/client.py",
+            cafe,
+            "    request=b\"caf\\\\xc3\\\\xa9 receipt\","
+        ));
+        assert!(!holds(
+            &context,
+            "reference.md",
+            cafe,
+            "    request=b\"caf\\\\xc3\\\\xa9 receipt\","
+        ));
+        // A `\x` escape takes exactly two hex digits: `\x9` is no byte, so the
+        // value it would spell is not the declared text.
+        assert!(!holds(
+            &context,
+            "reference.md",
+            "    request=\"\t\",",
+            "    request=b\"\\x9\","
+        ));
+        assert_eq!(python_bytes_literal("b\"\\x9\""), None);
+        assert_eq!(python_bytes_literal("b\"\\x0g\""), None);
+        assert_eq!(python_bytes_literal("b\"\\x09\""), Some(vec![9]));
+        // Only that text, as bytes, at the same indent.
+        assert!(!holds(
+            &context,
+            "reference.md",
+            fern,
+            "    request=b\"other\","
+        ));
+        assert!(!holds(&context, "reference.md", fern, fern));
+        assert!(!holds(
+            &context,
+            "reference.md",
+            fern,
+            "        request=b\"<binary string>\","
+        ));
+        assert!(!holds(
+            &context,
+            "reference.md",
+            fern,
+            "    file=b\"<binary string>\","
+        ));
+        // Fern's sample beside a JSON binary method is the other entry's.
+        let json = "class RawThingsClient:\n    def upload(\n        self,\n        *,\n        request: bytes,\n    ) -> None:\n        self._client_wrapper.httpx_client.request(\n            json=request,\n            headers={\n                \"content-type\": \"application/json\",\n            },\n        )\n";
+        let json = Context::from_sources([], [("things/raw_client.py", json)]);
+        assert!(!holds(
+            &json,
+            "reference.md",
+            "    request=\"string\",",
+            "    request=b\"string\","
+        ));
+        assert!(holds(&json, "reference.md", fern, crozier));
+    }
+
+    #[test]
+    fn the_renamed_request_options_rule_needs_a_method_taking_both_names() {
+        let holds = |context: &Context, rel: &str, fern: &str, crozier: &str| {
+            let (left, right) = ([fern], [crozier]);
+            renamed_request_options_docs_line(
+                &Pair {
+                    rel,
+                    fern: &left,
+                    crozier: &right,
+                    context,
+                },
+                fern,
+                crozier,
+            )
+        };
+        let entry = "**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.";
+        let renamed = "**_request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.";
+        let readme = "client.dispatches.create_dispatch(..., request_options={";
+        let readme_renamed = "client.dispatches.create_dispatch(..., _request_options={";
+        let plain = "class RawDispatchesClient:\n    def create_dispatch(\n        self,\n        *,\n        note: str,\n        request_options: typing.Optional[RequestOptions] = None,\n    ) -> HttpResponse[Dispatch]:\n        pass\n";
+        let plain = Context::from_sources([], [("src/fern/dispatches/raw_client.py", plain)]);
+        assert!(!holds(&plain, "reference.md", entry, renamed));
+        assert!(!holds(&plain, "README.md", readme, readme_renamed));
+        let raw = "class RawDispatchesClient:\n    def create_dispatch(\n        self,\n        *,\n        request_options: str,\n        _request_options: typing.Optional[RequestOptions] = None,\n    ) -> HttpResponse[Dispatch]:\n        pass\n";
+        let context = Context::from_sources([], [("src/fern/dispatches/raw_client.py", raw)]);
+        assert!(holds(&context, "reference.md", entry, renamed));
+        assert!(holds(&context, "README.md", readme, readme_renamed));
+        // The body argument's own entry keeps its name, as does every other file.
+        assert!(!holds(
+            &context,
+            "reference.md",
+            "**request_options:** `str` ",
+            "**_request_options:** `str` "
+        ));
+        assert!(!holds(
+            &context,
+            "src/fern/dispatches/client.py",
+            readme,
+            readme_renamed
+        ));
+        assert!(!holds(&context, "reference.md", entry, entry));
+        assert!(!holds(
+            &context,
+            "README.md",
+            readme,
+            "client.dispatches.create_dispatch(..., options={"
+        ));
+        // A path parameter named `request_options` is `request_options_`, and
+        // reference.md's call passes it under that keyword, not the options'.
+        let call = "    request_options=\"request_options\",";
+        let path_call = "    request_options_=\"request_options\",";
+        assert!(!holds(&context, "reference.md", call, path_call));
+        let path_raw = "class RawLabelsClient:\n    def get_label(\n        self, request_options_: str, *, request_options: typing.Optional[RequestOptions] = None\n    ) -> HttpResponse[Dispatch]:\n        pass\n";
+        let path = Context::from_sources([], [("src/fern/labels/raw_client.py", path_raw)]);
+        assert!(holds(&path, "reference.md", call, path_call));
+        assert!(!holds(&path, "src/fern/labels/client.py", call, path_call));
+        assert!(!holds(
+            &path,
+            "reference.md",
+            "    request_options={",
+            "    request_options_={"
+        ));
+        assert!(!holds(&path, "reference.md", call, call));
+    }
+
+    #[test]
     fn the_binary_form_part_line_rule_needs_a_bytes_parameter_and_fern_s_own_sample() {
         let holds = |context: &Context, rel: &str, fern: &str, crozier: &str| {
             let (left, right) = ([fern], [crozier]);
@@ -10401,6 +10758,41 @@ mod tests {
     fn metadata_region(fern: &str, crozier: &str, rel: &str) -> Option<Region> {
         let (fern, crozier) = (lines(fern), lines(crozier));
         metadata_generator_config(&pair(rel, &fern, &crozier)).unwrap()
+    }
+
+    /// The shipped runtime is the certified one with exactly the
+    /// `discriminated-union-v1-wire-keys` change, and the rule takes nothing else.
+    #[test]
+    fn the_v1_wire_key_rule_takes_only_the_shipped_parse_change() {
+        let shipped = include_str!("../assets/core/pydantic_utilities.py");
+        let helper = format!("{V1_DISCRIMINATED_UNION_HELPER}def parse_obj_as(");
+        let certified = shipped
+            .replace(helper.as_str(), "def parse_obj_as(")
+            .replace(V1_DISCRIMINATED_UNION_DEALIAS, CERTIFIED_NON_MODEL_DEALIAS);
+        assert_ne!(certified, shipped, "the shipped runtime carries the change");
+        let region = |rel: &str, fern: &str, crozier: &str| {
+            let (fern, crozier) = (lines(fern), lines(crozier));
+            discriminated_union_v1_wire_keys(&pair(rel, &fern, &crozier)).unwrap()
+        };
+        let rel = "src/fern/core/pydantic_utilities.py";
+        let found = region(rel, &certified, shipped).expect("the shipped change");
+        let crozier = lines(shipped);
+        assert!(crozier[found.crozier.start].starts_with("def _has_discriminated_union("));
+        assert_eq!(crozier[found.crozier.end - 1], "        )");
+        assert!(region("core/pydantic_utilities.py", &certified, shipped).is_some());
+        assert!(region("src/fern/core/serialization.py", &certified, shipped).is_none());
+        // Any other difference, on either side, is not this departure.
+        let other = certified.replace("def parse_sse_obj(", "def parse_sse_object(");
+        assert!(region(rel, &other, shipped).is_none());
+        let unguarded =
+            shipped.replace(V1_DISCRIMINATED_UNION_DEALIAS, CERTIFIED_NON_MODEL_DEALIAS);
+        assert!(region(rel, &certified, &unguarded).is_none());
+        let twice = shipped.replace(
+            helper.as_str(),
+            &format!("{V1_DISCRIMINATED_UNION_HELPER}{helper}"),
+        );
+        assert!(region(rel, &certified, &twice).is_none());
+        assert!(region(rel, &certified, &certified).is_none());
     }
 
     #[test]

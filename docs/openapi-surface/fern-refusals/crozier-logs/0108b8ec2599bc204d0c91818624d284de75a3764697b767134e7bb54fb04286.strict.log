@@ -1,1 +1,1 @@
-crozier: invalid OpenAPI document <document>: example-missing-required-property: POST /task_template_lists/{id}/copy.json components/schemas/TaskTemplateList collides with TaskTemplate_List (fern-strict refusal)
+crozier: invalid OpenAPI document <document>: enum-name-unsuitable: #/components/schemas/CalendarEntryEventType_base/properties/color enum value "#367B9C"; declare a usable name with x-crozier-enum (fern-strict: Fern refuses this document)
